@@ -1,7 +1,7 @@
 # gitly
 Open-source GitHub/GitLab alternative written in V
 
-Coming in early 2020.
+Coming soon.
 
 https://gitly.org
 
