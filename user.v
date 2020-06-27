@@ -46,6 +46,12 @@ pub fn (mut app App) insert_contribrutor(contributor Contributor) {
   }
 }
 
+pub fn (mut app App) update_contributor(name string, user User) {
+  sql app.db {
+    update File set name = '', user = user.id where name == name
+  }
+}
+
 pub fn (mut app App) find_user_by_username(username2 string) User {
   user := sql app.db {
     select from User where username==username2

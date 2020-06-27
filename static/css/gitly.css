@@ -58,7 +58,6 @@ h3 {
   @media (max-width: 1000px) {
     .files {
       width: 100%; } }
-
 .file {
   display: flex;
   align-items: center;
@@ -100,7 +99,6 @@ h3 {
   @media (max-width: 1000px) {
     .file-size {
       display: none; } }
-
 .file-msg {
   flex: 1;
   text-overflow: ellipsis;

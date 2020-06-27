@@ -91,7 +91,8 @@ pub fn (mut app App) command_fetcher() {
 								}
 								app.insert_email(mail)
 							}
-							println('Added user $args[1]')
+							app.update_contributor(user.name, user)
+							println('Added user ${args[1]}')
 						} else {
 							println('Not enough arguments (3 required but only $args.len given)')
 						}
