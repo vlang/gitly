@@ -1,5 +1,5 @@
-# gitly
-![CI](https://github.com/vlang/gitly2/workflows/CI/badge.svg?branch=master)
+# Gitly
+![CI](https://github.com/vlang/gitly/workflows/CI/badge.svg?branch=master)
 
 GitHub/GitLab alternative written in V.
 
@@ -11,9 +11,9 @@ https://gitly.org
 - Easy to deploy (a single <1 MB binary that includes compiled templates)
 - Works without JavaScript
 - Detailed language stats for each directory
-- "Top files" feature to give an overview of the project 
+- "Top files" feature to give an overview of the project
 
-** This is pre-alpha software **
+**This is pre-alpha software**
 
 The V web framework and Gitly are at an early stage of development. Lots of features are missing.
 The biggest missing features that will be implemented soon:
@@ -32,11 +32,11 @@ v .
 ./gitly
 ```
 Required dependencies:
-* V 0.1.28.1
+* V 0.1.28.1 (https://vlang.io)
 * SQLite (Ubuntu/Debian: `libsqlite3-dev`)
 * sassc
 
-![](https://camo.githubusercontent.com/fe09cea06fef5481c49d6d0e0eb5dd6e426ef1a7/68747470733a2f2f7765622e617263686976652e6f72672f7765622f3230313730333130313334363230696d5f2f68747470733a2f2f6769746c792e696f2f696d672f6c702d73637265656e302e706e67)
+![](https://user-images.githubusercontent.com/687996/85933714-b195fe80-b8da-11ea-9ddd-09cadc2103e4.png)
 
 
 
