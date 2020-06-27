@@ -1,0 +1,8 @@
+gitly
+*.sqlite
+*.css
+*.css.map
+.sass-cache/
+.lite_workspace.lua
+static/assets/version
+test_repo
