@@ -66,7 +66,6 @@ fn (mut app App) update_repo() {
 		if args.len > 3 {
 			tmp_commit.repo_id = r.id
 			tmp_commit.hash = args[0]
-			println(args)
 			tmp_commit.author = args[4]
 			t := time.parse_rfc2822(args[2]) or {
 				println('Error: $err')
@@ -127,6 +126,7 @@ fn (mut r Repo) analyse_lang(wg &sync.WaitGroup) {
 	mut all_size := 0
 	mut lang_stats := map[string]int
 	mut langs := map[string]hl.Lang
+
 	for file in files {
 		lang := hl.extension_to_lang(file.split('.').last()) or {
 			continue
@@ -158,7 +158,7 @@ fn (mut r Repo) analyse_lang(wg &sync.WaitGroup) {
 		r.lang_stats << LangStat{
 			id: 0
 			repo_id: r.id
-			name: lang
+			name: lang_data.name
 			pct: pct
 			color: lang_data.color
 			nr_lines: amount
