@@ -121,6 +121,9 @@ fn (mut app App) update_repo() {
 	println('Repo updated')
 }
 
+// update_repo updated the repo in the db
+fn (mut r Repo) update_repo() {}
+
 fn (mut r Repo) analyse_lang(wg &sync.WaitGroup) {
 	files := r.get_all_files(r.git_dir)
 	mut all_size := 0
