@@ -6,7 +6,6 @@ import time
 import os
 import hl
 import sync
-import sqlite
 import vweb
 
 struct Repo {
@@ -61,7 +60,7 @@ fn (mut app App) update_repo() {
 	r.nr_contributors = 0
 	r.nr_commits = 0
 	app.db.exec('BEGIN TRANSACTION')
-	for i, line in data.split_into_lines() {
+	for line in data.split_into_lines() {
 		args := line.split(log_field_separator)
 		if args.len > 3 {
 			tmp_commit.repo_id = r.id
@@ -456,8 +455,8 @@ fn (mut app App) fetch_file_info(r &Repo, file &File) {
 	}
 	last_msg := first_line(vals[0])
 	last_time:= vals[1].int()
-	last_hash := vals[2]
-	last_author:= vals[3]
+	/*last_hash*/_ := vals[2]
+	/*last_author*/_ := vals[3]
 	file_id := file.id
 	sql app.db {
 		update File set last_msg = last_msg, last_time = last_time where id == file_id
