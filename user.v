@@ -26,21 +26,21 @@ struct Contributor {
 }
 
 pub fn (mut app App) insert_user(user User) {
-  println('Insert user: $user.username')
+  app.log.info('Insert user: $user.username')
   sql app.db {
     insert user into User
   }
 }
 
 pub fn (mut app App) insert_email(email Email) {
-  println('Inserting email: $email.email')
+  app.log.info('Inserting email: $email.email')
   sql app.db {
     insert email into Email
   }
 }
 
 pub fn (mut app App) insert_contribrutor(contributor Contributor) {
-  println('Inserting contributor: $contributor.user')
+  app.log.info('Inserting contributor: $contributor.user')
   sql app.db {
     insert contributor into Contributor
   }

@@ -68,7 +68,7 @@ fn (mut app App) update_repo() {
 			tmp_commit.hash = args[0]
 			tmp_commit.author = args[4]
 			t := time.parse_rfc2822(args[2]) or {
-				println('Error: $err')
+				app.log.error('Error: $err')
 				return
 			}
 			tmp_commit.created_at = int(t.unix)
@@ -92,7 +92,7 @@ fn (mut app App) update_repo() {
 	}
 	r.nr_commits = app.commits_by_repo_id_size(r.id)
 	r.nr_contributors = app.contributor_by_repo_id_size(r.id)
-	println(r.nr_contributors)
+	app.log.info(r.nr_contributors.str())
 	r.created_at = int(tmp_commit.created_at)
 	r.branches = get_branches(r)
 	r.nr_branches = r.branches.len
@@ -108,7 +108,7 @@ fn (mut app App) update_repo() {
 	wg.wait()
 	repo := *r
 	lang_stats := repo.lang_stats
-	println(repo.git_dir)
+	app.log.info(repo.git_dir)
 	sql app.db {
 		insert repo into Repo
 	}
@@ -118,7 +118,7 @@ fn (mut app App) update_repo() {
 		}
 	}
 	app.db.exec('END TRANSACTION')
-	println('Repo updated')
+	app.log.info('Repo updated')
 }
 
 // update_repo updated the repo in the db
@@ -343,10 +343,10 @@ fn (r &Repo) parse_ls(ls, branch string) ?File {
 
 // Fetches all files via `git ls-tree` and saves them in db
 fn (mut app App) cache_repo_files(mut r Repo, branch, path string) []File {
-	println('Repo.cache_files($r.name branch=$branch path=$path)')
-	println('path.len=$path.len')
+	app.log.info('Repo.cache_files($r.name branch=$branch path=$path)')
+	app.log.info('path.len=$path.len')
 	if r.status == .caching {
-		eprintln('repo `$r.name` is being cached already')
+		app.log.error('repo `$r.name` is being cached already')
 		return []
 	}
 	// ls-tree --name-only trunk
@@ -375,7 +375,7 @@ fn (mut app App) cache_repo_files(mut r Repo, branch, path string) []File {
 	mut files := []File{}
 	for line in lines {
 		file := r.parse_ls(line, branch) or {
-			println('failed to parse $line')
+			app.log.warn('failed to parse $line')
 			continue
 		}
 		if file.is_dir {
@@ -425,7 +425,7 @@ fn (mut app App) slow_fetch_files_info(branch string, path string) {
 	// for file in files {
 	for i in 0 .. files.len {
 		if files[i].last_msg != '' {
-			println('skipping ${files[i].name}')
+			app.log.warn('skipping ${files[i].name}')
 			continue
 		}
 		app.fetch_file_info(app.repo, files[i])

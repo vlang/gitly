@@ -44,15 +44,15 @@ fn (f File) pretty_size() string {
 }
 
 fn (mut app App) insert_file(file File) {
-	println('inserting file:')
-	println(file.name)
+	app.log.info('inserting file:')
+	app.log.info(file.name)
 	sql app.db {
 		insert file into File
 	}
 }
 
 fn (mut app App) find_files_by_repo(repo_id2 int, branch, parent_path string) []File {
-	println('find files by repo(repo_id=$repo_id2, parent_path="$parent_path")')
+	app.log.info('find files by repo(repo_id=$repo_id2, parent_path="$parent_path")')
 	mut files := sql app.db {
 		select from File where repo_id==repo_id2 && parent_path==parent_path
 	}
@@ -62,7 +62,7 @@ fn (mut app App) find_files_by_repo(repo_id2 int, branch, parent_path string) []
 fn (mut app App) find_file_by_path(repo_id int, branch, path string) ?File {
 	parent_path := os.base_dir(path)
 	name := path.after('/')
-	println('find file parent_path=$parent_path name=$name')
+	app.log.info('find file parent_path=$parent_path name=$name')
 	file := sql app.db {
 		select from File where repo_id==repo_id && parent_path==parent_path && name == name limit 1
 	}

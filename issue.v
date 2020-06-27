@@ -33,8 +33,8 @@ struct Label {
 }
 
 fn (mut app App) insert_issue(issue Issue) {
-	println('inserting issue:')
-	println(issue.title)
+	app.log.info('inserting issue:')
+	app.log.info(issue.title)
 	sql app.db {
 		insert issue into Issue
 	}
