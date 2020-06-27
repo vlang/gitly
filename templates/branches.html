@@ -1,0 +1,19 @@
+@header
+<style>
+.branch_name {
+    font-family:Roboto-Mono, Menlo;
+    background-color:rgb(230, 247, 253);
+    color:blue;
+    padding:4px;
+    line-height:200%
+}
+</style>
+<h3>Branches</h3>
+
+.branches {
+    @for branch in branches
+        .branch {
+            <span class='branch_name'>@branch.name</span>&nbsp;&nbsp;Updated @branch.date.relative() by @branch.author
+        }
+    @end
+}

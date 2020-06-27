@@ -1,0 +1,26 @@
+@header
+
+<h3> Issues </h3>
+
+.commit-day {
+}
+
+@for issue in issues
+	.clog {
+		.clog-msg {
+			<a href="../issue/@issue.id">@issue.title</a>
+		}
+		span.clog-author {
+			#@issue.id opened @issue.relative_time()
+			by issue.author
+		}
+	}
+@end
+
+<div>
+<br>
+<a href='/new_issue'>New issue</a>
+</div>
+
+
+@footer

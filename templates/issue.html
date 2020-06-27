@@ -1,0 +1,22 @@
+@header
+
+<style>
+.comment {
+	margin-left: 20px;
+	margin-top: 20px;
+}
+</style>
+
+<h1>@issue.title#@issue.id</h1>
+<i>by issue.author</i>
+<p>@issue.text</p>
+
+
+@for comment in comments
+
+.comment {
+	<i>@comment.author_id commented</i>
+	<p>@comment.text</p>
+}
+
+@end

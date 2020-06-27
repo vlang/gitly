@@ -1,0 +1,14 @@
+@header
+<h3>Releases</h3>
+
+.releases {
+    @for release in releases
+        .release {
+            <strong>Release:</strong> <strong>@release.tag.name</strong><br/>
+            <strong>Hash:</strong> @release.tag.hash<br/>
+            <strong>Created by:</strong> @release.tag.author<br/>
+            <strong>Notes:</strong> @release.notes<br/>
+        }
+        <br/>
+    @end
+}

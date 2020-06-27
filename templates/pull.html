@@ -1,0 +1,22 @@
+@header
+
+<style>
+.comment {
+	margin-left: 20px;
+	margin-top: 20px;
+}
+</style>
+
+<h1>@pr.title#@pr.id</h1>
+<i>by @pr.author_id</i>
+<p>@pr.text</p>
+
+
+@for comment in comments
+
+.comment {
+	<i>@comment.author_id commented</i>
+	<p>@comment.text</p>
+}
+
+@end

@@ -1,0 +1,73 @@
+$mob-max: 1000px;
+$link-color: #4078C0;
+$gray: #dfdfdf;
+$gray-light: #f3f3f3;
+$gray-dark: #777; // 888
+$font-size: 13px;
+$black: #24292e;
+$header-height: 50px;
+@mixin mobile {
+	@media (max-width: $mob-max) {
+		@content;
+	}
+}
+@mixin desktop {
+	@media (min-width: $mob-max) {
+		@content;
+	}
+}
+.hl_table * {
+	font-family: Roboto-Mono, Menlo, monospace;
+}
+body, html, * {
+	font-family: Roboto, 'Helvetica Neue', 'Segoe UI', 'Helvetica';
+	font-size: 13px;
+	padding: 0;
+	margin: 0;
+}
+a {
+	color: $link-color;
+	text-decoration: none;
+}
+h3 {
+	margin-top: 10px;
+	margin-bottom: 10px;
+	font-size: 130%;
+}
+.content {
+	max-width: $mob-max;
+	margin: 0 auto;
+	margin-bottom: 200px;
+	min-height: calc(100vh - 300px);
+}
+#header {
+	background-color:#24292e;
+	height: $header-height;
+	color: white;
+	a {
+		line-height: 50px;
+		font-size:18px;
+		color:white;
+		&:hover {
+			color:#ddd;
+		}
+	}
+}
+#footer {
+	max-width: $mob-max;
+	margin: 0 auto;
+	color: #777;
+	//font-size:80%;
+}
+#footer a {
+	color: #777;
+	text-decoration: underline;
+}
+#mainlogo {
+	line-height: 50px;
+	font-size: 20px !important;
+	margin-left: 10px;
+	float: left;
+}
+
+@import 'files', 'langs', 'tree', 'commits', 'hl_table';

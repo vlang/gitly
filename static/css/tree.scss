@@ -1,0 +1,47 @@
+.repo-tabs {
+	position: fixed;
+	left: 5px;
+	top: 300px;
+	a {
+		display: block;
+	}
+}
+.repo-stats {
+	border: 1px solid $gray;
+	border-radius: 5px;
+	margin-bottom: 10px;
+	margin-top: 10px;
+	a.menu {
+		display: inline-block;
+		width: 14%;
+		@include mobile {
+			display: block;
+			width: 100%;
+		}
+		padding: 10px;
+		text-align: center;
+		color: black !important;
+		&:hover, &:hover * {
+			color: $link-color !important;
+			text-decoration: none;
+		}
+	}
+	a.contr {
+		//width: auto !important;
+	}
+	span {
+		position: relative;
+		top: 2px;
+	}
+	svg {
+		position:relative;
+		top:2px;
+		height: 14px;
+	}
+}
+.tree-path, .tree-path a, h3 a {
+	display: inline-block;
+	font-size: 20px !important;
+	font-weight: 300;
+	margin: 7px 0 7px 0;
+}

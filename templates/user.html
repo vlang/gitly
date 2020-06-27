@@ -1,0 +1,12 @@
+@header
+
+<h3> @user.name </h3>
+<h4> @user.username </h4>
+@for email in user.emails
+	<h5> @email.email </h5>
+@end
+<b> @user.is_github </b>
+
+
+
+@footer

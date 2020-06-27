@@ -1,0 +1,20 @@
+@header
+
+<h3> Pull Requests </h3>
+
+@for pr in prs
+	.clog {
+		.clog-msg {
+			<a href="../pull/@pr.id">@pr.title</a>
+		}
+		span.clog-author {
+			#@pr.id opened @pr.relative_time()
+			by pr.author
+		}
+	}
+@end
+
+<div>
+<br>
+<a href='/new_pr'>New pull request</a>
+</div>

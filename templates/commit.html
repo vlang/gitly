@@ -1,0 +1,59 @@
+@header
+
+<style>
+pre {
+	overflow-y: hidden;
+	overflow-x: scroll;
+}
+pre > *{
+	font-family:Roboto-Mono, Menlo;
+}
+.hl_table a {
+	padding-right: 5px;
+	padding-left: 5px;
+	float: right;
+}
+.hl_table {
+	width: 1000px;
+	border-right-color: rgb(36, 41, 46);
+    border-right-style: solid;
+    border-right-width: 0.5px;
+    border-bottom-color: rgb(36, 41, 46);
+    border-bottom-style: solid;
+    border-bottom-width: 0.5px;
+    border-left-color: rgb(36, 41, 46);
+    border-left-style: solid;
+    border-left-width: 0.5px;
+}
+.hl_table b {
+	color: rgb(150, 77, 0);
+}
+.hl_table u {
+	color: rgb(0, 124, 255);
+	text-decoration: none;
+}
+.hl_table i {
+	color: rgb(3, 125, 3);
+}
+.a {
+	background-color: #90fb90;
+}
+.d {
+	background-color: #f27e7e;
+}
+</style>
+
+span.additions {
+	Additions: @all_adds
+}
+
+span.deletions {
+	Deletions: @all_dels
+}
+
+@for file, src in sources
+	<div id="@file">
+		<a href="../../blob/@file">@file</a>
+		<pre>@src</pre>
+	</div>
+@end

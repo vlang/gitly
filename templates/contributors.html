@@ -1,0 +1,22 @@
+@header
+
+<h3> Contributors </h3>
+
+
+.users {
+	@for user in users
+		.user {
+			<!--
+			<span>email</span>
+			-->
+			<a><span>@user.name</span></a>
+		}
+	@end
+}
+.named_contributor {
+	@for contrib in named_contributor
+		.contrib {
+			<span>@contrib.name</span>
+		}
+	@end
+}

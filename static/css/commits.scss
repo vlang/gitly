@@ -1,0 +1,40 @@
+.commit-day {
+	color: #767676;
+	padding: 30px 0 10px 0;
+	border-bottom: 1px solid $gray;
+}
+.clog {
+	border: 1px solid $gray;
+	border-top: 0;
+	padding: 10px;
+}
+img.clog-avatar {
+	border-radius: 3px;
+	width: 35px;
+	//display: inline-block;
+	float: left;
+	margin-right: 10px;
+}
+.clog-msg {
+	font-size: 14px;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	overflow: hidden;
+	a {
+		color: $black !important;
+		font-size: 15px;
+		font-weight: 700;
+	}
+	padding-bottom:5px;
+}
+.clog-author {
+	a {
+		font-weight: bold;
+		font-size: 11px;
+		color: $gray-dark !important;
+	}
+}
+.clog-time {
+	font-size: 11px;
+	color: $gray-dark;
+}

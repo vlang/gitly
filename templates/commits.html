@@ -1,0 +1,54 @@
+@header
+
+<style>
+.button {
+	background-color:white;
+	color:black;
+	border:2px solid #0366d6;
+	padding:4px;
+}
+.button:hover {
+	background-color:#0366d6;
+	color:white;
+}
+.disabled {
+	opacity:0.4;
+	pointer-events:none;
+}
+</style>
+@for day, commits in d_commits
+	.commit-day {
+		Commits @msg @day
+	}
+	@for commit in commits
+		.clog {
+			.clog-msg {
+				<a href='/commit/@commit.hash'>@commit.message</a>
+			}
+			span.clog-author {
+				<a href='/commits/&@commit.author.str()/0'>@commit.author</a>
+			}
+			span.clog-time {
+				commited @commit.relative()
+			}
+<!--
+			<i class="commit_hash">@commit.hash</i>
+			-->
+		}
+	@end
+@end
+
+<div class="buttons">
+	<br/>
+@if first
+	<a href="/commits/@url@last_site" class="button disabled">Prev</a>
+@else
+	<a href="/commits/@url@last_site" class="button">Prev</a>
+@end
+
+@if last
+	<a href="/commits/@url@next_site" class="button disabled">Next</a>
+@else
+	<a href="/commits/@url@next_site" class="button">Next</a>
+@end
+</div>
