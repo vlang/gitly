@@ -487,7 +487,6 @@ pub fn (mut app App) new_issue_post() vweb.Result {
 		title: title
 		text: text
 		repo_id: app.repo.id
-		status: 0
 		author_id: app.user.id
 	}
 	app.insert_issue(issue)
