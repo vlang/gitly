@@ -235,9 +235,16 @@ pub fn (mut app App) tree() vweb.Result {
 
 	mut last_commit := Commit{}
 	if poss_up {
-		upper_dir := app.find_file_by_path(app.repo.id, 'master', '/$app.path') or { panic(err) }
+		mut path := app.path
+		if !path.contains('/') {
+			path = '/$path'
+		} else if path.bytes().last() == `/` {
+			path = path[0..path.len-1]
+		}
+		upper_dir := app.find_file_by_path(app.repo.id, 'master', '$path') or { panic(err) }
 		last_commit = app.find_commit_by_hash(app.repo.id, upper_dir.last_hash)
 	} else {
+		last_commit = app.find_last_commit(app.repo.id)
 	}
 
 	// println('app.tree() = ${time.ticks()-t}ms')

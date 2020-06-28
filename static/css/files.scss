@@ -3,6 +3,19 @@
 	align-items: center;
 	padding: 9px 11px;
 	border-bottom: 1px solid $gray;
+	background-color: #bfdbff54;
+}
+
+.last_commit_author {
+	margin-right: 4px;
+}
+
+.last_commit_msg {
+	margin-right: 2px;
+}
+
+.hash_string {
+	background-color: #CBE2FF
 }
 
 .files {

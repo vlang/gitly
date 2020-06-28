@@ -55,7 +55,7 @@ fn (mut app App) update_repo() {
 	wg := sync.new_waitgroup()
 	wg.add(1)
 	go r.analyse_lang(wg)
-	data := r.git('--no-pager log --abbrev-commit --abbrev=7 --pretty="%h$log_field_separator%aE$log_field_separator%cD$log_field_separator%s$log_field_separator%aN"')
+	data := r.git('--no-pager log --abbrev-commit --abbrev=8 --pretty="%h$log_field_separator%aE$log_field_separator%cD$log_field_separator%s$log_field_separator%aN"')
 	mut tmp_commit := Commit{}
 	r.nr_contributors = 0
 	r.nr_commits = 0
@@ -331,7 +331,7 @@ fn (r &Repo) parse_ls(ls, branch string) ?File {
 	}
 	typ := words[1]
 	mut parent_path := os.base_dir(words[3])
-	hash := words[2]
+	hash := r.git('log -n 1 --format="%h" ${words[3]}')
 	println(hash)
 	name := words[3].after('/') // os.basename(words[3])
 	// println('parse ls name=$name path=$path')
@@ -377,7 +377,7 @@ fn (mut app App) cache_repo_files(mut r Repo, branch, path string) []File {
 		}
 		// t := time.ticks()
 		// println('ls-tree --full-name $branch $p')
-		res = r.git('ls-tree --full-name $branch $p --abbrev=7')
+		res = r.git('ls-tree --full-name $branch $p')
 		// println('ls tree res:')
 		// println(res)
 		// println('ls-tree ms=${time.ticks() - t}')

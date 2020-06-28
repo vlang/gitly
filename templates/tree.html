@@ -31,11 +31,11 @@ $(document).ready(function(){
 
 .files {
 	.last_commit {
-		span.author {
-			@last_commit.author
+		span.last_commit_author {
+			@last_commit.author 
 		}
-		span.msg {
-			commited @last_commit.hash
+		span.last_commit_msg {
+			commited <a href="/commit/@last_commit.hash" class="hash_string">@last_commit.hash</a>  
 		}
 		span.time {
 			@last_commit.relative()
