@@ -56,7 +56,7 @@ pub fn (mut app App) add_user(username, password, gitname string, emails []strin
 		name: gitname
 	}
 	app.insert_user(user)
-	u := app.find_user_by_username(user.username)
+	u := app.find_user_by_username(user.username) or { User{} }
 	for email in emails {
 		mail := Email{
 			user: u.id
@@ -113,9 +113,12 @@ pub fn (mut app App) find_sshkey_by_user_id(id int) []SshKey {
 	}
 }
 
-pub fn (mut app App) find_user_by_username(username2 string) User {
+pub fn (mut app App) find_user_by_username(username2 string) ?User {
 	user := sql app.db {
 		select from User where username == username2 
+	}
+	if user.len == 0 {
+		return error('User not found')
 	}
 	mut u := user[0]
 	emails := app.find_emails_by_user_id(u.id)

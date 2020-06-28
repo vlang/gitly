@@ -24,8 +24,8 @@ mut:
 	version       string
 	html_path     vweb.RawHtml
 	page_gen_time string
-	tokens        map[string]string
 pub mut:
+	tokens        map[string]string
 	file_log      log.Log
 	cli_log       log.Log
 	vweb          vweb.Context
@@ -53,6 +53,7 @@ pub fn (mut app App) error(msg string) {
 
 pub fn (mut app App) init_once() {
 	os.mkdir('logs')
+	app.tokens = map[string]string
 	app.file_log = log.Log{}
 	app.cli_log = log.Log{}
 	app.file_log.set_level(.info)
@@ -163,10 +164,13 @@ pub fn (mut app App) init() {
 	app.branch = 'master'
 	app.html_path = app.repo.html_path_to(app.path, app.branch)
 	app.info('path=$app.path')
-	logged_in := app.logged_in()
+	mut logged_in := app.logged_in()
 	mut user := User{}
 	if logged_in {
-		user = app.get_user()
+		user = app.get_user() or {
+			logged_in = false
+			User{}
+		}
 	}
 }
 
@@ -276,7 +280,9 @@ pub fn (mut app App) user() vweb.Result {
 	mut user := User{}
 	if args.len >= 1 {
 		username := args[0]
-		user = app.find_user_by_username(username)
+		user = app.find_user_by_username(username) or {
+			return app.vweb.not_found()
+		}
 	}
 	return $vweb.html()
 }
@@ -499,6 +505,42 @@ pub fn (mut app App) register_post() vweb.Result {
 	return vweb.Result{}
 }
 
+pub fn (mut app App) login() vweb.Result {
+	if app.logged_in() {
+		return app.vweb.not_found()
+	}
+	return $vweb.html()
+}
+
+pub fn (mut app App) login_post() vweb.Result {
+	username := app.vweb.form['username']
+	password := app.vweb.form['password']
+
+	if username == '' || password == '' {
+		app.vweb.redirect('/login')
+		return vweb.Result{}
+	}
+
+	println(username)
+	println(password)
+	user := app.find_user_by_username(username) or {
+		app.vweb.redirect('/login')
+		return vweb.Result{}
+	}
+	println('hi')
+	if !check_password(password, username, user.password) {
+		app.vweb.redirect('/login')
+		return vweb.Result{}
+	}
+	println('hi')
+	token := app.add_token(user.id.str())
+	println('hi')
+	app.vweb.set_cookie('id', user.id.str())
+	app.vweb.set_cookie('token', token)
+	app.vweb.redirect('/')
+	return vweb.Result{}
+}
+
 pub fn (mut app App) logged_in() bool {
 	id := app.vweb.get_cookie('id') or {
 		return false
@@ -509,7 +551,13 @@ pub fn (mut app App) logged_in() bool {
 	return id != '' && token != '' && id in app.tokens && app.tokens[id] == token
 }
 
-pub fn (mut app App) get_user() User {
-	id := app.vweb.get_cookie('id') or { return User{} }
+pub fn (mut app App) add_token(id string) string {
+	token := time.now().unix.str() // TODO make better token
+	app.tokens[id] = token
+	return token
+}
+
+pub fn (mut app App) get_user() ?User {
+	id := app.vweb.get_cookie('id') or { return error('Not logged in') }
 	return app.find_user_by_id(id.int())
 }
