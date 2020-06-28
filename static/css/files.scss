@@ -1,3 +1,23 @@
+.last_commit {
+	display: flex;
+	align-items: center;
+	padding: 9px 11px;
+	border-bottom: 1px solid $gray;
+	background-color: #bfdbff54;
+}
+
+.last_commit_author {
+	margin-right: 4px;
+}
+
+.last_commit_msg {
+	margin-right: 2px;
+}
+
+.hash_string {
+	background-color: #CBE2FF
+}
+
 .files {
 	@include mobile {
 		width: 100%;
@@ -5,8 +25,8 @@
 	margin: 0 auto;
 	border-left: 1px solid #dfdfdf;
 	border-right: 1px solid #dfdfdf;
-    border-top: 1px solid #dfdfdf;
-    border-radius: 3px;
+	border-top: 1px solid #dfdfdf;
+	border-radius: 3px;
 	//border-bottom :1px solid #dfdfdf;
 	//margin-top: 20px;
 	margin-bottom: 100px;
