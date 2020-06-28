@@ -2,12 +2,16 @@
 // Use of this source code is governed by a GPL license that can be found in the LICENSE file.
 module main
 
+import crypto.sha256
+import rand
+
 struct User {
-	id int
-	name string
-	username string
-	is_github bool
-	avatar string [skip]
+  id int
+  name string
+  username string
+  password string
+  is_github bool
+  avatar string [skip]
 mut:
 	emails []Email [skip]
 }
@@ -23,6 +27,36 @@ struct Contributor {
 	user int
 	repo int
 	name string
+}
+
+fn make_password(password, username string) string {
+	mut seed := [u32(username[0]), u32(username[1])]
+	rand.seed(seed)
+	salt := rand.i64().str()
+	pw := '$password$salt'
+	return sha256.sum(pw.bytes()).hex().str()
+}
+
+fn check_password(password, username, hashed string) bool {
+	return make_password(password, username) == hashed
+}
+
+pub fn (mut app App) add_user(username, password, gitname string, emails []string) {
+	mut user := User{
+		username: username
+		password: password
+		name: gitname
+	}
+	app.insert_user(user)
+	u := app.find_user_by_username(user.username)
+	for email in emails {
+	  mail := Email{
+		  user: u.id
+		  email: email
+	  }
+	  app.insert_email(mail)
+	}
+	app.update_contributor(user.name, user)
 }
 
 pub fn (mut app App) insert_user(user User) {

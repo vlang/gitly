@@ -24,6 +24,7 @@ mut:
 	version   string
 	html_path vweb.RawHtml
 	page_gen_time string
+	tokens map[string]string
 pub mut:
 	file_log       log.Log
 	cli_log       log.Log
@@ -71,6 +72,7 @@ pub fn (mut app App) init_once() {
 	mut user := User{
 		name: 'Admin'
 		username: 'admin'
+		password: make_password('test', 'admin')
 		is_github: false
 	}
 	email := Email{
@@ -103,30 +105,17 @@ pub fn (mut app App) command_fetcher() {
 						app.update_repo()
 					}
 					'adduser' {
-						if args.len > 3 {
-							mut user := User{
-								username: args[1]
-								name: args[2]
-							}
-							app.insert_user(user)
-							u := app.find_user_by_username(user.username)
-							for email in args[3..] {
-								mail := Email{
-									user: u.id
-									email: email
-								}
-								app.insert_email(mail)
-							}
-							app.update_contributor(user.name, user)
+						if args.len > 4 {
+							app.add_user(args[1], args[2], args[3], args[4..])
 							app.info('Added user ${args[1]}')
 						} else {
-							app.error('Not enough arguments (3 required but only $args.len given)')
+							app.error('Not enough arguments (4 required but only $args.len given)')
 						}
 					}
 					else {
 						app.info('Commands:')
 						app.info('	!updaterepo')
-						app.info('	!adduser <username> <gitname> <email1> <email2>...')
+						app.info('	!adduser <username> <gitname> <password> <email1> <email2>...')
 					}
 				}
 			} else {
@@ -456,4 +445,30 @@ pub fn (mut app App) new_issue_post() vweb.Result {
 	app.inc_repo_issues(app.repo.id)
 	app.vweb.redirect('/issues')
 	return vweb.Result{}
+}
+
+pub fn (mut app App) register() vweb.Result {
+	return $vweb.html()
+}
+
+pub fn (mut app App) register_post() vweb.Result {
+	username := app.vweb.form['username']
+	git_name := app.vweb.form['gitname']
+	password := make_password(app.vweb.form['password'], username)
+	email := app.vweb.form['email']
+
+	if username == '' || git_name == '' || email == '' {
+		app.vweb.redirect('/register')
+		return vweb.Result{}
+	}
+
+	app.add_user(username, password, git_name, [email])
+	app.vweb.redirect('/')
+	return vweb.Result{}
+}
+
+pub fn (mut app App) logged_in() bool {
+	id := app.vweb.get_cookie('id') or { return false }
+	token := app.vweb.get_cookie('token') or { return false }
+	return id != '' && token != '' && id in app.tokens && app.tokens[id] == token
 }
