@@ -384,8 +384,7 @@ pub fn (mut app App) commit() vweb.Result {
 pub fn (mut app App) issues() vweb.Result {
 	mut issues := app.find_issues_by_repo(app.repo.id)
 	for index, issue in issues {
-		user := app.find_user_by_id(issue.author_id)
-		issues[index].author_name = user.username
+		issues[index].author_name = app.find_username_by_id(issue.author_id)
 	}
 	return $vweb.html()
 }
@@ -401,8 +400,7 @@ pub fn (mut app App) issue() vweb.Result {
 		return app.vweb.not_found()
 	}
 	mut issue := issue0 // TODO bug with optionals (.data)
-	user := app.find_user_by_id(issue.author_id)
-	issue.author_name = user.username
+	issue.author_name = app.find_username_by_id(issue.author_id)
 	comments := app.find_issue_comments(issue.id)
 	return $vweb.html()
 }
