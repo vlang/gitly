@@ -75,7 +75,7 @@ fn (mut app App) create_tables() {
 		'username text default ""'
 		'password text default ""'
 		'is_github int default 0'
-		'UNIQUE(name, username)'
+		'UNIQUE(username)'
 	])
 	app.create_table('Email', [
 		'id integer primary key'
@@ -112,6 +112,13 @@ fn (mut app App) create_tables() {
 		'title text default ""'
 		'sshkey text default ""'
 		'is_deleted integer default 0'
+	])
+	app.create_table('Comment', [
+		'id integer primary key'
+		'author_id integer default 0'
+		'issue_id integer default 0'
+		'created_at integer default 0'
+		'text text default ""'
 	])
 }
 

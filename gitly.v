@@ -8,6 +8,8 @@ import os
 import log
 import hl
 import sqlite
+import math
+import rand
 
 const (
 	commits_per_page = 35
@@ -24,12 +26,14 @@ mut:
 	version       string
 	html_path     vweb.RawHtml
 	page_gen_time string
-	tokens        map[string]string
 pub mut:
+	tokens        map[string]string // [userid] = token
 	file_log      log.Log
 	cli_log       log.Log
 	vweb          vweb.Context
 	db            sqlite.DB
+	logged_in     bool
+	user          User
 }
 
 fn main() {
@@ -53,6 +57,7 @@ pub fn (mut app App) error(msg string) {
 
 pub fn (mut app App) init_once() {
 	os.mkdir('logs')
+	app.tokens = map[string]string
 	app.file_log = log.Log{}
 	app.cli_log = log.Log{}
 	app.file_log.set_level(.info)
@@ -163,7 +168,13 @@ pub fn (mut app App) init() {
 	app.branch = 'master'
 	app.html_path = app.repo.html_path_to(app.path, app.branch)
 	app.info('path=$app.path')
-	// LangStat{name:'C', color: '#555555'},
+	app.logged_in = app.logged_in()
+	if app.logged_in {
+		app.user = app.get_user() or {
+			app.logged_in = false
+			User{}
+		}
+	}
 }
 
 pub fn (mut app App) create_new_test_repo() {
@@ -272,7 +283,9 @@ pub fn (mut app App) user() vweb.Result {
 	mut user := User{}
 	if args.len >= 1 {
 		username := args[0]
-		user = app.find_user_by_username(username)
+		user = app.find_user_by_username(username) or {
+			return app.vweb.not_found()
+		}
 	}
 	return $vweb.html()
 }
@@ -371,12 +384,16 @@ pub fn (mut app App) commit() vweb.Result {
 }
 
 pub fn (mut app App) issues() vweb.Result {
-	issues := app.find_issues_by_repo(app.repo.id)
+	mut issues := app.find_issues_by_repo(app.repo.id)
+	for index, issue in issues {
+		issues[index].author_name = app.find_username_by_id(issue.author_id)
+	}
 	return $vweb.html()
 }
 
 pub fn (mut app App) issue() vweb.Result {
 	args := app.path.split('/')
+	app.path = ''
 	mut id := 1
 	if args.len > 0 {
 		id = args[0].int()
@@ -384,7 +401,8 @@ pub fn (mut app App) issue() vweb.Result {
 	issue0 := app.find_issue_by_id(id) or {
 		return app.vweb.not_found()
 	}
-	issue := issue0 // TODO bug with optionals (.data)
+	mut issue := issue0 // TODO bug with optionals (.data)
+	issue.author_name = app.find_username_by_id(issue.author_id)
 	comments := app.find_issue_comments(issue.id)
 	return $vweb.html()
 }
@@ -489,6 +507,9 @@ pub fn (mut app App) blob() vweb.Result {
 }
 
 pub fn (mut app App) new_issue() vweb.Result {
+	if !app.logged_in {
+		return app.vweb.not_found()
+	}
 	return $vweb.html()
 }
 
@@ -503,6 +524,7 @@ pub fn (mut app App) new_issue_post() vweb.Result {
 		title: title
 		text: text
 		repo_id: app.repo.id
+		author_id: app.user.id
 	}
 	app.insert_issue(issue)
 	app.inc_repo_issues(app.repo.id)
@@ -528,6 +550,36 @@ pub fn (mut app App) register_post() vweb.Result {
 	return vweb.Result{}
 }
 
+pub fn (mut app App) login() vweb.Result {
+	if app.logged_in() {
+		return app.vweb.not_found()
+	}
+	return $vweb.html()
+}
+
+pub fn (mut app App) login_post() vweb.Result {
+	username := app.vweb.form['username']
+	password := app.vweb.form['password']
+
+	if username == '' || password == '' {
+		app.vweb.redirect('/login')
+		return vweb.Result{}
+	}
+	user := app.find_user_by_username(username) or {
+		app.vweb.redirect('/login')
+		return vweb.Result{}
+	}
+	if !check_password(password, username, user.password) {
+		app.vweb.redirect('/login')
+		return vweb.Result{}
+	}
+	token := app.add_token(user.id)
+	app.vweb.set_cookie('id', user.id.str())
+	app.vweb.set_cookie('token', token)
+	app.vweb.redirect('/')
+	return vweb.Result{}
+}
+
 pub fn (mut app App) logged_in() bool {
 	id := app.vweb.get_cookie('id') or {
 		return false
@@ -536,4 +588,26 @@ pub fn (mut app App) logged_in() bool {
 		return false
 	}
 	return id != '' && token != '' && id in app.tokens && app.tokens[id] == token
+}
+
+fn gen_uuid_v4ish() string {
+    // UUIDv4 format: 4-2-2-2-6 bytes per section
+    a := rand.intn(math.max_i32 / 2).hex()
+    b := rand.intn(math.max_i16).hex()
+    c := rand.intn(math.max_i16).hex()
+    d := rand.intn(math.max_i16).hex()
+    e := rand.intn(math.max_i32 / 2).hex()
+    f := rand.intn(math.max_i16).hex()
+    return '${a:08}-${b:04}-${c:04}-${d:04}-${e:08}${f:04}'.replace(' ','0')
+}
+
+pub fn (mut app App) add_token(user_id int) string {
+	token := gen_uuid_v4ish()
+	app.tokens[user_id.str()] = token
+	return token
+}
+
+pub fn (mut app App) get_user() ?User {
+	id := app.vweb.get_cookie('id') or { return error('Not logged in') }
+	return app.find_user_by_id(id.int())
 }

@@ -12,14 +12,16 @@
 		}
 		span.clog-author {
 			#@issue.id opened @issue.relative_time()
-			by issue.author
+			by @issue.author_name
 		}
 	}
 @end
 
 <div>
 <br>
+@if app.logged_in
 <a href='/new_issue'>New issue</a>
+@end
 </div>
 
 

@@ -19,11 +19,12 @@ mut:
 	created_at    time.Time [skip]
 	status        IssueStatus [skip]
 	linked_issues []int [skip]
+	author_name   string [skip]
 }
 
 enum IssueStatus {
-	open
-	closed
+	open = 0
+	closed = 1
 }
 
 struct Label {
