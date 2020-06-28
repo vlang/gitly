@@ -24,6 +24,7 @@ mut:
 	version   string
 	html_path vweb.RawHtml
 	page_gen_time string
+	tokens map[string]string
 pub mut:
 	file_log       log.Log
 	cli_log       log.Log
@@ -464,4 +465,10 @@ pub fn (mut app App) register_post() vweb.Result {
 	app.add_user(username, password, git_name, [email])
 	app.vweb.redirect('/')
 	return vweb.Result{}
+}
+
+pub fn (mut app App) logged_in() bool {
+	id := app.vweb.get_cookie('id') or { return false }
+	token := app.vweb.get_cookie('token') or { return false }
+	return id != '' && token != '' && id in app.tokens && app.tokens[id] == token
 }

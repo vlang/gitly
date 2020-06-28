@@ -60,7 +60,7 @@ pub fn (mut app App) add_user(username, password, gitname string, emails []strin
 }
 
 pub fn (mut app App) insert_user(user User) {
-	app.info('Insert user: $:user.username')
+	app.info('Insert user: $user.username')
 	sql app.db {
 		insert user into User
 	}
