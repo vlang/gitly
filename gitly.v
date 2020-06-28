@@ -230,7 +230,7 @@ pub fn (mut app App) tree() vweb.Result {
 		go app.slow_fetch_files_info('master', app.path)
 	}
 	//println('app.tree() = ${time.ticks()-t}ms')
-	branches := ['master']
+	// branches := ['master'] TODO implemented usage
 	diff := int(time.ticks() - app.vweb.page_gen_start)
 	if diff == 0 {
 		app.page_gen_time = '<1ms'
@@ -372,7 +372,7 @@ pub fn (mut app App) issue() vweb.Result {
 }
 
 pub fn (mut app App) pull() vweb.Result {
-	args := app.path.split('/')
+	_ := app.path.split('/')
 	id := 0
 	pr0 := app.find_pr_by_id(id) or {
 		panic(err)
