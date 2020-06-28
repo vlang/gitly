@@ -6,24 +6,24 @@ import crypto.sha256
 import rand
 
 struct User {
-  id int
-  name string
-  username string
-  password string
-  is_github bool
-  avatar string [skip]
+	id        int
+	name      string
+	username  string
+	password  string
+	is_github bool
+	avatar    string [skip]
 mut:
-	emails []Email [skip]
+	emails    []Email [skip]
 }
 
 struct Email {
-	id int
-	user int
+	id    int
+	user  int
 	email string
 }
 
 struct Contributor {
-	id int
+	id   int
 	user int
 	repo int
 	name string
@@ -50,11 +50,11 @@ pub fn (mut app App) add_user(username, password, gitname string, emails []strin
 	app.insert_user(user)
 	u := app.find_user_by_username(user.username)
 	for email in emails {
-	  mail := Email{
-		  user: u.id
-		  email: email
-	  }
-	  app.insert_email(mail)
+		mail := Email{
+			user: u.id
+			email: email
+		}
+		app.insert_email(mail)
 	}
 	app.update_contributor(user.name, user)
 }
@@ -88,7 +88,7 @@ pub fn (mut app App) update_contributor(name string, user User) {
 
 pub fn (mut app App) find_user_by_username(username2 string) User {
 	user := sql app.db {
-		select from User where username==username2
+		select from User where username == username2 
 	}
 	mut u := user[0]
 	emails := app.find_emails_by_user_id(u.id)
@@ -98,7 +98,7 @@ pub fn (mut app App) find_user_by_username(username2 string) User {
 
 pub fn (mut app App) find_user_by_id(id2 int) User {
 	mut user := sql app.db {
-		select from User where id==id2
+		select from User where id == id2 
 	}
 	emails := app.find_emails_by_user_id(user.id)
 	user.emails = emails
@@ -107,34 +107,36 @@ pub fn (mut app App) find_user_by_id(id2 int) User {
 
 pub fn (mut app App) find_user_by_email(email string) ?User {
 	emails := sql app.db {
-		select from Email where email==email
+		select from Email where email == email 
 	}
-	if emails.len != 1 { return error('Email do not exist') }
+	if emails.len != 1 {
+		return error('Email do not exist')
+	}
 	return app.find_user_by_id(emails[0].user)
 }
 
 pub fn (mut app App) find_emails_by_user_id(id2 int) []Email {
 	emails := sql app.db {
-		select from Email where user==id2
+		select from Email where user == id2 
 	}
 	return emails
 }
 
 pub fn (mut app App) find_contributor_by_repo_id(id int) []Contributor {
 	return sql app.db {
-		select from Contributor where repo==id
+		select from Contributor where repo == id 
 	}
 }
 
 pub fn (mut app App) find_named_contributor_by_repo_id(id int) []Contributor {
 	return sql app.db {
-		select from Contributor where repo==id && user==0
+		select from Contributor where repo == id && user == 0 
 	}
 }
 
 pub fn (mut app App) find_registered_contributor_by_repo_id(id int) []User {
 	contributor := sql app.db {
-		select from Contributor where repo==id && name==''
+		select from Contributor where repo == id && name == '' 
 	}
 	mut user := []User{}
 	for contrib in contributor {
@@ -145,6 +147,6 @@ pub fn (mut app App) find_registered_contributor_by_repo_id(id int) []User {
 
 pub fn (mut app App) contributor_by_repo_id_size(id int) int {
 	return sql app.db {
-		select count from Contributor where repo==id
+		select count from Contributor where repo == id 
 	}
 }

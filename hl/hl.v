@@ -40,7 +40,8 @@ pub fn highlight_text(st, ext string, commit bool) (string, int, int) {
 	mut in_line_comment := false
 	mut in_string := false
 	mut runes := text.bytes()
-	for pos := 0; pos < runes.len - 1; pos++	{
+	for pos := 0; pos < runes.len - 1; pos++
+	 {
 		mut c := runes[pos]
 		if c == `\n` {
 			lines++

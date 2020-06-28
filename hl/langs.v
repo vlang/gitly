@@ -17,7 +17,7 @@ struct Lang {
 pub:
 	line_comments   string
 	mline_comments  []string
-	color string
+	color           string
 	name            string
 }
 
@@ -39,7 +39,7 @@ pub fn extension_to_lang(ext string) ?Lang {
 }
 
 fn init_langs() []Lang {
-	mut langs := []Lang{cap:10}
+	mut langs := []Lang{cap: 10}
 	langs << init_c()
 	langs << init_v()
 	langs << init_js()
