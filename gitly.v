@@ -539,8 +539,8 @@ pub fn (mut app App) login_post() vweb.Result {
 		app.vweb.redirect('/login')
 		return vweb.Result{}
 	}
-	token := app.add_token(user.id.str())
-	app.vweb.set_cookie('id', user.id)
+	token := app.add_token(user.id)
+	app.vweb.set_cookie('id', user.id.str())
 	app.vweb.set_cookie('token', token)
 	app.vweb.redirect('/')
 	return vweb.Result{}
