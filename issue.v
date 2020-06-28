@@ -17,13 +17,13 @@ mut:
 	title         string
 	text          string
 	created_at    time.Time [skip]
-	status        IssueStatus [skip]
+	status        int
 	linked_issues []int [skip]
 }
 
 enum IssueStatus {
-	open
-	closed
+	open = 0
+	closed = 1
 }
 
 struct Label {

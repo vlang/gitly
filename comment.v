@@ -9,7 +9,7 @@ mut:
 	id         int
 	author_id  int
 	issue_id   int
-	created_at time.Time
+	created_at int
 	text       string
 }
 

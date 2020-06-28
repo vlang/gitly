@@ -163,7 +163,11 @@ pub fn (mut app App) init() {
 	app.branch = 'master'
 	app.html_path = app.repo.html_path_to(app.path, app.branch)
 	app.info('path=$app.path')
-	// LangStat{name:'C', color: '#555555'},
+	logged_in := app.logged_in()
+	mut user := User{}
+	if logged_in {
+		user = app.get_user()
+	}
 }
 
 pub fn (mut app App) create_new_test_repo() {
@@ -377,6 +381,7 @@ pub fn (mut app App) issues() vweb.Result {
 
 pub fn (mut app App) issue() vweb.Result {
 	args := app.path.split('/')
+	app.path = ''
 	mut id := 1
 	if args.len > 0 {
 		id = args[0].int()
@@ -468,6 +473,7 @@ pub fn (mut app App) new_issue_post() vweb.Result {
 		title: title
 		text: text
 		repo_id: app.repo.id
+		status: 0
 	}
 	app.insert_issue(issue)
 	app.inc_repo_issues(app.repo.id)
@@ -501,4 +507,9 @@ pub fn (mut app App) logged_in() bool {
 		return false
 	}
 	return id != '' && token != '' && id in app.tokens && app.tokens[id] == token
+}
+
+pub fn (mut app App) get_user() User {
+	id := app.vweb.get_cookie('id') or { return User{} }
+	return app.find_user_by_id(id.int())
 }

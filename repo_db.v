@@ -113,6 +113,13 @@ fn (mut app App) create_tables() {
 		'sshkey text default ""'
 		'is_deleted integer default 0'
 	])
+	app.create_table('Comment', [
+		'id integer primary key'
+		'author_id integer default 0'
+		'issue_id integer default 0'
+		'created_at integer default 0'
+		'text text default ""'
+	])
 }
 
 fn (app &App) find_repo_by_name(name string) ?Repo {
