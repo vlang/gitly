@@ -17,8 +17,9 @@ mut:
 	title         string
 	text          string
 	created_at    time.Time [skip]
-	status        int
+	status        int [skip]
 	linked_issues []int [skip]
+	author_name   string [skip]
 }
 
 enum IssueStatus {

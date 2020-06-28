@@ -382,7 +382,11 @@ pub fn (mut app App) commit() vweb.Result {
 }
 
 pub fn (mut app App) issues() vweb.Result {
-	issues := app.find_issues_by_repo(app.repo.id)
+	mut issues := app.find_issues_by_repo(app.repo.id)
+	for index, issue in issues {
+		user := app.find_user_by_id(issue.author_id)
+		issues[index].author_name = user.username
+	}
 	return $vweb.html()
 }
 
@@ -466,6 +470,9 @@ pub fn (mut app App) blob() vweb.Result {
 }
 
 pub fn (mut app App) new_issue() vweb.Result {
+	if !app.logged_in {
+		return app.vweb.not_found()
+	}
 	return $vweb.html()
 }
 
@@ -481,6 +488,7 @@ pub fn (mut app App) new_issue_post() vweb.Result {
 		text: text
 		repo_id: app.repo.id
 		status: 0
+		author_id: app.user.id
 	}
 	app.insert_issue(issue)
 	app.inc_repo_issues(app.repo.id)
