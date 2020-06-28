@@ -48,6 +48,12 @@ h3 {
   margin-left: 10px;
   float: left; }
 
+.last_commit {
+  display: flex;
+  align-items: center;
+  padding: 9px 11px;
+  border-bottom: 1px solid #dfdfdf; }
+
 .files {
   margin: 0 auto;
   border-left: 1px solid #dfdfdf;

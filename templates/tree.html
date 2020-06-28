@@ -30,6 +30,17 @@ $(document).ready(function(){
 }
 
 .files {
+	.last_commit {
+		span.author {
+			@last_commit.author
+		}
+		span.msg {
+			commited @last_commit.hash
+		}
+		span.time {
+			@last_commit.relative()
+		}
+	}
 	@if poss_up
 		.file {
 			span.file-ico {

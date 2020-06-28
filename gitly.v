@@ -232,6 +232,14 @@ pub fn (mut app App) tree() vweb.Result {
 		// println('caching files took ${time.ticks()-t}ms')
 		go app.slow_fetch_files_info('master', app.path)
 	}
+
+	mut last_commit := Commit{}
+	if poss_up {
+		upper_dir := app.find_file_by_path(app.repo.id, 'master', '/$app.path') or { panic(err) }
+		last_commit = app.find_commit_by_hash(app.repo.id, upper_dir.last_hash)
+	} else {
+	}
+
 	// println('app.tree() = ${time.ticks()-t}ms')
 	// branches := ['master'] TODO implemented usage
 	diff := int(time.ticks() - app.vweb.page_gen_start)
