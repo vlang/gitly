@@ -99,7 +99,7 @@ pub fn (mut app App) init_once() {
 	app.insert_user(user)
 	app.insert_email(email)
 	go app.create_new_test_repo() // if it doesn't exist
-	if '-cli' in os.args {
+	if '-cmdapi' in os.args {
 		go app.command_fetcher()
 	}
 }
