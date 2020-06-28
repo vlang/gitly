@@ -63,6 +63,53 @@ pub fn (mut app App) init_once() {
 	app.insert_user(user)
 	app.insert_email(email)
 	go app.create_new_test_repo() // if it doesn't exist
+	go app.command_fetcher()
+}
+
+pub fn (mut app App) command_fetcher() {
+	for {
+		line := os.get_line()
+		if line.starts_with('!') {
+			args := line[1..].split(' ')
+			if args.len > 0 {
+				match args[0] {
+					'updaterepo' {
+						app.update_repo()
+					}
+					'adduser' {
+						if args.len > 3 {
+							mut user := User{
+								username: args[1]
+								name: args[2]
+							}
+							app.insert_user(user)
+							u := app.find_user_by_username(user.username)
+							for email in args[3..] {
+								mail := Email{
+									user: u.id
+									email: email
+								}
+								app.insert_email(mail)
+							}
+							app.update_contributor(user.name, user)
+							println('Added user ${args[1]}')
+						} else {
+							println('Not enough arguments (3 required but only $args.len given)')
+						}
+					}
+					else {
+						println('Commands:')
+						println('	!updaterepo')
+						println('	!adduser <username> <gitname> <email1> <email2>...')
+					}
+				}
+			} else {
+				println('Unkown syntax. Use !<command>')
+			}
+		} else {
+			println('Unkown syntax. Use !<command>')
+		}
+	}
 }
 
 pub fn (mut app App) init() {
