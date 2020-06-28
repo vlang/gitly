@@ -58,7 +58,7 @@ pub fn (mut app App) init_once() {
 	app.file_log.set_level(.info)
 	app.cli_log.set_level(.info)
 	date := time.now()
-	date_s := '${date.ymmdd()}_$date.hhmmss()'
+	date_s := '${date.ymmdd()}'
 	app.file_log.set_full_logpath('./logs/log_${date_s}.log')
 	app.info('init_once()')
 	version := os.read_file('static/assets/version') or {
@@ -99,7 +99,9 @@ pub fn (mut app App) init_once() {
 	app.insert_user(user)
 	app.insert_email(email)
 	go app.create_new_test_repo() // if it doesn't exist
-	go app.command_fetcher()
+	if '-cli' in os.args {
+		go app.command_fetcher()
+	}
 }
 
 pub fn (mut app App) command_fetcher() {
@@ -115,22 +117,22 @@ pub fn (mut app App) command_fetcher() {
 					'adduser' {
 						if args.len > 4 {
 							app.add_user(args[1], args[2], args[3], args[4..])
-							app.info('Added user ${args[1]}')
+							println('Added user ${args[1]}')
 						} else {
-							app.error('Not enough arguments (4 required but only $args.len given)')
+							error('Not enough arguments (4 required but only $args.len given)')
 						}
 					}
 					else {
-						app.info('Commands:')
-						app.info('	!updaterepo')
-						app.info('	!adduser <username> <gitname> <password> <email1> <email2>...')
+						println('Commands:')
+						println('	!updaterepo')
+						println('	!adduser <username> <gitname> <password> <email1> <email2>...')
 					}
 				}
 			} else {
-				app.error('Unkown syntax. Use !<command>')
+				error('Unkown syntax. Use !<command>')
 			}
 		} else {
-			app.error('Unkown syntax. Use !<command>')
+			error('Unkown syntax. Use !<command>')
 		}
 	}
 }
