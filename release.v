@@ -1,11 +1,17 @@
 module main
 
+import time
+
 struct Release {
-	id      int
-	repo_id int
+	id       int
+	repo_id  int
 mut:
-	tag_id  int
-	notes   string
+	tag_id   int
+	notes    string
+	tag_name string [skip]
+	tag_hash string [skip]
+	user     string [skip]
+	date     time.Time [skip]
 }
 
 pub fn (mut app App) insert_release(release Release) {

@@ -96,7 +96,7 @@ fn (mut app App) create_tables() {
 		'hash text default ""'
 		'user_id integer default 0'
 		'repo_id integer default 0'
-		'date int default 0'
+		'date integer default 0'
 		'UNIQUE(name, repo_id)'
 	])
 	app.create_table('Release', [

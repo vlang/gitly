@@ -173,7 +173,7 @@ pub fn (mut app App) create_new_test_repo() {
 		app.repo.lang_stats = app.find_lang_stats_by_repo_id(app.repo.id)
 		return
 	}
-	files := os.ls('.') or {
+	_ := os.ls('.') or {
 		return
 	}
 	cur_dir := os.base_dir(os.executable())
@@ -418,8 +418,43 @@ pub fn (mut app App) branches() vweb.Result {
 }
 
 pub fn (mut app App) releases() vweb.Result {
-	releases := app.find_releases_by_repo_id(app.repo.id)
+	mut releases := []Release{}
+	mut release := Release{}
+	tags := app.find_tags_by_repo_id(app.repo.id)
+	rels := app.find_releases_by_repo_id(app.repo.id)
+	users := app.find_registered_contributor_by_repo_id(app.repo.id)
+	for rel in rels {
+		release.notes = rel.notes
+		mut user_id := 0
+		for tag in tags {
+			if tag.id == rel.tag_id {
+				release.tag_name = tag.name
+				release.tag_hash = tag.hash
+				release.date = time.unix(tag.date)
+				user_id = tag.user_id
+				break
+			}
+		}
+		for user in users {
+			if user.id == user_id {
+				release.user = user.username
+				break
+			}
+		}
+		releases << release
+	}
+	releases.sort_with_compare(compare_reldate)
 	return $vweb.html()
+}
+
+fn compare_reldate(a, b &Release) int {
+	if a.date.gt(b.date) {
+		return -1
+	}
+	if a.date.lt(b.date) {
+		return 1
+	}
+	return 0
 }
 
 pub fn (mut app App) blob() vweb.Result {

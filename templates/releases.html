@@ -4,9 +4,9 @@
 .releases {
     @for release in releases
         .release {
-            <strong>Release:</strong><br/>
-            <strong>Hash:</strong><br/>
-            <strong>Created by:</strong><br/>
+            <strong>Release:</strong> @release.tag_name<br/>
+            <strong>Hash:</strong> @release.tag_hash<br/>
+            <strong>Created by:</strong> @release.user<br/>
             <strong>Notes:</strong> @release.notes<br/>
         }
         <br/>
