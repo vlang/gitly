@@ -21,8 +21,9 @@ fn (mut app App) create_tables() {
 		'nr_open_prs int default 0'
 		'nr_branches int default 0'
 		'nr_contributors int default 0'
-		"created_at int default (strftime('%s', 'now'))" // unix time default now
+		"created_at int default (strftime('%s', 'now'))" 
 	])
+    // unix time default now
 	app.create_table('File', [
 		'id integer primary key'
 		"name text default ''"
@@ -37,8 +38,8 @@ fn (mut app App) create_tables() {
 		'nr_contributors int default 0'
 		'nr_views int default 0'
 		'UNIQUE(parent_path, name, repo_id) ON CONFLICT REPLACE'
-		//"created_at int default (strftime('%s', 'now'))"
 	])
+	//"created_at int default (strftime('%s', 'now'))"
 	app.create_table('Issue', [
 		'id integer primary key'
 		'author_id int default 0'
@@ -47,18 +48,19 @@ fn (mut app App) create_tables() {
 		"title text default ''"
 		"text text default ''"
 		'nr_comments int default 0'
-		//"created_at int default (strftime('%s', 'now'))"
 	])
+	//		"created_at int default (strftime('%s', 'now'))"
 	app.create_table('Commit', [
 		'id integer primary key'
 		'author_id int default 0'
-		"author text default ''" // to avoid joins
+		"author text default ''"
 		"hash text default ''"
 		'repo_id int default 0'
 		"message text default ''"
 		"created_at int default (strftime('%s', 'now'))"
 		'UNIQUE(hash)'
 	])
+	// author text default '' is to to avoid joins
 	app.create_table('LangStat', [
 		'id int default 0'
 		'repo_id int default 0'

@@ -39,9 +39,10 @@ mut:
 	msg_cache          map[string]string [skip]
 }
 
+// log_field_separator is declared as constant in case we need to change it later
 const (
 	max_git_res_size = 1000
-	log_field_separator = '\x7F' // declared as constant in case we need to change it later
+	log_field_separator = '\x7F'
 )
 
 enum RepoStatus {
