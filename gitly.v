@@ -11,25 +11,25 @@ import sqlite
 
 const (
 	commits_per_page = 35
-	http_port = 8080
+	http_port        = 8080
 )
 
 struct App {
 mut:
-	reponame  string
-	subdomain string
-	path      string // current path being viewed
-	branch    string
-	repo      Repo
-	version   string
-	html_path vweb.RawHtml
+	reponame      string
+	subdomain     string
+	path          string // current path being viewed
+	branch        string
+	repo          Repo
+	version       string
+	html_path     vweb.RawHtml
 	page_gen_time string
-	tokens map[string]string
+	tokens        map[string]string
 pub mut:
-	file_log       log.Log
+	file_log      log.Log
 	cli_log       log.Log
-	vweb      vweb.Context
-	db        sqlite.DB
+	vweb          vweb.Context
+	db            sqlite.DB
 }
 
 fn main() {
@@ -58,11 +58,17 @@ pub fn (mut app App) init_once() {
 	app.file_log.set_level(.info)
 	app.cli_log.set_level(.info)
 	date := time.now()
-	date_s := '${date.ymmdd()}_${date.hhmmss()}'
+	date_s := '${date.ymmdd()}_$date.hhmmss()'
 	app.file_log.set_full_logpath('./logs/log_${date_s}.log')
 	app.info('init_once()')
-	version := os.read_file('static/assets/version') or { 'unknown' }
-	result := os.exec('git rev-parse --short HEAD') or { os.Result{output: version} }
+	version := os.read_file('static/assets/version') or {
+		'unknown'
+	}
+	result := os.exec('git rev-parse --short HEAD') or {
+		os.Result{
+			output: version
+		}
+	}
 	if !result.output.contains('fatal') {
 		app.version = result.output.trim_space()
 	}
@@ -86,7 +92,9 @@ pub fn (mut app App) init_once() {
 	app.vweb.serve_static('/gitly.css', 'static/css/gitly.css', 'text/css')
 	app.vweb.serve_static('/jquery.js', 'static/js/jquery.js', 'text/javascript')
 	app.vweb.serve_static('/favicon.svg', 'static/assets/favicon.svg', 'image/svg+xml')
-	app.db = sqlite.connect('gitly.sqlite') or { panic(err)}
+	app.db = sqlite.connect('gitly.sqlite') or {
+		panic(err)
+	}
 	app.create_tables()
 	app.insert_user(user)
 	app.insert_email(email)
@@ -163,7 +171,9 @@ pub fn (mut app App) create_new_test_repo() {
 		app.repo.lang_stats = app.find_lang_stats_by_repo_id(app.repo.id)
 		return
 	}
-	files := os.ls('.') or { return }
+	files := os.ls('.') or {
+		return
+	}
 	cur_dir := os.base_dir(os.executable())
 	git_dir := os.join_path(cur_dir, 'test_repo')
 	if !os.exists(git_dir) {
@@ -193,18 +203,21 @@ pub fn (mut app App) tree() vweb.Result {
 	if app.path.contains('/favicon.svg') {
 		return vweb.not_found()
 	}
-	//t := time.ticks()
+	// t := time.ticks()
 	mut up := ''
 	mut poss_up := true
 	args := app.path.split('/')
 	app.inc_repo_views(app.repo.id)
-
-	if args.len == 0 { poss_up = false }
+	if args.len == 0 {
+		poss_up = false
+	}
 	if args.len > 1 {
 		up_a := args[0..args.len - 1]
 		up += '/tree/'
 		up += up_a.join('/')
-  } else { up = '/'}
+	} else {
+		up = '/'
+	}
 	app.info('up: $up')
 	if app.path.starts_with('/') {
 		app.path = app.path[1..]
@@ -214,21 +227,20 @@ pub fn (mut app App) tree() vweb.Result {
 	if files.len == 0 {
 		// No files in the db, fetch them from git and cache in db
 		app.info('caching files, repo_id=$app.repo.id')
-		//t := time.ticks()
+		// t := time.ticks()
 		files = app.cache_repo_files(mut app.repo, 'master', app.path)
-		//println('caching files took ${time.ticks()-t}ms')
+		// println('caching files took ${time.ticks()-t}ms')
 		go app.slow_fetch_files_info('master', app.path)
 	}
-	//println('app.tree() = ${time.ticks()-t}ms')
+	// println('app.tree() = ${time.ticks()-t}ms')
 	// branches := ['master'] TODO implemented usage
 	diff := int(time.ticks() - app.vweb.page_gen_start)
 	if diff == 0 {
 		app.page_gen_time = '<1ms'
-	}
-	else {
+	} else {
 		app.page_gen_time = '${diff}ms'
 	}
-	return	$vweb.html()
+	return $vweb.html()
 }
 
 pub fn (mut app App) index() vweb.Result {
@@ -248,12 +260,13 @@ pub fn (mut app App) user() vweb.Result {
 
 pub fn (mut app App) commits() vweb.Result {
 	args := app.path.split('/')
-	page := if args.len >= 1 {	args.last().int() } else { 0 }
+	page := if args.len >= 1 { args.last().int() } else { 0 }
 	mut commits := app.find_commits_by_repo_as_page(app.repo.id, page)
 	mut b_author := false
 	mut last := false
 	mut first := false
-	/*if args.len == 2 {
+	/*
+	if args.len == 2 {
 		println(typeof(args[0].int()))
 		if !args[0].starts_with('&') {
 			commits = app.repo.get_commits_by_year(args[0].int())
@@ -268,7 +281,6 @@ pub fn (mut app App) commits() vweb.Result {
 		commits = app.repo.get_commits_by_year_month_day(args[0].int(), args[1].int(), args[2].int())
 	}
 	*/
-
 	if app.repo.nr_commits > commits_per_page {
 		offset := page * commits_per_page
 		delta := app.repo.nr_commits - offset
@@ -288,7 +300,6 @@ pub fn (mut app App) commits() vweb.Result {
 		last_site = page - 1
 	}
 	next_site := page + 1
-
 	mut url := ''
 	if args.len > 0 {
 		url = args[..args.len - 1].join('/')
@@ -296,12 +307,10 @@ pub fn (mut app App) commits() vweb.Result {
 			url += '/'
 		}
 	}
-
 	mut msg := 'on'
 	if b_author {
 		msg = 'by'
 	}
-
 	mut d_commits := map[string][]Commit{}
 	for commit in commits {
 		date := time.unix(commit.created_at)
@@ -366,7 +375,7 @@ pub fn (mut app App) pull() vweb.Result {
 	id := 0
 	pr0 := app.find_pr_by_id(id) or {
 		panic(err)
-		//return app.vweb.not_found()
+		// return app.vweb.not_found()
 	}
 	pr := pr0
 	comments := app.find_issue_comments(pr.id)
@@ -406,7 +415,7 @@ pub fn (mut app App) blob() vweb.Result {
 		return vweb.Result{}
 	}
 	mut source := vweb.RawHtml(plain_text.str())
-	//mut source := (plain_text.str())
+	// mut source := (plain_text.str())
 	if os.file_size(blob_path) < 1000000 {
 		if !raw {
 			src, _, _ := hl.highlight_text(plain_text, blob_path, false)
@@ -439,7 +448,7 @@ pub fn (mut app App) new_issue_post() vweb.Result {
 	issue := Issue{
 		title: title
 		text: text
-		repo_id:app.repo.id
+		repo_id: app.repo.id
 	}
 	app.insert_issue(issue)
 	app.inc_repo_issues(app.repo.id)
@@ -456,19 +465,21 @@ pub fn (mut app App) register_post() vweb.Result {
 	git_name := app.vweb.form['gitname']
 	password := make_password(app.vweb.form['password'], username)
 	email := app.vweb.form['email']
-
 	if username == '' || git_name == '' || email == '' {
 		app.vweb.redirect('/register')
 		return vweb.Result{}
 	}
-
 	app.add_user(username, password, git_name, [email])
 	app.vweb.redirect('/')
 	return vweb.Result{}
 }
 
 pub fn (mut app App) logged_in() bool {
-	id := app.vweb.get_cookie('id') or { return false }
-	token := app.vweb.get_cookie('token') or { return false }
+	id := app.vweb.get_cookie('id') or {
+		return false
+	}
+	token := app.vweb.get_cookie('token') or {
+		return false
+	}
 	return id != '' && token != '' && id in app.tokens && app.tokens[id] == token
 }

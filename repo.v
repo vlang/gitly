@@ -31,7 +31,7 @@ mut:
 	nr_releases        int
 	nr_branches        int
 	lang_stats         []LangStat [skip]
-	created_at         int //time.Time
+	created_at         int // time.Time
 	nr_contributors    int
 	nr_commits         int
 	labels             []Label [skip]
@@ -41,7 +41,7 @@ mut:
 
 // log_field_separator is declared as constant in case we need to change it later
 const (
-	max_git_res_size = 1000
+	max_git_res_size    = 1000
 	log_field_separator = '\x7F'
 )
 
@@ -72,8 +72,9 @@ fn (mut app App) update_repo() {
 			}
 			tmp_commit.created_at = int(t.unix)
 			tmp_commit.message = args[3]
-
-			user := app.find_user_by_email(args[1]) or { User{} }
+			user := app.find_user_by_email(args[1]) or {
+				User{}
+			}
 			if user.username != '' {
 				app.insert_contributor(Contributor{
 					user: user.id
@@ -123,23 +124,23 @@ fn (mut app App) update_repo() {
 }
 
 // update_repo updated the repo in the db
-fn (mut r Repo) update_repo() {}
+fn (mut r Repo) update_repo() {
+}
 
 fn (mut r Repo) analyse_lang(wg &sync.WaitGroup) {
 	files := r.get_all_files(r.git_dir)
 	mut all_size := 0
-	mut lang_stats := map[string]int
-	mut langs := map[string]hl.Lang
-
+	mut lang_stats := map[string]int{}
+	mut langs := map[string]hl.Lang{}
 	for file in files {
 		lang := hl.extension_to_lang(file.split('.').last()) or {
 			continue
 		}
-		f_text := os.read_file(file) or { '' }
+		f_text := os.read_file(file) or {
+			''
+		}
 		lines := f_text.split_into_lines()
-
 		size := calc_lines_of_code(lines, lang)
-
 		if lang.name !in lang_stats {
 			lang_stats[lang.name] = 0
 		}
@@ -168,10 +169,8 @@ fn (mut r Repo) analyse_lang(wg &sync.WaitGroup) {
 			nr_lines: amount
 		}
 	}
-
 	tmp_a.sort()
 	tmp_a = tmp_a.reverse()
-
 	mut tmp_stats := []LangStat{}
 	for pct in tmp_a {
 		all_with_ptc := r.lang_stats.filter(it.pct == pct)
@@ -198,17 +197,25 @@ fn calc_lines_of_code(lines []string, lang hl.Lang) int {
 		if tmp_line.len > 0 { // Empty line ignored
 			if tmp_line.contains(mlcomment_start) {
 				in_comment = true
-				if tmp_line.starts_with(mlcomment_start) { continue }
+				if tmp_line.starts_with(mlcomment_start) {
+					continue
+				}
 			}
 			if tmp_line.contains(mlcomment_end) {
 				if in_comment {
 					in_comment = false
 				}
-				if tmp_line.ends_with(mlcomment_end) { continue }
+				if tmp_line.ends_with(mlcomment_end) {
+					continue
+				}
 			}
-			if in_comment { continue }
+			if in_comment {
+				continue
+			}
 			if tmp_line.contains(lcomment) {
-				if tmp_line.starts_with(lcomment) { continue }
+				if tmp_line.starts_with(lcomment) {
+					continue
+				}
 			}
 			size++
 		}
@@ -217,20 +224,24 @@ fn calc_lines_of_code(lines []string, lang hl.Lang) int {
 }
 
 fn (r Repo) get_all_files(path string) []string {
-	files := os.ls(path) or { panic(err) }
+	files := os.ls(path) or {
+		panic(err)
+	}
 	mut returnval := []string{}
 	for file in files {
 		if !os.is_dir('$path/$file') {
 			returnval << '$path/$file'
 		} else {
-			if file in ignored_folder { continue }
+			if file in ignored_folder {
+				continue
+			}
 			returnval << r.get_all_files('$path/$file')
 		}
 	}
 	return returnval
 }
 
-fn (r &Repo) nr_commits_fmt() vweb.RawHtml{
+fn (r &Repo) nr_commits_fmt() vweb.RawHtml {
 	nr := r.nr_commits
 	if nr == 1 {
 		return '<b>1</b> commit'
@@ -238,7 +249,7 @@ fn (r &Repo) nr_commits_fmt() vweb.RawHtml{
 	return '<b>$nr</b> commits'
 }
 
-fn (r &Repo) nr_branches_fmt() vweb.RawHtml{
+fn (r &Repo) nr_branches_fmt() vweb.RawHtml {
 	nr := r.nr_branches
 	if nr == 1 {
 		return '<b>1</b> branch'
@@ -246,7 +257,7 @@ fn (r &Repo) nr_branches_fmt() vweb.RawHtml{
 	return '<b>$nr</b> branches'
 }
 
-fn (r &Repo) nr_open_prs_fmt() vweb.RawHtml{
+fn (r &Repo) nr_open_prs_fmt() vweb.RawHtml {
 	nr := r.nr_open_prs
 	if nr == 1 {
 		return '<b>1</b> pull request'
@@ -254,7 +265,7 @@ fn (r &Repo) nr_open_prs_fmt() vweb.RawHtml{
 	return '<b>$nr</b> pull requests'
 }
 
-fn (r &Repo) nr_open_issues_fmt() vweb.RawHtml{
+fn (r &Repo) nr_open_issues_fmt() vweb.RawHtml {
 	nr := r.nr_open_issues
 	if nr == 1 {
 		return '<b>1</b> issue'
@@ -262,7 +273,7 @@ fn (r &Repo) nr_open_issues_fmt() vweb.RawHtml{
 	return '<b>$nr</b> issues'
 }
 
-fn (r &Repo) nr_contributors_fmt() vweb.RawHtml{
+fn (r &Repo) nr_contributors_fmt() vweb.RawHtml {
 	nr := r.nr_contributors
 	if nr == 1 {
 		return '<b>1</b> contributor'
@@ -270,7 +281,7 @@ fn (r &Repo) nr_contributors_fmt() vweb.RawHtml{
 	return '<b>$nr</b> contributors'
 }
 
-fn (r &Repo) nr_topics_fmt() vweb.RawHtml{
+fn (r &Repo) nr_topics_fmt() vweb.RawHtml {
 	nr := r.nr_topics
 	if nr == 1 {
 		return '<b>1</b> discussion'
@@ -278,7 +289,7 @@ fn (r &Repo) nr_topics_fmt() vweb.RawHtml{
 	return '<b>$nr</b> discussions'
 }
 
-fn (r &Repo) nr_releases_fmt() vweb.RawHtml{
+fn (r &Repo) nr_releases_fmt() vweb.RawHtml {
 	nr := r.nr_releases
 	if nr == 1 {
 		return '<b>1</b> release'
@@ -357,19 +368,19 @@ fn (mut app App) cache_repo_files(mut r Repo, branch, path string) []File {
 		defer {
 			r.status = .done
 		}
-		//res = r.git('ls-tree --full-tree --full-name -rt $branch')
+		// res = r.git('ls-tree --full-tree --full-name -rt $branch')
 		// defer r.UpdateAllFilesSizeAndLines()
 	} else {
 		mut p := path
 		if path != '' {
 			p += '/'
 		}
-		//t := time.ticks()
-		//println('ls-tree --full-name $branch $p')
+		// t := time.ticks()
+		// println('ls-tree --full-name $branch $p')
 		res = r.git('ls-tree --full-name $branch $p --abbrev=7')
-		//println('ls tree res:')
-		//println(res)
-		//println('ls-tree ms=${time.ticks() - t}')
+		// println('ls tree res:')
+		// println(res)
+		// println('ls-tree ms=${time.ticks() - t}')
 	}
 	lines := res.split('\n')
 	mut dirs := []File{} // dirs first
@@ -422,7 +433,7 @@ fn (r &Repo) html_path_to(path, branch string) vweb.RawHtml {
 
 // fetches last message and last time for each file
 // this is slow, so it's run in the background thread
-fn (mut app App) slow_fetch_files_info(branch string, path string) {
+fn (mut app App) slow_fetch_files_info(branch, path string) {
 	files := app.find_files_by_repo(app.repo.id, branch, path)
 	// t := time.ticks()
 	// for file in files {
@@ -437,10 +448,12 @@ fn (mut app App) slow_fetch_files_info(branch string, path string) {
 }
 
 fn (r Repo) git_advertise(a string) string {
-	cmd := os.exec('git $a --stateless-rpc --advertise-refs $r.git_dir') or { panic(err) }
+	cmd := os.exec('git $a --stateless-rpc --advertise-refs $r.git_dir') or {
+		panic(err)
+	}
 	if cmd.exit_code != 0 {
-		//eprintln("advertise error", err)
-		//eprintln("\n\ngit advertise output: $cmd.output\n\n")
+		// eprintln("advertise error", err)
+		// eprintln("\n\ngit advertise output: $cmd.output\n\n")
 	}
 	return cmd.output
 }
@@ -455,18 +468,17 @@ fn first_line(s string) string {
 fn (mut app App) fetch_file_info(r &Repo, file &File) {
 	logs := r.git('log -n1 --format=%B___%at___%H___%an $file.branch -- $file.full_path()')
 	vals := logs.split('___')
-	//println("fetch_file_info() vals=")
-	//println(vals)
+	// println("fetch_file_info() vals=")
+	// println(vals)
 	if vals.len < 3 {
 		return
 	}
 	last_msg := first_line(vals[0])
-	last_time:= vals[1].int()
-	/*last_hash*/_ := vals[2]
-	/*last_author*/_ := vals[3]
+	last_time := vals[1].int() // last_hash
+	_ := vals[2] // last_author
+	_ := vals[3]
 	file_id := file.id
 	sql app.db {
 		update File set last_msg = last_msg, last_time = last_time where id == file_id
 	}
 }
-

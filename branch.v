@@ -7,10 +7,10 @@ import time
 
 struct Branch {
 mut:
-	name   string		// branch name
-	author string		// author of latest commit on branch
-	hash   string		// hash of latest commit on branch
-	date   time.Time	// time of latest commit on branch
+	name   string // branch name
+	author string // author of latest commit on branch
+	hash   string // hash of latest commit on branch
+	date   time.Time // time of latest commit on branch
 }
 
 fn get_branches(r Repo) []Branch {

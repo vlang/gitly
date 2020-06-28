@@ -5,7 +5,6 @@ module main
 import vweb
 import json
 
-
 // TODO rename all these methods from '/api_issues' to `/api/issues'
 pub fn (mut app App) api_issues() vweb.Result {
 	issues := app.find_issues_by_repo(app.repo.id)
