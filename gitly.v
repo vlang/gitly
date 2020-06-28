@@ -183,6 +183,7 @@ pub fn (mut app App) create_new_test_repo() {
 		id: 1
 	}
 	app.info('inserting test repo')
+	app.init_tags(app.repo)
 	app.update_repo()
 }
 
@@ -388,7 +389,7 @@ pub fn (mut app App) branches() vweb.Result {
 }
 
 pub fn (mut app App) releases() vweb.Result {
-	releases := app.repo.releases
+	releases := app.find_releases_by_repo_id(app.repo.id)
 	return $vweb.html()
 }
 

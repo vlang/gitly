@@ -16,6 +16,7 @@ fn (mut app App) create_tables() {
 		'nr_views int default 0'
 		'nr_commits int default 0'
 		'nr_open_issues int default 0'
+		'nr_tags int default 0'
 		'nr_releases int default 0'
 		'nr_open_prs int default 0'
 		'nr_branches int default 0'
@@ -46,7 +47,7 @@ fn (mut app App) create_tables() {
 		"title text default ''"
 		"text text default ''"
 		'nr_comments int default 0'
-//		"created_at int default (strftime('%s', 'now'))"
+		//"created_at int default (strftime('%s', 'now'))"
 	])
 	app.create_table('Commit', [
 		'id integer primary key'
@@ -87,6 +88,22 @@ fn (mut app App) create_tables() {
 		'name text'
 		'UNIQUE(user, repo, name)'
 	])
+	app.create_table('Tag', [
+		'id integer primary key'
+		'name text default ""'
+		'hash text default ""'
+		'user_id integer default 0'
+		'repo_id integer default 0'
+		'date int default 0'
+		'UNIQUE(name, repo_id)'
+	])
+	app.create_table('Release', [
+		'id integer primary key'
+		'tag_id integer not null'
+		'repo_id integer not null'
+		'notes text default ""'
+		'UNIQUE(tag_id, repo_id)'
+	])
 }
 
 fn (app &App) find_repo_by_name(name string) ?Repo {
@@ -121,4 +138,3 @@ fn (mut app App) inc_repo_issues(repo_id int) {
 	}
 	app.repo.nr_open_issues++
 }
-
