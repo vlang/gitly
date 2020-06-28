@@ -3,6 +3,7 @@
 module main
 
 import crypto.sha256
+import rand
 
 struct User {
   id int
@@ -28,16 +29,20 @@ struct Contributor {
   name string
 }
 
-fn make_password(password string) string {
-  return sha256.sum(password.bytes()).hex().str()
+fn make_password(password, username string) string {
+	mut seed := [u32(username[0]), u32(username[1])]
+	rand.seed(seed)
+	salt := rand.i64().str()
+	pw := '$password$salt'
+	return sha256.sum(pw.bytes()).hex().str()
 }
 
-fn check_password(password, hashed string) bool {
-  return make_password(password) == hashed
+fn check_password(password, username, hashed string) bool {
+	return make_password(password, username) == hashed
 }
 
 pub fn (mut app App) add_user(username, password, gitname string, emails []string) {
-  mut user := User{
+	mut user := User{
 		username: username
 		password: password
 		name: gitname
@@ -55,10 +60,10 @@ pub fn (mut app App) add_user(username, password, gitname string, emails []strin
 }
 
 pub fn (mut app App) insert_user(user User) {
-  app.info('Insert user: $user.username')
-  sql app.db {
-    insert user into User
-  }
+	app.info('Insert user: $:user.username')
+	sql app.db {
+		insert user into User
+	}
 }
 
 pub fn (mut app App) insert_email(email Email) {

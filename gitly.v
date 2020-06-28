@@ -71,7 +71,7 @@ pub fn (mut app App) init_once() {
 	mut user := User{
 		name: 'Admin'
 		username: 'admin'
-		password: make_password('test')
+		password: make_password('test', 'admin')
 		is_github: false
 	}
 	email := Email{
@@ -452,7 +452,7 @@ pub fn (mut app App) register() vweb.Result {
 pub fn (mut app App) register_post() vweb.Result {
 	username := app.vweb.form['username']
 	git_name := app.vweb.form['gitname']
-	password := make_password(app.vweb.form['password'])
+	password := make_password(app.vweb.form['password'], username)
 	email := app.vweb.form['email']
 
 	if username == '' || git_name == '' || email == '' {
