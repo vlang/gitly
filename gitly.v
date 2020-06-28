@@ -30,6 +30,8 @@ pub mut:
 	cli_log       log.Log
 	vweb          vweb.Context
 	db            sqlite.DB
+	logged_in     bool
+	user          User
 }
 
 fn main() {
@@ -164,11 +166,10 @@ pub fn (mut app App) init() {
 	app.branch = 'master'
 	app.html_path = app.repo.html_path_to(app.path, app.branch)
 	app.info('path=$app.path')
-	mut logged_in := app.logged_in()
-	mut user := User{}
-	if logged_in {
-		user = app.get_user() or {
-			logged_in = false
+	app.logged_in = app.logged_in()
+	if app.logged_in {
+		app.user = app.get_user() or {
+			app.logged_in = false
 			User{}
 		}
 	}
