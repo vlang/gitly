@@ -528,9 +528,6 @@ pub fn (mut app App) login_post() vweb.Result {
 		app.vweb.redirect('/login')
 		return vweb.Result{}
 	}
-
-	println(username)
-	println(password)
 	user := app.find_user_by_username(username) or {
 		app.vweb.redirect('/login')
 		return vweb.Result{}
