@@ -184,7 +184,7 @@ pub fn (mut app App) create_new_test_repo() {
 		app.repo.lang_stats = app.find_lang_stats_by_repo_id(app.repo.id)
 		return
 	}
-	files := os.ls('.') or {
+	_ := os.ls('.') or {
 		return
 	}
 	cur_dir := os.base_dir(os.executable())
