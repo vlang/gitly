@@ -2,10 +2,13 @@
 // Use of this source code is governed by a GPL license that can be found in the LICENSE file.
 module main
 
+import crypto.sha256
+
 struct User {
   id int
   name string
   username string
+  password string
   is_github bool
   avatar string [skip]
 mut:
@@ -23,6 +26,14 @@ struct Contributor {
   user int
   repo int
   name string
+}
+
+fn make_password(password string) string {
+  return sha256.sum(password.bytes()).hex().str()
+}
+
+fn check_password(password, hashed string) bool {
+  return make_password(password) == hashed
 }
 
 pub fn (mut app App) insert_user(user User) {

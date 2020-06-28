@@ -71,6 +71,7 @@ pub fn (mut app App) init_once() {
 	mut user := User{
 		name: 'Admin'
 		username: 'admin'
+		password: make_password('test')
 		is_github: false
 	}
 	email := Email{
@@ -103,14 +104,15 @@ pub fn (mut app App) command_fetcher() {
 						app.update_repo()
 					}
 					'adduser' {
-						if args.len > 3 {
+						if args.len > 4 {
 							mut user := User{
 								username: args[1]
+								password: make_password(args[3])
 								name: args[2]
 							}
 							app.insert_user(user)
 							u := app.find_user_by_username(user.username)
-							for email in args[3..] {
+							for email in args[4..] {
 								mail := Email{
 									user: u.id
 									email: email
@@ -120,13 +122,13 @@ pub fn (mut app App) command_fetcher() {
 							app.update_contributor(user.name, user)
 							app.info('Added user ${args[1]}')
 						} else {
-							app.error('Not enough arguments (3 required but only $args.len given)')
+							app.error('Not enough arguments (4 required but only $args.len given)')
 						}
 					}
 					else {
 						app.info('Commands:')
 						app.info('	!updaterepo')
-						app.info('	!adduser <username> <gitname> <email1> <email2>...')
+						app.info('	!adduser <username> <gitname> <password> <email1> <email2>...')
 					}
 				}
 			} else {
