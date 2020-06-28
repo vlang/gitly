@@ -111,6 +111,7 @@ fn (mut app App) create_tables() {
 		'user integer default 0'
 		'title text default ""'
 		'sshkey text default ""'
+		'is_deleted integer default 0'
 	])
 }
 

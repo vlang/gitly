@@ -17,10 +17,11 @@ mut:
 }
 
 struct SSHKey {
-	id int
-	user int
-	title string
-	sshkey string
+	id         int
+	user       int
+	title      string
+	sshkey     string
+	is_deleted bool
 }
 
 struct Email {
@@ -100,15 +101,21 @@ pub fn (mut app App) update_contributor(name string, user User) {
 	}
 }
 
+pub fn (mut app App) remove_ssh_key(title string, user_id int) {
+	sql app.db {
+		update SSHKey set is_deleted = true where title == title && user == user_id
+	}
+}
+
 pub fn (mut app App) find_sshkey_by_user_id(id int) []SSHKey {
 	return sql app.db {
-		select from SSHKey where user==id
+		select from SSHKey where user == id 
 	}
 }
 
 pub fn (mut app App) find_user_by_username(username2 string) User {
 	user := sql app.db {
-		select from User where username == username2
+		select from User where username == username2 
 	}
 	mut u := user[0]
 	emails := app.find_emails_by_user_id(u.id)
