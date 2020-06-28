@@ -25,7 +25,7 @@ mut:
 	html_path     vweb.RawHtml
 	page_gen_time string
 pub mut:
-	tokens        map[string]string
+	tokens        map[string]string // [userid] = token
 	file_log      log.Log
 	cli_log       log.Log
 	vweb          vweb.Context
