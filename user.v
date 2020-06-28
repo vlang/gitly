@@ -56,7 +56,10 @@ pub fn (mut app App) add_user(username, password, gitname string, emails []strin
 		name: gitname
 	}
 	app.insert_user(user)
-	u := app.find_user_by_username(user.username) or { User{} }
+	u := app.find_user_by_username(user.username) or {
+		error('User was not inserted')
+		return
+	}
 	for email in emails {
 		mail := Email{
 			user: u.id
