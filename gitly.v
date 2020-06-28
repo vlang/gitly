@@ -400,7 +400,9 @@ pub fn (mut app App) issue() vweb.Result {
 	issue0 := app.find_issue_by_id(id) or {
 		return app.vweb.not_found()
 	}
-	issue := issue0 // TODO bug with optionals (.data)
+	mut issue := issue0 // TODO bug with optionals (.data)
+	user := app.find_user_by_id(issue.author_id)
+	issue.author_name = user.username
 	comments := app.find_issue_comments(issue.id)
 	return $vweb.html()
 }
