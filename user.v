@@ -36,6 +36,24 @@ fn check_password(password, hashed string) bool {
   return make_password(password) == hashed
 }
 
+pub fn (mut app App) add_user(username, password, gitname string, emails []string) {
+  mut user := User{
+	  username: username
+  	password: password
+	  name: gitname
+	}
+	app.insert_user(user)
+	u := app.find_user_by_username(user.username)
+	for email in emails {
+	  mail := Email{
+		  user: u.id
+		  email: email
+	  }
+	  app.insert_email(mail)
+	}
+	app.update_contributor(user.name, user)
+}
+
 pub fn (mut app App) insert_user(user User) {
   app.info('Insert user: $user.username')
   sql app.db {

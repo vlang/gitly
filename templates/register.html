@@ -1,0 +1,27 @@
+@header
+
+<style>
+	input[type=text], textarea {
+		display: block;
+		width: 50%;
+		margin-bottom: 5px;
+		padding: 3px;
+	}
+	textarea {
+		height: 300px;
+	}
+</style>
+
+<h3>
+Register
+</h3>
+
+<form method='post' action='register_post'>
+	<input type='text' name='username' placeholder='Username' required>
+	<input type='text' name='gitname' placeholder='Gitname' required>
+	<input type='password' name='password' placeholder='Password' required>
+	<input type='email' name="email" placeholder='Email' required>
+	<input type='submit' value='Register'>
+</form>
+
+@footer

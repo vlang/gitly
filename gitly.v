@@ -105,21 +105,7 @@ pub fn (mut app App) command_fetcher() {
 					}
 					'adduser' {
 						if args.len > 4 {
-							mut user := User{
-								username: args[1]
-								password: make_password(args[3])
-								name: args[2]
-							}
-							app.insert_user(user)
-							u := app.find_user_by_username(user.username)
-							for email in args[4..] {
-								mail := Email{
-									user: u.id
-									email: email
-								}
-								app.insert_email(mail)
-							}
-							app.update_contributor(user.name, user)
+							app.add_user(args[1], args[2], args[3], args[4..])
 							app.info('Added user ${args[1]}')
 						} else {
 							app.error('Not enough arguments (4 required but only $args.len given)')
@@ -456,5 +442,25 @@ pub fn (mut app App) new_issue_post() vweb.Result {
 	app.insert_issue(issue)
 	app.inc_repo_issues(app.repo.id)
 	app.vweb.redirect('/issues')
+	return vweb.Result{}
+}
+
+pub fn (mut app App) register() vweb.Result {
+	return $vweb.html()
+}
+
+pub fn (mut app App) register_post() vweb.Result {
+	username := app.vweb.form['username']
+	git_name := app.vweb.form['gitname']
+	password := make_password(app.vweb.form['password'])
+	email := app.vweb.form['email']
+
+	if username == '' || git_name == '' || email == '' {
+		app.vweb.redirect('/register')
+		return vweb.Result{}
+	}
+
+	app.add_user(username, password, git_name, [email])
+	app.vweb.redirect('/')
 	return vweb.Result{}
 }
