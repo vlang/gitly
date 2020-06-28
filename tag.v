@@ -11,7 +11,7 @@ mut:
 	name    string // tag name
 	hash    string // hash of latest commit on tag
 	user_id int // id of user that created the tag
-	date    u64 // time of latest commit on tag
+	date    int // time of latest commit on tag
 }
 
 fn (mut app App) init_tags(mut r Repo) {
@@ -37,7 +37,7 @@ fn (mut app App) init_tags(mut r Repo) {
 			eprintln('Error: $err')
 			return
 		}
-		tag.date = date.unix
+		tag.date = date.unix_time()
 		app.insert_tag(tag)
 		r.nr_tags++
 	}

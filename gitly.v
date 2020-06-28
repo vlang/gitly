@@ -417,9 +417,53 @@ pub fn (mut app App) branches() vweb.Result {
 	return $vweb.html()
 }
 
+struct Rel {
+mut:
+	tag_name string
+	tag_hash string
+	user     string
+	date     time.Time
+	notes    string
+}
+
 pub fn (mut app App) releases() vweb.Result {
+	mut rels := []Rel{}
+	mut rel := Rel{}
+	tags := app.find_tags_by_repo_id(app.repo.id)
 	releases := app.find_releases_by_repo_id(app.repo.id)
+	users := app.find_registered_contributor_by_repo_id(app.repo.id)
+	for release in releases {
+		rel.notes = release.notes
+		mut user_id := 0
+		for tag in tags {
+			if tag.id == release.tag_id {
+				rel.tag_name = tag.name
+				rel.tag_hash = tag.hash
+				rel.date = time.unix(tag.date)
+				user_id = tag.user_id
+				break
+			}
+		}
+		for user in users {
+			if user.id == user_id {
+				rel.user = user.username
+				break
+			}
+		}
+		rels << rel
+	}
+	rels.sort_with_compare(compare_reldate)
 	return $vweb.html()
+}
+
+fn compare_reldate(a, b &Rel) int {
+	if a.date.gt(b.date) {
+		return -1
+	}
+	if a.date.lt(b.date) {
+		return 1
+	}
+	return 0
 }
 
 pub fn (mut app App) blob() vweb.Result {
