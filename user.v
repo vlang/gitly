@@ -38,9 +38,9 @@ fn check_password(password, hashed string) bool {
 
 pub fn (mut app App) add_user(username, password, gitname string, emails []string) {
   mut user := User{
-	  username: username
-  	password: password
-	  name: gitname
+		username: username
+		password: password
+		name: gitname
 	}
 	app.insert_user(user)
 	u := app.find_user_by_username(user.username)
