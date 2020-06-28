@@ -17,7 +17,7 @@ mut:
 	title         string
 	text          string
 	created_at    time.Time [skip]
-	status        int [skip]
+	status        IssueStatus [skip]
 	linked_issues []int [skip]
 	author_name   string [skip]
 }

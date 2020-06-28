@@ -535,13 +535,12 @@ pub fn (mut app App) login_post() vweb.Result {
 		app.vweb.redirect('/login')
 		return vweb.Result{}
 	}
-	println('hi')
 	if !check_password(password, username, user.password) {
 		app.vweb.redirect('/login')
 		return vweb.Result{}
 	}
 	token := app.add_token(user.id.str())
-	app.vweb.set_cookie('id', user.id.str())
+	app.vweb.set_cookie('id', user.id)
 	app.vweb.set_cookie('token', token)
 	app.vweb.redirect('/')
 	return vweb.Result{}
@@ -557,9 +556,9 @@ pub fn (mut app App) logged_in() bool {
 	return id != '' && token != '' && id in app.tokens && app.tokens[id] == token
 }
 
-pub fn (mut app App) add_token(id string) string {
+pub fn (mut app App) add_token(user_id int) string {
 	token := time.now().unix.str() // TODO make better token
-	app.tokens[id] = token
+	app.tokens[user_id.str()] = token
 	return token
 }
 
