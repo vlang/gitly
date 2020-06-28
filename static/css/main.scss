@@ -793,7 +793,7 @@ img.clog-avatar {
 	padding-bottom:5px;
 }
 .clog-author {
-	a {
+	a, span {
 		font-weight: bold;
 		font-size: 11px;
 		color: $gray-dark !important;
