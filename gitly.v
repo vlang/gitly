@@ -25,7 +25,8 @@ mut:
 	html_path vweb.RawHtml
 	page_gen_time string
 pub mut:
-	log       log.Log
+	file_log       log.Log
+	cli_log       log.Log
 	vweb      vweb.Context
 	db        sqlite.DB
 }
@@ -34,13 +35,31 @@ fn main() {
 	vweb.run<App>(http_port)
 }
 
+pub fn (mut app App) info(msg string) {
+	app.file_log.info(msg)
+	app.cli_log.info(msg)
+}
+
+pub fn (mut app App) warn(msg string) {
+	app.file_log.warn(msg)
+	app.cli_log.warn(msg)
+}
+
+pub fn (mut app App) error(msg string) {
+	app.file_log.error(msg)
+	app.cli_log.error(msg)
+}
+
 pub fn (mut app App) init_once() {
-	app.log = log.Log{}
-	app.log.set_level(.info)
+	os.mkdir('logs')
+	app.file_log = log.Log{}
+	app.cli_log = log.Log{}
+	app.file_log.set_level(.info)
+	app.cli_log.set_level(.info)
 	date := time.now()
 	date_s := '${date.ymmdd()}_${date.hhmmss()}'
-	app.log.set_full_logpath('./logs/log_${date_s}.log')
-	app.log.info('init_once()')
+	app.file_log.set_full_logpath('./logs/log_${date_s}.log')
+	app.info('init_once()')
 	version := os.read_file('static/assets/version') or { 'unknown' }
 	result := os.exec('git rev-parse --short HEAD') or { os.Result{output: version} }
 	if !result.output.contains('fatal') {
@@ -99,22 +118,22 @@ pub fn (mut app App) command_fetcher() {
 								app.insert_email(mail)
 							}
 							app.update_contributor(user.name, user)
-							app.log.info('Added user ${args[1]}')
+							app.info('Added user ${args[1]}')
 						} else {
-							app.log.error('Not enough arguments (3 required but only $args.len given)')
+							app.error('Not enough arguments (3 required but only $args.len given)')
 						}
 					}
 					else {
-						app.log.info('Commands:')
-						app.log.info('	!updaterepo')
-						app.log.info('	!adduser <username> <gitname> <email1> <email2>...')
+						app.info('Commands:')
+						app.info('	!updaterepo')
+						app.info('	!adduser <username> <gitname> <email1> <email2>...')
 					}
 				}
 			} else {
-				app.log.error('Unkown syntax. Use !<command>')
+				app.error('Unkown syntax. Use !<command>')
 			}
 		} else {
-			app.log.error('Unkown syntax. Use !<command>')
+			app.error('Unkown syntax. Use !<command>')
 		}
 	}
 }
@@ -122,7 +141,7 @@ pub fn (mut app App) command_fetcher() {
 pub fn (mut app App) init() {
 	url := app.vweb.req.url
 	app.page_gen_time = ''
-	app.log.info('\n\ninit() url=$url')
+	app.info('\n\ninit() url=$url')
 	app.reponame = 'v'
 	app.subdomain = 'vlang'
 	if url.contains('/tree/') {
@@ -144,13 +163,13 @@ pub fn (mut app App) init() {
 	}
 	app.branch = 'master'
 	app.html_path = app.repo.html_path_to(app.path, app.branch)
-	app.log.info('path=$app.path')
+	app.info('path=$app.path')
 	// LangStat{name:'C', color: '#555555'},
 }
 
 pub fn (mut app App) create_new_test_repo() {
 	if x := app.find_repo_by_name('v') {
-		app.log.info('test repo already exists')
+		app.info('test repo already exists')
 		app.repo = x
 		app.repo.lang_stats = app.find_lang_stats_by_repo_id(app.repo.id)
 		return
@@ -159,9 +178,9 @@ pub fn (mut app App) create_new_test_repo() {
 	cur_dir := os.base_dir(os.executable())
 	git_dir := os.join_path(cur_dir, 'test_repo')
 	if !os.exists(git_dir) {
-		app.log.warn('Right now Gitly can only work with a single repo.')
-		app.log.warn('Create a test repo in a directory `test_repo` next to the Gitly executable. For example:')
-		app.log.warn('git clone https://github.com/vlang/v test_repo')
+		app.warn('Right now Gitly can only work with a single repo.')
+		app.warn('Create a test repo in a directory `test_repo` next to the Gitly executable. For example:')
+		app.warn('git clone https://github.com/vlang/v test_repo')
 		exit(1)
 	}
 	app.repo = Repo{
@@ -175,7 +194,7 @@ pub fn (mut app App) create_new_test_repo() {
 		nr_commits: 0
 		id: 1
 	}
-	app.log.info('inserting test repo')
+	app.info('inserting test repo')
 	app.update_repo()
 }
 
@@ -196,15 +215,15 @@ pub fn (mut app App) tree() vweb.Result {
 		up += '/tree/'
 		up += up_a.join('/')
   } else { up = '/'}
-	app.log.info('up: $up')
+	app.info('up: $up')
 	if app.path.starts_with('/') {
 		app.path = app.path[1..]
 	}
 	mut files := app.find_files_by_repo(app.repo.id, 'master', app.path)
-	app.log.info('tree() nr files found: $files.len')
+	app.info('tree() nr files found: $files.len')
 	if files.len == 0 {
 		// No files in the db, fetch them from git and cache in db
-		app.log.info('caching files, repo_id=$app.repo.id')
+		app.info('caching files, repo_id=$app.repo.id')
 		//t := time.ticks()
 		files = app.cache_repo_files(mut app.repo, 'master', app.path)
 		//println('caching files took ${time.ticks()-t}ms')
