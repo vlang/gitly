@@ -8,6 +8,8 @@ import os
 import log
 import hl
 import sqlite
+import math
+import rand
 
 const (
 	commits_per_page = 35
@@ -553,8 +555,19 @@ pub fn (mut app App) logged_in() bool {
 	return id != '' && token != '' && id in app.tokens && app.tokens[id] == token
 }
 
+fn gen_uuid_v4ish() string {
+    // UUIDv4 format: 4-2-2-2-6 bytes per section
+    a := rand.intn(math.max_i32 / 2).hex()
+    b := rand.intn(math.max_i16).hex()
+    c := rand.intn(math.max_i16).hex()
+    d := rand.intn(math.max_i16).hex()
+    e := rand.intn(math.max_i32 / 2).hex()
+    f := rand.intn(math.max_i16).hex()
+    return '${a:08}-${b:04}-${c:04}-${d:04}-${e:08}${f:04}'.replace(' ','0')
+}
+
 pub fn (mut app App) add_token(user_id int) string {
-	token := time.now().unix.str() // TODO make better token
+	token := gen_uuid_v4ish()
 	app.tokens[user_id.str()] = token
 	return token
 }
