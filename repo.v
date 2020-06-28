@@ -25,7 +25,6 @@ struct Repo {
 	latest_activity    time.Time [skip]
 mut:
 	nr_tags            int
-	tags               []Tag [skip]
 	branches           []Branch [skip]
 	nr_open_issues     int
 	nr_open_prs        int
@@ -36,7 +35,6 @@ mut:
 	nr_contributors    int
 	nr_commits         int
 	labels             []Label [skip]
-	releases           []Release [skip]
 	status             RepoStatus [skip]
 	msg_cache          map[string]string [skip]
 }
@@ -98,7 +96,7 @@ fn (mut app App) update_repo() {
 	r.nr_branches = r.branches.len
 	// TODO: TEMPORARY - UNTIL WE GET PERSISTENT RELEASE INFO
 	r.nr_releases = 0
-	for tag in r.tags {
+	for tag in app.find_tags_by_repo_id(r.id) {
 		release := &Release{
 			tag_id: tag.id
 			repo_id: r.id
