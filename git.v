@@ -22,9 +22,9 @@ fn (s GitService) to_str() string {
 }
 
 // /vlang/info/refs?service=git-upload-pack
-fn (mut app App) info() vweb.Result {
-	eprintln('/info/refs')
-	println(app.vweb.req.method)
+fn (mut app App) git_info() vweb.Result {
+	app.info('/info/refs')
+	app.info(app.vweb.req.method)
 	// Get service type from the git request.
 	// Receive (git push) or upload	(git pull)
 	url := app.vweb.req.url
@@ -33,7 +33,7 @@ fn (mut app App) info() vweb.Result {
 		GitService.unknown
 	}
 	if service == .unknown {
-		eprintln('git: unknown info/refs service: $url')
+		app.error('git: unknown info/refs service: $url')
 		return vweb.Result{}
 	}
 	// Do auth here, we can communicate with the client only in inforefs
@@ -46,7 +46,7 @@ fn (mut app App) info() vweb.Result {
 		// public repo push
 		if service == .receive {
 			user := '' //get_user(c)
-			println('info/refs user="$user"')
+			app.info('info/refs user="$user"')
 			if user == '' {
 				//app.vweb.write_header(http.status_unauthorized)
 				return app.vweb.not_found()
@@ -60,8 +60,8 @@ fn (mut app App) info() vweb.Result {
 	sb.write(packet_write("# service=git-$service\n"))
 	sb.write(packet_flush())
 	refs := app.repo.git_advertise(service.to_str())
-	println('refs = ')
-	println(refs)
+	app.info('refs = ')
+	app.info(refs)
 	sb.write(refs)
 	return app.vweb.ok(sb.str())
 }
