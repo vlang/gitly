@@ -3,7 +3,6 @@
 
 GitHub/GitLab alternative written in V.
 
-
 https://gitly.org
 
 - Light and fast
@@ -23,7 +22,6 @@ The biggest missing features that will be implemented soon:
 - Access via ssh
 - Pull requests
 
-
 ```sh
 git clone https://github.com/vlang/v test_repo # Clone the test/demo repo
 # Compile the `gitly.scss` file to `gitly.css`
@@ -37,6 +35,3 @@ Required dependencies:
 * sassc
 
 ![](https://user-images.githubusercontent.com/687996/85933714-b195fe80-b8da-11ea-9ddd-09cadc2103e4.png)
-
-
-
