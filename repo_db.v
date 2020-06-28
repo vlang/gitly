@@ -106,6 +106,12 @@ fn (mut app App) create_tables() {
 		'notes text default ""'
 		'UNIQUE(tag_id, repo_id)'
 	])
+	app.create_table('SSHKey', [
+		'id integer primary key'
+		'user integer default 0'
+		'title text default ""'
+		'sshkey text default ""'
+	])
 }
 
 fn (app &App) find_repo_by_name(name string) ?Repo {

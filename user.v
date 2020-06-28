@@ -16,6 +16,13 @@ mut:
 	emails    []Email [skip]
 }
 
+struct SSHKey {
+	id int
+	user int
+	title string
+	sshkey string
+}
+
 struct Email {
 	id    int
 	user  int
@@ -73,6 +80,13 @@ pub fn (mut app App) insert_email(email Email) {
 	}
 }
 
+pub fn (mut app App) insert_sshkey(sshkey SSHKey) {
+	app.info('Inserting sshkey: $sshkey.title')
+	sql app.db {
+		insert sshkey into SSHKey
+	}
+}
+
 pub fn (mut app App) insert_contributor(contributor Contributor) {
 	app.info('Inserting contributor: $contributor.user')
 	sql app.db {
@@ -86,9 +100,15 @@ pub fn (mut app App) update_contributor(name string, user User) {
 	}
 }
 
+pub fn (mut app App) find_sshkey_by_user_id(id int) []SSHKey {
+	return sql app.db {
+		select from SSHKey where user==id
+	}
+}
+
 pub fn (mut app App) find_user_by_username(username2 string) User {
 	user := sql app.db {
-		select from User where username == username2 
+		select from User where username == username2
 	}
 	mut u := user[0]
 	emails := app.find_emails_by_user_id(u.id)
