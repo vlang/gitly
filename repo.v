@@ -24,7 +24,7 @@ struct Repo {
 	latest_update_hash string [skip]
 	latest_activity    time.Time [skip]
 mut:
-	tags               []Tag [skip]
+	nr_tags            int
 	branches           []Branch [skip]
 	nr_open_issues     int
 	nr_open_prs        int
@@ -35,7 +35,6 @@ mut:
 	nr_contributors    int
 	nr_commits         int
 	labels             []Label [skip]
-	releases           []Release [skip]
 	status             RepoStatus [skip]
 	msg_cache          map[string]string [skip]
 }
@@ -75,13 +74,13 @@ fn (mut app App) update_repo() {
 
 			user := app.find_user_by_email(args[1]) or { User{} }
 			if user.username != '' {
-				app.insert_contribrutor(Contributor{
+				app.insert_contributor(Contributor{
 					user: user.id
 					repo: r.id
 				})
 				tmp_commit.author_id = user.id
 			} else {
-				app.insert_contribrutor(Contributor{
+				app.insert_contributor(Contributor{
 					repo: r.id
 					name: tmp_commit.author
 				})
@@ -95,15 +94,17 @@ fn (mut app App) update_repo() {
 	r.created_at = int(tmp_commit.created_at)
 	r.branches = get_branches(r)
 	r.nr_branches = r.branches.len
-	r.tags = get_tags(r)
-	for tag in r.tags {
+	// TODO: TEMPORARY - UNTIL WE GET PERSISTENT RELEASE INFO
+	r.nr_releases = 0
+	for tag in app.find_tags_by_repo_id(r.id) {
 		release := &Release{
-			tag: tag
+			tag_id: tag.id
+			repo_id: r.id
 			notes: 'Some notes about this release...'
 		}
-		r.releases << release
+		app.insert_release(release)
+		r.nr_releases++
 	}
-	r.nr_releases = r.releases.len
 	wg.wait()
 	repo := *r
 	lang_stats := repo.lang_stats
@@ -372,6 +373,7 @@ fn (mut app App) cache_repo_files(mut r Repo, branch, path string) []File {
 	lines := res.split('\n')
 	mut dirs := []File{} // dirs first
 	mut files := []File{}
+	app.db.exec('BEGIN TRANSACTION')
 	for line in lines {
 		file := r.parse_ls(line, branch) or {
 			app.warn('failed to parse $line')
@@ -388,6 +390,7 @@ fn (mut app App) cache_repo_files(mut r Repo, branch, path string) []File {
 	for file in files {
 		app.insert_file(file)
 	}
+	app.db.exec('END TRANSACTION')
 	return dirs
 }
 

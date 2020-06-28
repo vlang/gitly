@@ -5,16 +5,17 @@ module main
 import  time
 
 struct Tag {
+	id      int
+	repo_id int
 mut:
-	name   string		// tag name
-	author string		// author of commit
-	hash   string		// hash of latest commit on tag
-	date   time.Time	// time of latest commit on tag
+	name    string // tag name
+	hash    string // hash of latest commit on tag
+	user_id int    // id of user that created the tag
+	date    u64    // time of latest commit on tag
 }
 
-fn get_tags(r Repo) []Tag {
-	mut tags := []Tag{}
-	mut tag := Tag{}
+fn (mut app App) init_tags(mut r Repo) {
+	mut tag := Tag{repo_id: r.id}
 	data := r.git('ls-remote -tq')
 	for remote_tag in data.split_into_lines() {
 		tag.name = remote_tag.after('refs/tags/')
@@ -24,13 +25,41 @@ fn get_tags(r Repo) []Tag {
 		if args.len < 2 {
 			continue
 		}
-		tag.author = args[0]
-		tag.date = time.parse_rfc2822(args[1]) or {
+		user := app.find_user_by_email(args[0]) or {User{id: 0}}
+		tag.user_id = user.id
+		date := time.parse_rfc2822(args[1]) or {
 			eprintln('Error: $err')
-			return tags
+			return
 		}
-		tags << tag
+		tag.date = date.unix
+		app.insert_tag(tag)
+		r.nr_tags++
 	}
-	tags.sort_with_compare(compare_time)
-	return tags
+}
+
+pub fn (mut app App) insert_tag(tag Tag) {
+	println('Insert tag: $tag.name')
+	sql app.db {
+		insert tag into Tag
+	}
+}
+
+pub fn (mut app App) find_tag_by_name(name2 string) Tag {
+	mut tag := sql app.db {
+		select from Tag where name==name2
+	}
+	return tag[0]
+}
+
+pub fn (mut app App) find_tag_by_id(id2 int) Tag {
+	mut tag := sql app.db {
+		select from Tag where id==id2
+	}
+	return tag
+}
+
+pub fn (mut app App) find_tags_by_repo_id(repo_id int) []Tag {
+	return sql app.db {
+		select from Tag where repo_id==repo_id
+	}
 }
