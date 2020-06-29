@@ -9,14 +9,11 @@
 			<!--
 			<span>email</span>
 			-->
-			<a><span>@user.username</span></a>
-		}
-	@end
-}
-.named_contributor {
-	@for contrib in named_contributor
-		.contrib {
-			<span>@contrib.name</span>
+			@if user.is_registered
+				<a><span>@user.username</span></a>
+			@else
+				<span>@user.username</span>
+			@end
 		}
 	@end
 }

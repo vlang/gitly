@@ -11,6 +11,7 @@ struct User {
 	username  string
 	password  string
 	is_github bool
+	is_registered bool
 	avatar    string [skip]
 mut:
 	emails    []Email [skip]
@@ -34,8 +35,6 @@ struct Contributor {
 	id   int
 	user int
 	repo int
-	name string
-	email string
 }
 
 fn make_password(password, username string) string {
@@ -55,9 +54,10 @@ pub fn (mut app App) add_user(username, password, gitname string, emails []strin
 		username: username
 		password: password
 		name: gitname
+		is_registered: true
 	}
 	app.insert_user(user)
-	u := app.find_user_by_username(user.username) or {
+	mut u := app.find_user_by_username(user.username) or {
 		app.error('User was not inserted')
 		return
 	}
@@ -72,12 +72,29 @@ pub fn (mut app App) add_user(username, password, gitname string, emails []strin
 		}
 		app.insert_email(mail)
 	}
-	user = app.find_user_by_username(user.username) or {
-		app.error('User was not found')
-		return
+	u.emails = app.find_emails_by_user_id(u.id)
+}
+
+pub fn (mut app App) create_empty_user(username, email string) int {
+	mut user := User{
+		username: username
+		is_registered: false
 	}
-	user.emails = app.find_emails_by_user_id(user.id)
-	app.update_contributor(user)
+	app.insert_user(user)
+	u := app.find_user_by_username(user.username) or {
+		app.error('User was not inserted')
+		return -1
+	}
+	if user.username != u.username {
+		app.error('User was not inserted')
+		return -1
+	}
+	mail := Email {
+		user: u.id
+		email: email
+	}
+	app.insert_email(mail)
+	return u.id
 }
 
 pub fn (mut app App) insert_user(user User) {
@@ -105,15 +122,6 @@ pub fn (mut app App) insert_contributor(contributor Contributor) {
 	app.info('Inserting contributor: $contributor.user')
 	sql app.db {
 		insert contributor into Contributor
-	}
-}
-
-pub fn (mut app App) update_contributor(u User) {
-	for e in u.emails {
-		mail := e.email
-		sql app.db {
-			update Contributor set name = '', email = '', user = u.id where email == mail
-		}
 	}
 }
 
@@ -181,15 +189,9 @@ pub fn (mut app App) find_contributor_by_repo_id(id int) []Contributor {
 	}
 }
 
-pub fn (mut app App) find_named_contributor_by_repo_id(id int) []Contributor {
-	return sql app.db {
-		select from Contributor where repo == id && user == 0 
-	}
-}
-
 pub fn (mut app App) find_registered_contributor_by_repo_id(id int) []User {
 	contributor := sql app.db {
-		select from Contributor where repo == id && name == '' 
+		select from Contributor where repo == id
 	}
 	mut user := []User{}
 	for contrib in contributor {

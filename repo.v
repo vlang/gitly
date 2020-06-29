@@ -82,10 +82,10 @@ fn (mut app App) update_repo() {
 				})
 				tmp_commit.author_id = user.id
 			} else {
+				empty_user := app.create_empty_user(tmp_commit.author, args[1])
 				app.insert_contributor(Contributor{
 					repo: r.id
-					email: args[1]
-					name: tmp_commit.author
+					user: empty_user
 				})
 			}
 			app.insert_commit(tmp_commit)
