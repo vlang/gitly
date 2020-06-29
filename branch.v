@@ -7,15 +7,14 @@ import time
 
 struct Branch {
 mut:
-	id     int
-	repo_id int
 	name   string // branch name
 	author string // author of latest commit on branch
 	hash   string // hash of latest commit on branch
-	date   int // time of latest commit on branch
+	date   time.Time // time of latest commit on branch
 }
 
-fn (mut app App) fetch_branches(r Repo) {
+fn get_branches(r Repo) []Branch {
+	mut branches := []Branch{}
 	mut branch := Branch{}
 	current := os.getwd()
 	os.chdir(r.git_dir)
@@ -24,46 +23,34 @@ fn (mut app App) fetch_branches(r Repo) {
 		if remote_branch.contains('remotes/') && !remote_branch.contains('HEAD') {
 			temp_branch := remote_branch.trim_space().after('remotes/')
 			_ := r.git('checkout -t $temp_branch')
-			branch.repo_id = r.id
 			branch.name = temp_branch.after('origin/')
 			hash_data := os.read_lines('.git/refs/heads/$branch.name') or {
 				eprintln('Error: $err')
-				return
+				return branches
 			}
 			branch.hash = hash_data[0].substr(0, 7)
 			branch_data := r.git('log -1 --pretty="%aE$log_field_separator%cD" $branch.hash')
 			args := branch_data.split(log_field_separator)
 			branch.author = args[0]
-			date := time.parse_rfc2822(args[1]) or {
+			branch.date = time.parse_rfc2822(args[1]) or {
 				eprintln('Error: $err')
-				return
+				return branches
 			}
-			branch.date = int(date.unix)
-			app.insert_branch(branch)
+			branches << branch
 		}
 	}
+	branches.sort_with_compare(compare_time)
 	_ := r.git('checkout master')
 	os.chdir(current)
+	return branches
 }
 
-fn (branch Branch) relative() string {
-	return time.unix(branch.date).relative()
-}
-
-fn (mut app App) insert_branch(branch Branch) {
-	sql app.db {
-		insert branch into Branch
+fn compare_time(a, b &Branch) int {
+	if a.date.gt(b.date) {
+		return -1
 	}
-}
-
-fn (mut app App) find_branches_by_repo_id(repo_id int) []Branch {
-	return sql app.db {
-		select from Branch where repo_id == repo_id
+	if a.date.lt(b.date) {
+		return 1
 	}
-}
-
-fn (mut app App) count_of_branches_by_repo_id(repo_id int) int {
-	return sql app.db {
-		select count from Branch where repo_id == repo_id
-	}
+	return 0
 }

@@ -21,7 +21,7 @@ fn (mut app App) create_tables() {
 		'nr_open_prs int default 0'
 		'nr_branches int default 0'
 		'nr_contributors int default 0'
-		"created_at int default (strftime('%s', 'now'))"
+		"created_at int default (strftime('%s', 'now'))" 
 	])
     // unix time default now
 	app.create_table('File', [
@@ -119,15 +119,6 @@ fn (mut app App) create_tables() {
 		'issue_id integer default 0'
 		'created_at integer default 0'
 		'text text default ""'
-	])
-	app.create_table('Branch', [
-		'id integer primary key'
-		'repo_id integer default 0'
-		'name text default ""'
-		'author text default ""'
-		'hash text default ""'
-		'date integer default 0'
-		'UNIQUE(repo_id, name)'
 	])
 }
 
