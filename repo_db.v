@@ -87,8 +87,9 @@ fn (mut app App) create_tables() {
 		'id integer primary key'
 		'user integer default 0'
 		'repo integer default 0'
-		'name text'
-		'UNIQUE(user, repo, name)'
+		'name text default ""'
+		'email text default ""'
+		'UNIQUE(user, repo, email)'
 	])
 	app.create_table('Tag', [
 		'id integer primary key'

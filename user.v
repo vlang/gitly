@@ -35,6 +35,7 @@ struct Contributor {
 	user int
 	repo int
 	name string
+	email string
 }
 
 fn make_password(password, username string) string {
@@ -71,7 +72,12 @@ pub fn (mut app App) add_user(username, password, gitname string, emails []strin
 		}
 		app.insert_email(mail)
 	}
-	app.update_contributor(user.name, user)
+	user = app.find_user_by_username(user.username) or {
+		app.error('User was not found')
+		return
+	}
+	user.emails = app.find_emails_by_user_id(user.id)
+	app.update_contributor(user)
 }
 
 pub fn (mut app App) insert_user(user User) {
@@ -102,9 +108,12 @@ pub fn (mut app App) insert_contributor(contributor Contributor) {
 	}
 }
 
-pub fn (mut app App) update_contributor(name string, user User) {
-	sql app.db {
-		update File set name = '', user = user.id where name == name
+pub fn (mut app App) update_contributor(u User) {
+	for e in u.emails {
+		mail := e.email
+		sql app.db {
+			update Contributor set name = '', email = '', user = u.id where email == mail
+		}
 	}
 }
 

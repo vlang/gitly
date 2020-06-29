@@ -1,0 +1,88 @@
+diff --git a/repo.v b/repo.v
+index 53dc12f..3757814 100644
+--- a/repo.v
++++ b/repo.v
+@@ -84,6 +84,7 @@ fn (mut app App) update_repo() {
+ 			} else {
+ 				app.insert_contributor(Contributor{
+ 					repo: r.id
++					email: args[1]
+ 					name: tmp_commit.author
+ 				})
+ 			}
+diff --git a/repo_db.v b/repo_db.v
+index 59cd737..9123eb4 100644
+--- a/repo_db.v
++++ b/repo_db.v
+@@ -87,8 +87,9 @@ fn (mut app App) create_tables() {
+ 		'id integer primary key'
+ 		'user integer default 0'
+ 		'repo integer default 0'
+-		'name text'
+-		'UNIQUE(user, repo, name)'
++		'name text default ""'
++		'email text default ""'
++		'UNIQUE(user, repo, email)'
+ 	])
+ 	app.create_table('Tag', [
+ 		'id integer primary key'
+diff --git a/templates/contributors.html b/templates/contributors.html
+index 0cde436..4b877a6 100644
+--- a/templates/contributors.html
++++ b/templates/contributors.html
+@@ -9,7 +9,7 @@
+ 			<!--
+ 			<span>email</span>
+ 			-->
+-			<a><span>@user.name</span></a>
++			<a><span>@user.username</span></a>
+ 		}
+ 	@end
+ }
+diff --git a/user.v b/user.v
+index f855db6..13d0dfc 100644
+--- a/user.v
++++ b/user.v
+@@ -35,6 +35,7 @@ struct Contributor {
+ 	user int
+ 	repo int
+ 	name string
++	email string
+ }
+ 
+ fn make_password(password, username string) string {
+@@ -71,7 +72,16 @@ pub fn (mut app App) add_user(username, password, gitname string, emails []strin
+ 		}
+ 		app.insert_email(mail)
+ 	}
+-	app.update_contributor(user.name, user)
++	user = app.find_user_by_username(user.username) or {
++		app.error('User was not found')
++		return
++	}
++	user.emails = app.find_emails_by_user_id(user.id)
++	app.update_contributor(user)
++}
++
++pub fn (user User) contains_email(email string) bool {
++	return user.emails.filter(it.email == email).len >= 1
+ }
+ 
+ pub fn (mut app App) insert_user(user User) {
+@@ -102,9 +112,13 @@ pub fn (mut app App) insert_contributor(contributor Contributor) {
+ 	}
+ }
+ 
+-pub fn (mut app App) update_contributor(name string, user User) {
+-	sql app.db {
+-		update File set name = '', user = user.id where name == name
++pub fn (mut app App) update_contributor(u User) {
++	for e in u.emails {
++		mail := e.email
++		println(mail)
++		sql app.db {
++			update Contributor set name = '', email = '', user = u.id where email == mail
++		}
+ 	}
+ }
+ 

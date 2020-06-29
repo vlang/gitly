@@ -84,6 +84,7 @@ fn (mut app App) update_repo() {
 			} else {
 				app.insert_contributor(Contributor{
 					repo: r.id
+					email: args[1]
 					name: tmp_commit.author
 				})
 			}
