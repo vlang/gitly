@@ -560,6 +560,14 @@ pub fn (mut app App) register_post() vweb.Result {
 		return vweb.Result{}
 	}
 	app.add_user(username, password, git_name, [email])
+	user := app.find_user_by_username(username) or {
+		app.vweb.redirect('/register')
+		return vweb.Result{}
+	}
+	expires := time.utc().add_days(expire_length)
+	token := app.add_token(user.id)
+	app.vweb.set_cookie_with_expire_date('id', user.id.str(), expires)
+	app.vweb.set_cookie_with_expire_date('token', token, expires)
 	app.vweb.redirect('/')
 	return vweb.Result{}
 }
@@ -594,7 +602,7 @@ pub fn (mut app App) login_post() vweb.Result {
 	expires := time.utc().add_days(expire_length)
 	mut token := app.find_token_from_user_id(user.id)
 	if token == '' {
-		token = app.add_token(user.id, expires)
+		token = app.add_token(user.id)
 	}
 	app.vweb.set_cookie_with_expire_date('id', user.id.str(), expires)
 	app.vweb.set_cookie_with_expire_date('token', token, expires)
@@ -644,7 +652,7 @@ fn gen_uuid_v4ish() string {
     return '${a:08}-${b:04}-${c:04}-${d:04}-${e:08}${f:04}'.replace(' ','0')
 }
 
-pub fn (mut app App) add_token(user_id int, expire_date time.Time) string {
+pub fn (mut app App) add_token(user_id int) string {
 	token := gen_uuid_v4ish()
 	app.update_token_by_user_id(user_id, token)
 	return token
