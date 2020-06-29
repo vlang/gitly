@@ -13,6 +13,7 @@ struct User {
 	password      string
 	is_github     bool
 	is_registered bool
+	token         string
 	avatar        string [skip]
 mut:
 	emails        []Email [skip]
@@ -36,14 +37,6 @@ struct Contributor {
 	id   int
 	user int
 	repo int
-}
-
-struct Token {
-	id int
-	user_id int
-	token string
-	expires int
-	active bool
 }
 
 fn make_password(password, username string) string {
@@ -131,16 +124,6 @@ pub fn (mut app App) insert_email(email Email) {
 	}
 }
 
-pub fn (mut app App) insert_token(token Token) {
-	now := int(time.utc().unix)
-	sql app.db {
-		update Token set active = false where expires < now
-	}
-	sql app.db {
-		insert token into Token
-	}
-}
-
 pub fn (mut app App) insert_sshkey(sshkey SshKey) {
 	app.info('Inserting sshkey: $sshkey.title')
 	sql app.db {
@@ -161,10 +144,21 @@ pub fn (mut app App) remove_ssh_key(title string, user_id int) {
 	}
 }
 
+pub fn (mut app App) update_token_by_user_id(id int, token string) {
+	sql app.db {
+		update User set token = token where id == id
+	}
+}
+
 pub fn (mut app App) find_sshkey_by_user_id(id int) []SshKey {
 	return sql app.db {
 		select from SshKey where user == id 
 	}
+}
+
+pub fn (mut app App) find_token_from_user_id(id int) string {
+	user := app.find_user_by_id(id)
+	return user.token
 }
 
 pub fn (mut app App) find_username_by_id(id int) string {
@@ -217,20 +211,6 @@ pub fn (mut app App) find_contributor_by_repo_id(id int) []Contributor {
 	return sql app.db {
 		select from Contributor where repo == id 
 	}
-}
-
-pub fn (mut app App) find_token_by_token_and_user_id(token string, user_id int) ?Token {
-	now := int(time.utc().unix)
-	sql app.db {
-		update Token set active = false where expires < now
-	}
-	tokens := sql app.db {
-		select from Token where token == token && user_id == user_id
-	}
-	if tokens.len == 0 {
-		return error('Token does not exists')
-	}
-	return tokens[0]
 }
 
 pub fn (mut app App) find_registered_contributor_by_repo_id(id int) []User {

@@ -587,8 +587,15 @@ pub fn (mut app App) login_post() vweb.Result {
 		app.vweb.redirect('/login')
 		return vweb.Result{}
 	}
+	if !user.is_registered {
+		app.vweb.redirect('/login')
+		return vweb.Result{}
+	}
 	expires := time.utc().add_days(expire_length)
-	token := app.add_token(user.id, expires)
+	mut token := app.find_token_from_user_id(user.id)
+	if token == '' {
+		token = app.add_token(user.id, expires)
+	}
 	app.vweb.set_cookie_with_expire_date('id', user.id.str(), expires)
 	app.vweb.set_cookie_with_expire_date('token', token, expires)
 	app.vweb.redirect('/')
@@ -602,8 +609,8 @@ pub fn (mut app App) logged_in() bool {
 	token := app.vweb.get_cookie('token') or {
 		return false
 	}
-	t := app.find_token_by_token_and_user_id(token, id.int()) or { return false }
-	return id != '' && token != '' && t.active
+	t := app.find_token_from_user_id(id.int())
+	return id != '' && token != '' && t != ''
 }
 
 pub fn (mut app App) comment_post() vweb.Result {
@@ -639,13 +646,7 @@ fn gen_uuid_v4ish() string {
 
 pub fn (mut app App) add_token(user_id int, expire_date time.Time) string {
 	token := gen_uuid_v4ish()
-	t := Token{
-		user_id: user_id
-		token: token
-		active: true
-		expires: int(expire_date.unix)
-	}
-	app.insert_token(t)
+	app.update_token_by_user_id(user_id, token)
 	return token
 }
 
