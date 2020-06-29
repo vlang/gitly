@@ -24,11 +24,10 @@ The biggest missing features that will be implemented soon:
 
 ```sh
 git clone https://github.com/vlang/v test_repo # Clone the test/demo repo
-# Compile the `gitly.scss` file to `gitly.css`
-sassc static/css/gitly.scss > static/css/gitly.css
 v .
 ./gitly
 ```
+
 Required dependencies:
 * V 0.1.28.1 (https://vlang.io)
 * SQLite (Ubuntu/Debian: `libsqlite3-dev`)
