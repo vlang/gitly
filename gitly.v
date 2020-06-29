@@ -428,7 +428,7 @@ pub fn (mut app App) pulls() vweb.Result {
 }
 
 pub fn (mut app App) contributors() vweb.Result {
-	users := app.find_registered_contributor_by_repo_id(app.repo.id)
+	contributors := app.find_registered_contributor_by_repo_id(app.repo.id)
 	return $vweb.html()
 }
 
