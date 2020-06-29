@@ -3,17 +3,18 @@
 <h3> Contributors </h3>
 
 
-.users {
-	@for user in users
-		.user {
+.contributors {
+	@for contributor in contributors
+		.contributor {
 			<!--
 			<span>email</span>
 			-->
-			@if user.is_registered
-				<a><span>@user.username</span></a>
+			@if contributor.is_registered
+				<a><span>@contributor.username</span></a>
 			@else
-				<span>@user.username</span>
+				<span>@contributor.username</span>
 			@end
 		}
 	@end
 }
+@footer

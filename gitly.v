@@ -267,12 +267,7 @@ pub fn (mut app App) tree() vweb.Result {
 
 	// println('app.tree() = ${time.ticks()-t}ms')
 	// branches := ['master'] TODO implemented usage
-	diff := int(time.ticks() - app.vweb.page_gen_start)
-	if diff == 0 {
-		app.page_gen_time = '<1ms'
-	} else {
-		app.page_gen_time = '${diff}ms'
-	}
+	app.set_page_gen_time()
 	return $vweb.html()
 }
 
@@ -290,6 +285,7 @@ pub fn (mut app App) user() vweb.Result {
 			return app.vweb.not_found()
 		}
 	}
+	app.set_page_gen_time()
 	return $vweb.html()
 }
 
@@ -367,6 +363,7 @@ pub fn (mut app App) commits() vweb.Result {
 		}
 	}
 	app.path = ''
+	app.set_page_gen_time()
 	return $vweb.html()
 }
 
@@ -383,6 +380,7 @@ pub fn (mut app App) commit() vweb.Result {
 		src, _, _ := hl.highlight_text(change.message, change.file, true)
 		sources[change.file] = vweb.RawHtml(src)
 	}
+	app.set_page_gen_time()
 	return $vweb.html()
 }
 
@@ -391,6 +389,7 @@ pub fn (mut app App) issues() vweb.Result {
 	for index, issue in issues {
 		issues[index].author_name = app.find_username_by_id(issue.author_id)
 	}
+	app.set_page_gen_time()
 	return $vweb.html()
 }
 
@@ -407,6 +406,7 @@ pub fn (mut app App) issue() vweb.Result {
 	mut issue := issue0 // TODO bug with optionals (.data)
 	issue.author_name = app.find_username_by_id(issue.author_id)
 	comments := app.find_issue_comments(issue.id)
+	app.set_page_gen_time()
 	return $vweb.html()
 }
 
@@ -419,22 +419,26 @@ pub fn (mut app App) pull() vweb.Result {
 	}
 	pr := pr0
 	comments := app.find_issue_comments(pr.id)
+	app.set_page_gen_time()
 	return $vweb.html()
 }
 
 pub fn (mut app App) pulls() vweb.Result {
 	prs := app.find_prs_by_repo(app.repo.id)
+	app.set_page_gen_time()
 	return $vweb.html()
 }
 
 pub fn (mut app App) contributors() vweb.Result {
-	users := app.find_registered_contributor_by_repo_id(app.repo.id)
+	contributors := app.find_registered_contributor_by_repo_id(app.repo.id)
+	app.set_page_gen_time()
 	return $vweb.html()
 }
 
 pub fn (mut app App) branches() vweb.Result {
 	mut branches := app.find_branches_by_repo_id(app.repo.id)
 	branches.sort_with_compare(compare_branch_date)
+	app.set_page_gen_time()
 	return $vweb.html()
 }
 
@@ -475,6 +479,7 @@ pub fn (mut app App) releases() vweb.Result {
 		releases << release
 	}
 	releases.sort_with_compare(compare_reldate)
+	app.set_page_gen_time()
 	return $vweb.html()
 }
 
@@ -523,6 +528,7 @@ pub fn (mut app App) new_issue() vweb.Result {
 	if !app.logged_in {
 		return app.vweb.not_found()
 	}
+	app.set_page_gen_time()
 	return $vweb.html()
 }
 
@@ -546,6 +552,7 @@ pub fn (mut app App) new_issue_post() vweb.Result {
 }
 
 pub fn (mut app App) register() vweb.Result {
+	app.set_page_gen_time()
 	return $vweb.html()
 }
 
@@ -567,6 +574,7 @@ pub fn (mut app App) login() vweb.Result {
 	if app.logged_in() {
 		return app.vweb.not_found()
 	}
+	app.set_page_gen_time()
 	return $vweb.html()
 }
 
@@ -643,4 +651,13 @@ pub fn (mut app App) add_token(user_id int) string {
 pub fn (mut app App) get_user() ?User {
 	id := app.vweb.get_cookie('id') or { return error('Not logged in') }
 	return app.find_user_by_id(id.int())
+}
+
+pub fn (mut app App) set_page_gen_time(){
+	diff := int(time.ticks() - app.vweb.page_gen_start)
+	if diff == 0 {
+		app.page_gen_time = '<1ms'
+	} else {
+		app.page_gen_time = '${diff}ms'
+	}
 }
