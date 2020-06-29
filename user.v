@@ -4,6 +4,7 @@ module main
 
 import crypto.sha256
 import rand
+import time
 
 struct User {
 	id            int
@@ -12,6 +13,7 @@ struct User {
 	password      string
 	is_github     bool
 	is_registered bool
+	token         string
 	avatar        string [skip]
 mut:
 	emails        []Email [skip]
@@ -142,10 +144,21 @@ pub fn (mut app App) remove_ssh_key(title string, user_id int) {
 	}
 }
 
+pub fn (mut app App) update_token_by_user_id(id int, token string) {
+	sql app.db {
+		update User set token = token where id == id
+	}
+}
+
 pub fn (mut app App) find_sshkey_by_user_id(id int) []SshKey {
 	return sql app.db {
 		select from SshKey where user == id 
 	}
+}
+
+pub fn (mut app App) find_token_from_user_id(id int) string {
+	user := app.find_user_by_id(id)
+	return user.token
 }
 
 pub fn (mut app App) find_username_by_id(id int) string {
