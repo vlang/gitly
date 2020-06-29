@@ -4,6 +4,7 @@ module main
 
 import crypto.sha256
 import rand
+import time
 
 struct User {
 	id            int
@@ -35,6 +36,14 @@ struct Contributor {
 	id   int
 	user int
 	repo int
+}
+
+struct Token {
+	id int
+	user_id int
+	token string
+	expires int
+	active bool
 }
 
 fn make_password(password, username string) string {
@@ -122,6 +131,16 @@ pub fn (mut app App) insert_email(email Email) {
 	}
 }
 
+pub fn (mut app App) insert_token(token Token) {
+	now := int(time.utc().unix)
+	sql app.db {
+		update Token set active = false where expires < now
+	}
+	sql app.db {
+		insert token into Token
+	}
+}
+
 pub fn (mut app App) insert_sshkey(sshkey SshKey) {
 	app.info('Inserting sshkey: $sshkey.title')
 	sql app.db {
@@ -198,6 +217,20 @@ pub fn (mut app App) find_contributor_by_repo_id(id int) []Contributor {
 	return sql app.db {
 		select from Contributor where repo == id 
 	}
+}
+
+pub fn (mut app App) find_token_by_token_and_user_id(token string, user_id int) ?Token {
+	now := int(time.utc().unix)
+	sql app.db {
+		update Token set active = false where expires < now
+	}
+	tokens := sql app.db {
+		select from Token where token == token && user_id == user_id
+	}
+	if tokens.len == 0 {
+		return error('Token does not exists')
+	}
+	return tokens[0]
 }
 
 pub fn (mut app App) find_registered_contributor_by_repo_id(id int) []User {

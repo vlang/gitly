@@ -129,6 +129,13 @@ fn (mut app App) create_tables() {
 		'date integer default 0'
 		'UNIQUE(repo_id, name)'
 	])
+	app.create_table('Token', [
+		'id integer primary key'
+		'user_id integer default 0'
+		'token text default ""'
+		'expires integer default 0'
+		'active integer default 0'
+	])
 }
 
 fn (app &App) find_repo_by_name(name string) ?Repo {

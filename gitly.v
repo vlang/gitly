@@ -14,6 +14,7 @@ import rand
 const (
 	commits_per_page = 35
 	http_port        = 8080
+	expire_lenght    = 200
 )
 
 struct App {
@@ -586,9 +587,10 @@ pub fn (mut app App) login_post() vweb.Result {
 		app.vweb.redirect('/login')
 		return vweb.Result{}
 	}
-	token := app.add_token(user.id)
-	app.vweb.set_cookie('id', user.id.str())
-	app.vweb.set_cookie('token', token)
+	expires := time.utc().add_days(expire_lenght)
+	token := app.add_token(user.id, expires)
+	app.vweb.set_cookie_with_expire_date('id', user.id.str(), expires)
+	app.vweb.set_cookie_with_expire_date('token', token, expires)
 	app.vweb.redirect('/')
 	return vweb.Result{}
 }
@@ -600,7 +602,8 @@ pub fn (mut app App) logged_in() bool {
 	token := app.vweb.get_cookie('token') or {
 		return false
 	}
-	return id != '' && token != '' && id in app.tokens && app.tokens[id] == token
+	t := app.find_token_by_token_and_user_id(token, id.int()) or { return false }
+	return id != '' && token != '' && t.active
 }
 
 pub fn (mut app App) comment_post() vweb.Result {
@@ -634,9 +637,15 @@ fn gen_uuid_v4ish() string {
     return '${a:08}-${b:04}-${c:04}-${d:04}-${e:08}${f:04}'.replace(' ','0')
 }
 
-pub fn (mut app App) add_token(user_id int) string {
+pub fn (mut app App) add_token(user_id int, expire_date time.Time) string {
 	token := gen_uuid_v4ish()
-	app.tokens[user_id.str()] = token
+	t := Token{
+		user_id: user_id
+		token: token
+		active: true
+		expires: int(expire_date.unix)
+	}
+	app.insert_token(t)
 	return token
 }
 
