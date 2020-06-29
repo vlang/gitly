@@ -22,6 +22,11 @@ h3 {
   margin-bottom: 200px;
   min-height: calc(100vh - 300px); }
 
+.user {
+  position: absolute;
+  top: 0;
+  right: 10px; }
+
 #header {
   background-color: #24292e;
   height: 50px;

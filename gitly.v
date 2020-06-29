@@ -592,6 +592,29 @@ pub fn (mut app App) logged_in() bool {
 	return id != '' && token != '' && id in app.tokens && app.tokens[id] == token
 }
 
+pub fn (mut app App) comment_post() vweb.Result {
+	text := app.vweb.form['text']
+	comment := app.vweb.form['issue_id']
+
+	println(text)
+	println(comment)
+
+	if text == '' || comment == '' || !app.logged_in {
+		app.vweb.redirect('/issue/$comment')
+		return vweb.Result{}
+	}
+	comm := Comment{
+		author_id: app.user.id
+		issue_id: comment.int()
+		created_at: int(time.now().unix)
+		text: text
+	}
+
+	app.insert_comment(comm)
+	app.vweb.redirect('/issue/$comment')
+	return vweb.Result{}
+}
+
 fn gen_uuid_v4ish() string {
     // UUIDv4 format: 4-2-2-2-6 bytes per section
     a := rand.intn(math.max_i32 / 2).hex()

@@ -12,6 +12,12 @@ mut:
 	author_name string [skip]
 }
 
+fn (mut app App) insert_comment(comment Comment) {
+	sql app.db {
+		insert comment into Comment
+	}
+}
+
 fn (mut app App) find_issue_comments(issue_id int) []Comment {
 	mut comments := sql app.db {
 		select from Comment where issue_id == issue_id 
