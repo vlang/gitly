@@ -13,7 +13,7 @@
 .branches {
     @for branch in branches
         .branch {
-            <span class='branch_name'>@branch.name</span>&nbsp;&nbsp;Updated @branch.date.relative() by @branch.author
+            <span class='branch_name'>@branch.name</span>&nbsp;&nbsp;Updated @branch.relative() by @branch.author
         }
     @end
 }

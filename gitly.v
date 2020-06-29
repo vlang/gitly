@@ -431,7 +431,7 @@ pub fn (mut app App) contributors() vweb.Result {
 }
 
 pub fn (mut app App) branches() vweb.Result {
-	branches := app.repo.branches
+	branches := app.find_branches_by_repo_id(app.repo.id)
 	return $vweb.html()
 }
 
