@@ -182,6 +182,9 @@ pub fn (mut app App) create_new_test_repo() {
 		app.info('test repo already exists')
 		app.repo = x
 		app.repo.lang_stats = app.find_lang_stats_by_repo_id(app.repo.id)
+		// init branches list for existing repo
+		mut r := &app.repo
+		r.branches = get_branches(r)
 		return
 	}
 	_ := os.ls('.') or {
