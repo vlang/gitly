@@ -6,15 +6,15 @@ import crypto.sha256
 import rand
 
 struct User {
-	id        int
-	name      string
-	username  string
-	password  string
-	is_github bool
+	id            int
+	name          string
+	username      string
+	password      string
+	is_github     bool
 	is_registered bool
-	avatar    string [skip]
+	avatar        string [skip]
 mut:
-	emails    []Email [skip]
+	emails        []Email [skip]
 }
 
 struct SshKey {
@@ -50,29 +50,40 @@ fn check_password(password, username, hashed string) bool {
 }
 
 pub fn (mut app App) add_user(username, password, gitname string, emails []string) {
-	mut user := User{
-		username: username
-		password: password
-		name: gitname
-		is_registered: true
+	mut user := app.find_user_by_username(username) or { User{} }
+	if user.id != 0 && !user.is_registered{
+		app.error('User $username already exists')
 	}
-	app.insert_user(user)
-	mut u := app.find_user_by_username(user.username) or {
-		app.error('User was not inserted')
-		return
-	}
-	if u.password != user.password || u.name != user.name {
-		app.error('User was not inserted')
-		return
-	}
-	for email in emails {
-		mail := Email{
-			user: u.id
-			email: email
+	user = app.find_user_by_email(emails[0]) or { User{} }
+	if user.id == 0 {
+		user = User{
+			username: username
+			password: password
+			name: gitname
+			is_registered: true
 		}
-		app.insert_email(mail)
+		app.insert_user(user)
+		mut u := app.find_user_by_username(user.username) or {
+			app.error('User was not inserted')
+			return
+		}
+		if u.password != user.password || u.name != user.name {
+			app.error('User was not inserted')
+			return
+		}
+		for email in emails {
+			mail := Email{
+				user: u.id
+				email: email
+			}
+			app.insert_email(mail)
+		}
+		u.emails = app.find_emails_by_user_id(u.id)
+	} else {
+		sql app.db {
+			update User set username=username, password=password, name=gitname, is_registered=true where id==user.id
+		}
 	}
-	u.emails = app.find_emails_by_user_id(u.id)
 }
 
 pub fn (mut app App) create_empty_user(username, email string) int {
@@ -89,7 +100,7 @@ pub fn (mut app App) create_empty_user(username, email string) int {
 		app.error('User was not inserted')
 		return -1
 	}
-	mail := Email {
+	mail := Email{
 		user: u.id
 		email: email
 	}
@@ -139,7 +150,7 @@ pub fn (mut app App) find_sshkey_by_user_id(id int) []SshKey {
 
 pub fn (mut app App) find_username_by_id(id int) string {
 	user := sql app.db {
-		select from User where id==id limit 1
+		select from User where id == id limit 1 
 	}
 	return user.username
 }
@@ -191,7 +202,7 @@ pub fn (mut app App) find_contributor_by_repo_id(id int) []Contributor {
 
 pub fn (mut app App) find_registered_contributor_by_repo_id(id int) []User {
 	contributor := sql app.db {
-		select from Contributor where repo == id
+		select from Contributor where repo == id 
 	}
 	mut user := []User{}
 	for contrib in contributor {
