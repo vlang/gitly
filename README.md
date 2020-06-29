@@ -31,6 +31,7 @@ v .
 Required dependencies:
 * V 0.1.28.1 (https://vlang.io)
 * SQLite (Ubuntu/Debian: `libsqlite3-dev`)
-* sassc
+
+Gitly will support Postgres and MySQL in the future (once V ORM does).
 
 ![](https://user-images.githubusercontent.com/687996/85933714-b195fe80-b8da-11ea-9ddd-09cadc2103e4.png)
