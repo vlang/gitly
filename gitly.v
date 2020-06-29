@@ -184,8 +184,6 @@ pub fn (mut app App) create_new_test_repo() {
 		app.repo = x
 		app.repo.lang_stats = app.find_lang_stats_by_repo_id(app.repo.id)
 		// init branches list for existing repo
-		mut r := &app.repo
-		r.branches = get_branches(r)
 		return
 	}
 	_ := os.ls('.') or {
@@ -436,7 +434,7 @@ pub fn (mut app App) contributors() vweb.Result {
 }
 
 pub fn (mut app App) branches() vweb.Result {
-	branches := app.repo.branches
+	branches := app.find_branches_by_repo_id(app.repo.id)
 	return $vweb.html()
 }
 

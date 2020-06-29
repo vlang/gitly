@@ -120,6 +120,15 @@ fn (mut app App) create_tables() {
 		'created_at integer default 0'
 		'text text default ""'
 	])
+	app.create_table('Branch', [
+		'id integer primary key'
+		'repo_id integer default 0'
+		'name text default ""'
+		'author text default ""'
+		'hash text default ""'
+		'date integer default 0'
+		'UNIQUE(repo_id, name)'
+	])
 }
 
 fn (app &App) find_repo_by_name(name string) ?Repo {
