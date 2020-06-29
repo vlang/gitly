@@ -4,7 +4,6 @@ module main
 
 import crypto.sha256
 import rand
-import time
 
 struct User {
 	id            int
