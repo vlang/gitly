@@ -94,8 +94,8 @@ fn (mut app App) update_repo() {
 	r.nr_contributors = app.contributor_by_repo_id_size(r.id)
 	app.info(r.nr_contributors.str())
 	r.created_at = int(tmp_commit.created_at)
-	r.branches = get_branches(r)
-	r.nr_branches = r.branches.len
+	app.fetch_branches(r)
+	r.nr_branches = app.count_of_branches_by_repo_id(r.id)
 	// TODO: TEMPORARY - UNTIL WE GET PERSISTENT RELEASE INFO
 	r.nr_releases = 0
 	for tag in app.find_tags_by_repo_id(r.id) {
