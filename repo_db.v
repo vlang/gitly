@@ -75,6 +75,7 @@ fn (mut app App) create_tables() {
 		'username text default ""'
 		'password text default ""'
 		'is_github int default 0'
+		'is_registered int default 0'
 		'UNIQUE(username)'
 	])
 	app.create_table('Email', [
@@ -87,8 +88,7 @@ fn (mut app App) create_tables() {
 		'id integer primary key'
 		'user integer default 0'
 		'repo integer default 0'
-		'name text'
-		'UNIQUE(user, repo, name)'
+		'UNIQUE(user, repo)'
 	])
 	app.create_table('Tag', [
 		'id integer primary key'
