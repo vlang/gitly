@@ -26,6 +26,7 @@ mut:
 	version       string
 	html_path     vweb.RawHtml
 	page_gen_time string
+	is_tree bool
 pub mut:
 	tokens        map[string]string // [userid] = token
 	file_log      log.Log
@@ -219,6 +220,7 @@ pub fn (mut app App) tree() vweb.Result {
 	if app.path.contains('/favicon.svg') {
 		return vweb.not_found()
 	}
+	app.is_tree = true
 	// t := time.ticks()
 	mut up := ''
 	mut poss_up := true

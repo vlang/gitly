@@ -16,9 +16,10 @@
 		var httpsUrl = 'https://@app.subdomain&#64;gitly.org/@app.reponame'
 	</script>
 
-	<!--
+	@if app.is_tree
 	@js '/jquery.js'
-	-->
+	@end
+
 	@css '//fonts.googleapis.com/css?family=Roboto:400,300,100,200,500,700'
 	@css '/gitly.css?3'
 </head>
