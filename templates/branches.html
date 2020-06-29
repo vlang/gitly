@@ -1,19 +1,19 @@
 @header
 <h3>Branches</h3>
 .branches {
-    @for branch in branches
-        .branch {
-            .clog {
-                .clog-msg {
-                    <a href='/branches/'>@branch.name</a>
-                }
-                span.clog-author {
-                    <span >@branch.author</span>
-                }
-                span.clog-time {
-                    updated @branch.date.relative()
-                }
-            }
-        }
-    @end
+	@for branch in branches
+		.branch {
+			.clog {
+				.clog-msg {
+					<a href='/branches/'>@branch.name</a>
+				}
+				span.clog-author {
+					<span >@branch.author</span>
+				}
+				span.clog-time {
+					updated @branch.date.relative()
+				}
+			}
+		}
+	@end
 }
