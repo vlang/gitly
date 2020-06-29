@@ -14,7 +14,7 @@ import rand
 const (
 	commits_per_page = 35
 	http_port        = 8080
-	expire_lenght    = 200
+	expire_length    = 200
 )
 
 struct App {
@@ -587,7 +587,7 @@ pub fn (mut app App) login_post() vweb.Result {
 		app.vweb.redirect('/login')
 		return vweb.Result{}
 	}
-	expires := time.utc().add_days(expire_lenght)
+	expires := time.utc().add_days(expire_length)
 	token := app.add_token(user.id, expires)
 	app.vweb.set_cookie_with_expire_date('id', user.id.str(), expires)
 	app.vweb.set_cookie_with_expire_date('token', token, expires)
