@@ -15,8 +15,15 @@
 @for comment in comments
 
 .comment {
-	<i>@comment.author_id commented</i>
+	<i>@comment.author_name commented</i>
 	<p>@comment.text</p>
 }
 
+@end
+@if app.logged_in
+<form method='post' action='/comment_post'>
+	<textarea type='text' name='text' placeholder='Write the command...' required></textarea>
+	<input type='number' class='new_comment' name='issue_id' value='@issue.id' style='visibility: hidden; position: absolute;'>
+	<input type='submit' name='submit' value='Comment'>
+</form>
 @end

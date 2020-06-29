@@ -41,7 +41,12 @@
 		<a href='/'>@app.reponame</a>
 	}
 	.user {
-		<a href='/register'>Register</a>
+		@if app.logged_in
+			<a href='/user/@app.user.username'<span>@app.user.username</span></a>
+		@else
+			<a href='/login'>Login</a>
+			<a href='/register'>Register</a>
+		@end
 	}
 }
 
