@@ -596,9 +596,6 @@ pub fn (mut app App) comment_post() vweb.Result {
 	text := app.vweb.form['text']
 	comment := app.vweb.form['issue_id']
 
-	println(text)
-	println(comment)
-
 	if text == '' || comment == '' || !app.logged_in {
 		app.vweb.redirect('/issue/$comment')
 		return vweb.Result{}
