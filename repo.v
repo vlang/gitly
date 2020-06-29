@@ -25,7 +25,6 @@ struct Repo {
 	latest_activity    time.Time [skip]
 mut:
 	nr_tags            int
-	branches           []Branch [skip]
 	nr_open_issues     int
 	nr_open_prs        int
 	nr_releases        int
