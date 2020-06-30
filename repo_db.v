@@ -75,6 +75,7 @@ fn (mut app App) create_tables() {
 		'username text default ""'
 		'password text default ""'
 		'token text default ""'
+		'avatar text default ""'
 		'is_github int default 0'
 		'is_registered int default 0'
 		'UNIQUE(username)'

@@ -42,7 +42,14 @@
 	}
 	.user {
 		@if app.logged_in
-			<a href='/user/@app.user.username'<span>@app.user.username</span></a>
+			<div class='avatar'>
+			@if app.avatar
+				<img src="@app.avatar_data">
+			@else
+				<span>@app.avatar_data</span>
+			@end
+			</div>
+			<a href='/user/@app.user.username'>@app.user.username</a>
 			<a href='/logout'>Logout</a>
 		@else
 			<a href='/login'>Login</a>

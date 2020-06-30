@@ -36,6 +36,8 @@ pub mut:
 	db            sqlite.DB
 	logged_in     bool
 	user          User
+	avatar        bool
+	avatar_data   string
 }
 
 fn main() {
@@ -163,6 +165,12 @@ pub fn (mut app App) init() {
 		app.user = app.get_user() or {
 			app.logged_in = false
 			User{}
+		}
+		app.avatar = app.user.avatar != ''
+		app.avatar_data = app.user.avatar
+		if !app.avatar {
+			println(app.user.username[0])
+			app.avatar_data = app.user.username.bytes()[0].str()
 		}
 	}
 }
