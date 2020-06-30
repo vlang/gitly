@@ -36,8 +36,6 @@ pub mut:
 	db            sqlite.DB
 	logged_in     bool
 	user          User
-	avatar        bool
-	avatar_data   string
 }
 
 fn main() {
@@ -165,12 +163,6 @@ pub fn (mut app App) init() {
 		app.user = app.get_user() or {
 			app.logged_in = false
 			User{}
-		}
-		app.avatar = app.user.avatar != ''
-		app.avatar_data = app.user.avatar
-		if !app.avatar {
-			println(app.user.username[0])
-			app.avatar_data = app.user.username.bytes()[0].str()
 		}
 	}
 }
@@ -678,5 +670,10 @@ pub fn (mut app App) add_token(user_id int) string {
 
 pub fn (mut app App) get_user() ?User {
 	id := app.vweb.get_cookie('id') or { return error('Not logged in') }
-	return app.find_user_by_id(id.int())
+	mut user := app.find_user_by_id(id.int())
+	user.b_avatar = user.avatar != ''
+	if !user.b_avatar {
+		user.avatar = user.username.bytes()[0].str()
+	}
+	return user
 }

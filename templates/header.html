@@ -43,10 +43,10 @@
 	.user {
 		@if app.logged_in
 			<div class='avatar'>
-			@if app.avatar
-				<img src="@app.avatar_data">
+			@if app.user.b_avatar
+				<img src="@app.user.avatar">
 			@else
-				<span>@app.avatar_data</span>
+				<span>@app.user.avatar</span>
 			@end
 			</div>
 			<a href='/user/@app.user.username'>@app.user.username</a>

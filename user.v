@@ -23,8 +23,9 @@ struct User {
 	is_github     bool
 	is_registered bool
 	token         string
-	avatar        string
 mut:
+	avatar        string
+	b_avatar      bool [skip]
 	emails        []Email [skip]
 }
 
