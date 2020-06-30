@@ -23,8 +23,9 @@ struct User {
 	is_github     bool
 	is_registered bool
 	token         string
-	avatar        string [skip]
 mut:
+	avatar        string
+	b_avatar      bool [skip]
 	emails        []Email [skip]
 }
 
@@ -58,6 +59,7 @@ struct GitHubUser {
 	username string [json:'login']
 	name string
 	email string
+	avatar string [json:'avatar_url']
 }
 
 fn make_password(password, username string) string {
@@ -156,6 +158,7 @@ pub fn (mut app App) oauth() vweb.Result {
 		user = app.find_user_by_username(gh_user.username) or {
 			return app.vweb.not_found()
 		}
+		app.update_avatar_for_user_id(gh_user.avatar, user.id)
 	}
 	expires := time.utc().add_days(expire_length)
 	token = app.find_token_from_user_id(user.id)
@@ -166,6 +169,12 @@ pub fn (mut app App) oauth() vweb.Result {
 	app.vweb.set_cookie_with_expire_date('token', token, expires)
 	app.vweb.redirect('/')
 	return vweb.Result{}
+}
+
+pub fn (mut app App) update_avatar_for_user_id(data string, id int) {
+	sql app.db {
+		update User set avatar = data where id == id
+	}
 }
 
 pub fn (mut app App) create_empty_user(username, email string) int {

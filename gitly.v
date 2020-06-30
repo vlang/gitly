@@ -670,5 +670,10 @@ pub fn (mut app App) add_token(user_id int) string {
 
 pub fn (mut app App) get_user() ?User {
 	id := app.vweb.get_cookie('id') or { return error('Not logged in') }
-	return app.find_user_by_id(id.int())
+	mut user := app.find_user_by_id(id.int())
+	user.b_avatar = user.avatar != ''
+	if !user.b_avatar {
+		user.avatar = user.username.bytes()[0].str()
+	}
+	return user
 }

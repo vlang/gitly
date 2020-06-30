@@ -23,9 +23,31 @@ h3 {
   min-height: calc(100vh - 300px); }
 
 .user {
+  display: flex;
   position: absolute;
   top: 0;
   right: 10px; }
+
+.user * {
+  margin-left: 10px; }
+
+.avatar {
+  height: 40px;
+  width: 40px;
+  text-align: center;
+  border-radius: 100%;
+  background-color: #4078C0;
+  margin-top: 5px;
+  overflow: hidden; }
+
+.avatar > span {
+  line-height: 40px;
+  font-size: 25px; }
+
+.avatar > img {
+  height: 40px;
+  width: 40px;
+  margin: 0; }
 
 #header {
   background-color: #24292e;
