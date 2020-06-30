@@ -111,7 +111,7 @@ pub fn (mut app App) command_fetcher() {
 					}
 					'adduser' {
 						if args.len > 4 {
-							app.add_user(args[1], args[2], args[3..])
+							app.add_user(args[1], args[2], args[3..], false)
 							println('Added user ${args[1]}')
 						} else {
 							error('Not enough arguments (3 required but only $args.len given)')
@@ -546,7 +546,7 @@ pub fn (mut app App) register_post() vweb.Result {
 		app.vweb.redirect('/register')
 		return vweb.Result{}
 	}
-	app.add_user(username, password, [email])
+	app.add_user(username, password, [email], false)
 	user := app.find_user_by_username(username) or {
 		app.vweb.redirect('/register')
 		return vweb.Result{}
