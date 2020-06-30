@@ -106,8 +106,14 @@ pub fn (mut app App) add_user(username, password string, emails []string, github
 		u.emails = app.find_emails_by_user_id(u.id)
 	} else {
 		name := user.username
-		sql app.db {
-			update User set username=username, password=password, name=name, is_registered=true where id==user.id
+		if !github {
+			sql app.db {
+				update User set username=username, password=password, name=name, is_registered=true where id==user.id
+			}
+		} else {
+			sql app.db {
+				update User set username=username, name=name, is_registered=true where id==user.id
+			}
 		}
 	}
 }
@@ -127,18 +133,29 @@ pub fn (mut app App) oauth() vweb.Result {
 		return app.vweb.not_found()
 	}
 	mut token := resp.text.find_between('access_token=', '&')
-	user_js := http.get('https://api.github.com/user?access_token=$token') or {
+	mut request := http.new_request('get', 'https://api.github.com/user', '') or {
+		app.error(err)
+		return app.vweb.not_found()
+	}
+	request.add_header('Authorization', 'token $token')
+	user_js := request.do() or {
+		app.error(err)
 		return app.vweb.not_found()
 	}
 	if user_js.status_code != 200 {
-		return app.vweb.not_found()
+		app.error(user_js.status_code.str())
+		app.error(user_js.text)
+		return app.vweb.text('Can not access the API')
 	}
 	gh_user := json.decode(GitHubUser, user_js.text) or {
 		return app.vweb.not_found()
 	}
-	app.add_user(gh_user.username, gh_user.name, [gh_user.email], true)
-	user := app.find_user_by_username(gh_user.username) or {
-		return app.vweb.not_found()
+	mut user := app.find_user_by_email(gh_user.email) or { User{} }
+	if !user.is_github {
+		app.add_user(gh_user.username, '', [gh_user.email], true)
+		user = app.find_user_by_username(gh_user.username) or {
+			return app.vweb.not_found()
+		}
 	}
 	expires := time.utc().add_days(expire_length)
 	token = app.find_token_from_user_id(user.id)

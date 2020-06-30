@@ -586,6 +586,10 @@ pub fn (mut app App) login_post() vweb.Result {
 		app.vweb.redirect('/login')
 		return vweb.Result{}
 	}
+	if user.is_github {
+		app.vweb.redirect('/login')
+		return vweb.Result{}
+	}
 	expires := time.utc().add_days(expire_length)
 	mut token := app.find_token_from_user_id(user.id)
 	if token == '' {
