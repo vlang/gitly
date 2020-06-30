@@ -4,6 +4,16 @@ module main
 
 import crypto.sha256
 import rand
+import os
+import net.http
+import json
+import vweb
+import time
+
+const (
+	client_id = os.getenv('GITLY_OAUTH_CLIENT_ID')
+	client_secret = os.getenv('GITLY_OAUTH_SECRET')
+)
 
 struct User {
 	id            int
@@ -38,6 +48,18 @@ struct Contributor {
 	repo int
 }
 
+struct OAuth_Request {
+	client_id string
+	client_secret string
+	code string
+}
+
+struct GitHubUser {
+	username string [json:'login']
+	name string
+	email string
+}
+
 fn make_password(password, username string) string {
 	mut seed := [u32(username[0]), u32(username[1])]
 	rand.seed(seed)
@@ -50,18 +72,20 @@ fn check_password(password, username, hashed string) bool {
 	return make_password(password, username) == hashed
 }
 
-pub fn (mut app App) add_user(username, password, gitname string, emails []string) {
+pub fn (mut app App) add_user(username, password string, emails []string, github bool) {
 	mut user := app.find_user_by_username(username) or { User{} }
-	if user.id != 0 && !user.is_registered{
+	if user.id != 0 && !user.is_registered {
 		app.error('User $username already exists')
+		return
+
 	}
 	user = app.find_user_by_email(emails[0]) or { User{} }
 	if user.id == 0 {
 		user = User{
 			username: username
 			password: password
-			name: gitname
 			is_registered: true
+			is_github: github
 		}
 		app.insert_user(user)
 		mut u := app.find_user_by_username(user.username) or {
@@ -81,10 +105,67 @@ pub fn (mut app App) add_user(username, password, gitname string, emails []strin
 		}
 		u.emails = app.find_emails_by_user_id(u.id)
 	} else {
-		sql app.db {
-			update User set username=username, password=password, name=gitname, is_registered=true where id==user.id
+		name := user.username
+		if !github {
+			sql app.db {
+				update User set username=username, password=password, name=name, is_registered=true where id==user.id
+			}
+		} else {
+			sql app.db {
+				update User set username=username, name=name, is_registered=true where id==user.id
+			}
 		}
 	}
+}
+
+pub fn (mut app App) oauth() vweb.Result {
+	code := app.vweb.req.url.all_after('code=')
+	if code == '' {
+		return app.vweb.not_found()
+	}
+	req := OAuth_Request {
+		client_id: client_id
+		client_secret: client_secret
+		code: code
+	}
+	d := json.encode(req)
+	resp := http.post_json('https://github.com/login/oauth/access_token', d) or {
+		return app.vweb.not_found()
+	}
+	mut token := resp.text.find_between('access_token=', '&')
+	mut request := http.new_request('get', 'https://api.github.com/user', '') or {
+		app.error(err)
+		return app.vweb.not_found()
+	}
+	request.add_header('Authorization', 'token $token')
+	user_js := request.do() or {
+		app.error(err)
+		return app.vweb.not_found()
+	}
+	if user_js.status_code != 200 {
+		app.error(user_js.status_code.str())
+		app.error(user_js.text)
+		return app.vweb.text('Can not access the API')
+	}
+	gh_user := json.decode(GitHubUser, user_js.text) or {
+		return app.vweb.not_found()
+	}
+	mut user := app.find_user_by_email(gh_user.email) or { User{} }
+	if !user.is_github {
+		app.add_user(gh_user.username, '', [gh_user.email], true)
+		user = app.find_user_by_username(gh_user.username) or {
+			return app.vweb.not_found()
+		}
+	}
+	expires := time.utc().add_days(expire_length)
+	token = app.find_token_from_user_id(user.id)
+	if token == '' {
+		token = app.add_token(user.id)
+	}
+	app.vweb.set_cookie_with_expire_date('id', user.id.str(), expires)
+	app.vweb.set_cookie_with_expire_date('token', token, expires)
+	app.vweb.redirect('/')
+	return vweb.Result{}
 }
 
 pub fn (mut app App) create_empty_user(username, email string) int {
