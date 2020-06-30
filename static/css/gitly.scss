@@ -46,8 +46,10 @@ h3 {
 	top: 0;
 	right: 10px;
 }
+.user * {
+	margin-left: 10px;
+}
 .avatar {
-	margin-right: 10px;
 	height: 40px;
 	width: 40px;
 	text-align: center;
@@ -63,6 +65,7 @@ h3 {
 .avatar > img {
 	height: 40px;
 	width: 40px;
+	margin: 0;
 }
 #header {
 	background-color:#24292e;
