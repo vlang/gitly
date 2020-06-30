@@ -50,7 +50,7 @@ fn check_password(password, username, hashed string) bool {
 	return make_password(password, username) == hashed
 }
 
-pub fn (mut app App) add_user(username, password, gitname string, emails []string) {
+pub fn (mut app App) add_user(username, password string, emails []string) {
 	mut user := app.find_user_by_username(username) or { User{} }
 	if user.id != 0 && !user.is_registered{
 		app.error('User $username already exists')
@@ -60,7 +60,6 @@ pub fn (mut app App) add_user(username, password, gitname string, emails []strin
 		user = User{
 			username: username
 			password: password
-			name: gitname
 			is_registered: true
 		}
 		app.insert_user(user)
@@ -81,8 +80,9 @@ pub fn (mut app App) add_user(username, password, gitname string, emails []strin
 		}
 		u.emails = app.find_emails_by_user_id(u.id)
 	} else {
+		name := user.username
 		sql app.db {
-			update User set username=username, password=password, name=gitname, is_registered=true where id==user.id
+			update User set username=username, password=password, name=name, is_registered=true where id==user.id
 		}
 	}
 }

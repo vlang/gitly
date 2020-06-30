@@ -82,16 +82,6 @@ pub fn (mut app App) init_once() {
 	if version != app.version {
 		os.write_file('static/assets/version', app.version)
 	}
-	mut user := User{
-		name: 'Admin'
-		username: 'admin'
-		password: make_password('test', 'admin')
-		is_github: false
-	}
-	email := Email{
-		user: 1
-		email: 'admin@mail.com'
-	}
 	app.reponame = ''
 	app.subdomain = ''
 	app.path = ''
@@ -103,8 +93,6 @@ pub fn (mut app App) init_once() {
 		panic(err)
 	}
 	app.create_tables()
-	app.insert_user(user)
-	app.insert_email(email)
 	go app.create_new_test_repo() // if it doesn't exist
 	if '-cmdapi' in os.args {
 		go app.command_fetcher()
@@ -123,16 +111,16 @@ pub fn (mut app App) command_fetcher() {
 					}
 					'adduser' {
 						if args.len > 4 {
-							app.add_user(args[1], args[2], args[3], args[4..])
+							app.add_user(args[1], args[2], args[3..])
 							println('Added user ${args[1]}')
 						} else {
-							error('Not enough arguments (4 required but only $args.len given)')
+							error('Not enough arguments (3 required but only $args.len given)')
 						}
 					}
 					else {
 						println('Commands:')
 						println('	!updaterepo')
-						println('	!adduser <username> <gitname> <password> <email1> <email2>...')
+						println('	!adduser <username> <password> <email1> <email2>...')
 					}
 				}
 			} else {
@@ -552,14 +540,13 @@ pub fn (mut app App) register() vweb.Result {
 
 pub fn (mut app App) register_post() vweb.Result {
 	username := app.vweb.form['username']
-	name := app.vweb.form['name']
 	password := make_password(app.vweb.form['password'], username)
 	email := app.vweb.form['email']
-	if username == '' || name == '' || email == '' {
+	if username == '' || email == '' {
 		app.vweb.redirect('/register')
 		return vweb.Result{}
 	}
-	app.add_user(username, password, name, [email])
+	app.add_user(username, password, [email])
 	user := app.find_user_by_username(username) or {
 		app.vweb.redirect('/register')
 		return vweb.Result{}
