@@ -110,10 +110,16 @@ pub fn (mut app App) add_user(username, password string, emails []string, github
 			sql app.db {
 				update User set username=username, password=password, name=name, is_registered=true where id==user.id
 			}
-		} else {
+			return
+		}
+		if user.is_registered {
 			sql app.db {
-				update User set username=username, name=name, is_registered=true where id==user.id
+				update User set is_github = true where id==user.id
 			}
+			return
+		}
+		sql app.db {
+			update User set username=username, name=name, is_registered=true, is_github = true where id==user.id
 		}
 	}
 }
@@ -130,6 +136,7 @@ pub fn (mut app App) oauth() vweb.Result {
 	}
 	d := json.encode(req)
 	resp := http.post_json('https://github.com/login/oauth/access_token', d) or {
+		app.error(err)
 		return app.vweb.not_found()
 	}
 	mut token := resp.text.find_between('access_token=', '&')
@@ -153,7 +160,7 @@ pub fn (mut app App) oauth() vweb.Result {
 	mut user := app.find_user_by_email(gh_user.email) or { User{} }
 	if !user.is_github {
 		app.add_user(gh_user.username, '', [gh_user.email], true)
-		user = app.find_user_by_username(gh_user.username) or {
+		user = app.find_user_by_email(gh_user.email) or {
 			return app.vweb.not_found()
 		}
 	}
