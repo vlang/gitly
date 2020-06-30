@@ -552,14 +552,14 @@ pub fn (mut app App) register() vweb.Result {
 
 pub fn (mut app App) register_post() vweb.Result {
 	username := app.vweb.form['username']
-	git_name := app.vweb.form['gitname']
+	name := app.vweb.form['name']
 	password := make_password(app.vweb.form['password'], username)
 	email := app.vweb.form['email']
-	if username == '' || git_name == '' || email == '' {
+	if username == '' || name == '' || email == '' {
 		app.vweb.redirect('/register')
 		return vweb.Result{}
 	}
-	app.add_user(username, password, git_name, [email])
+	app.add_user(username, password, name, [email])
 	user := app.find_user_by_username(username) or {
 		app.vweb.redirect('/register')
 		return vweb.Result{}
@@ -619,6 +619,13 @@ pub fn (mut app App) logged_in() bool {
 	}
 	t := app.find_token_from_user_id(id.int())
 	return id != '' && token != '' && t != ''
+}
+
+pub fn (mut app App) logout() vweb.Result {
+	app.vweb.set_cookie('id', '')
+	app.vweb.set_cookie('token', '')
+	app.vweb.redirect('/')
+	return vweb.Result{}
 }
 
 pub fn (mut app App) comment_post() vweb.Result {

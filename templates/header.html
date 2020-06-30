@@ -43,6 +43,7 @@
 	.user {
 		@if app.logged_in
 			<a href='/user/@app.user.username'<span>@app.user.username</span></a>
+			<a href='/logout'>Logout</a>
 		@else
 			<a href='/login'>Login</a>
 			<a href='/register'>Register</a>
