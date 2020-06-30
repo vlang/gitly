@@ -249,6 +249,18 @@ pub fn (mut app App) tree() vweb.Result {
 		// println('caching files took ${time.ticks()-t}ms')
 		go app.slow_fetch_files_info('master', app.path)
 	}
+	mut readme := vweb.RawHtml('')
+	for file in files {
+		if file.name.to_lower() == 'readme.md' {
+			blob_path := os.join_path(app.repo.git_dir, '$file.parent_path$file.name')
+			println(blob_path)
+			plain_text := os.read_file(blob_path) or {
+				''
+			}
+			src, _, _ := hl.highlight_text(plain_text, blob_path, false)
+			readme = vweb.RawHtml(src)
+		}
+	}
 
 	mut last_commit := Commit{}
 	if poss_up {
