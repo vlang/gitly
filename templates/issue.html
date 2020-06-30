@@ -15,7 +15,7 @@
 @for comment in comments
 
 .comment {
-	<i>@comment.author_name commented</i>
+	<i>@comment.author_name commented @comment.relative()</i>
 	<p>@comment.text</p>
 }
 

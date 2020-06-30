@@ -539,6 +539,7 @@ pub fn (mut app App) new_issue_post() vweb.Result {
 		text: text
 		repo_id: app.repo.id
 		author_id: app.user.id
+		created_at: int(time.now().unix)
 	}
 	app.insert_issue(issue)
 	app.inc_repo_issues(app.repo.id)
@@ -643,6 +644,7 @@ pub fn (mut app App) comment_post() vweb.Result {
 	}
 
 	app.insert_comment(comm)
+	app.inc_comments_by_issue_id(comm.issue_id)
 	app.vweb.redirect('/issue/$comment')
 	return vweb.Result{}
 }

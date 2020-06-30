@@ -47,6 +47,7 @@ fn (mut app App) create_tables() {
 		'repo_id int default 0'
 		"title text default ''"
 		"text text default ''"
+		'created_at integer default 0'
 		'nr_comments int default 0'
 	])
 	//		"created_at int default (strftime('%s', 'now'))"
