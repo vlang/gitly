@@ -16,6 +16,7 @@ const (
 	http_port        = 8080
 	expire_length    = 200
 	posts_per_day    = 5
+	max_username_len = 16
 )
 
 struct App {
@@ -154,6 +155,8 @@ pub fn (mut app App) init() {
 		app.path = url.after('/pull/')
 	} else if url.contains('/issues/') {
 		app.path = url.after('issues/')
+	} else if url.contains('/register?error=') {
+		app.path = url.after('register?error=')
 	} else {
 		app.path = ''
 	}
@@ -585,19 +588,45 @@ pub fn (mut app App) new_issue_post() vweb.Result {
 }
 
 pub fn (mut app App) register() vweb.Result {
+	error := app.path.replace('%20', ' ')
+
+	app.path = ''
 	return $vweb.html()
 }
 
 pub fn (mut app App) register_post() vweb.Result {
 	username := app.vweb.form['username']
+
+	user_chars := username.bytes()
+	if user_chars.len > max_username_len {
+		// Username too long
+		return app.vweb.redirect('/register?error=Username is too long (max. 16)')
+	}
+	if username.contains('--') {
+		// Two hyphens
+		return app.vweb.redirect('/register?error=Username contains two hyphens')
+	}
+	if user_chars[0] == `-` || user_chars.last() == `-` {
+		// Username cannot begin or end with a hyphen
+		return app.vweb.redirect('/register?error=Username cannot begin or end with a hyphen')
+	}
+	for char in user_chars {
+		if !char.is_letter() && !char.is_digit() && char != `-` {
+			// Username does not contains extra symbols
+			return app.vweb.redirect('/register?error=Username does not contains special charater')
+		}
+	}
+	if app.vweb.form['password'] == '' {
+		return app.vweb.redirect('/register?error=Password does not be emptz')
+	}
 	password := make_password(app.vweb.form['password'], username)
 	email := app.vweb.form['email']
 	if username == '' || email == '' {
-		return app.vweb.redirect('/register')
+		return app.vweb.redirect('/register?error=Username or Email does not be emtpy')
 	}
 	app.add_user(username, password, [email], false)
 	user := app.find_user_by_username(username) or {
-		return app.vweb.redirect('/register')
+		return app.vweb.redirect('/register?error=User already exists')
 	}
 	expires := time.utc().add_days(expire_length)
 	token := app.add_token(user.id)
