@@ -155,8 +155,6 @@ pub fn (mut app App) init() {
 		app.path = url.after('/pull/')
 	} else if url.contains('/issues/') {
 		app.path = url.after('issues/')
-	} else if url.contains('/register?error=') {
-		app.path = url.after('register?error=')
 	} else {
 		app.path = ''
 	}
@@ -588,8 +586,6 @@ pub fn (mut app App) new_issue_post() vweb.Result {
 }
 
 pub fn (mut app App) register() vweb.Result {
-	error := app.path.replace('%20', ' ')
-
 	app.path = ''
 	return $vweb.html()
 }
@@ -600,33 +596,40 @@ pub fn (mut app App) register_post() vweb.Result {
 	user_chars := username.bytes()
 	if user_chars.len > max_username_len {
 		// Username too long
-		return app.vweb.redirect('/register?error=Username is too long (max. $max_username_len)')
+		app.error('Username is too long (max. $max_username_len)')
+		return app.vweb.redirect('/register')
 	}
 	if username.contains('--') {
 		// Two hyphens
-		return app.vweb.redirect('/register?error=Username cannot contain two hyphens')
+		app.error('Username cannot contain two hyphens')
+		return app.vweb.redirect('/register')
 	}
 	if user_chars[0] == `-` || user_chars.last() == `-` {
 		// Username cannot begin or end with a hyphen
-		return app.vweb.redirect('/register?error=Username cannot begin or end with a hyphen')
+		app.error('Username cannot begin or end with a hyphen')
+		return app.vweb.redirect('/register')
 	}
 	for char in user_chars {
 		if !char.is_letter() && !char.is_digit() && char != `-` {
 			// Username does not contains extra symbols
-			return app.vweb.redirect('/register?error=Username cannot contain special charater')
+			app.error('Username cannot contain special charater')
+			return app.vweb.redirect('/register')
 		}
 	}
 	if app.vweb.form['password'] == '' {
-		return app.vweb.redirect('/register?error=Password cannot be empty')
+		app.error('Password cannot be empty')
+		return app.vweb.redirect('/register')
 	}
 	password := make_password(app.vweb.form['password'], username)
 	email := app.vweb.form['email']
 	if username == '' || email == '' {
-		return app.vweb.redirect('/register?error=Username or Email cannot be emtpy')
+		app.error('Username or Email cannot be emtpy')
+		return app.vweb.redirect('/register')
 	}
 	app.add_user(username, password, [email], false)
 	user := app.find_user_by_username(username) or {
-		return app.vweb.redirect('/register?error=User already exists')
+		app.error('User already exists')
+		return app.vweb.redirect('/register')
 	}
 	expires := time.utc().add_days(expire_length)
 	token := app.add_token(user.id)
