@@ -16,7 +16,7 @@ const (
 	http_port        = 8080
 	expire_length    = 200
 	posts_per_day    = 5
-	max_username_len = 16
+	max_username_len = 32
 )
 
 struct App {
@@ -600,7 +600,7 @@ pub fn (mut app App) register_post() vweb.Result {
 	user_chars := username.bytes()
 	if user_chars.len > max_username_len {
 		// Username too long
-		return app.vweb.redirect('/register?error=Username is too long (max. 16)')
+		return app.vweb.redirect('/register?error=Username is too long (max. $max_username_len)')
 	}
 	if username.contains('--') {
 		// Two hyphens
