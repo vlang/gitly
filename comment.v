@@ -30,12 +30,6 @@ fn (mut app App) find_issue_comments(issue_id int) []Comment {
 	return comments
 }
 
-fn (mut app App) count_comments_by_issue_id(issue_id int) int {
-	return sql app.db {
-		select count from Comment where issue_id == issue_id
-	}
-}
-
 fn (comment Comment) relative() string {
 	return time.unix(comment.created_at).relative()
 }

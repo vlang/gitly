@@ -191,7 +191,10 @@ pub fn (mut app App) create_new_test_repo() {
 		git_dir: git_dir
 		lang_stats: test_lang_stats
 		description: 'The V programming language'
+		nr_contributors: 0
+		nr_open_issues: 0
 		nr_open_prs: 0
+		nr_commits: 0
 		id: 1
 	}
 	app.info('inserting test repo')
@@ -314,12 +317,11 @@ pub fn (mut app App) commits() vweb.Result {
 		commits = app.repo.get_commits_by_year_month_day(args[0].int(), args[1].int(), args[2].int())
 	}
 	*/
-	nr_commits := app.commits_by_repo_id_size(app.repo.id)
-	if nr_commits > commits_per_page {
+	if app.repo.nr_commits > commits_per_page {
 		offset := page * commits_per_page
-		delta := nr_commits - offset
+		delta := app.repo.nr_commits - offset
 		if delta > 0 {
-			if delta == nr_commits && page == 0 {
+			if delta == app.repo.nr_commits && page == 0 {
 				first = true
 			} else {
 				last = true
@@ -539,6 +541,7 @@ pub fn (mut app App) new_issue_post() vweb.Result {
 		created_at: int(time.now().unix)
 	}
 	app.insert_issue(issue)
+	app.inc_repo_issues(app.repo.id)
 	return app.vweb.redirect('/issues')
 }
 
@@ -629,7 +632,8 @@ pub fn (mut app App) comment_post() vweb.Result {
 	}
 
 	app.insert_comment(comm)
-	return app.vweb.redirect('/issue/$issue_id')
+	app.inc_comments_by_issue_id(comm.issue_id)
+	return app.vweb.redirect('/issue/$comment')
 }
 
 fn gen_uuid_v4ish() string {
