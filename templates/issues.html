@@ -33,5 +33,20 @@
 @end
 </div>
 
+<div class="buttons">
+	<br>
+@if first
+	<a href="/issues/@url@last_site" class="button disabled">Prev</a>
+@else
+	<a href="/issues/@url@last_site" class="button">Prev</a>/
+@end
+
+@if last
+	<a href="/issues/@url@next_site" class="button disabled">Next</a>
+@else
+	<a href="/issues/@url@next_site" class="button">Next</a>
+@end
+</div>
+
 
 @footer

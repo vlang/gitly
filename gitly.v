@@ -29,7 +29,7 @@ mut:
 	page_gen_time string
 	is_tree bool
 pub mut:
-	tokens        map[string]string // [userid] = token
+	issues        map[string]int // [userid] = token
 	file_log      log.Log
 	cli_log       log.Log
 	vweb          vweb.Context
@@ -59,7 +59,7 @@ pub fn (mut app App) error(msg string) {
 
 pub fn (mut app App) init_once() {
 	os.mkdir('logs')
-	app.tokens = map[string]string
+	app.issues = map[string]int
 	app.file_log = log.Log{}
 	app.cli_log = log.Log{}
 	app.file_log.set_level(.info)
@@ -99,6 +99,11 @@ pub fn (mut app App) init_once() {
 	}
 }
 
+fn (mut app App) protection_clearer() {
+	time.sleep(24 * int(time.hour))
+	app.issues = map[string]int
+}
+
 pub fn (mut app App) command_fetcher() {
 	for {
 		line := os.get_line()
@@ -124,7 +129,8 @@ pub fn (mut app App) command_fetcher() {
 					}
 				}
 			} else {
-				error('Unkown syntax. Use !<command>')
+
+			error('Unkown syntax. Use !<command>')
 			}
 		} else {
 			error('Unkown syntax. Use !<command>')
@@ -152,6 +158,8 @@ pub fn (mut app App) init() {
 		app.path = url.after('/user/')
 	} else if url.contains('/pull/') {
 		app.path = url.after('/pull/')
+	} else if url.contains('/issues/') {
+		app.path = url.after('issues/')
 	} else {
 		app.path = ''
 	}
@@ -388,10 +396,43 @@ pub fn (mut app App) commit() vweb.Result {
 }
 
 pub fn (mut app App) issues() vweb.Result {
-	mut issues := app.find_issues_by_repo(app.repo.id)
+	args := app.path.split('')
+	page := if args.len >= 1 { args.last().int() } else { 0 }
+	mut issues := app.find_issues_by_repo_as_page(app.repo.id, page)
+	mut first := false
+	mut last := false
 	for index, issue in issues {
 		issues[index].author_name = app.find_username_by_id(issue.author_id)
 	}
+
+	if app.repo.nr_open_issues > commits_per_page {
+		offset := page * commits_per_page
+		delta := app.repo.nr_open_issues - offset
+		if delta > 0 {
+			if delta == app.repo.nr_open_issues && page == 0 {
+				first = true
+			} else {
+				last = true
+			}
+		}
+	} else {
+		last = true
+		first = true
+	}
+
+	mut last_site := 0
+	if page > 0 {
+		last_site = page - 1
+	}
+	next_site := page + 1
+	mut url := ''
+	if args.len > 0 {
+		url = args[..args.len - 1].join('/')
+		if url != '' {
+			url += '/'
+		}
+	}
+	app.path = ''
 	return $vweb.html()
 }
 
@@ -528,6 +569,9 @@ pub fn (mut app App) new_issue() vweb.Result {
 }
 
 pub fn (mut app App) new_issue_post() vweb.Result {
+	if !app.logged_in || (app.user.id.str() in app.issues && app.issues[app.user.id.str()] >= 10) {
+		return app.vweb.redirect('/')
+	}
 	title := app.vweb.form['title'] // TODO use fn args
 	text := app.vweb.form['text']
 	if title == '' || text == '' {
@@ -540,6 +584,10 @@ pub fn (mut app App) new_issue_post() vweb.Result {
 		author_id: app.user.id
 		created_at: int(time.now().unix)
 	}
+	if app.user.id.str() !in app.issues {
+		app.issues[app.user.id.str()] = 0
+	}
+	app.issues[app.user.id.str()] = app.issues[app.user.id.str()] + 1
 	app.insert_issue(issue)
 	app.inc_repo_issues(app.repo.id)
 	return app.vweb.redirect('/issues')
