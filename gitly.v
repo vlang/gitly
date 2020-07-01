@@ -616,14 +616,14 @@ pub fn (mut app App) logout() vweb.Result {
 
 pub fn (mut app App) comment_post() vweb.Result {
 	text := app.vweb.form['text']
-	issue_id := app.vweb.form['issue_id']
+	comment := app.vweb.form['issue_id']
 
-	if text == '' || issue_id == '' || !app.logged_in {
-		return app.vweb.redirect('/issue/$issue_id')
+	if text == '' || comment == '' || !app.logged_in {
+		return app.vweb.redirect('/issue/$comment')
 	}
 	comm := Comment{
 		author_id: app.user.id
-		issue_id: issue_id.int()
+		issue_id: comment.int()
 		created_at: int(time.now().unix)
 		text: text
 	}
