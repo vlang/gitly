@@ -24,7 +24,8 @@ struct User {
 	is_registered bool
 	token         string
 mut:
-	nr_posts         int
+	nr_posts      int
+	last_post_time int
 	avatar        string
 	b_avatar      bool [skip]
 	emails        []Email [skip]
@@ -331,6 +332,11 @@ pub fn (mut app App) inc_posts_for_user(user &User) {
 	user.nr_posts++
 	u := *user
 	id := u.id
+	now := int(time.now().unix)
+	lastplus := int(time.unix(u.last_post_time).add_days(1).unix)
+	sql app.db {
+		update User set nr_posts = 0, last_post_time = now where last_post_time <= lastplus && id == id
+	}
 	sql app.db {
 		update User set nr_posts = nr_posts + 1 where id == id
 	}

@@ -98,13 +98,6 @@ pub fn (mut app App) init_once() {
 	}
 }
 
-fn (mut app App) protection_clearer() {
-	time.sleep(24 * int(time.hour))
-	sql app.db {
-		update User set nr_posts = 0 where is_registered == true
-	}
-}
-
 pub fn (mut app App) command_fetcher() {
 	for {
 		line := os.get_line()
