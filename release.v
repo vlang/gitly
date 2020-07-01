@@ -25,3 +25,9 @@ pub fn (mut app App) find_releases_by_repo_id(repo_id int) []Release {
 		select from Release where repo_id == repo_id 
 	}
 }
+
+pub fn (mut app App) count_releases_by_repo_id(repo_id int) int {
+	return sql app.db {
+		select count from Release where repo_id == repo_id
+	}
+}

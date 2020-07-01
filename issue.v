@@ -12,13 +12,13 @@ mut:
 	is_pr         bool
 	assigned      []int [skip]
 	labels        []int [skip]
-	nr_comments   int
 	title         string
 	text          string
 	created_at    int
 	status        IssueStatus [skip]
 	linked_issues []int [skip]
 	author_name   string [skip]
+	nr_comments   int [skip]
 }
 
 enum IssueStatus {
@@ -61,8 +61,11 @@ fn (mut app App) find_pr_by_id(issue_id int) ?Issue {
 }
 
 fn (mut app App) find_issues_by_repo(repo_id int) []Issue {
-	issues := sql app.db {
+	mut issues := sql app.db {
 		select from Issue where repo_id == repo_id && is_pr == false 
+	}
+	for i, issue in issues {
+		issues[i].nr_comments = app.count_comments_by_issue_id(issue.id)
 	}
 	return issues
 }
@@ -74,12 +77,12 @@ fn (mut app App) find_prs_by_repo(repo_id int) []Issue {
 	return issues
 }
 
-fn (mut app App) inc_comments_by_issue_id(id int) {
-	sql app.db {
-		update Issue set nr_comments = nr_comments + 1 where id == id
-	}
-}
-
 fn (i &Issue) relative_time() string {
 	return time.unix(i.created_at).relative()
+}
+
+fn (mut app App) count_issues_by_repo(repo_id int) int {
+	return sql app.db {
+		select count from Issue where repo_id == repo_id && is_pr == false
+	}
 }

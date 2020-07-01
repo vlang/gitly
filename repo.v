@@ -17,22 +17,15 @@ struct Repo {
 	primary_branch     string [skip]
 	description        string
 	is_public          bool [skip]
-	users_contributed  []string [skip]
-	users_authorized   []string [skip]
 	nr_topics          int [skip]
 	nr_views           int
 	latest_update_hash string [skip]
 	latest_activity    time.Time [skip]
 mut:
 	nr_tags            int
-	nr_open_issues     int
 	nr_open_prs        int
-	nr_releases        int
-	nr_branches        int
 	lang_stats         []LangStat [skip]
 	created_at         int // time.Time
-	nr_contributors    int
-	nr_commits         int
 	labels             []Label [skip]
 	status             RepoStatus [skip]
 	msg_cache          map[string]string [skip]
@@ -56,8 +49,6 @@ fn (mut app App) update_repo() {
 	go r.analyse_lang(wg)
 	data := r.git('--no-pager log --abbrev-commit --abbrev=8 --pretty="%h$log_field_separator%aE$log_field_separator%cD$log_field_separator%s$log_field_separator%aN"')
 	mut tmp_commit := Commit{}
-	r.nr_contributors = 0
-	r.nr_commits = 0
 	app.db.exec('BEGIN TRANSACTION')
 	for line in data.split_into_lines() {
 		args := line.split(log_field_separator)
@@ -90,14 +81,9 @@ fn (mut app App) update_repo() {
 			app.insert_commit(tmp_commit)
 		}
 	}
-	r.nr_commits = app.commits_by_repo_id_size(r.id)
-	r.nr_contributors = app.contributor_by_repo_id_size(r.id)
-	app.info(r.nr_contributors.str())
 	r.created_at = int(tmp_commit.created_at)
 	app.fetch_branches(r)
-	r.nr_branches = app.count_of_banches_by_repo_id(r.id)
 	// TODO: TEMPORARY - UNTIL WE GET PERSISTENT RELEASE INFO
-	r.nr_releases = 0
 	for tag in app.find_tags_by_repo_id(r.id) {
 		release := &Release{
 			tag_id: tag.id
@@ -105,7 +91,6 @@ fn (mut app App) update_repo() {
 			notes: 'Some notes about this release...'
 		}
 		app.insert_release(release)
-		r.nr_releases++
 	}
 	wg.wait()
 	repo := *r
@@ -241,40 +226,40 @@ fn (r Repo) get_all_files(path string) []string {
 	return returnval
 }
 
-fn (r &Repo) nr_commits_fmt() vweb.RawHtml {
-	nr := r.nr_commits
+fn (mut app App) nr_commits_fmt() vweb.RawHtml {
+	nr := app.commits_by_repo_id_size(app.repo.id)
 	if nr == 1 {
 		return '<b>1</b> commit'
 	}
 	return '<b>$nr</b> commits'
 }
 
-fn (r &Repo) nr_branches_fmt() vweb.RawHtml {
-	nr := r.nr_branches
+fn (mut app App) nr_branches_fmt() vweb.RawHtml {
+	nr := app.count_of_branches_by_repo_id(app.repo.id)
 	if nr == 1 {
 		return '<b>1</b> branch'
 	}
 	return '<b>$nr</b> branches'
 }
 
-fn (r &Repo) nr_open_prs_fmt() vweb.RawHtml {
-	nr := r.nr_open_prs
+fn (mut app App) nr_open_prs_fmt() vweb.RawHtml {
+	nr := app.repo.nr_open_prs
 	if nr == 1 {
 		return '<b>1</b> pull request'
 	}
 	return '<b>$nr</b> pull requests'
 }
 
-fn (r &Repo) nr_open_issues_fmt() vweb.RawHtml {
-	nr := r.nr_open_issues
+fn (mut app App) nr_open_issues_fmt() vweb.RawHtml {
+	nr := app.count_issues_by_repo(app.repo.id)
 	if nr == 1 {
 		return '<b>1</b> issue'
 	}
 	return '<b>$nr</b> issues'
 }
 
-fn (r &Repo) nr_contributors_fmt() vweb.RawHtml {
-	nr := r.nr_contributors
+fn (mut app App) nr_contributors_fmt() vweb.RawHtml {
+	nr := app.contributor_by_repo_id_size(app.repo.id)
 	if nr == 1 {
 		return '<b>1</b> contributor'
 	}
@@ -289,8 +274,8 @@ fn (r &Repo) nr_topics_fmt() vweb.RawHtml {
 	return '<b>$nr</b> discussions'
 }
 
-fn (r &Repo) nr_releases_fmt() vweb.RawHtml {
-	nr := r.nr_releases
+fn (mut app App) nr_releases_fmt() vweb.RawHtml {
+	nr := app.count_releases_by_repo_id(app.repo.id)
 	if nr == 1 {
 		return '<b>1</b> release'
 	}

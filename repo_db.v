@@ -14,13 +14,8 @@ fn (mut app App) create_tables() {
 		"description text default ''"
 		'user_id int default 0'
 		'nr_views int default 0'
-		'nr_commits int default 0'
-		'nr_open_issues int default 0'
 		'nr_tags int default 0'
-		'nr_releases int default 0'
 		'nr_open_prs int default 0'
-		'nr_branches int default 0'
-		'nr_contributors int default 0'
 		"created_at int default (strftime('%s', 'now'))" 
 	])
     // unix time default now
@@ -48,7 +43,6 @@ fn (mut app App) create_tables() {
 		"title text default ''"
 		"text text default ''"
 		'created_at integer default 0'
-		'nr_comments int default 0'
 	])
 	//		"created_at int default (strftime('%s', 'now'))"
 	app.create_table('Commit', [
@@ -158,11 +152,4 @@ fn (mut app App) inc_file_views(file_id int) {
 	sql app.db {
 		update File set nr_views=nr_views+1 where id == file_id
 	}
-}
-
-fn (mut app App) inc_repo_issues(repo_id int) {
-	sql app.db {
-		update Repo set nr_open_issues=nr_open_issues+1 where id==repo_id
-	}
-	app.repo.nr_open_issues++
 }
