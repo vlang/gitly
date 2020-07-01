@@ -604,7 +604,7 @@ pub fn (mut app App) register_post() vweb.Result {
 	}
 	if username.contains('--') {
 		// Two hyphens
-		return app.vweb.redirect('/register?error=Username contains two hyphens')
+		return app.vweb.redirect('/register?error=Username contain two hyphens')
 	}
 	if user_chars[0] == `-` || user_chars.last() == `-` {
 		// Username cannot begin or end with a hyphen
@@ -613,16 +613,16 @@ pub fn (mut app App) register_post() vweb.Result {
 	for char in user_chars {
 		if !char.is_letter() && !char.is_digit() && char != `-` {
 			// Username does not contains extra symbols
-			return app.vweb.redirect('/register?error=Username does not contains special charater')
+			return app.vweb.redirect('/register?error=Username cannot contain special charater')
 		}
 	}
 	if app.vweb.form['password'] == '' {
-		return app.vweb.redirect('/register?error=Password does not be emptz')
+		return app.vweb.redirect('/register?error=Password cannot be empty')
 	}
 	password := make_password(app.vweb.form['password'], username)
 	email := app.vweb.form['email']
 	if username == '' || email == '' {
-		return app.vweb.redirect('/register?error=Username or Email does not be emtpy')
+		return app.vweb.redirect('/register?error=Username or Email cannot be emtpy')
 	}
 	app.add_user(username, password, [email], false)
 	user := app.find_user_by_username(username) or {
