@@ -15,6 +15,7 @@ const (
 	commits_per_page = 35
 	http_port        = 8080
 	expire_length    = 200
+	posts_per_day    = 10
 )
 
 struct App {
@@ -29,7 +30,6 @@ mut:
 	page_gen_time string
 	is_tree bool
 pub mut:
-	issues        map[string]int // [userid] = token
 	file_log      log.Log
 	cli_log       log.Log
 	vweb          vweb.Context
@@ -59,7 +59,6 @@ pub fn (mut app App) error(msg string) {
 
 pub fn (mut app App) init_once() {
 	os.mkdir('logs')
-	app.issues = map[string]int
 	app.file_log = log.Log{}
 	app.cli_log = log.Log{}
 	app.file_log.set_level(.info)
@@ -101,7 +100,9 @@ pub fn (mut app App) init_once() {
 
 fn (mut app App) protection_clearer() {
 	time.sleep(24 * int(time.hour))
-	app.issues = map[string]int
+	sql app.db {
+		update User set posts = 0
+	}
 }
 
 pub fn (mut app App) command_fetcher() {
@@ -569,7 +570,7 @@ pub fn (mut app App) new_issue() vweb.Result {
 }
 
 pub fn (mut app App) new_issue_post() vweb.Result {
-	if !app.logged_in || (app.user.id.str() in app.issues && app.issues[app.user.id.str()] >= 10) {
+	if !app.logged_in || (app.logged_in && app.user.posts >= posts_per_day) {
 		return app.vweb.redirect('/')
 	}
 	title := app.vweb.form['title'] // TODO use fn args
@@ -584,10 +585,7 @@ pub fn (mut app App) new_issue_post() vweb.Result {
 		author_id: app.user.id
 		created_at: int(time.now().unix)
 	}
-	if app.user.id.str() !in app.issues {
-		app.issues[app.user.id.str()] = 0
-	}
-	app.issues[app.user.id.str()] = app.issues[app.user.id.str()] + 1
+	app.inc_posts_for_user(app.user)
 	app.insert_issue(issue)
 	app.inc_repo_issues(app.repo.id)
 	return app.vweb.redirect('/issues')
