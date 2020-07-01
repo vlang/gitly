@@ -10,13 +10,12 @@ mut:
 	author_id     int
 	repo_id       int
 	is_pr         bool
-	// author               string [skip]
-	assigned      []string [skip]
+	assigned      []int [skip]
 	labels        []int [skip]
 	nr_comments   int
 	title         string
 	text          string
-	created_at    time.Time [skip]
+	created_at    int
 	status        IssueStatus [skip]
 	linked_issues []int [skip]
 	author_name   string [skip]
@@ -75,6 +74,12 @@ fn (mut app App) find_prs_by_repo(repo_id int) []Issue {
 	return issues
 }
 
+fn (mut app App) inc_comments_by_issue_id(id int) {
+	sql app.db {
+		update Issue set nr_comments = nr_comments + 1 where id == id
+	}
+}
+
 fn (i &Issue) relative_time() string {
-	return '1 minute ago'
+	return time.unix(i.created_at).relative()
 }

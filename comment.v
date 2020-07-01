@@ -2,6 +2,8 @@
 // Use of this source code is governed by a GPL license that can be found in the LICENSE file.
 module main
 
+import time
+
 struct Comment {
 mut:
 	id          int
@@ -26,4 +28,8 @@ fn (mut app App) find_issue_comments(issue_id int) []Comment {
 		comments[i].author_name = app.find_username_by_id(comment.author_id)
 	}
 	return comments
+}
+
+fn (comment Comment) relative() string {
+	return time.unix(comment.created_at).relative()
 }

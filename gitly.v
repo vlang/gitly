@@ -531,19 +531,18 @@ pub fn (mut app App) new_issue_post() vweb.Result {
 	title := app.vweb.form['title'] // TODO use fn args
 	text := app.vweb.form['text']
 	if title == '' || text == '' {
-		app.vweb.redirect('/new_issue')
-		return vweb.Result{}
+		return app.vweb.redirect('/new_issue')
 	}
 	issue := Issue{
 		title: title
 		text: text
 		repo_id: app.repo.id
 		author_id: app.user.id
+		created_at: int(time.now().unix)
 	}
 	app.insert_issue(issue)
 	app.inc_repo_issues(app.repo.id)
-	app.vweb.redirect('/issues')
-	return vweb.Result{}
+	return app.vweb.redirect('/issues')
 }
 
 pub fn (mut app App) register() vweb.Result {
@@ -555,20 +554,17 @@ pub fn (mut app App) register_post() vweb.Result {
 	password := make_password(app.vweb.form['password'], username)
 	email := app.vweb.form['email']
 	if username == '' || email == '' {
-		app.vweb.redirect('/register')
-		return vweb.Result{}
+		return app.vweb.redirect('/register')
 	}
 	app.add_user(username, password, [email], false)
 	user := app.find_user_by_username(username) or {
-		app.vweb.redirect('/register')
-		return vweb.Result{}
+		return app.vweb.redirect('/register')
 	}
 	expires := time.utc().add_days(expire_length)
 	token := app.add_token(user.id)
 	app.vweb.set_cookie_with_expire_date('id', user.id.str(), expires)
 	app.vweb.set_cookie_with_expire_date('token', token, expires)
-	app.vweb.redirect('/')
-	return vweb.Result{}
+	return app.vweb.redirect('/')
 }
 
 pub fn (mut app App) login() vweb.Result {
@@ -583,20 +579,16 @@ pub fn (mut app App) login_post() vweb.Result {
 	password := app.vweb.form['password']
 
 	if username == '' || password == '' {
-		app.vweb.redirect('/login')
-		return vweb.Result{}
+		return app.vweb.redirect('/login')
 	}
 	user := app.find_user_by_username(username) or {
-		app.vweb.redirect('/login')
-		return vweb.Result{}
+		return app.vweb.redirect('/login')
 	}
 	if !check_password(password, username, user.password) {
-		app.vweb.redirect('/login')
-		return vweb.Result{}
+		return app.vweb.redirect('/login')
 	}
 	if !user.is_registered {
-		app.vweb.redirect('/login')
-		return vweb.Result{}
+		return app.vweb.redirect('/login')
 	}
 	expires := time.utc().add_days(expire_length)
 	mut token := app.find_token_from_user_id(user.id)
@@ -605,8 +597,7 @@ pub fn (mut app App) login_post() vweb.Result {
 	}
 	app.vweb.set_cookie_with_expire_date('id', user.id.str(), expires)
 	app.vweb.set_cookie_with_expire_date('token', token, expires)
-	app.vweb.redirect('/')
-	return vweb.Result{}
+	return app.vweb.redirect('/')
 }
 
 pub fn (mut app App) logged_in() bool {
@@ -623,28 +614,26 @@ pub fn (mut app App) logged_in() bool {
 pub fn (mut app App) logout() vweb.Result {
 	app.vweb.set_cookie('id', '')
 	app.vweb.set_cookie('token', '')
-	app.vweb.redirect('/')
-	return vweb.Result{}
+	return app.vweb.redirect('/')
 }
 
 pub fn (mut app App) comment_post() vweb.Result {
 	text := app.vweb.form['text']
-	comment := app.vweb.form['issue_id']
+	issue_id := app.vweb.form['issue_id']
 
-	if text == '' || comment == '' || !app.logged_in {
-		app.vweb.redirect('/issue/$comment')
-		return vweb.Result{}
+	if text == '' || issue_id == '' || !app.logged_in {
+		return app.vweb.redirect('/issue/$issue_id')
 	}
 	comm := Comment{
 		author_id: app.user.id
-		issue_id: comment.int()
+		issue_id: issue_id.int()
 		created_at: int(time.now().unix)
 		text: text
 	}
 
 	app.insert_comment(comm)
-	app.vweb.redirect('/issue/$comment')
-	return vweb.Result{}
+	app.inc_comments_by_issue_id(comm.issue_id)
+	return app.vweb.redirect('/issue/$issue_id')
 }
 
 fn gen_uuid_v4ish() string {
