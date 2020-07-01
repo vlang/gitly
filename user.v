@@ -334,8 +334,11 @@ pub fn (mut app App) inc_posts_for_user(user &User) {
 	id := u.id
 	now := int(time.now().unix)
 	lastplus := int(time.unix(u.last_post_time).add_days(1).unix)
-	sql app.db {
-		update User set nr_posts = 0, last_post_time = now where last_post_time <= lastplus && id == id
+	if now >= lastplus {
+		user.last_post_time = now
+		sql app.db {
+			update User set nr_posts = 0, last_post_time = now where id == id
+		}
 	}
 	sql app.db {
 		update User set nr_posts = nr_posts + 1 where id == id

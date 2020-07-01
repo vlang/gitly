@@ -15,7 +15,7 @@ const (
 	commits_per_page = 35
 	http_port        = 8080
 	expire_length    = 200
-	posts_per_day    = 10
+	posts_per_day    = 5
 )
 
 struct App {
