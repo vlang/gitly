@@ -604,7 +604,7 @@ pub fn (mut app App) register_post() vweb.Result {
 	}
 	if username.contains('--') {
 		// Two hyphens
-		return app.vweb.redirect('/register?error=Username contain two hyphens')
+		return app.vweb.redirect('/register?error=Username cannot contain two hyphens')
 	}
 	if user_chars[0] == `-` || user_chars.last() == `-` {
 		// Username cannot begin or end with a hyphen
