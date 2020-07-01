@@ -24,7 +24,7 @@ struct User {
 	is_registered bool
 	token         string
 mut:
-	posts         int
+	nr_posts         int
 	avatar        string
 	b_avatar      bool [skip]
 	emails        []Email [skip]
@@ -328,10 +328,10 @@ pub fn (mut app App) contributor_by_repo_id_size(id int) int {
 }
 
 pub fn (mut app App) inc_posts_for_user(user &User) {
-	user.posts++
+	user.nr_posts++
 	u := *user
 	id := u.id
 	sql app.db {
-		update User set posts = posts + 1 where id == id
+		update User set nr_posts = nr_posts + 1 where id == id
 	}
 }

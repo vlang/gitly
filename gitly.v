@@ -101,7 +101,7 @@ pub fn (mut app App) init_once() {
 fn (mut app App) protection_clearer() {
 	time.sleep(24 * int(time.hour))
 	sql app.db {
-		update User set posts = 0 where is_registered == true
+		update User set nr_posts = 0 where is_registered == true
 	}
 }
 
@@ -570,7 +570,7 @@ pub fn (mut app App) new_issue() vweb.Result {
 }
 
 pub fn (mut app App) new_issue_post() vweb.Result {
-	if !app.logged_in || (app.logged_in && app.user.posts >= posts_per_day) {
+	if !app.logged_in || (app.logged_in && app.user.nr_posts >= posts_per_day) {
 		return app.vweb.redirect('/')
 	}
 	title := app.vweb.form['title'] // TODO use fn args
