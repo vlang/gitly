@@ -327,9 +327,11 @@ pub fn (mut app App) contributor_by_repo_id_size(id int) int {
 	}
 }
 
-pub fn (mut app App) inc_posts_for_user(user User) {
+pub fn (mut app App) inc_posts_for_user(user &User) {
 	user.posts++
+	u := *user
+	id := u.id
 	sql app.db {
-		update User set posts = posts + 1 where id == user.id
+		update User set posts = posts + 1 where id == id
 	}
 }

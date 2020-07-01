@@ -101,7 +101,7 @@ pub fn (mut app App) init_once() {
 fn (mut app App) protection_clearer() {
 	time.sleep(24 * int(time.hour))
 	sql app.db {
-		update User set posts = 0
+		update User set posts = 0 where is_registered == true
 	}
 }
 
