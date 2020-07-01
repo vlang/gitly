@@ -633,7 +633,7 @@ pub fn (mut app App) comment_post() vweb.Result {
 
 	app.insert_comment(comm)
 	app.inc_comments_by_issue_id(comm.issue_id)
-	return app.vweb.redirect('/issue/$comment')
+	return app.vweb.redirect('/issue/$issue_id')
 }
 
 fn gen_uuid_v4ish() string {
