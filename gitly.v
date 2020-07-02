@@ -265,7 +265,7 @@ pub fn (mut app App) index() vweb.Result {
 pub fn (mut app App) update() vweb.Result {
 	secret := app.vweb.form['webhook_secret']
 	if secret == app.repo.webhook_secret && app.repo.webhook_secret != '' {
-		app.update_repo_data(app.repo)
+		go app.update_repo_data(app.repo)
 	}
 	return app.vweb.redirect('/')
 }
