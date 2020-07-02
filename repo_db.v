@@ -19,6 +19,7 @@ fn (mut app App) create_tables() {
 		'nr_tags int default 0'
 		'nr_releases int default 0'
 		'nr_open_prs int default 0'
+		'webhook_secret text default ""'
 		'nr_branches int default 0'
 		'nr_contributors int default 0'
 		"created_at int default (strftime('%s', 'now'))"

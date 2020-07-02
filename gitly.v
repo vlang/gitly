@@ -262,6 +262,14 @@ pub fn (mut app App) index() vweb.Result {
 	return $vweb.html()
 }
 
+pub fn (mut app App) update() vweb.Result {
+	secret := app.vweb.form['webhook_secret']
+	if secret == app.repo.webhook_secret && app.repo.webhook_secret != '' {
+		app.update_repo_data(app.repo)
+	}
+	return app.vweb.redirect('/')
+}
+
 pub fn (mut app App) user() vweb.Result {
 	args := app.path.split('/')
 	mut user := User{}
