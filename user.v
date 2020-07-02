@@ -4,10 +4,6 @@ module main
 
 import crypto.sha256
 import rand
-import os
-import net.http
-import json
-import vweb
 import time
 
 struct User {
@@ -17,6 +13,7 @@ struct User {
 	password      string
 	is_github     bool
 	is_registered bool
+	is_blocked    bool
 	token         string
 mut:
 	nr_posts      int
@@ -24,6 +21,7 @@ mut:
 	avatar        string
 	b_avatar      bool [skip]
 	emails        []Email [skip]
+	login_attempts int
 }
 
 struct SshKey {
@@ -286,4 +284,27 @@ pub fn (mut app App) inc_posts_for_user(user &User) {
 	sql app.db {
 		update User set nr_posts = nr_posts + 1 where id == id
 	}
+}
+
+pub fn (mut app App) inc_user_login_attempts(user_id int) {
+	sql app.db {
+		update User set login_attempts = login_attempts + 1 where id == user_id
+	}
+}
+
+pub fn (mut app App) update_user_login_attempts(user_id, attempts int) {
+	sql app.db {
+		update User set login_attempts = attempts where id == user_id
+	}
+}
+
+pub fn (mut app App) block_user_by_id(user_id int) {
+	sql app.db {
+		update User set is_blocked = true where id == user_id
+	}
+}
+
+pub fn (mut app App) check_user_blocked_by_id(user_id int) bool {
+	user := app.find_user_by_id(user_id)
+	return user.is_blocked
 }
