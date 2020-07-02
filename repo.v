@@ -171,6 +171,8 @@ fn (mut app App) update_repo_data(r &Repo) {
 	app.update_nr_commits_by_repo_id(r.id, r.nr_commits)
 	app.update_nr_contributors_by_repo_id(r.id, r.nr_contributors)
 
+	app.update_branches(r)
+
 	app.db.exec('END TRANSACTION')
 	app.info('Repo updated')
 }
