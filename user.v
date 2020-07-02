@@ -150,28 +150,28 @@ pub fn (mut app App) create_empty_user(username, email string) int {
 }
 
 pub fn (mut app App) insert_user(user User) {
-	app.info('Insert user: $user.username')
+	//app.info('Insert user: $user.username')
 	sql app.db {
 		insert user into User
 	}
 }
 
 pub fn (mut app App) insert_email(email Email) {
-	app.info('Inserting email: $email.email')
+	//app.info('Inserting email: $email.email')
 	sql app.db {
 		insert email into Email
 	}
 }
 
 pub fn (mut app App) insert_sshkey(sshkey SshKey) {
-	app.info('Inserting sshkey: $sshkey.title')
+	//app.info('Inserting sshkey: $sshkey.title')
 	sql app.db {
 		insert sshkey into SshKey
 	}
 }
 
 pub fn (mut app App) insert_contributor(contributor Contributor) {
-	app.info('Inserting contributor: $contributor.user')
+	//app.info('Inserting contributor: $contributor.user')
 	sql app.db {
 		insert contributor into Contributor
 	}
