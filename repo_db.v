@@ -140,7 +140,7 @@ fn (mut app App) create_tables() {
 		'id integer primary key'
 		'oauth_client_id text default ""'
 		'oauth_client_secret text default ""'
-		'only_gh_login int default 0'
+		'only_gh_login int default 1'
 	])
 }
 

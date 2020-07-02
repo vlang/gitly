@@ -570,7 +570,7 @@ pub fn (mut app App) register() vweb.Result {
 }
 
 pub fn (mut app App) register_post() vweb.Result {
-	if true { //app.only_gh_login {
+	if app.only_gh_login {
 		return app.vweb.redirect('/')
 	}
 
