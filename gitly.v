@@ -681,7 +681,7 @@ pub fn (mut app App) logged_in() bool {
 		app.logout()
 		return false
 	}
-	return id != '' && token != '' && t != ''
+	return id != '' && token != '' && t != '' && t == token
 }
 
 pub fn (mut app App) logout() vweb.Result {
