@@ -19,6 +19,7 @@ fn (mut app App) init_tags(mut r Repo) {
 		repo_id: r.id
 	}
 	data := r.git('ls-remote -tq')
+	app.db.exec('BEGIN TRANSACTION')
 	for remote_tag in data.split_into_lines() {
 		tag.name = remote_tag.after('refs/tags/')
 		tag.hash = remote_tag.substr(0, 7)
@@ -41,6 +42,7 @@ fn (mut app App) init_tags(mut r Repo) {
 		app.insert_tag(tag)
 		r.nr_tags++
 	}
+	app.db.exec('END TRANSACTION')
 }
 
 pub fn (mut app App) insert_tag(tag Tag) {
@@ -66,6 +68,6 @@ pub fn (mut app App) find_tag_by_id(id2 int) Tag {
 
 pub fn (mut app App) find_tags_by_repo_id(repo_id int) []Tag {
 	return sql app.db {
-		select from Tag where repo_id == repo_id 
+		select from Tag where repo_id == repo_id order date desc
 	}
 }

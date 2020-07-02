@@ -447,18 +447,7 @@ pub fn (mut app App) contributors() vweb.Result {
 
 pub fn (mut app App) branches() vweb.Result {
 	mut branches := app.find_branches_by_repo_id(app.repo.id)
-	branches.sort_with_compare(compare_branch_date)
 	return $vweb.html()
-}
-
-fn compare_branch_date(a, b &Branch) int {
-	if a.date > b.date {
-		return -1
-	}
-	if a.date < b.date {
-		return 1
-	}
-	return 0
 }
 
 pub fn (mut app App) releases() vweb.Result {
@@ -487,18 +476,7 @@ pub fn (mut app App) releases() vweb.Result {
 		}
 		releases << release
 	}
-	releases.sort_with_compare(compare_reldate)
 	return $vweb.html()
-}
-
-fn compare_reldate(a, b &Release) int {
-	if a.date.gt(b.date) {
-		return -1
-	}
-	if a.date.lt(b.date) {
-		return 1
-	}
-	return 0
 }
 
 pub fn (mut app App) blob() vweb.Result {

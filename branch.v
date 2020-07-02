@@ -20,6 +20,7 @@ fn (mut app App) fetch_branches(r Repo) {
 	current := os.getwd()
 	os.chdir(r.git_dir)
 	data := r.git('branch -a')
+	app.db.exec('BEGIN TRANSACTION')
 	for remote_branch in data.split_into_lines() {
 		if remote_branch.contains('remotes/') && !remote_branch.contains('HEAD') {
 			temp_branch := remote_branch.trim_space().after('remotes/')
@@ -42,6 +43,7 @@ fn (mut app App) fetch_branches(r Repo) {
 			app.insert_branch(branch)
 		}
 	}
+	app.db.exec('END TRANSACTION')
 	_ := r.git('checkout master')
 	os.chdir(current)
 }
@@ -58,7 +60,7 @@ fn (mut app App) insert_branch(branch Branch) {
 
 fn (mut app App) find_branches_by_repo_id(repo_id int) []Branch {
 	return sql app.db {
-		select from Branch where repo_id == repo_id
+		select from Branch where repo_id == repo_id order date desc
 	}
 }
 
