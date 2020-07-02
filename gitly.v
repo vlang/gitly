@@ -99,40 +99,6 @@ pub fn (mut app App) init_once() {
 	}
 }
 
-pub fn (mut app App) command_fetcher() {
-	for {
-		line := os.get_line()
-		if line.starts_with('!') {
-			args := line[1..].split(' ')
-			if args.len > 0 {
-				match args[0] {
-					'updaterepo' {
-						app.update_repo()
-					}
-					'adduser' {
-						if args.len > 4 {
-							app.add_user(args[1], args[2], args[3..], false)
-							println('Added user ${args[1]}')
-						} else {
-							error('Not enough arguments (3 required but only $args.len given)')
-						}
-					}
-					else {
-						println('Commands:')
-						println('	!updaterepo')
-						println('	!adduser <username> <password> <email1> <email2>...')
-					}
-				}
-			} else {
-
-			error('Unkown syntax. Use !<command>')
-			}
-		} else {
-			error('Unkown syntax. Use !<command>')
-		}
-	}
-}
-
 pub fn (mut app App) init() {
 	url := app.vweb.req.url
 	app.page_gen_time = ''
@@ -206,6 +172,7 @@ pub fn (mut app App) create_new_test_repo() {
 }
 
 // pub fn (mut app App) tree(path string) {
+// ['/:user/:repo/tree']
 pub fn (mut app App) tree() vweb.Result {
 	if app.path.contains('/favicon.svg') {
 		return vweb.not_found()
