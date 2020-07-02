@@ -17,7 +17,6 @@ const (
 	expire_length    = 200
 	posts_per_day    = 5
 	max_username_len = 32
-	only_gh_login    = true
 )
 
 struct App {
@@ -33,6 +32,7 @@ mut:
 	is_tree bool
 	oauth_client_id string
 	oauth_client_secret string
+	only_gh_login bool
 pub mut:
 	file_log      log.Log
 	cli_log       log.Log
@@ -561,7 +561,7 @@ pub fn (mut app App) new_issue_post() vweb.Result {
 }
 
 pub fn (mut app App) register() vweb.Result {
-	if only_gh_login {
+	if app.only_gh_login {
 		return app.vweb.not_found()
 	}
 	app.path = ''
@@ -569,7 +569,7 @@ pub fn (mut app App) register() vweb.Result {
 }
 
 pub fn (mut app App) register_post() vweb.Result {
-	if only_gh_login {
+	if app.only_gh_login {
 		return app.vweb.not_found()
 	}
 
@@ -628,7 +628,7 @@ pub fn (mut app App) login() vweb.Result {
 }
 
 pub fn (mut app App) login_post() vweb.Result {
-	if only_gh_login {
+	if app.only_gh_login {
 		app.vweb.not_found()
 	}
 
