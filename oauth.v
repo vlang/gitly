@@ -3,7 +3,6 @@
 module main
 
 import vweb
-import os
 import json
 import net.http
 import time

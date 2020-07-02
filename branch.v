@@ -109,7 +109,7 @@ fn (mut app App) find_branch_by_name_by_repo(name string, repo_id int) Branch {
 
 fn (mut app App) find_branches_by_repo_id(repo_id int) []Branch {
 	return sql app.db {
-		select from Branch where repo_id == repo_id
+		select from Branch where repo_id == repo_id order by date desc
 	}
 }
 
