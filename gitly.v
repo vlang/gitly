@@ -563,7 +563,7 @@ pub fn (mut app App) new_issue_post() vweb.Result {
 
 pub fn (mut app App) register() vweb.Result {
 	if app.only_gh_login {
-		return vweb.redirect('/')
+		return app.vweb.redirect('/')
 	}
 	app.path = ''
 	return $vweb.html()
@@ -571,7 +571,7 @@ pub fn (mut app App) register() vweb.Result {
 
 pub fn (mut app App) register_post() vweb.Result {
 	if app.only_gh_login {
-		return vweb.redirect('/')
+		return app.vweb.redirect('/')
 	}
 
 	username := app.vweb.form['username']
@@ -630,7 +630,7 @@ pub fn (mut app App) login() vweb.Result {
 
 pub fn (mut app App) login_post() vweb.Result {
 	if app.only_gh_login {
-		return vweb.redirect('/')
+		return app.vweb.redirect('/')
 	}
 
 	username := app.vweb.form['username']
