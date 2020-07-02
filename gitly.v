@@ -33,6 +33,7 @@ mut:
 	is_tree bool
 	oauth_client_id string
 	oauth_client_secret string
+	only_gh_login bool
 pub mut:
 	file_log      log.Log
 	cli_log       log.Log
@@ -561,14 +562,18 @@ pub fn (mut app App) new_issue_post() vweb.Result {
 }
 
 pub fn (mut app App) register() vweb.Result {
+	if app.only_gh_login {
+		return app.vweb.redirect('/')
+	}
 	app.path = ''
 	return $vweb.html()
 }
 
 pub fn (mut app App) register_post() vweb.Result {
-	if true {
-		return vweb.redirect('/')
+	if app.only_gh_login {
+		return app.vweb.redirect('/')
 	}
+
 	username := app.vweb.form['username']
 
 	user_chars := username.bytes()
@@ -624,6 +629,10 @@ pub fn (mut app App) login() vweb.Result {
 }
 
 pub fn (mut app App) login_post() vweb.Result {
+	if app.only_gh_login {
+		return app.vweb.redirect('/')
+	}
+
 	username := app.vweb.form['username']
 	password := app.vweb.form['password']
 

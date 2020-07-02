@@ -66,11 +66,13 @@ fn (app &App) get_oauth_tokens_from_db() {
 	}
 	app.oauth_client_id = data.oauth_client_id
 	app.oauth_client_secret = data.oauth_client_secret
+	app.only_gh_login = data.only_gh_login
 }
 
 struct GitlySettings {
 	id int
 	oauth_client_id string
 	oauth_client_secret string
+	only_gh_login bool
 }
 
