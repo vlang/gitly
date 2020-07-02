@@ -9,6 +9,7 @@ import log
 import hl
 import sqlite
 import math
+import crypto.sha1
 import rand
 
 const (
@@ -263,9 +264,10 @@ pub fn (mut app App) index() vweb.Result {
 }
 
 pub fn (mut app App) update() vweb.Result {
-	secret := app.vweb.form['webhook_secret']
-	if secret == app.repo.webhook_secret && app.repo.webhook_secret != '' {
-		go app.update_repo_data(app.repo)
+	secret := app.vweb.req.headers['X-Hub-Signature'][5..]
+	webhook_secret := sha1.hexhash(app.repo.webhook_secret)
+	if secret == webhook_secret && app.repo.webhook_secret != '' {
+		go app.update_repo_data(&app.repo)
 	}
 	return app.vweb.redirect('/')
 }
