@@ -68,6 +68,6 @@ pub fn (mut app App) find_tag_by_id(id2 int) Tag {
 
 pub fn (mut app App) find_tags_by_repo_id(repo_id int) []Tag {
 	return sql app.db {
-		select from Tag where repo_id == repo_id order date desc
+		select from Tag where repo_id == repo_id order by date desc
 	}
 }

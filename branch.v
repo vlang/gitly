@@ -60,7 +60,7 @@ fn (mut app App) insert_branch(branch Branch) {
 
 fn (mut app App) find_branches_by_repo_id(repo_id int) []Branch {
 	return sql app.db {
-		select from Branch where repo_id == repo_id order date desc
+		select from Branch where repo_id == repo_id order by date desc
 	}
 }
 
