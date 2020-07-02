@@ -96,7 +96,7 @@ fn (mut app App) update_repo() {
 	app.info(r.nr_contributors.str())
 	r.created_at = app.first_commit_by_repo_id(r.id).created_at
 	app.fetch_branches(r)
-	r.nr_branches = app.count_of_branches_by_repo_id(r.id)
+	r.nr_branches = app.nr_repo_branches(r.id)
 	// TODO: TEMPORARY - UNTIL WE GET PERSISTENT RELEASE INFO
 	r.nr_releases = 0
 	for tag in app.find_tags_by_repo_id(r.id) {
@@ -174,7 +174,7 @@ fn (mut app App) update_repo_data(r &Repo) {
 
 	app.update_branches(r)
 
-	r.nr_branches = app.count_of_branches_by_repo_id(r.id)
+	r.nr_branches = app.nr_repo_branches(r.id)
 
 	app.db.exec('END TRANSACTION')
 	app.info('Repo updated')
