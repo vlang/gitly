@@ -8,19 +8,14 @@ import json
 import net.http
 import time
 
-const (
-	oauth_client_id = os.getenv('GITLY_OAUTH_CLIENT_ID')
-	oauth_client_secret = os.getenv('GITLY_OAUTH_SECRET')
-)
-
 pub fn (mut app App) oauth() vweb.Result {
 	code := app.vweb.req.url.all_after('code=')
 	if code == '' {
 		return app.vweb.not_found()
 	}
 	req := OAuth_Request {
-		client_id: oauth_client_id
-		client_secret: oauth_client_secret
+		client_id: app.oauth_client_id
+		client_secret: app.oauth_client_secret
 		code: code
 	}
 	d := json.encode(req)
@@ -63,5 +58,19 @@ pub fn (mut app App) oauth() vweb.Result {
 	app.vweb.set_cookie_with_expire_date('token', token, expires)
 	app.vweb.redirect('/')
 	return vweb.Result{}
+}
+
+fn (app &App) get_oauth_tokens_from_db() {
+	data := sql app.db {
+		select from GitlySettings limit 1
+	}
+	app.oauth_client_id = data.oauth_client_id
+	app.oauth_client_secret = data.oauth_client_secret
+}
+
+struct GitlySettings {
+	id int
+	oauth_client_id string
+	oauth_client_secret string
 }
 

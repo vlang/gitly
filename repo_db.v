@@ -21,7 +21,7 @@ fn (mut app App) create_tables() {
 		'nr_open_prs int default 0'
 		'nr_branches int default 0'
 		'nr_contributors int default 0'
-		"created_at int default (strftime('%s', 'now'))" 
+		"created_at int default (strftime('%s', 'now'))"
 	])
     // unix time default now
 	app.create_table('File', [
@@ -133,6 +133,11 @@ fn (mut app App) create_tables() {
 		'hash text default ""'
 		'date integer default 0'
 		'UNIQUE(repo_id, name)'
+	])
+	app.create_table('GitlySettings', [
+		'id integer primary key'
+		'oauth_client_id text default ""'
+		'oauth_client_secret text default ""'
 	])
 }
 

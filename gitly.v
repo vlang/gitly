@@ -30,6 +30,8 @@ mut:
 	html_path     vweb.RawHtml
 	page_gen_time string
 	is_tree bool
+	oauth_client_id string
+	oauth_client_secret string
 pub mut:
 	file_log      log.Log
 	cli_log       log.Log
@@ -93,6 +95,11 @@ pub fn (mut app App) init_once() {
 		panic(err)
 	}
 	app.create_tables()
+	app.oauth_client_id = os.getenv('GITLY_OAUTH_CLIENT_ID')
+	app.oauth_client_secret = os.getenv('GITLY_OAUTH_SECRET')
+	if app.oauth_client_id == '' {
+		app.get_oauth_tokens_from_db()
+	}
 	go app.create_new_test_repo() // if it doesn't exist
 	if '-cmdapi' in os.args {
 		go app.command_fetcher()
