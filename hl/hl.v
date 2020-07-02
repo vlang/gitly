@@ -132,7 +132,7 @@ pub fn highlight_text(st, ext string, commit bool) (string, int, int) {
 	}
 	res << '</tr>'.bytes()
 	res << '</table>'.bytes()
-	return string(res), lines, sloc
+	return string(res, res.len), lines, sloc
 }
 
 fn write(c byte) []byte {
