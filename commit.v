@@ -117,6 +117,12 @@ fn (mut app App) find_last_commit(repo_id int) Commit {
 	}
 }
 
+fn (mut app App) first_commit_by_repo_id(repo_id int) Commit {
+	return sql app.db {
+		select from Commit where repo_id == repo_id order by created_at limit 1
+	}
+}
+
 fn (mut app App) find_commits_by_author(repo_id int, author string) []Commit {
 	return sql app.db {
 		select from Commit where repo_id == repo_id && author == author limit 10 
