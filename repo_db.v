@@ -80,7 +80,9 @@ fn (mut app App) create_tables() {
 		'nr_posts integer default 0'
 		'last_post_time integer default 0'
 		'is_github int default 0'
+		'is_blocked int default 0'
 		'is_registered int default 0'
+		'login_attempts int default 0'
 		'UNIQUE(username)'
 	])
 	app.create_table('Email', [

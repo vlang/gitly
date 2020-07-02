@@ -17,6 +17,7 @@ const (
 	expire_length    = 200
 	posts_per_day    = 5
 	max_username_len = 32
+	max_login_attempts = 5
 )
 
 struct App {
@@ -562,7 +563,7 @@ pub fn (mut app App) new_issue_post() vweb.Result {
 
 pub fn (mut app App) register() vweb.Result {
 	if app.only_gh_login {
-		return app.vweb.not_found()
+		return vweb.redirect('/')
 	}
 	app.path = ''
 	return $vweb.html()
@@ -570,7 +571,7 @@ pub fn (mut app App) register() vweb.Result {
 
 pub fn (mut app App) register_post() vweb.Result {
 	if app.only_gh_login {
-		return app.vweb.not_found()
+		return vweb.redirect('/')
 	}
 
 	username := app.vweb.form['username']
@@ -629,7 +630,7 @@ pub fn (mut app App) login() vweb.Result {
 
 pub fn (mut app App) login_post() vweb.Result {
 	if app.only_gh_login {
-		app.vweb.not_found()
+		return vweb.redirect('/')
 	}
 
 	username := app.vweb.form['username']
@@ -641,7 +642,15 @@ pub fn (mut app App) login_post() vweb.Result {
 	user := app.find_user_by_username(username) or {
 		return app.vweb.redirect('/login')
 	}
+	if user.is_blocked {
+		return app.vweb.redirect('/login')
+	}
 	if !check_password(password, username, user.password) {
+		app.inc_user_login_attempts(user.id)
+		if user.login_attempts == max_login_attempts {
+			app.warn('User $user.username got blocked')
+			app.block_user_by_id(user.id)
+		}
 		return app.vweb.redirect('/login')
 	}
 	if !user.is_registered {
@@ -652,6 +661,7 @@ pub fn (mut app App) login_post() vweb.Result {
 	if token == '' {
 		token = app.add_token(user.id)
 	}
+	app.update_user_login_attempts(user.id, 0)
 	app.vweb.set_cookie_with_expire_date('id', user.id.str(), expires)
 	app.vweb.set_cookie_with_expire_date('token', token, expires)
 	return app.vweb.redirect('/')
@@ -665,6 +675,11 @@ pub fn (mut app App) logged_in() bool {
 		return false
 	}
 	t := app.find_token_from_user_id(id.int())
+	blocked := app.check_user_blocked_by_id(id.int())
+	if blocked {
+		app.logout()
+		return false
+	}
 	return id != '' && token != '' && t != ''
 }
 
