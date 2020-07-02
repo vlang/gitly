@@ -1,9 +1,11 @@
 .hl_table * {
-  font-family: Roboto-Mono, Menlo, monospace; }
+  font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 12px; }
 
 body, html, * {
-  font-family: Roboto, 'Helvetica Neue', 'Segoe UI', 'Helvetica';
-  font-size: 13px;
+  font-family: system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif,BlinkMacSystemFont,Oxygen,Fira Sans,Droid Sans,Helvetica Neue;
+  font-size: 14px;
+  line-height: 1.5em;
   padding: 0;
   margin: 0; }
 
@@ -102,6 +104,7 @@ h3 {
   @media (max-width: 1000px) {
     .files {
       width: 100%; } }
+
 .file {
   display: flex;
   align-items: center;
@@ -143,6 +146,7 @@ h3 {
   @media (max-width: 1000px) {
     .file-size {
       display: none; } }
+
 .file-msg {
   flex: 1;
   text-overflow: ellipsis;
@@ -153,7 +157,6 @@ h3 {
     .file-msg {
       display: none; } }
   .file-msg a {
-    font-size: 12px !important;
     color: #777 !important; }
 
 .file-time {

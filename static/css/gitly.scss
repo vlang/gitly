@@ -17,11 +17,13 @@ $header-height: 50px;
 	}
 }
 .hl_table * {
-	font-family: Roboto-Mono, Menlo, monospace;
+	font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+	font-size: 12px;
 }
 body, html, * {
-	font-family: Roboto, 'Helvetica Neue', 'Segoe UI', 'Helvetica';
-	font-size: 13px;
+	font-family: system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif,BlinkMacSystemFont,Oxygen,Fira Sans,Droid Sans,Helvetica Neue;
+	font-size: 14px;
+	line-height: 1.5em;
 	padding: 0;
 	margin: 0;
 }
