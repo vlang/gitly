@@ -19,6 +19,7 @@ fn (mut app App) create_tables() {
 		'nr_tags int default 0'
 		'nr_releases int default 0'
 		'nr_open_prs int default 0'
+		'webhook_secret text default ""'
 		'nr_branches int default 0'
 		'nr_contributors int default 0'
 		"created_at int default (strftime('%s', 'now'))"
@@ -175,4 +176,18 @@ fn (mut app App) inc_repo_issues(repo_id int) {
 		update Repo set nr_open_issues=nr_open_issues+1 where id==repo_id
 	}
 	app.repo.nr_open_issues++
+}
+
+fn (mut app App) update_nr_commits_by_repo_id(repo_id, nr_commits int) {
+	sql app.db {
+		update Repo set nr_commits = nr_commits where id == repo_id
+	}
+	app.repo.nr_commits = nr_commits
+}
+
+fn (mut app App) update_nr_contributors_by_repo_id(repo_id, nr_contributors int) {
+	sql app.db {
+		update Repo set nr_contributors = nr_contributors where id == repo_id
+	}
+	app.repo.nr_contributors = nr_contributors
 }

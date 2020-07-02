@@ -46,13 +46,64 @@ fn (mut app App) fetch_branches(r Repo) {
 	os.chdir(current)
 }
 
+fn (mut app App) update_branches(r &Repo) {
+	mut branch := Branch{}
+	current := os.getwd()
+	os.chdir(r.git_dir)
+	data := r.git('branch -a')
+	for remote_branch in data.split_into_lines() {
+		if remote_branch.contains('remotes/') && !remote_branch.contains('HEAD') {
+			temp_branch := remote_branch.trim_space().after('remotes/')
+			_ := r.git('checkout -t $temp_branch')
+			branch.repo_id = r.id
+			branch.name = temp_branch.after('origin/')
+			hash_data := os.read_lines('.git/refs/heads/$branch.name') or {
+				app.error('Error: $err')
+				return
+			}
+			branch.hash = hash_data[0].substr(0, 7)
+			branch_data := r.git('log -1 --pretty="%aE$log_field_separator%cD" $branch.hash')
+			args := branch_data.split(log_field_separator)
+			branch.author = args[0]
+			date := time.parse_rfc2822(args[1]) or {
+				app.error('Error: $err')
+				return
+			}
+			branch.date = int(date.unix)
+			if !app.contains_branch_by_name(branch.name, r.id) {
+				app.insert_branch(branch)
+			} else {
+				app.update_branch(branch)
+			}
+		}
+	}
+	_ := r.git('checkout master')
+	os.chdir(current)
+}
+
 fn (branch Branch) relative() string {
 	return time.unix(branch.date).relative()
 }
 
-fn (mut app App) insert_branch(branch Branch) {
+fn (mut app App) update_branch(branch Branch) {
+	b := app.find_branch_by_name_by_repo(branch.name, branch.repo_id)
+	author := branch.author
+	hash := branch.hash
+	date := branch.date
 	sql app.db {
+		update Branch set author = author, hash = hash, date = date where id == b.id
+	}
+}
+
+fn (mut app App) insert_branch(branch Branch) {
+		sql app.db {
 		insert branch into Branch
+	}
+}
+
+fn (mut app App) find_branch_by_name_by_repo(name string, repo_id int) Branch {
+	return sql app.db {
+		select from Branch where name == name && repo_id == repo_id limit 1
 	}
 }
 
@@ -66,4 +117,11 @@ fn (mut app App) count_of_banches_by_repo_id(repo_id int) int {
 	return sql app.db {
 		select count from Branch where repo_id == repo_id
 	}
+}
+
+fn (mut app App) contains_branch_by_name(name string, repo_id int) bool {
+	nr := sql app.db {
+		select count from Branch where repo_id == repo_id && name == name
+	}
+	return nr == 1
 }

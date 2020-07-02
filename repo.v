@@ -24,6 +24,7 @@ struct Repo {
 	latest_update_hash string [skip]
 	latest_activity    time.Time [skip]
 mut:
+	webhook_secret     string
 	nr_tags            int
 	nr_open_issues     int
 	nr_open_prs        int
@@ -124,7 +125,57 @@ fn (mut app App) update_repo() {
 }
 
 // update_repo updated the repo in the db
-fn (mut r Repo) update_repo() {
+fn (mut app App) update_repo_data(r &Repo) {
+	last_commit := app.find_last_commit(r.id)
+	r.git('fetch --all')
+	r.git('pull --all')
+
+	data := r.git('--no-pager log ${last_commit.hash}.. --abbrev-commit --abbrev=8 --pretty="%h$log_field_separator%aE$log_field_separator%cD$log_field_separator%s$log_field_separator%aN"')
+
+	mut tmp_commit := Commit{}
+	app.db.exec('BEGIN TRANSACTION')
+	for line in data.split_into_lines() {
+		args := line.split(log_field_separator)
+		if args.len > 3 {
+			tmp_commit.repo_id = r.id
+			tmp_commit.hash = args[0]
+			tmp_commit.author = args[4]
+			t := time.parse_rfc2822(args[2]) or {
+				app.error('Error: $err')
+				return
+			}
+			tmp_commit.created_at = int(t.unix)
+			tmp_commit.message = args[3]
+			user := app.find_user_by_email(args[1]) or {
+				User{}
+			}
+			if user.username != '' {
+				app.insert_contributor(Contributor{
+					user: user.id
+					repo: r.id
+				})
+				tmp_commit.author_id = user.id
+			} else {
+				empty_user := app.create_empty_user(tmp_commit.author, args[1])
+				app.insert_contributor(Contributor{
+					repo: r.id
+					user: empty_user
+				})
+			}
+			app.insert_commit(tmp_commit)
+		}
+	}
+
+	r.nr_commits = app.commits_by_repo_id_size(r.id)
+	r.nr_contributors = app.contributor_by_repo_id_size(r.id)
+
+	app.update_nr_commits_by_repo_id(r.id, r.nr_commits)
+	app.update_nr_contributors_by_repo_id(r.id, r.nr_contributors)
+
+	app.update_branches(r)
+
+	app.db.exec('END TRANSACTION')
+	app.info('Repo updated')
 }
 
 fn (mut r Repo) analyse_lang(wg &sync.WaitGroup) {

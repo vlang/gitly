@@ -9,6 +9,7 @@ import log
 import hl
 import sqlite
 import math
+import crypto.sha1
 import rand
 
 const (
@@ -151,6 +152,7 @@ pub fn (mut app App) create_new_test_repo() {
 		app.repo = x
 		app.repo.lang_stats = app.find_lang_stats_by_repo_id(app.repo.id)
 		// init branches list for existing repo
+		app.update_repo_data(app.repo)
 		return
 	}
 	_ := os.ls('.') or {
@@ -259,6 +261,15 @@ pub fn (mut app App) tree() vweb.Result {
 pub fn (mut app App) index() vweb.Result {
 	app.tree()
 	return $vweb.html()
+}
+
+pub fn (mut app App) update() vweb.Result {
+	secret := app.vweb.req.headers['X-Hub-Signature'][5..]
+	webhook_secret := sha1.hexhash(app.repo.webhook_secret)
+	if secret == webhook_secret && app.repo.webhook_secret != '' {
+		go app.update_repo_data(&app.repo)
+	}
+	return app.vweb.redirect('/')
 }
 
 pub fn (mut app App) user() vweb.Result {
@@ -680,7 +691,7 @@ pub fn (mut app App) logged_in() bool {
 		app.logout()
 		return false
 	}
-	return id != '' && token != '' && t != ''
+	return id != '' && token != '' && t != '' && t == token
 }
 
 pub fn (mut app App) logout() vweb.Result {
