@@ -16,6 +16,7 @@ const (
 	http_port        = 8080
 	expire_length    = 200
 	posts_per_day    = 5
+	max_username_len = 32
 )
 
 struct App {
@@ -585,18 +586,49 @@ pub fn (mut app App) new_issue_post() vweb.Result {
 }
 
 pub fn (mut app App) register() vweb.Result {
+	app.path = ''
 	return $vweb.html()
 }
 
 pub fn (mut app App) register_post() vweb.Result {
 	username := app.vweb.form['username']
+
+	user_chars := username.bytes()
+	if user_chars.len > max_username_len {
+		// Username too long
+		app.error('Username is too long (max. $max_username_len)')
+		return app.vweb.redirect('/register')
+	}
+	if username.contains('--') {
+		// Two hyphens
+		app.error('Username cannot contain two hyphens')
+		return app.vweb.redirect('/register')
+	}
+	if user_chars[0] == `-` || user_chars.last() == `-` {
+		// Username cannot begin or end with a hyphen
+		app.error('Username cannot begin or end with a hyphen')
+		return app.vweb.redirect('/register')
+	}
+	for char in user_chars {
+		if !char.is_letter() && !char.is_digit() && char != `-` {
+			// Username does not contains extra symbols
+			app.error('Username cannot contain special charater')
+			return app.vweb.redirect('/register')
+		}
+	}
+	if app.vweb.form['password'] == '' {
+		app.error('Password cannot be empty')
+		return app.vweb.redirect('/register')
+	}
 	password := make_password(app.vweb.form['password'], username)
 	email := app.vweb.form['email']
 	if username == '' || email == '' {
+		app.error('Username or Email cannot be emtpy')
 		return app.vweb.redirect('/register')
 	}
 	app.add_user(username, password, [email], false)
 	user := app.find_user_by_username(username) or {
+		app.error('User already exists')
 		return app.vweb.redirect('/register')
 	}
 	expires := time.utc().add_days(expire_length)
