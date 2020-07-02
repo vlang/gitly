@@ -176,3 +176,17 @@ fn (mut app App) inc_repo_issues(repo_id int) {
 	}
 	app.repo.nr_open_issues++
 }
+
+fn (mut app App) update_nr_commits_by_repo_id(repo_id, nr_commits int) {
+	sql app.db {
+		update Repo set nr_commits = nr_commits where id == repo_id
+	}
+	app.repo.nr_commits = nr_commits
+}
+
+fn (mut app App) update_nr_contributors_by_repo_id(repo_id, nr_contributors int) {
+	sql app.db {
+		update Repo set nr_contributors = nr_contributors where id == repo_id
+	}
+	app.repo.nr_contributors = nr_contributors
+}
