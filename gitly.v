@@ -566,6 +566,9 @@ pub fn (mut app App) register() vweb.Result {
 }
 
 pub fn (mut app App) register_post() vweb.Result {
+	if true {
+		return vweb.redirect('/')
+	}
 	username := app.vweb.form['username']
 
 	user_chars := username.bytes()
