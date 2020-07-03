@@ -36,8 +36,6 @@ mut:
 	oauth_client_id string
 	oauth_client_secret string
 	only_gh_login bool
-	user_name string
-	repo_name string
 pub mut:
 	file_log      log.Log
 	cli_log       log.Log
@@ -272,7 +270,7 @@ pub fn (mut app App) index() vweb.Result {
 	return $vweb.html()
 }
 
-[':user/:repo/update']
+['/:user/:repo/update']
 pub fn (mut app App) update(user, repo string) vweb.Result {
 	if !app.find_repo(user, repo) {
 		return app.vweb.not_found()
@@ -298,11 +296,12 @@ pub fn (mut app App) user(username string) vweb.Result {
 	return $vweb.html()
 }
 
-[':user/:repo/commits/:page']
+['/:user/:repo/commits/:page']
 pub fn (mut app App) commits(user, repo, page_str string) vweb.Result {
 	if !app.find_repo(user, repo) {
 		return app.vweb.not_found()
 	}
+	app.show_menu = true
 
 	page := if page_str.len >= 1 { page_str.int() } else { 0 }
 	mut commits := app.find_repo_commits_as_page(app.repo.id, page)
@@ -372,7 +371,7 @@ pub fn (mut app App) commits(user, repo, page_str string) vweb.Result {
 	return $vweb.html()
 }
 
-[':user/:repo/commit/:hash']
+['/:user/:repo/commit/:hash']
 pub fn (mut app App) commit(user, repo, hash string) vweb.Result {
 	if !app.find_repo(user, repo) {
 		return app.vweb.not_found()
@@ -436,7 +435,7 @@ pub fn (mut app App) issues(user, repo string) vweb.Result {
 	return $vweb.html()
 }
 
-[':user/:repo/issue/:id']
+['/:user/:repo/issue/:id']
 pub fn (mut app App) issue(user, repo, id_str string) vweb.Result {
 	if !app.find_repo(user, repo) {
 		return app.vweb.not_found()
@@ -471,7 +470,7 @@ pub fn (mut app App) pulls() vweb.Result {
 	return $vweb.html()
 }
 
-[':user/:repo/contributors']
+['/:user/:repo/contributors']
 pub fn (mut app App) contributors(user, repo string) vweb.Result {
 	if !app.find_repo(user, repo) {
 		return app.vweb.not_found()

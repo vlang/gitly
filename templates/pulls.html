@@ -5,7 +5,7 @@
 @for pr in prs
 	.clog {
 		.clog-msg {
-			<a href="../pull/@pr.id">@pr.title</a>
+			<a href="/@app.repo.owner_name/@app.repo.name/pull/@pr.id">@pr.title</a>
 		}
 		span.clog-author {
 			#@pr.id opened @pr.relative_time()

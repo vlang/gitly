@@ -168,8 +168,7 @@ fn (app &App) find_repo(user, name string) bool {
 		app.error('Repo was not found')
 		return false
 	}
-	app.user_name = user
-	app.repo_name = name
+	app.repo.owner_name = user
 	app.repo.lang_stats = app.find_repo_lang_stats(app.repo.id)
 
 	return true
