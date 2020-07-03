@@ -23,8 +23,6 @@ const (
 
 struct App {
 mut:
-	reponame      string
-	subdomain     string
 	path          string // current path being viewed
 	branch        string
 	repo          Repo
@@ -88,8 +86,6 @@ pub fn (mut app App) init_once() {
 	if version != app.version {
 		os.write_file('static/assets/version', app.version)
 	}
-	app.reponame = ''
-	app.subdomain = ''
 	app.path = ''
 	app.branch = ''
 	app.vweb.serve_static('/gitly.css', 'static/css/gitly.css', 'text/css')
@@ -114,8 +110,6 @@ pub fn (mut app App) init() {
 	url := app.vweb.req.url
 	app.page_gen_time = ''
 	app.info('\n\ninit() url=$url')
-	app.reponame = 'v'
-	app.subdomain = 'vlang'
 	if url.contains('/tree/') {
 		app.path = url.after('/tree/')
 	} else if url.contains('/blob/') {

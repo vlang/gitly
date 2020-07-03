@@ -65,12 +65,13 @@ fn (mut app App) create_tables() {
 	])
 	// author text default '' is to to avoid joins
 	app.create_table('LangStat', [
-		'id int default 0'
+		'id integer primary key'
 		'repo_id int default 0'
 		'name text default ""'
 		'nr_lines int default 0'
 		'pct int default 0'
 		'color text default ""'
+		'UNIQUE(repo_id, name) ON CONFLICT REPLACE'
 	])
 	app.create_table('User', [
 		'id integer primary key'
@@ -86,7 +87,7 @@ fn (mut app App) create_tables() {
 		'is_registered int default 0'
 		'login_attempts int default 0'
 		'UNIQUE(username)'
-	])
+		])
 	app.create_table('Email', [
 		'id integer primary key'
 		'user integer default 0'
@@ -144,6 +145,23 @@ fn (mut app App) create_tables() {
 		'oauth_client_secret text default ""'
 		'only_gh_login int default 1'
 	])
+}
+
+fn (app &App) update_repo_in_db(r &Repo) {
+	repo := *r
+	id := repo.id
+	desc := repo.description
+	nr_views := repo.nr_views
+	webhook_secret := repo.webhook_secret
+	nr_tags := repo.nr_tags
+	nr_open_issues := repo.nr_open_issues
+	nr_open_prs := repo.nr_open_prs
+	nr_releases := repo.nr_releases
+	nr_contributors := repo.nr_contributors
+	nr_commits := repo.nr_commits
+	sql app.db {
+		update Repo set description = desc, nr_views = nr_views, webhook_secret = webhook_secret, nr_tags = nr_tags, nr_open_issues = nr_open_issues, nr_open_prs = nr_open_prs, nr_releases = nr_releases, nr_contributors = nr_contributors, nr_commits = nr_commits where id == id
+	}
 }
 
 fn (app &App) find_repo_by_name(user int, name string) ?Repo {

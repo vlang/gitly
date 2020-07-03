@@ -71,7 +71,7 @@ fn check_password(password, username, hashed string) bool {
 
 pub fn (mut app App) add_user(username, password string, emails []string, github bool) {
 	mut user := app.find_user_by_username(username) or { User{} }
-	if user.id != 0 && !user.is_registered {
+	if user.id != 0 && user.is_registered {
 		app.error('User $username already exists')
 		return
 
