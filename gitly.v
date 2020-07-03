@@ -120,18 +120,10 @@ pub fn (mut app App) init() {
 		app.path = url.after('/tree/')
 	} else if url.contains('/blob/') {
 		app.path = url.after('/blob/')
-	} else if url.contains('/commits/') {
-		app.path = url.after('/commits/')
-	} else if url.contains('/commit/') {
-		app.path = url.after('/commit/')
-	} else if url.contains('/issue/') {
-		app.path = url.after('/issue/')
 	} else if url.contains('/user/') {
 		app.path = url.after('/user/')
 	} else if url.contains('/pull/') {
 		app.path = url.after('/pull/')
-	} else if url.contains('/issues/') {
-		app.path = url.after('issues/')
 	} else {
 		app.path = ''
 	}
@@ -284,6 +276,7 @@ pub fn (mut app App) update(user, repo string) vweb.Result {
 	return app.vweb.redirect('/')
 }
 
+['/:username']
 pub fn (mut app App) user(username string) vweb.Result {
 	args := app.path.split('/')
 	mut user := User{}
@@ -296,7 +289,7 @@ pub fn (mut app App) user(username string) vweb.Result {
 	return $vweb.html()
 }
 
-['/:user/:repo/commits/:page']
+['/:user/:repo/commits/:page_str']
 pub fn (mut app App) commits(user, repo, page_str string) vweb.Result {
 	if !app.find_repo(user, repo) {
 		return app.vweb.not_found()
@@ -367,7 +360,6 @@ pub fn (mut app App) commits(user, repo, page_str string) vweb.Result {
 			d_commits[author] << commit
 		}
 	}
-	app.path = ''
 	return $vweb.html()
 }
 
@@ -376,6 +368,7 @@ pub fn (mut app App) commit(user, repo, hash string) vweb.Result {
 	if !app.find_repo(user, repo) {
 		return app.vweb.not_found()
 	}
+	println(hash)
 	commit := app.find_repo_commit_by_hash(app.repo.id, hash)
 	changes := commit.get_changes(app.repo)
 	mut all_adds := 0
@@ -390,14 +383,13 @@ pub fn (mut app App) commit(user, repo, hash string) vweb.Result {
 	return $vweb.html()
 }
 
-['/:user/:repo/issues']
-pub fn (mut app App) issues(user, repo string) vweb.Result {
+['/:user/:repo/issues/:page_str']
+pub fn (mut app App) issues(user, repo, page_str string) vweb.Result {
 	if !app.find_repo(user, repo) {
 		app.vweb.not_found()
 	}
 
-	args := app.path.split('')
-	page := if args.len >= 1 { args.last().int() } else { 0 }
+	page := if page_str.len >= 1 { page_str.int() } else { 0 }
 	mut issues := app.find_repo_issues_as_page(app.repo.id, page)
 	mut first := false
 	mut last := false
@@ -425,13 +417,6 @@ pub fn (mut app App) issues(user, repo string) vweb.Result {
 		last_site = page - 1
 	}
 	next_site := page + 1
-	mut url := ''
-	if args.len > 0 {
-		url = args[..args.len - 1].join('/')
-		if url != '' {
-			url += '/'
-		}
-	}
 	return $vweb.html()
 }
 
@@ -527,7 +512,11 @@ pub fn (mut app App) releases(user_str, repo string) vweb.Result {
 	return $vweb.html()
 }
 
-pub fn (mut app App) blob() vweb.Result {
+['/:user/:repo/blob']
+pub fn (mut app App) blob(user, repo string) vweb.Result {
+	if !app.find_repo(user, repo) {
+		return app.vweb.not_found()
+	}
 	mut raw := false
 	if app.path.ends_with('/raw') {
 		app.path = app.path.substr(0, app.path.len - 4)
@@ -558,14 +547,22 @@ pub fn (mut app App) blob() vweb.Result {
 	return $vweb.html()
 }
 
-pub fn (mut app App) new_issue() vweb.Result {
+['/:user/:repo/new_issue']
+pub fn (mut app App) new_issue(user, repo string) vweb.Result {
+	if !app.find_repo(user, repo) {
+		return app.vweb.not_found()
+	}
 	if !app.logged_in {
 		return app.vweb.not_found()
 	}
 	return $vweb.html()
 }
 
-pub fn (mut app App) new_issue_post() vweb.Result {
+['/:user/:repo/new_issue_post']
+pub fn (mut app App) new_issue_post(user, repo string) vweb.Result {
+	if !app.find_repo(user, repo) {
+		return app.vweb.not_found()
+	}
 	if !app.logged_in || (app.logged_in && app.user.nr_posts >= posts_per_day) {
 		return app.vweb.redirect('/')
 	}
@@ -715,7 +712,11 @@ pub fn (mut app App) logout() vweb.Result {
 	return app.vweb.redirect('/')
 }
 
-pub fn (mut app App) comment_post() vweb.Result {
+['/:user/:repo/comment_post']
+pub fn (mut app App) comment_post(user, repo string) vweb.Result {
+	if !app.find_repo(user, repo) {
+		return app.vweb.not_found()
+	}
 	text := app.vweb.form['text']
 	issue_id := app.vweb.form['issue_id']
 
