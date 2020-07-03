@@ -32,12 +32,12 @@
 		@if app.show_menu
 		@if app.repo.user_name != ''
 			<!--
-			<a href='https://gitly.org/@app.subdomain'>@app.subdomain</a> /
+			<a href='https://gitly.org/@app.repo.user_name'>@app.repo.user_name</a> /
 			-->
 			<a href='/user/@app.repo.user_name'>@app.repo.user_name</a> /
 		@end
 		<!--
-		<a href='/@app.subdomain/@app.reponame'>@app.reponame</a>
+		<a href='/@app.repo.user_name/@app.repo.name'>@app.repo.name</a>
 		-->
 		<a href='/@app.repo.user_name/@app.repo.name'>@app.repo.name</a>
 		@end
@@ -73,7 +73,7 @@
 @if app.path != ''
 	.tree-path {
 	<!--
-		<a href='/@app.reponame'>@app.reponame</a>
+		<a href='/@app.repo.name'>@app.repo.name</a>
 		-->
 		<a href='/@app.repo.user_name/@app.repo.name'>@app.repo.name</a>
 		@app.html_path
@@ -118,21 +118,21 @@
 
 <div style='display:none' class='repo-stats'>
 	<!--
-	<a class='menu' href='/@app.reponame/commits'>
+	<a class='menu' href='/@app.repo.name/commits'>
 	-->
 	<a class='menu' href='/commits'>
 		<svg aria-hidden="true" focusable="false" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M504 255.531c.253 136.64-111.18 248.372-247.82 248.468-59.015.042-113.223-20.53-155.822-54.911-11.077-8.94-11.905-25.541-1.839-35.607l11.267-11.267c8.609-8.609 22.353-9.551 31.891-1.984C173.062 425.135 212.781 440 256 440c101.705 0 184-82.311 184-184 0-101.705-82.311-184-184-184-48.814 0-93.149 18.969-126.068 49.932l50.754 50.754c10.08 10.08 2.941 27.314-11.313 27.314H24c-8.837 0-16-7.163-16-16V38.627c0-14.254 17.234-21.393 27.314-11.314l49.372 49.372C129.209 34.136 189.552 8 256 8c136.81 0 247.747 110.78 248 247.531zm-180.912 78.784l9.823-12.63c8.138-10.463 6.253-25.542-4.21-33.679L288 256.349V152c0-13.255-10.745-24-24-24h-16c-13.255 0-24 10.745-24 24v135.651l65.409 50.874c10.463 8.137 25.541 6.253 33.679-4.21z"></path></svg>
 		@app.repo.nr_commits_fmt()
 	</a>
 	<!--
-	<a class='menu' href='/@app.reponame/issues'>
+	<a class='menu' href='/@app.repo.name/issues'>
 	-->
 	<a class='menu' href='/issues'>
 		<svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="exclamation-circle" class="svg-inline--fa fa-exclamation-circle fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M504 256c0 136.997-111.043 248-248 248S8 392.997 8 256C8 119.083 119.043 8 256 8s248 111.083 248 248zm-248 50c-25.405 0-46 20.595-46 46s20.595 46 46 46 46-20.595 46-46-20.595-46-46-46zm-43.673-165.346l7.418 136c.347 6.364 5.609 11.346 11.982 11.346h48.546c6.373 0 11.635-4.982 11.982-11.346l7.418-136c.375-6.874-5.098-12.654-11.982-12.654h-63.383c-6.884 0-12.356 5.78-11.981 12.654z"></path></svg>
 		@app.repo.nr_open_issues_fmt()
 		</a>
 		<!--
-	<a class='menu' href='/@app.reponame/pulls'>
+	<a class='menu' href='/@app.repo.name/pulls'>
 	-->
 	<a class='menu' href='/pulls'>
 		<svg aria-hidden="true" focusable="false" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 768 1024"><path fill="currentColor" d="M640 448c-47.625 0-88.625 26.312-110.625 64.906C523.625 512.5 518 512 512 512c-131.062 0-255.438-99.844-300.812-223.438C238.469 265.09400000000005 256 230.71900000000005 256 192c0-70.656-57.344-128-128-128S0 121.34400000000005 0 192c0 47.219 25.844 88.062 64 110.281V721.75C25.844 743.938 0 784.75 0 832c0 70.625 57.344 128 128 128s128-57.375 128-128c0-47.25-25.844-88.062-64-110.25V491.469C276.156 580.5 392.375 640 512 640c6.375 0 11.625-0.438 17.375-0.625C551.5 677.812 592.5 704 640 704c70.625 0 128-57.375 128-128C768 505.344 710.625 448 640 448zM128 896c-35.312 0-64-28.625-64-64 0-35.312 28.688-64 64-64 35.406 0 64 28.688 64 64C192 867.375 163.406 896 128 896zM128 256c-35.312 0-64-28.594-64-64s28.688-64 64-64c35.406 0 64 28.594 64 64S163.406 256 128 256zM640 640c-35.312 0-64-28.625-64-64 0-35.406 28.688-64 64-64 35.375 0 64 28.594 64 64C704 611.375 675.375 640 640 640z" /></svg>
@@ -140,7 +140,7 @@
 	</a>
 
 <!--
-	<a class='menu' href='/@app.reponame/contributors'>
+	<a class='menu' href='/@app.repo.name/contributors'>
 	-->
 	<a class='menu' href='/contributors'>
 		<svg aria-hidden="true" focusable="false" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><path fill="currentColor" d="M192 256c61.9 0 112-50.1 112-112S253.9 32 192 32 80 82.1 80 144s50.1 112 112 112zm76.8 32h-8.3c-20.8 10-43.9 16-68.5 16s-47.6-6-68.5-16h-8.3C51.6 288 0 339.6 0 403.2V432c0 26.5 21.5 48 48 48h288c26.5 0 48-21.5 48-48v-28.8c0-63.6-51.6-115.2-115.2-115.2zM480 256c53 0 96-43 96-96s-43-96-96-96-96 43-96 96 43 96 96 96zm48 32h-3.8c-13.9 4.8-28.6 8-44.2 8s-30.3-3.2-44.2-8H432c-20.4 0-39.2 5.9-55.7 15.4 24.4 26.3 39.7 61.2 39.7 99.8v38.4c0 2.2-.5 4.3-.6 6.4H592c26.5 0 48-21.5 48-48 0-61.9-50.1-112-112-112z"></path></svg>
@@ -148,7 +148,7 @@
 	</a>
 
 	<!--
-	<a class='menu' href='/@app.reponame/releases'>
+	<a class='menu' href='/@app.repo.name/releases'>
 	-->
 	<a class='menu' href='/branches'>
 		<svg aria-hidden="true" focusable="false" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M384 144c0-44.2-35.8-80-80-80s-80 35.8-80 80c0 36.4 24.3 67.1 57.5 76.8-.6 16.1-4.2 28.5-11 36.9-15.4 19.2-49.3 22.4-85.2 25.7-28.2 2.6-57.4 5.4-81.3 16.9v-144c32.5-10.2 56-40.5 56-76.3 0-44.2-35.8-80-80-80S0 35.8 0 80c0 35.8 23.5 66.1 56 76.3v199.3C23.5 365.9 0 396.2 0 432c0 44.2 35.8 80 80 80s80-35.8 80-80c0-34-21.2-63.1-51.2-74.6 3.1-5.2 7.8-9.8 14.9-13.4 16.2-8.2 40.4-10.4 66.1-12.8 42.2-3.9 90-8.4 118.2-43.4 14-17.4 21.1-39.8 21.6-67.9 31.6-10.8 54.4-40.7 54.4-75.9zM80 64c8.8 0 16 7.2 16 16s-7.2 16-16 16-16-7.2-16-16 7.2-16 16-16zm0 384c-8.8 0-16-7.2-16-16s7.2-16 16-16 16 7.2 16 16-7.2 16-16 16zm224-320c8.8 0 16 7.2 16 16s-7.2 16-16 16-16-7.2-16-16 7.2-16 16-16z"></path></svg>
