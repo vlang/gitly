@@ -276,9 +276,10 @@ pub fn (mut app App) update(user, repo string) vweb.Result {
 	return app.vweb.redirect('/')
 }
 
-['/:username']
+['/user/:username']
 pub fn (mut app App) user(username string) vweb.Result {
 	args := app.path.split('/')
+	app.show_menu = false
 	mut user := User{}
 	if args.len >= 1 {
 		//username := args[0]
