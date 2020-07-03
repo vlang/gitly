@@ -100,7 +100,7 @@ pub fn (mut app App) add_user(username, password string, emails []string, github
 			}
 			app.insert_email(mail)
 		}
-		u.emails = app.find_emails_by_user_id(u.id)
+		u.emails = app.find_user_emails(u.id)
 	} else {
 		name := user.username
 		if !github {
@@ -121,7 +121,7 @@ pub fn (mut app App) add_user(username, password string, emails []string, github
 	}
 }
 
-pub fn (mut app App) update_avatar_for_user_id(data string, id int) {
+pub fn (mut app App) update_user_avatar(data string, id int) {
 	sql app.db {
 		update User set avatar = data where id == id
 	}
@@ -183,19 +183,19 @@ pub fn (mut app App) remove_ssh_key(title string, user_id int) {
 	}
 }
 
-pub fn (mut app App) update_token_by_user_id(id int, token string) {
+pub fn (mut app App) update_user_token(id int, token string) {
 	sql app.db {
 		update User set token = token where id == id
 	}
 }
 
-pub fn (mut app App) find_sshkey_by_user_id(id int) []SshKey {
+pub fn (mut app App) find_user_sshkeys(id int) []SshKey {
 	return sql app.db {
 		select from SshKey where user == id
 	}
 }
 
-pub fn (mut app App) find_token_from_user_id(id int) string {
+pub fn (mut app App) find_user_token(id int) string {
 	user := app.find_user_by_id(id)
 	return user.token
 }
@@ -207,15 +207,15 @@ pub fn (mut app App) find_username_by_id(id int) string {
 	return user.username
 }
 
-pub fn (mut app App) find_user_by_username(username2 string) ?User {
+pub fn (mut app App) find_user_by_username(username string) ?User {
 	user := sql app.db {
-		select from User where username == username2
+		select from User where username == username
 	}
 	if user.len == 0 {
 		return error('User not found')
 	}
 	mut u := user[0]
-	emails := app.find_emails_by_user_id(u.id)
+	emails := app.find_user_emails(u.id)
 	u.emails = emails
 	return u
 }
@@ -224,7 +224,7 @@ pub fn (mut app App) find_user_by_id(id2 int) User {
 	mut user := sql app.db {
 		select from User where id == id2
 	}
-	emails := app.find_emails_by_user_id(user.id)
+	emails := app.find_user_emails(user.id)
 	user.emails = emails
 	return user
 }
@@ -239,20 +239,20 @@ pub fn (mut app App) find_user_by_email(email string) ?User {
 	return app.find_user_by_id(emails[0].user)
 }
 
-pub fn (mut app App) find_emails_by_user_id(id2 int) []Email {
+pub fn (mut app App) find_user_emails(id2 int) []Email {
 	emails := sql app.db {
 		select from Email where user == id2
 	}
 	return emails
 }
 
-pub fn (mut app App) find_contributor_by_repo_id(id int) []Contributor {
+pub fn (mut app App) find_repo_contributor(id int) []Contributor {
 	return sql app.db {
 		select from Contributor where repo == id
 	}
 }
 
-pub fn (mut app App) find_registered_contributor_by_repo_id(id int) []User {
+pub fn (mut app App) find_repo_registered_contributor(id int) []User {
 	contributor := sql app.db {
 		select from Contributor where repo == id
 	}
@@ -263,13 +263,13 @@ pub fn (mut app App) find_registered_contributor_by_repo_id(id int) []User {
 	return user
 }
 
-pub fn (mut app App) contributor_by_repo_id_size(id int) int {
+pub fn (mut app App) nr_repo_contributor(id int) int {
 	return sql app.db {
 		select count from Contributor where repo == id
 	}
 }
 
-pub fn (mut app App) inc_posts_for_user(user &User) {
+pub fn (mut app App) inc_user_post(user &User) {
 	user.nr_posts++
 	u := *user
 	id := u.id
@@ -298,13 +298,13 @@ pub fn (mut app App) update_user_login_attempts(user_id, attempts int) {
 	}
 }
 
-pub fn (mut app App) block_user_by_id(user_id int) {
+pub fn (mut app App) block_user(user_id int) {
 	sql app.db {
 		update User set is_blocked = true where id == user_id
 	}
 }
 
-pub fn (mut app App) check_user_blocked_by_id(user_id int) bool {
+pub fn (mut app App) check_user_blocked(user_id int) bool {
 	user := app.find_user_by_id(user_id)
 	return user.is_blocked
 }

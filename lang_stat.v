@@ -34,9 +34,9 @@ pub fn (l &LangStat) pct_html() vweb.RawHtml {
 	return '<span>$x%</span> <span class=lang-stat-loc>$sloc loc</span>'
 }
 
-pub fn (mut app App) find_lang_stats_by_repo_id(repo_id2 int) []LangStat {
+pub fn (mut app App) find_repo_lang_stats(repo_id int) []LangStat {
 	lang_stats := sql app.db {
-		select from LangStat where repo_id == repo_id2 
+		select from LangStat where repo_id == repo_id 
 	}
 	return lang_stats
 }

@@ -82,26 +82,26 @@ fn (mut app App) insert_commit(commit Commit) {
 	}
 }
 
-fn (mut app App) find_commits_by_repo(repo_id int) []Commit {
+fn (mut app App) find_repo_commits(repo_id int) []Commit {
 	return sql app.db {
 		select from Commit where repo_id == repo_id limit 10 
 	}
 }
 
-fn (mut app App) find_commits_by_repo_as_page(repo_id, page int) []Commit {
+fn (mut app App) find_repo_commits_as_page(repo_id, page int) []Commit {
 	offs := page * commits_per_page
 	return sql app.db {
 		select from Commit where repo_id == repo_id order by created_at desc limit 35 offset offs
 	}
 }
 
-fn (mut app App) commits_by_repo_id_size(repo_id int) int {
+fn (mut app App) nr_repo_commits(repo_id int) int {
 	return sql app.db {
 		select count from Commit where repo_id == repo_id 
 	}
 }
 
-fn (mut app App) find_commit_by_hash(repo_id int, hash string) Commit {
+fn (mut app App) find_repo_commit_by_hash(repo_id int, hash string) Commit {
 	commits := sql app.db {
 		select from Commit where repo_id == repo_id && hash == hash 
 	}
@@ -111,19 +111,19 @@ fn (mut app App) find_commit_by_hash(repo_id int, hash string) Commit {
 	return Commit{}
 }
 
-fn (mut app App) find_last_commit(repo_id int) Commit {
+fn (mut app App) find_repo_last_commit(repo_id int) Commit {
 	return sql app.db {
 		select from Commit where repo_id == repo_id order by created_at desc limit 1
 	}
 }
 
-fn (mut app App) first_commit_by_repo_id(repo_id int) Commit {
+fn (mut app App) find_repo_first_commit(repo_id int) Commit {
 	return sql app.db {
 		select from Commit where repo_id == repo_id order by created_at limit 1
 	}
 }
 
-fn (mut app App) find_commits_by_author(repo_id int, author string) []Commit {
+fn (mut app App) find_repo_commits_by_author(repo_id int, author string) []Commit {
 	return sql app.db {
 		select from Commit where repo_id == repo_id && author == author limit 10 
 	}

@@ -70,7 +70,7 @@ fn (mut app App) update_branches(r &Repo) {
 				return
 			}
 			branch.date = int(date.unix)
-			if !app.contains_branch_by_name(branch.name, r.id) {
+			if !app.contains_repo_branch(branch.name, r.id) {
 				app.insert_branch(branch)
 			} else {
 				app.update_branch(branch)
@@ -86,7 +86,7 @@ fn (branch Branch) relative() string {
 }
 
 fn (mut app App) update_branch(branch Branch) {
-	b := app.find_branch_by_name_by_repo(branch.name, branch.repo_id)
+	b := app.find_repo_branch_by_name(branch.name, branch.repo_id)
 	author := branch.author
 	hash := branch.hash
 	date := branch.date
@@ -101,13 +101,13 @@ fn (mut app App) insert_branch(branch Branch) {
 	}
 }
 
-fn (mut app App) find_branch_by_name_by_repo(name string, repo_id int) Branch {
+fn (mut app App) find_repo_branch_by_name(name string, repo_id int) Branch {
 	return sql app.db {
 		select from Branch where name == name && repo_id == repo_id limit 1
 	}
 }
 
-fn (mut app App) find_branches_by_repo_id(repo_id int) []Branch {
+fn (mut app App) find_repo_branches(repo_id int) []Branch {
 	return sql app.db {
 		select from Branch where repo_id == repo_id order by date desc
 	}
@@ -119,7 +119,7 @@ fn (mut app App) nr_repo_branches(repo_id int) int {
 	}
 }
 
-fn (mut app App) contains_branch_by_name(name string, repo_id int) bool {
+fn (mut app App) contains_repo_branch(name string, repo_id int) bool {
 	nr := sql app.db {
 		select count from Branch where repo_id == repo_id && name == name
 	}

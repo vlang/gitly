@@ -150,7 +150,7 @@ pub fn (mut app App) create_new_test_repo() {
 	if x := app.find_repo_by_name('v') {
 		app.info('test repo already exists')
 		app.repo = x
-		app.repo.lang_stats = app.find_lang_stats_by_repo_id(app.repo.id)
+		app.repo.lang_stats = app.find_repo_lang_stats(app.repo.id)
 		// init branches list for existing repo
 		app.update_repo_data(app.repo)
 		return
@@ -208,7 +208,7 @@ pub fn (mut app App) tree() vweb.Result {
 	if app.path.starts_with('/') {
 		app.path = app.path[1..]
 	}
-	mut files := app.find_files_by_repo(app.repo.id, 'master', app.path)
+	mut files := app.find_repo_files(app.repo.id, 'master', app.path)
 	app.info('tree() nr files found: $files.len')
 	if files.len == 0 {
 		// No files in the db, fetch them from git and cache in db
@@ -241,10 +241,10 @@ pub fn (mut app App) tree() vweb.Result {
 			path = '/$path'
 		}
 		println(path)
-		upper_dir := app.find_file_by_path(app.repo.id, 'master', '$path') or { panic(err) }
-		last_commit = app.find_commit_by_hash(app.repo.id, upper_dir.last_hash)
+		upper_dir := app.find_repo_file_by_path(app.repo.id, 'master', '$path') or { panic(err) }
+		last_commit = app.find_repo_commit_by_hash(app.repo.id, upper_dir.last_hash)
 	} else {
-		last_commit = app.find_last_commit(app.repo.id)
+		last_commit = app.find_repo_last_commit(app.repo.id)
 	}
 
 	// println('app.tree() = ${time.ticks()-t}ms')
@@ -287,7 +287,7 @@ pub fn (mut app App) user() vweb.Result {
 pub fn (mut app App) commits() vweb.Result {
 	args := app.path.split('/')
 	page := if args.len >= 1 { args.last().int() } else { 0 }
-	mut commits := app.find_commits_by_repo_as_page(app.repo.id, page)
+	mut commits := app.find_repo_commits_as_page(app.repo.id, page)
 	mut b_author := false
 	mut last := false
 	mut first := false
@@ -363,7 +363,7 @@ pub fn (mut app App) commits() vweb.Result {
 
 pub fn (mut app App) commit() vweb.Result {
 	hash := app.path.split('/')[0]
-	commit := app.find_commit_by_hash(app.repo.id, hash)
+	commit := app.find_repo_commit_by_hash(app.repo.id, hash)
 	changes := commit.get_changes(app.repo)
 	mut all_adds := 0
 	mut all_dels := 0
@@ -380,7 +380,7 @@ pub fn (mut app App) commit() vweb.Result {
 pub fn (mut app App) issues() vweb.Result {
 	args := app.path.split('')
 	page := if args.len >= 1 { args.last().int() } else { 0 }
-	mut issues := app.find_issues_by_repo_as_page(app.repo.id, page)
+	mut issues := app.find_repo_issues_as_page(app.repo.id, page)
 	mut first := false
 	mut last := false
 	for index, issue in issues {
@@ -447,26 +447,26 @@ pub fn (mut app App) pull() vweb.Result {
 }
 
 pub fn (mut app App) pulls() vweb.Result {
-	prs := app.find_prs_by_repo(app.repo.id)
+	prs := app.find_repo_prs(app.repo.id)
 	return $vweb.html()
 }
 
 pub fn (mut app App) contributors() vweb.Result {
-	contributors := app.find_registered_contributor_by_repo_id(app.repo.id)
+	contributors := app.find_repo_registered_contributor(app.repo.id)
 	return $vweb.html()
 }
 
 pub fn (mut app App) branches() vweb.Result {
-	mut branches := app.find_branches_by_repo_id(app.repo.id)
+	mut branches := app.find_repo_branches(app.repo.id)
 	return $vweb.html()
 }
 
 pub fn (mut app App) releases() vweb.Result {
 	mut releases := []Release{}
 	mut release := Release{}
-	tags := app.find_tags_by_repo_id(app.repo.id)
-	rels := app.find_releases_by_repo_id(app.repo.id)
-	users := app.find_registered_contributor_by_repo_id(app.repo.id)
+	tags := app.find_repo_tags(app.repo.id)
+	rels := app.find_repo_releases(app.repo.id)
+	users := app.find_repo_registered_contributor(app.repo.id)
 	for rel in rels {
 		release.notes = rel.notes
 		mut user_id := 0
@@ -544,7 +544,7 @@ pub fn (mut app App) new_issue_post() vweb.Result {
 		author_id: app.user.id
 		created_at: int(time.now().unix)
 	}
-	app.inc_posts_for_user(app.user)
+	app.inc_user_post(app.user)
 	app.insert_issue(issue)
 	app.inc_repo_issues(app.repo.id)
 	return app.vweb.redirect('/issues')
@@ -638,7 +638,7 @@ pub fn (mut app App) login_post() vweb.Result {
 		app.inc_user_login_attempts(user.id)
 		if user.login_attempts == max_login_attempts {
 			app.warn('User $user.username got blocked')
-			app.block_user_by_id(user.id)
+			app.block_user(user.id)
 		}
 		return app.vweb.redirect('/login')
 	}
@@ -646,7 +646,7 @@ pub fn (mut app App) login_post() vweb.Result {
 		return app.vweb.redirect('/login')
 	}
 	expires := time.utc().add_days(expire_length)
-	mut token := app.find_token_from_user_id(user.id)
+	mut token := app.find_user_token(user.id)
 	if token == '' {
 		token = app.add_token(user.id)
 	}
@@ -663,8 +663,8 @@ pub fn (mut app App) logged_in() bool {
 	token := app.vweb.get_cookie('token') or {
 		return false
 	}
-	t := app.find_token_from_user_id(id.int())
-	blocked := app.check_user_blocked_by_id(id.int())
+	t := app.find_user_token(id.int())
+	blocked := app.check_user_blocked(id.int())
 	if blocked {
 		app.logout()
 		return false
@@ -693,7 +693,7 @@ pub fn (mut app App) comment_post() vweb.Result {
 	}
 
 	app.insert_comment(comm)
-	app.inc_comments_by_issue_id(comm.issue_id)
+	app.inc_issue_comments(comm.issue_id)
 	return app.vweb.redirect('/issue/$issue_id')
 }
 
@@ -710,7 +710,7 @@ fn gen_uuid_v4ish() string {
 
 pub fn (mut app App) add_token(user_id int) string {
 	token := gen_uuid_v4ish()
-	app.update_token_by_user_id(user_id, token)
+	app.update_user_token(user_id, token)
 	return token
 }
 

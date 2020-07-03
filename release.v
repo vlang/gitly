@@ -20,7 +20,7 @@ pub fn (mut app App) insert_release(release Release) {
 	}
 }
 
-pub fn (mut app App) find_releases_by_repo_id(repo_id int) []Release {
+pub fn (mut app App) find_repo_releases(repo_id int) []Release {
 	return sql app.db {
 		select from Release where repo_id == repo_id 
 	}

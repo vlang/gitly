@@ -52,21 +52,21 @@ pub fn (mut app App) insert_tag(tag Tag) {
 	}
 }
 
-pub fn (mut app App) find_tag_by_name(name2 string) Tag {
+pub fn (mut app App) find_tag_by_name(name string) Tag {
 	mut tag := sql app.db {
-		select from Tag where name == name2 
+		select from Tag where name == name 
 	}
 	return tag[0]
 }
 
-pub fn (mut app App) find_tag_by_id(id2 int) Tag {
+pub fn (mut app App) find_tag_by_id(id int) Tag {
 	mut tag := sql app.db {
-		select from Tag where id == id2 
+		select from Tag where id == id 
 	}
 	return tag
 }
 
-pub fn (mut app App) find_tags_by_repo_id(repo_id int) []Tag {
+pub fn (mut app App) find_repo_tags(repo_id int) []Tag {
 	return sql app.db {
 		select from Tag where repo_id == repo_id order by date desc
 	}
