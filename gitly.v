@@ -183,20 +183,18 @@ pub fn (mut app App) create_new_test_repo() {
 }
 
 // pub fn (mut app App) tree(path string) {
-// ['/:user/:repo/tree']
-pub fn (mut app App) tree() vweb.Result {
+['/:user/:repo/tree']
+pub fn (mut app App) tree(user, repo string) vweb.Result {
+	println('tree() user="$user" repo="' + repo + '"')
 	if app.path.contains('/favicon.svg') {
 		return vweb.not_found()
 	}
 	app.is_tree = true
 	// t := time.ticks()
 	mut up := ''
-	mut poss_up := true
 	args := app.path.split('/')
 	app.inc_repo_views(app.repo.id)
-	if args.len == 0 {
-		poss_up = false
-	}
+	can_up := args.len > 0
 	if args.len > 1 {
 		up_a := args[0..args.len - 1]
 		up += '/tree/'
@@ -232,7 +230,7 @@ pub fn (mut app App) tree() vweb.Result {
 	}
 
 	mut last_commit := Commit{}
-	if poss_up {
+	if can_up {
 		mut path := app.path
 		if path.ends_with('/') {
 			path = path[0..path.len-1]
@@ -259,7 +257,7 @@ pub fn (mut app App) tree() vweb.Result {
 }
 
 pub fn (mut app App) index() vweb.Result {
-	app.tree()
+	app.tree('','')
 	return $vweb.html()
 }
 
@@ -377,6 +375,7 @@ pub fn (mut app App) commit() vweb.Result {
 	return $vweb.html()
 }
 
+['/:user/:repo/issues']
 pub fn (mut app App) issues() vweb.Result {
 	args := app.path.split('')
 	page := if args.len >= 1 { args.last().int() } else { 0 }
