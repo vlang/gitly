@@ -36,6 +36,13 @@ h3 {
 	margin-bottom: 10px;
 	font-size: 130%;
 }
+code {
+	background-color: #f7f7f7;
+}
+pre > code {
+    background-color: #eff0f1;
+    display: block;
+}
 .content {
 	max-width: $mob-max;
 	margin: 0 auto;
