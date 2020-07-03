@@ -13,6 +13,7 @@ struct Repo {
 	git_dir            string
 	name               string
 	user_id            int
+	user_name          string
 	clone_url          string [skip]
 	primary_branch     string [skip]
 	description        string
