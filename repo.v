@@ -24,7 +24,6 @@ struct Repo {
 	latest_update_hash string [skip]
 	latest_activity    time.Time [skip]
 mut:
-	owner_name         string [skip]
 	webhook_secret     string
 	nr_tags            int
 	nr_open_issues     int

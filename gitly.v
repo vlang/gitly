@@ -369,7 +369,6 @@ pub fn (mut app App) commit(user, repo, hash string) vweb.Result {
 	if !app.find_repo(user, repo) {
 		return app.vweb.not_found()
 	}
-	println(hash)
 	commit := app.find_repo_commit_by_hash(app.repo.id, hash)
 	changes := commit.get_changes(app.repo)
 	mut all_adds := 0
