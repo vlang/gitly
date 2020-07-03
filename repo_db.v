@@ -147,8 +147,7 @@ fn (mut app App) create_tables() {
 	])
 }
 
-fn (app &App) update_repo_in_db(r &Repo) {
-	repo := *r
+fn (app &App) update_repo_in_db(repo &Repo) {
 	id := repo.id
 	desc := repo.description
 	nr_views := repo.nr_views
