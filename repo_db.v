@@ -13,6 +13,7 @@ fn (mut app App) create_tables() {
 		"name text default ''"
 		"description text default ''"
 		'user_id int default 0'
+		"user_name text default ''"
 		'nr_views int default 0'
 		'nr_commits int default 0'
 		'nr_open_issues int default 0'

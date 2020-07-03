@@ -169,6 +169,7 @@ pub fn (mut app App) create_new_test_repo() {
 	}
 	app.repo = Repo{
 		name: 'v'
+		user_name: 'vlang'
 		git_dir: git_dir
 		lang_stats: test_lang_stats
 		description: 'The V programming language'
