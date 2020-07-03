@@ -86,11 +86,10 @@ jobs:
 #      - name: Compile gitly
 #        run: |
 #          .\v.exe gitly\  
-
-  windows-gcc:
+  ubuntu-tcc:
     runs-on: windows-latest
     env:
-      VFLAGS: -cc gcc
+      VFLAGS: -cc /var/tmp/tcc/bin/tcc -cflags -bt10
     steps:
       - name: Checkout V
         uses: actions/checkout@v2
@@ -100,10 +99,8 @@ jobs:
         uses: actions/checkout@v2
         with:
           path: gitly
-      - name: Install SQLite
-        run: |
-          .github\workflows\windows-install-sqlite.bat
-          dir thirdparty\sqlite\          
+      - name: Install SQLite Dependencies
+        run: sudo apt install libsqlite3-dev          
       - name: Install Markdown
         uses: actions/checkout@v2
         with:
@@ -111,36 +108,10 @@ jobs:
           path: vlib/markdown
       - name: Build V
         run: |
-          ./make.bat -gcc -skip-path
+          echo $VFLAGS
+          make
+          sudo ./v symlink
       - name: Compile gitly
         run: |
-          .\v.exe gitly\
-  windows-tcc:
-    runs-on: windows-latest
-    env:
-      VFLAGS: -cc tcc
-    steps:
-      - name: Checkout V
-        uses: actions/checkout@v2
-        with:
-          repository: vlang/v
-      - name: Checkout gitly2
-        uses: actions/checkout@v2
-        with:
-          path: gitly
-      - name: Install SQLite
-        run: |
-          .github\workflows\windows-install-sqlite.bat
-          dir thirdparty\sqlite\          
-      - name: Install Markdown
-        uses: actions/checkout@v2
-        with:
-          repository: vlang/markdown
-          path: vlib/markdown
-      - name: Build V
-        run: |
-          ./make.bat -tcc -skip-path
-      - name: Compile gitly
-        run: |
-          .\v.exe gitly\
-
+          cd gitly
+          v .
