@@ -23,10 +23,10 @@
 	@for commit in commits
 		.clog {
 			.clog-msg {
-				<a href='/commit/@commit.hash'>@commit.message</a>
+				<a href='/@app.repo.user_name/@app.repo.name/commit/@commit.hash'>@commit.message</a>
 			}
 			span.clog-author {
-				<a href='/commits/&@commit.author.str()/0'>@commit.author</a>
+				<a href=''>@commit.author</a>
 			}
 			span.clog-time {
 				commited @commit.relative()
@@ -41,14 +41,14 @@
 <div class="buttons">
 	<br/>
 @if first
-	<a href="/commits/@url@last_site" class="button disabled">Prev</a>
+	<a href="/@app.repo.user_name/@app.repo.name/commits/@last_site" class="button disabled">Prev</a>
 @else
-	<a href="/commits/@url@last_site" class="button">Prev</a>
+	<a href="/@app.repo.user_name/@app.repo.name/commits/@last_site" class="button">Prev</a>
 @end
 
 @if last
-	<a href="/commits/@url@next_site" class="button disabled">Next</a>
+	<a href="/@app.repo.user_name/@app.repo.name/commits/@next_site" class="button disabled">Next</a>
 @else
-	<a href="/commits/@url@next_site" class="button">Next</a>
+	<a href="/@app.repo.user_name/@app.repo.name/commits/@next_site" class="button">Next</a>
 @end
 </div>

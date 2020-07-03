@@ -10,7 +10,7 @@
 			<span>email</span>
 			-->
 			@if contributor.is_registered
-				<a><span>@contributor.username</span></a>
+				<a href="/@contributor.username"><span>@contributor.username</span></a>
 			@else
 				<span>@contributor.username</span>
 			@end

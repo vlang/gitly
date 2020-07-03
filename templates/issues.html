@@ -8,7 +8,7 @@
 @for issue in issues
 	.clog {
 		.clog-msg {
-			<a href="../issue/@issue.id">@issue.title</a>
+			<a href="/@app.repo.user_name/@app.repo.name/issue/@issue.id">@issue.title</a>
 		}
 		span.clog-author {
 			#@issue.id opened @issue.relative_time()
@@ -29,22 +29,22 @@
 <div>
 <br>
 @if app.logged_in
-<a href='/new_issue'>New issue</a>
+<a href='/@app.repo.user_name/@app.repo.name/new_issue'>New issue</a>
 @end
 </div>
 
 <div class="buttons">
 	<br>
 @if first
-	<a href="/issues/@url@last_site" class="button disabled">Prev</a>
+	<a href="/@app.repo.user_name/@app.repo.name/issues/@last_site" class="button disabled">Prev</a>
 @else
-	<a href="/issues/@url@last_site" class="button">Prev</a>/
+	<a href="/@app.repo.user_name/@app.repo.name/issues/@last_site" class="button">Prev</a>/
 @end
 
 @if last
-	<a href="/issues/@url@next_site" class="button disabled">Next</a>
+	<a href="/@app.repo.user_name/@app.repo.name/issues/@next_site" class="button disabled">Next</a>
 @else
-	<a href="/issues/@url@next_site" class="button">Next</a>
+	<a href="/@app.repo.user_name/@app.repo.name/issues/@next_site" class="button">Next</a>
 @end
 </div>
 

@@ -146,14 +146,32 @@ fn (mut app App) create_tables() {
 	])
 }
 
-fn (app &App) find_repo_by_name(name string) ?Repo {
+fn (app &App) find_repo_by_name(user int, name string) ?Repo {
 	x := sql app.db {
-		select from Repo where name == name
+		select from Repo where name == name && user_id == user
 	}
 	if x.len == 0 {
 		return none
 	}
 	return x[0]
+}
+
+fn (app &App) find_repo(user, name string) bool {
+	if user.len == 0 || name.len == 0 {
+		app.error('User or repo was not found')
+		return false
+	}
+	u := app.find_user_by_username(user) or {
+		app.error('User was not found')
+		return false
+	}
+	app.repo = app.find_repo_by_name(u.id, name) or {
+		app.error('Repo was not found')
+		return false
+	}
+	app.repo.lang_stats = app.find_repo_lang_stats(app.repo.id)
+
+	return true
 }
 
 fn (app &App) retrieve_repo(id int) Repo {
