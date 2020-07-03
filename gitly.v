@@ -453,7 +453,11 @@ pub fn (mut app App) issue(user, repo, id_str string) vweb.Result {
 	return $vweb.html()
 }
 
-pub fn (mut app App) pull() vweb.Result {
+['/:user/:repo/pull/:id']
+pub fn (mut app App) pull(user, repo, id_str string) vweb.Result {
+	if !app.find_repo(user, repo) {
+		return app.vweb.not_found()
+	}
 	_ := app.path.split('/')
 	id := 0
 	pr0 := app.find_pr_by_id(id) or {
@@ -479,12 +483,22 @@ pub fn (mut app App) contributors(user, repo string) vweb.Result {
 	return $vweb.html()
 }
 
-pub fn (mut app App) branches() vweb.Result {
+['/:user/:repo/branches']
+pub fn (mut app App) branches(user, repo string) vweb.Result {
+	if !app.find_repo(user, repo) {
+		return app.vweb.not_found()
+	}
+	app.show_menu = true
 	mut branches := app.find_repo_branches(app.repo.id)
 	return $vweb.html()
 }
 
-pub fn (mut app App) releases() vweb.Result {
+['/:user/:repo/releases']
+pub fn (mut app App) releases(user_str, repo string) vweb.Result {
+	if !app.find_repo(user_str, repo) {
+		return app.vweb.not_found()
+	}
+	app.show_menu = true
 	mut releases := []Release{}
 	mut release := Release{}
 	tags := app.find_repo_tags(app.repo.id)
