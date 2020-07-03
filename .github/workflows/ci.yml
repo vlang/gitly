@@ -86,6 +86,36 @@ jobs:
 #      - name: Compile gitly
 #        run: |
 #          .\v.exe gitly\  
+
+  windows-gcc:
+    runs-on: windows-latest
+    env:
+      VFLAGS: -cc gcc
+    steps:
+      - name: Checkout V
+        uses: actions/checkout@v2
+        with:
+          repository: vlang/v
+      - name: Checkout gitly2
+        uses: actions/checkout@v2
+        with:
+          path: gitly
+      - name: Install SQLite
+        run: |
+          .github\workflows\windows-install-sqlite.bat
+          dir thirdparty\sqlite\          
+      - name: Install Markdown
+        uses: actions/checkout@v2
+        with:
+          repository: vlang/markdown
+          path: vlib/markdown
+      - name: Build V
+        run: |
+          ./make.bat -gcc -skip-path
+      - name: Compile gitly
+        run: |
+          .\v.exe gitly\
+
   ubuntu-tcc:
     runs-on: ubuntu-latest
     env:
