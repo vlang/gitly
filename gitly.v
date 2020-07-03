@@ -32,6 +32,7 @@ mut:
 	html_path     vweb.RawHtml
 	page_gen_time string
 	is_tree bool
+	show_menu bool
 	oauth_client_id string
 	oauth_client_secret string
 	only_gh_login bool
@@ -190,6 +191,7 @@ pub fn (mut app App) tree(user, repo string) vweb.Result {
 		return vweb.not_found()
 	}
 	app.is_tree = true
+	app.show_menu = true
 	// t := time.ticks()
 	mut up := ''
 	args := app.path.split('/')
@@ -257,7 +259,8 @@ pub fn (mut app App) tree(user, repo string) vweb.Result {
 }
 
 pub fn (mut app App) index() vweb.Result {
-	app.tree('','')
+	app.show_menu = false
+	//app.tree('','')
 	return $vweb.html()
 }
 
