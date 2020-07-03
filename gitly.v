@@ -471,7 +471,11 @@ pub fn (mut app App) pulls() vweb.Result {
 	return $vweb.html()
 }
 
-pub fn (mut app App) contributors() vweb.Result {
+[':user/:repo/contributors']
+pub fn (mut app App) contributors(user, repo string) vweb.Result {
+	if !app.find_repo(user, repo) {
+		return app.vweb.not_found()
+	}
 	contributors := app.find_repo_registered_contributor(app.repo.id)
 	return $vweb.html()
 }
