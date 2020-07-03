@@ -131,6 +131,10 @@ fn (mut app App) update_repo_data(r &Repo) {
 	r.git('fetch --all')
 	r.git('pull --all')
 
+	wg := sync.new_waitgroup()
+	wg.add(1)
+	go r.analyse_lang(wg)
+
 	data := r.git('--no-pager log ${last_commit.hash}.. --abbrev-commit --abbrev=8 --pretty="%h$log_field_separator%aE$log_field_separator%cD$log_field_separator%s$log_field_separator%aN"')
 
 	mut tmp_commit := Commit{}
@@ -176,6 +180,15 @@ fn (mut app App) update_repo_data(r &Repo) {
 	app.update_branches(r)
 
 	r.nr_branches = app.nr_repo_branches(r.id)
+
+	app.update_repo_in_db(r)
+
+	wg.wait()
+	for lang_stat in r.lang_stats {
+		sql app.db {
+			insert lang_stat into LangStat
+		}
+	}
 
 	app.db.exec('END TRANSACTION')
 	app.info('Repo updated')
