@@ -100,7 +100,7 @@ jobs:
         with:
           path: gitly
       - name: Install SQLite Dependencies
-        run: sudo apt install libsqlite3-dev          
+        run: apt install libsqlite3-dev          
       - name: Install Markdown
         uses: actions/checkout@v2
         with:
