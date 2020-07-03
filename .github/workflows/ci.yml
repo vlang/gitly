@@ -87,7 +87,7 @@ jobs:
 #        run: |
 #          .\v.exe gitly\  
   ubuntu-tcc:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     env:
       VFLAGS: -cc /var/tmp/tcc/bin/tcc -cflags -bt10
     steps:
@@ -100,7 +100,7 @@ jobs:
         with:
           path: gitly
       - name: Install SQLite Dependencies
-        run: apt install libsqlite3-dev          
+        run: sudo apt install libsqlite3-dev          
       - name: Install Markdown
         uses: actions/checkout@v2
         with:
