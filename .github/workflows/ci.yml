@@ -114,4 +114,34 @@ jobs:
           ./make.bat -gcc -skip-path
       - name: Compile gitly
         run: |
-          .\v.exe gitly\  
+          .\v.exe gitly\
+
+  ubuntu-tcc:
+    runs-on: ubuntu-latest
+    env:
+      VFLAGS: -cc /var/tmp/tcc/bin/tcc -cflags -bt10
+    steps:
+      - name: Checkout V
+        uses: actions/checkout@v2
+        with:
+          repository: vlang/v
+      - name: Checkout gitly2
+        uses: actions/checkout@v2
+        with:
+          path: gitly
+      - name: Install SQLite Dependencies
+        run: sudo apt install libsqlite3-dev          
+      - name: Install Markdown
+        uses: actions/checkout@v2
+        with:
+          repository: vlang/markdown
+          path: vlib/markdown
+      - name: Build V
+        run: |
+          echo $VFLAGS
+          make
+          sudo ./v symlink
+      - name: Compile gitly
+        run: |
+          cd gitly
+          v .
