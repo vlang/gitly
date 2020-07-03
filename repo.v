@@ -91,15 +91,15 @@ fn (mut app App) update_repo() {
 			app.insert_commit(tmp_commit)
 		}
 	}
-	r.nr_commits = app.commits_by_repo_id_size(r.id)
-	r.nr_contributors = app.contributor_by_repo_id_size(r.id)
+	r.nr_commits = app.nr_repo_commits(r.id)
+	r.nr_contributors = app.nr_repo_contributor(r.id)
 	app.info(r.nr_contributors.str())
-	r.created_at = app.first_commit_by_repo_id(r.id).created_at
+	r.created_at = app.find_repo_first_commit(r.id).created_at
 	app.fetch_branches(r)
 	r.nr_branches = app.nr_repo_branches(r.id)
 	// TODO: TEMPORARY - UNTIL WE GET PERSISTENT RELEASE INFO
 	r.nr_releases = 0
-	for tag in app.find_tags_by_repo_id(r.id) {
+	for tag in app.find_repo_tags(r.id) {
 		release := &Release{
 			tag_id: tag.id
 			repo_id: r.id
@@ -126,7 +126,7 @@ fn (mut app App) update_repo() {
 
 // update_repo updated the repo in the db
 fn (mut app App) update_repo_data(r &Repo) {
-	last_commit := app.find_last_commit(r.id)
+	last_commit := app.find_repo_last_commit(r.id)
 	r.git('fetch --all')
 	r.git('pull --all')
 
@@ -166,11 +166,11 @@ fn (mut app App) update_repo_data(r &Repo) {
 		}
 	}
 
-	r.nr_commits = app.commits_by_repo_id_size(r.id)
-	r.nr_contributors = app.contributor_by_repo_id_size(r.id)
+	r.nr_commits = app.nr_repo_commits(r.id)
+	r.nr_contributors = app.nr_repo_contributor(r.id)
 
-	app.update_nr_commits_by_repo_id(r.id, r.nr_commits)
-	app.update_nr_contributors_by_repo_id(r.id, r.nr_contributors)
+	app.update_repo_nr_commits(r.id, r.nr_commits)
+	app.update_repo_nr_contributor(r.id, r.nr_contributors)
 
 	app.update_branches(r)
 
@@ -487,7 +487,7 @@ fn (r &Repo) html_path_to(path, branch string) vweb.RawHtml {
 // fetches last message and last time for each file
 // this is slow, so it's run in the background thread
 fn (mut app App) slow_fetch_files_info(branch, path string) {
-	files := app.find_files_by_repo(app.repo.id, branch, path)
+	files := app.find_repo_files(app.repo.id, branch, path)
 	// t := time.ticks()
 	// for file in files {
 	for i in 0 .. files.len {

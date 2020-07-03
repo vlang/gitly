@@ -46,10 +46,10 @@ pub fn (mut app App) oauth() vweb.Result {
 		user = app.find_user_by_email(gh_user.email) or {
 			return app.vweb.not_found()
 		}
-		app.update_avatar_for_user_id(gh_user.avatar, user.id)
+		app.update_user_avatar(gh_user.avatar, user.id)
 	}
 	expires := time.utc().add_days(expire_length)
-	token = app.find_token_from_user_id(user.id)
+	token = app.find_user_token(user.id)
 	if token == '' {
 		token = app.add_token(user.id)
 	}
