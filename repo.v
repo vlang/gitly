@@ -292,7 +292,7 @@ fn calc_lines_of_code(lines []string, lang hl.Lang) int {
 
 fn (r Repo) get_all_files(path string) []string {
 	files := os.ls(path) or {
-		panic(err)
+		return []
 	}
 	mut returnval := []string{}
 	for file in files {
@@ -516,7 +516,7 @@ fn (mut app App) slow_fetch_files_info(branch, path string) {
 
 fn (r Repo) git_advertise(a string) string {
 	cmd := os.exec('git $a --stateless-rpc --advertise-refs $r.git_dir') or {
-		panic(err)
+		return ''
 	}
 	if cmd.exit_code != 0 {
 		// eprintln("advertise error", err)

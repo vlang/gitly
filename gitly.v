@@ -92,6 +92,7 @@ pub fn (mut app App) init_once() {
 	app.vweb.serve_static('/jquery.js', 'static/js/jquery.js', 'text/javascript')
 	app.vweb.serve_static('/favicon.svg', 'static/assets/favicon.svg', 'image/svg+xml')
 	app.db = sqlite.connect('gitly.sqlite') or {
+		println('failed to connect to db')
 		panic(err)
 	}
 	app.create_tables()
@@ -204,7 +205,7 @@ pub fn (mut app App) tree(user, repo string) vweb.Result {
 		t := time.ticks()
 		files = app.cache_repo_files(mut app.repo, 'master', app.path)
 		println('caching files took ${time.ticks()-t}ms')
-		//go app.slow_fetch_files_info('master', app.path)
+		go app.slow_fetch_files_info('master', app.path)
 	}
 	mut readme := vweb.RawHtml('')
 	for file in files {
@@ -437,8 +438,7 @@ pub fn (mut app App) pull(user, repo, id_str string) vweb.Result {
 	_ := app.path.split('/')
 	id := 0
 	pr0 := app.find_pr_by_id(id) or {
-		panic(err)
-		// return app.vweb.not_found()
+		return app.vweb.not_found()
 	}
 	pr := pr0
 	comments := app.find_issue_comments(pr.id)
