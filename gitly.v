@@ -103,7 +103,7 @@ pub fn (mut app App) init_once() {
 	}
 
 	if !os.exists('./repos') {
-		os.mkdir('./repos) or {
+		os.mkdir('./repos') or {
 			app.error('Repo storage can not created')
 			app.error('Error: $err')
 			exit(1)
