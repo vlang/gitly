@@ -4,6 +4,7 @@ module main
 
 import crypto.sha256
 import rand
+import os
 import time
 
 struct User {
@@ -107,17 +108,20 @@ pub fn (mut app App) add_user(username, password string, emails []string, github
 			sql app.db {
 				update User set username=username, password=password, name=name, is_registered=true where id==user.id
 			}
-			return
-		}
-		if user.is_registered {
+		} else if user.is_registered {
 			sql app.db {
 				update User set is_github = true where id==user.id
 			}
-			return
+		} else {
+			sql app.db {
+				update User set username=username, name=name, is_registered=true, is_github = true where id==user.id
+			}
 		}
-		sql app.db {
-			update User set username=username, name=name, is_registered=true, is_github = true where id==user.id
-		}
+	}
+	user_path := '$app.repo_storage_path/$username'
+	os.mkdir(user_path) or {
+		app.error("User folder can not created")
+		app.error('Error: $err')
 	}
 }
 

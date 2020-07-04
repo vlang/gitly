@@ -34,6 +34,7 @@ mut:
 	oauth_client_id string
 	oauth_client_secret string
 	only_gh_login bool
+	repo_storage_path string
 pub mut:
 	file_log      log.Log
 	cli_log       log.Log
@@ -101,6 +102,14 @@ pub fn (mut app App) init_once() {
 	if app.oauth_client_id == '' {
 		app.get_oauth_tokens_from_db()
 	}
+	if !os.exists(app.repo_storage_path) {
+		os.mkdir(app.repo_storage_path) or {
+			app.error('Repo storage can not created')
+			app.error('Error: $err')
+			exit(1)
+		}
+	}
+
 	go app.create_new_test_repo() // if it doesn't exist
 	if '-cmdapi' in os.args {
 		go app.command_fetcher()
