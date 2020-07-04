@@ -756,3 +756,10 @@ pub fn (mut app App) get_user() ?User {
 	}
 	return user
 }
+
+pub fn (mut app App) new() vweb.Result {
+	if !app.logged_in {
+		return app.vweb.redirect('/login')
+	}
+	return $vweb.html()
+}
