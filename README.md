@@ -28,7 +28,10 @@ v .
 ./gitly
 ```
 
-If you don't want to install `sassc`, you can simply run `wget -O static/css/gitly.css https://gitly.org/gitly.css`.
+If you don't want to install `sassc`, you can simply run
+```
+wget -O static/css/gitly.css https://gitly.org/gitly.css
+```
 
 Required dependencies:
 * V 0.1.28.1 (https://vlang.io)
