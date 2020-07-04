@@ -34,7 +34,7 @@ pub fn (mut app App) oauth() vweb.Result {
 	if user_js.status_code != 200 {
 		app.error(user_js.status_code.str())
 		app.error(user_js.text)
-		return app.vweb.text('Can not access the API')
+		return app.vweb.text('Received $user_js.status_code error while attempting to contact GitHub')
 	}
 	gh_user := json.decode(GitHubUser, user_js.text) or {
 		return app.vweb.not_found()
