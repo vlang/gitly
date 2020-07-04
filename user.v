@@ -127,7 +127,7 @@ pub fn (mut app App) add_user(username, password string, emails []string, github
 fn (mut app App) create_user_dir(username string) {
 	user_path := '$repo_storage_path/$username'
 	os.mkdir(user_path) or {
-		app.error("Problem encountered while attempting to create User folder")
+		app.error('Failed to create $user_path')
 		app.error('Error: $err')
 	}
 }
