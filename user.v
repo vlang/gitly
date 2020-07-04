@@ -124,7 +124,7 @@ pub fn (mut app App) add_user(username, password string, emails []string, github
 	app.create_user_dir(username)
 }
 
-fn (app App) create_user_dir(username string) {
+fn (mut app App) create_user_dir(username string) {
 	user_path := '$repo_storage_path/$username'
 	os.mkdir(user_path) or {
 		app.error("User folder can not created")
