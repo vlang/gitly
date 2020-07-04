@@ -108,7 +108,7 @@ pub fn (mut app App) add_user(username, password string, emails []string, github
 			sql app.db {
 				update User set username=username, password=password, name=name, is_registered=true where id==user.id
 			}
-			create_user_dir(username)
+			app.create_user_dir(username)
 			return
 		}
 		if user.is_registered {
@@ -121,10 +121,10 @@ pub fn (mut app App) add_user(username, password string, emails []string, github
 			update User set username=username, name=name, is_registered=true, is_github = true where id==user.id
 		}
 	}
-	create_user_dir(username)
+	app.create_user_dir(username)
 }
 
-fn create_user_dir(username string) {
+fn (app App) create_user_dir(username string) {
 	user_path := '$repo_storage_path/$username'
 	os.mkdir(user_path) or {
 		app.error("User folder can not created")
