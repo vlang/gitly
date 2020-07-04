@@ -18,6 +18,7 @@ const (
 	posts_per_day    = 5
 	max_username_len = 32
 	max_login_attempts = 5
+	repo_storage_path = './repos'
 )
 
 struct App {
@@ -100,7 +101,17 @@ pub fn (mut app App) init_once() {
 	if app.oauth_client_id == '' {
 		app.get_oauth_tokens_from_db()
 	}
+
+	if !os.exists(repo_storage_path) {
+		os.mkdir(repo_storage_path) or {
+			app.error('Repo storage can not created')
+			app.error('Error: $err')
+			exit(1)
+		}
+	}
+
 	//go app.create_new_test_repo() // if it doesn't exist
+
 	if '-cmdapi' in os.args {
 		go app.command_fetcher()
 	}

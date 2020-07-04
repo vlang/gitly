@@ -144,6 +144,7 @@ fn (mut app App) create_tables() {
 		'oauth_client_id text default ""'
 		'oauth_client_secret text default ""'
 		'only_gh_login int default 1'
+		'repo_storage_path text default "./repos"'
 	])
 }
 

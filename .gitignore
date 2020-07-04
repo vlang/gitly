@@ -6,3 +6,4 @@ gitly
 .lite_workspace.lua
 static/assets/version
 logs/
+repos/
