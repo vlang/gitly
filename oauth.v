@@ -47,15 +47,8 @@ pub fn (mut app App) oauth() vweb.Result {
 		}
 		app.update_user_avatar(gh_user.avatar, user.id)
 	}
-	expires := time.utc().add_days(expire_length)
-	token = app.find_user_token(user.id)
-	if token == '' {
-		token = app.add_token(user.id)
-	}
-	app.vweb.set_cookie_with_expire_date('id', user.id.str(), expires)
-	app.vweb.set_cookie_with_expire_date('token', token, expires)
-	app.vweb.redirect('/')
-	return vweb.Result{}
+	app.auth_user(user)
+	return app.vweb.redirect('/')
 }
 
 fn (app &App) get_oauth_tokens_from_db() {

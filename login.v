@@ -4,6 +4,8 @@ module main
 
 import vweb
 import time
+import rand
+import math
 
 pub fn (mut app App) login() vweb.Result {
 	if app.logged_in() {
@@ -38,7 +40,6 @@ pub fn (mut app App) login_post() vweb.Result {
 	if !user.is_registered {
 		return app.vweb.redirect('/login')
 	}
-	// mut token := app.find_user_token(user.id)
 	app.auth_user(user)
 	return app.vweb.redirect('/')
 }
@@ -47,6 +48,7 @@ pub fn (mut app App) auth_user(user User) {
 	expires := time.utc().add_days(expire_length)
 	token := if user.token == '' { app.add_token(user.id) } else { user.token }
 	app.update_user_login_attempts(user.id, 0)
+	//println('setting token $token')
 	app.vweb.set_cookie_with_expire_date('id', user.id.str(), expires)
 	app.vweb.set_cookie_with_expire_date('token', token, expires)
 }
@@ -98,3 +100,69 @@ pub fn (mut app App) get_user_from_cookies() ?User {
 	}
 	return user
 }
+
+pub fn (mut app App) register() vweb.Result {
+	if app.only_gh_login {
+		return app.vweb.redirect('/')
+	}
+	app.path = ''
+	return $vweb.html()
+}
+
+pub fn (mut app App) register_post() vweb.Result {
+	if app.only_gh_login {
+		return app.vweb.redirect('/')
+	}
+	username := app.vweb.form['username']
+	user_chars := username.bytes()
+	if user_chars.len > max_username_len {
+		app.error('Username is too long (max. $max_username_len)')
+		return app.vweb.redirect('/register')
+	}
+	if username.contains('--') {
+		app.error('Username cannot contain two hyphens')
+		return app.vweb.redirect('/register')
+	}
+	if user_chars[0] == `-` || user_chars.last() == `-` {
+		app.error('Username cannot begin or end with a hyphen')
+		return app.vweb.redirect('/register')
+	}
+	for char in user_chars {
+		if !char.is_letter() && !char.is_digit() && char != `-` {
+			app.error('Username cannot contain special charater')
+			return app.vweb.redirect('/register')
+		}
+	}
+	if app.vweb.form['password'] == '' {
+		app.error('Password cannot be empty')
+		return app.vweb.redirect('/register')
+	}
+	password := make_password(app.vweb.form['password'], username)
+	email := app.vweb.form['email']
+	if username == '' || email == '' {
+		app.error('Username or Email cannot be emtpy')
+		return app.vweb.redirect('/register')
+	}
+	app.add_user(username, password, [email], false)
+	user := app.find_user_by_username(username) or {
+		app.error('User already exists')
+		return app.vweb.redirect('/register')
+	}
+	println("register: logging in")
+	app.auth_user(user)
+	app.only_gh_login = true
+	return app.vweb.redirect('/')
+}
+
+fn gen_uuid_v4ish() string {
+	// UUIDv4 format: 4-2-2-2-6 bytes per section
+	a := rand.intn(math.max_i32 / 2).hex()
+	b := rand.intn(math.max_i16).hex()
+	c := rand.intn(math.max_i16).hex()
+	d := rand.intn(math.max_i16).hex()
+	e := rand.intn(math.max_i32 / 2).hex()
+	f := rand.intn(math.max_i16).hex()
+	return '${a:08}-${b:04}-${c:04}-${d:04}-${e:08}${f:04}'.replace(' ', '0')
+}
+
+

@@ -110,6 +110,8 @@ pub fn (mut app App) init_once() {
 	}
 	// Create the first admin user if the db is empty
 	app.find_user_by_id(1) or {
+		app.only_gh_login = false // allow admin to register
+		/*
 		println('Creating admin...')
 		user := User{
 			name: 'admin'
@@ -121,7 +123,10 @@ pub fn (mut app App) init_once() {
 			println('Failed to create an admin user')
 			exit(1)
 		}
+		println('new user=')
+		println(new_user)
 		app.auth_user(new_user)
+		*/
 	}
 	// go app.create_new_test_repo() // if it doesn't exist
 	if '-cmdapi' in os.args {
@@ -586,64 +591,6 @@ pub fn (mut app App) new_issue_post(user, repo string) vweb.Result {
 	return app.vweb.redirect('/$user/$repo/issues/0')
 }
 
-pub fn (mut app App) register() vweb.Result {
-	if app.only_gh_login {
-		return app.vweb.redirect('/')
-	}
-	app.path = ''
-	return $vweb.html()
-}
-
-pub fn (mut app App) register_post() vweb.Result {
-	if app.only_gh_login {
-		return app.vweb.redirect('/')
-	}
-	username := app.vweb.form['username']
-	user_chars := username.bytes()
-	if user_chars.len > max_username_len {
-		// Username too long
-		app.error('Username is too long (max. $max_username_len)')
-		return app.vweb.redirect('/register')
-	}
-	if username.contains('--') {
-		// Two hyphens
-		app.error('Username cannot contain two hyphens')
-		return app.vweb.redirect('/register')
-	}
-	if user_chars[0] == `-` || user_chars.last() == `-` {
-		// Username cannot begin or end with a hyphen
-		app.error('Username cannot begin or end with a hyphen')
-		return app.vweb.redirect('/register')
-	}
-	for char in user_chars {
-		if !char.is_letter() && !char.is_digit() && char != `-` {
-			// Username does not contains extra symbols
-			app.error('Username cannot contain special charater')
-			return app.vweb.redirect('/register')
-		}
-	}
-	if app.vweb.form['password'] == '' {
-		app.error('Password cannot be empty')
-		return app.vweb.redirect('/register')
-	}
-	password := make_password(app.vweb.form['password'], username)
-	email := app.vweb.form['email']
-	if username == '' || email == '' {
-		app.error('Username or Email cannot be emtpy')
-		return app.vweb.redirect('/register')
-	}
-	app.add_user(username, password, [email], false)
-	user := app.find_user_by_username(username) or {
-		app.error('User already exists')
-		return app.vweb.redirect('/register')
-	}
-	expires := time.utc().add_days(expire_length)
-	token := app.add_token(user.id)
-	app.vweb.set_cookie_with_expire_date('id', user.id.str(), expires)
-	app.vweb.set_cookie_with_expire_date('token', token, expires)
-	return app.vweb.redirect('/')
-}
-
 ['/:user/:repo/comment_post']
 pub fn (mut app App) comment_post(user, repo string) vweb.Result {
 	if !app.find_repo(user, repo) {
@@ -663,17 +610,6 @@ pub fn (mut app App) comment_post(user, repo string) vweb.Result {
 	app.insert_comment(comm)
 	app.inc_issue_comments(comm.issue_id)
 	return app.vweb.redirect('/$user/$repo/issue/$issue_id')
-}
-
-fn gen_uuid_v4ish() string {
-	// UUIDv4 format: 4-2-2-2-6 bytes per section
-	a := rand.intn(math.max_i32 / 2).hex()
-	b := rand.intn(math.max_i16).hex()
-	c := rand.intn(math.max_i16).hex()
-	d := rand.intn(math.max_i16).hex()
-	e := rand.intn(math.max_i32 / 2).hex()
-	f := rand.intn(math.max_i16).hex()
-	return '${a:08}-${b:04}-${c:04}-${d:04}-${e:08}${f:04}'.replace(' ', '0')
 }
 
 pub fn (mut app App) new() vweb.Result {
