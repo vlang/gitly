@@ -104,7 +104,7 @@ pub fn (mut app App) init_once() {
 
 	if !os.exists(repo_storage_path) {
 		os.mkdir(repo_storage_path) or {
-			app.error('Repo storage can not created')
+			app.error('Problem encountered while attempting to create Repo storage')
 			app.error('Error: $err')
 			exit(1)
 		}
