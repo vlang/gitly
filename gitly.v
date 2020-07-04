@@ -179,25 +179,20 @@ pub fn (mut app App) tree(user, repo string) vweb.Result {
 		return app.vweb.not_found()
 	}
 
-	println('tree() user="$user" repo="' + repo + '"')
+	println('\n\n\ntree() user="$user" repo="' + repo + '"')
 	if app.path.contains('/favicon.svg') {
 		return vweb.not_found()
 	}
 	app.is_tree = true
 	app.show_menu = true
 	// t := time.ticks()
-	mut up := ''
-	args := app.path.split('/')
 	app.inc_repo_views(app.repo.id)
-	can_up := args.len > 0
-	if args.len > 1 {
-		up_a := args[0..args.len - 1]
-		up += '/tree/'
-		up += up_a.join('/')
-	} else {
-		up = '/'
+	mut up := '/'
+	can_up := app.path != ''
+	if can_up {
+		up = app.vweb.req.url.all_before_last('/')
 	}
-	app.info('up: $up')
+	println('path=$app.path')
 	if app.path.starts_with('/') {
 		app.path = app.path[1..]
 	}
@@ -206,16 +201,15 @@ pub fn (mut app App) tree(user, repo string) vweb.Result {
 	if files.len == 0 {
 		// No files in the db, fetch them from git and cache in db
 		app.info('caching files, repo_id=$app.repo.id')
-		// t := time.ticks()
+		t := time.ticks()
 		files = app.cache_repo_files(mut app.repo, 'master', app.path)
-		// println('caching files took ${time.ticks()-t}ms')
-		go app.slow_fetch_files_info('master', app.path)
+		println('caching files took ${time.ticks()-t}ms')
+		//go app.slow_fetch_files_info('master', app.path)
 	}
 	mut readme := vweb.RawHtml('')
 	for file in files {
 		if file.name.to_lower() == 'readme.md' {
 			blob_path := os.join_path(app.repo.git_dir, '$file.parent_path$file.name')
-			println(blob_path)
 			plain_text := os.read_file(blob_path) or {
 				''
 			}
@@ -224,6 +218,7 @@ pub fn (mut app App) tree(user, repo string) vweb.Result {
 		}
 	}
 
+	// Fetch last commit message for this directory, printed at the top of the tree
 	mut last_commit := Commit{}
 	if can_up {
 		mut path := app.path
@@ -233,9 +228,10 @@ pub fn (mut app App) tree(user, repo string) vweb.Result {
 		if !path.contains('/') {
 			path = '/$path'
 		}
-		println(path)
-		upper_dir := app.find_repo_file_by_path(app.repo.id, 'master', '$path') or { panic(err) }
-		last_commit = app.find_repo_commit_by_hash(app.repo.id, upper_dir.last_hash)
+		if dir := app.find_repo_file_by_path(app.repo.id, 'master', path)  {
+			println("hash=$dir.last_hash")
+			last_commit = app.find_repo_commit_by_hash(app.repo.id, dir.last_hash)
+		}
 	} else {
 		last_commit = app.find_repo_last_commit(app.repo.id)
 	}

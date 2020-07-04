@@ -46,8 +46,8 @@ fn (f File) pretty_size() string {
 }
 
 fn (mut app App) insert_file(file File) {
-	app.info('inserting file:')
-	app.info(file.name)
+	//app.info('inserting file:')
+	//app.info(file.name)
 	sql app.db {
 		insert file into File
 	}
