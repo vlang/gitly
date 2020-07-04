@@ -23,15 +23,18 @@ The biggest missing features that will be implemented soon:
 - Pull requests
 
 ```sh
-git clone https://github.com/vlang/v test_repo # Clone the test/demo repo
+sassc static/css/gitly.scss > static/css/gitly.css
 v .
 ./gitly
 ```
 
+If you don't want to install `sassc`, you can simply run `wget -O static/css/gitly.css https://gitly.org/gitly.css`.
+
 Required dependencies:
 * V 0.1.28.1 (https://vlang.io)
 * SQLite (Ubuntu/Debian: `libsqlite3-dev`)
-* Markdown (https://github.com/vlang/markdown)
+* Markdown (`v install markdown`)
+* sassc
 
 Gitly will support Postgres and MySQL in the future (once V ORM does).
 
