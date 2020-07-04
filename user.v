@@ -208,7 +208,9 @@ pub fn (mut app App) find_user_sshkeys(id int) []SshKey {
 }
 
 pub fn (mut app App) find_user_token(id int) string {
-	user := app.find_user_by_id(id)
+	user := app.find_user_by_id(id) or {
+		return ''
+	}
 	return user.token
 }
 
@@ -232,9 +234,12 @@ pub fn (mut app App) find_user_by_username(username string) ?User {
 	return u
 }
 
-pub fn (mut app App) find_user_by_id(id2 int) User {
+pub fn (mut app App) find_user_by_id(id2 int) ?User {
 	mut user := sql app.db {
 		select from User where id == id2
+	}
+	if user.id == 0 {
+		return none
 	}
 	emails := app.find_user_emails(user.id)
 	user.emails = emails
@@ -265,14 +270,17 @@ pub fn (mut app App) find_repo_contributor(id int) []Contributor {
 }
 
 pub fn (mut app App) find_repo_registered_contributor(id int) []User {
-	contributor := sql app.db {
+	contributors := sql app.db {
 		select from Contributor where repo == id
 	}
-	mut user := []User{}
-	for contrib in contributor {
-		user << app.find_user_by_id(contrib.user)
+	mut users := []User{cap:contributors.len}
+	for contrib in contributors {
+		x := app.find_user_by_id(contrib.user) or {
+			continue
+		}
+		users << x
 	}
-	return user
+	return users
 }
 
 pub fn (mut app App) nr_repo_contributor(id int) int {
@@ -317,6 +325,8 @@ pub fn (mut app App) block_user(user_id int) {
 }
 
 pub fn (mut app App) check_user_blocked(user_id int) bool {
-	user := app.find_user_by_id(user_id)
+	user := app.find_user_by_id(user_id) or {
+		return false
+	}
 	return user.is_blocked
 }

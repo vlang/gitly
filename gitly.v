@@ -109,6 +109,22 @@ pub fn (mut app App) init_once() {
 			exit(1)
 		}
 	}
+	// Create the first admin user if the db is empty
+	app.find_user_by_id(1) or {
+		println('Creating admin...')
+		user := User{
+			name: 'admin'
+			username: 'admin'
+			password: 'admin'
+		}
+		app.insert_user(user)
+		new_user := app.find_user_by_id(1) or {
+			println('Failed to create an admin user')
+			exit(1)
+		}
+		app.auth_user(user)
+	}
+
 
 	//go app.create_new_test_repo() // if it doesn't exist
 
@@ -135,7 +151,7 @@ pub fn (mut app App) init() {
 	app.info('path=$app.path')
 	app.logged_in = app.logged_in()
 	if app.logged_in {
-		app.user = app.get_user() or {
+		app.user = app.get_user_from_cookies() or {
 			app.logged_in = false
 			User{}
 		}
@@ -643,74 +659,6 @@ pub fn (mut app App) register_post() vweb.Result {
 	return app.vweb.redirect('/')
 }
 
-pub fn (mut app App) login() vweb.Result {
-	if app.logged_in() {
-		return app.vweb.not_found()
-	}
-	return $vweb.html()
-}
-
-pub fn (mut app App) login_post() vweb.Result {
-	if app.only_gh_login {
-		return app.vweb.redirect('/')
-	}
-
-	username := app.vweb.form['username']
-	password := app.vweb.form['password']
-
-	if username == '' || password == '' {
-		return app.vweb.redirect('/login')
-	}
-	user := app.find_user_by_username(username) or {
-		return app.vweb.redirect('/login')
-	}
-	if user.is_blocked {
-		return app.vweb.redirect('/login')
-	}
-	if !check_password(password, username, user.password) {
-		app.inc_user_login_attempts(user.id)
-		if user.login_attempts == max_login_attempts {
-			app.warn('User $user.username got blocked')
-			app.block_user(user.id)
-		}
-		return app.vweb.redirect('/login')
-	}
-	if !user.is_registered {
-		return app.vweb.redirect('/login')
-	}
-	expires := time.utc().add_days(expire_length)
-	mut token := app.find_user_token(user.id)
-	if token == '' {
-		token = app.add_token(user.id)
-	}
-	app.update_user_login_attempts(user.id, 0)
-	app.vweb.set_cookie_with_expire_date('id', user.id.str(), expires)
-	app.vweb.set_cookie_with_expire_date('token', token, expires)
-	return app.vweb.redirect('/')
-}
-
-pub fn (mut app App) logged_in() bool {
-	id := app.vweb.get_cookie('id') or {
-		return false
-	}
-	token := app.vweb.get_cookie('token') or {
-		return false
-	}
-	t := app.find_user_token(id.int())
-	blocked := app.check_user_blocked(id.int())
-	if blocked {
-		app.logout()
-		return false
-	}
-	return id != '' && token != '' && t != '' && t == token
-}
-
-pub fn (mut app App) logout() vweb.Result {
-	app.vweb.set_cookie('id', '')
-	app.vweb.set_cookie('token', '')
-	return app.vweb.redirect('/')
-}
-
 ['/:user/:repo/comment_post']
 pub fn (mut app App) comment_post(user, repo string) vweb.Result {
 	if !app.find_repo(user, repo) {
@@ -745,25 +693,6 @@ fn gen_uuid_v4ish() string {
     return '${a:08}-${b:04}-${c:04}-${d:04}-${e:08}${f:04}'.replace(' ','0')
 }
 
-pub fn (mut app App) add_token(user_id int) string {
-	token := gen_uuid_v4ish()
-	app.update_user_token(user_id, token)
-	return token
-}
-
-pub fn (mut app App) get_user() ?User {
-	id := app.vweb.get_cookie('id') or { return none }
-	token := app.vweb.get_cookie('token') or { return none }
-	mut user := app.find_user_by_id(id.int())
-	if user.token != token {
-		return none
-	}
-	user.b_avatar = user.avatar != ''
-	if !user.b_avatar {
-		user.avatar = user.username.bytes()[0].str()
-	}
-	return user
-}
 
 pub fn (mut app App) new() vweb.Result {
 	if !app.logged_in {
