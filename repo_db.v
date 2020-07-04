@@ -173,6 +173,12 @@ fn (app &App) find_repo_by_name(user int, name string) ?Repo {
 	return x[0]
 }
 
+fn (app &App) find_user_repos(user_id int) []Repo {
+	return sql app.db {
+		select from Repo where user_id == user_id
+	}
+}
+
 fn (app &App) find_repo(user, name string) bool {
 	if user.len == 0 || name.len == 0 {
 		app.error('User or repo was not found')
