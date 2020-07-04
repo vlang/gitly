@@ -115,8 +115,6 @@ pub fn (mut app App) init() {
 		app.path = url.after('/tree/')
 	} else if url.contains('/blob/') {
 		app.path = url.after('/blob/')
-	} else if url.contains('/user/') {
-		app.path = url.after('/user/')
 	} else if url.contains('/pull/') {
 		app.path = url.after('/pull/')
 	} else {
@@ -270,15 +268,20 @@ pub fn (mut app App) update(user, repo string) vweb.Result {
 
 ['/user/:username']
 pub fn (mut app App) user(username string) vweb.Result {
-	args := app.path.split('/')
 	app.show_menu = false
 	mut user := User{}
-	if args.len >= 1 {
-		//username := args[0]
+	if username.len != 0 {
 		user = app.find_user_by_username(username) or {
 			return app.vweb.not_found()
 		}
+	} else {
+		return app.vweb.not_found()
 	}
+	user.b_avatar = user.avatar != ''
+	if !user.b_avatar {
+		user.avatar = user.username.bytes()[0].str()
+	}
+	repos := app.find_user_repos(user.id)
 	return $vweb.html()
 }
 
