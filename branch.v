@@ -33,7 +33,9 @@ fn (mut app App) fetch_branches(r Repo) {
 			branch.hash = hash_data[0].substr(0, 7)
 			branch_data := r.git('log -1 --pretty="%aE$log_field_separator%cD" $branch.hash')
 			args := branch_data.split(log_field_separator)
-			branch.author = args[0]
+			email := args[0]
+			u := app.find_user_by_email(email) or { User{username: email} }
+			branch.author = u.username
 			date := time.parse_rfc2822(args[1]) or {
 				app.error('Error: $err')
 				return
@@ -64,7 +66,9 @@ fn (mut app App) update_branches(r &Repo) {
 			branch.hash = hash_data[0].substr(0, 7)
 			branch_data := r.git('log -1 --pretty="%aE$log_field_separator%cD" $branch.hash')
 			args := branch_data.split(log_field_separator)
-			branch.author = args[0]
+			email := args[0]
+			u := app.find_user_by_email(email) or { User{username: email} }
+			branch.author = u.username
 			date := time.parse_rfc2822(args[1]) or {
 				app.error('Error: $err')
 				return

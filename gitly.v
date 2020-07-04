@@ -560,7 +560,7 @@ pub fn (mut app App) new_issue_post(user, repo string) vweb.Result {
 	title := app.vweb.form['title'] // TODO use fn args
 	text := app.vweb.form['text']
 	if title == '' || text == '' {
-		return app.vweb.redirect('/new_issue')
+		return app.vweb.redirect('/$user/$repo/new_issue')
 	}
 	issue := Issue{
 		title: title
@@ -572,7 +572,7 @@ pub fn (mut app App) new_issue_post(user, repo string) vweb.Result {
 	app.inc_user_post(app.user)
 	app.insert_issue(issue)
 	app.inc_repo_issues(app.repo.id)
-	return app.vweb.redirect('/issues')
+	return app.vweb.redirect('/$user/$repo/issues/0')
 }
 
 pub fn (mut app App) register() vweb.Result {
@@ -712,7 +712,7 @@ pub fn (mut app App) comment_post(user, repo string) vweb.Result {
 	issue_id := app.vweb.form['issue_id']
 
 	if text == '' || issue_id == '' || !app.logged_in {
-		return app.vweb.redirect('/issue/$issue_id')
+		return app.vweb.redirect('/$user/$repo/issue/$issue_id')
 	}
 	comm := Comment{
 		author_id: app.user.id
@@ -723,7 +723,7 @@ pub fn (mut app App) comment_post(user, repo string) vweb.Result {
 
 	app.insert_comment(comm)
 	app.inc_issue_comments(comm.issue_id)
-	return app.vweb.redirect('/issue/$issue_id')
+	return app.vweb.redirect('/$user/$repo/issue/$issue_id')
 }
 
 fn gen_uuid_v4ish() string {
