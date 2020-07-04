@@ -122,7 +122,7 @@ pub fn (mut app App) init_once() {
 			println('Failed to create an admin user')
 			exit(1)
 		}
-		app.auth_user(user)
+		app.auth_user(new_user)
 	}
 
 
