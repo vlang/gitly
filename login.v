@@ -16,10 +16,8 @@ pub fn (mut app App) login_post() vweb.Result {
 	if app.only_gh_login {
 		return app.vweb.redirect('/')
 	}
-
 	username := app.vweb.form['username']
 	password := app.vweb.form['password']
-
 	if username == '' || password == '' {
 		return app.vweb.redirect('/login')
 	}
@@ -40,18 +38,17 @@ pub fn (mut app App) login_post() vweb.Result {
 	if !user.is_registered {
 		return app.vweb.redirect('/login')
 	}
-	//mut token := app.find_user_token(user.id)
+	// mut token := app.find_user_token(user.id)
 	app.auth_user(user)
 	return app.vweb.redirect('/')
 }
 
 pub fn (mut app App) auth_user(user User) {
 	expires := time.utc().add_days(expire_length)
-	token := 	if user.token == '' { app.add_token(user.id) } else { user.token }
+	token := if user.token == '' { app.add_token(user.id) } else { user.token }
 	app.update_user_login_attempts(user.id, 0)
 	app.vweb.set_cookie_with_expire_date('id', user.id.str(), expires)
 	app.vweb.set_cookie_with_expire_date('token', token, expires)
-
 }
 
 pub fn (mut app App) logged_in() bool {
@@ -83,9 +80,15 @@ pub fn (mut app App) add_token(user_id int) string {
 }
 
 pub fn (mut app App) get_user_from_cookies() ?User {
-	id := app.vweb.get_cookie('id') or { return none }
-	token := app.vweb.get_cookie('token') or { return none }
-	mut user := app.find_user_by_id(id.int()) or { return none }
+	id := app.vweb.get_cookie('id') or {
+		return none
+	}
+	token := app.vweb.get_cookie('token') or {
+		return none
+	}
+	mut user := app.find_user_by_id(id.int()) or {
+		return none
+	}
 	if user.token != token {
 		return none
 	}
@@ -95,6 +98,3 @@ pub fn (mut app App) get_user_from_cookies() ?User {
 	}
 	return user
 }
-
-
-
