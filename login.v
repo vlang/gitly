@@ -50,7 +50,7 @@ pub fn (mut app App) auth_user(user User) {
 	token := 	if user.token == '' { app.add_token(user.id) } else { user.token }
 	app.update_user_login_attempts(user.id, 0)
 	app.vweb.set_cookie_with_expire_date('id', user.id.str(), expires)
-	app.vweb.set_cookie_with_expire_date('token', user.token, expires)
+	app.vweb.set_cookie_with_expire_date('token', token, expires)
 
 }
 

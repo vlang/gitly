@@ -12,35 +12,35 @@ import math
 import rand
 
 const (
-	commits_per_page = 35
-	http_port        = 8080
-	expire_length    = 200
-	posts_per_day    = 5
-	max_username_len = 32
+	commits_per_page   = 35
+	http_port          = 8080
+	expire_length      = 200
+	posts_per_day      = 5
+	max_username_len   = 32
 	max_login_attempts = 5
-	repo_storage_path = './repos'
+	repo_storage_path  = './repos'
 )
 
 struct App {
 mut:
-	path          string // current path being viewed
-	branch        string
-	repo          Repo
-	version       string
-	html_path     vweb.RawHtml
-	page_gen_time string
-	is_tree bool
-	show_menu bool
-	oauth_client_id string
+	path                string // current path being viewed
+	branch              string
+	repo                Repo
+	version             string
+	html_path           vweb.RawHtml
+	page_gen_time       string
+	is_tree             bool
+	show_menu           bool
+	oauth_client_id     string
 	oauth_client_secret string
-	only_gh_login bool
+	only_gh_login       bool
 pub mut:
-	file_log      log.Log
-	cli_log       log.Log
-	vweb          vweb.Context
-	db            sqlite.DB
-	logged_in     bool
-	user          User
+	file_log            log.Log
+	cli_log             log.Log
+	vweb                vweb.Context
+	db                  sqlite.DB
+	logged_in           bool
+	user                User
 }
 
 fn main() {
@@ -69,7 +69,7 @@ pub fn (mut app App) init_once() {
 	app.file_log.set_level(.info)
 	app.cli_log.set_level(.info)
 	date := time.now()
-	date_s := '${date.ymmdd()}'
+	date_s := '$date.ymmdd()'
 	app.file_log.set_full_logpath('./logs/log_${date_s}.log')
 	app.info('init_once()')
 	version := os.read_file('static/assets/version') or {
@@ -101,7 +101,6 @@ pub fn (mut app App) init_once() {
 	if app.oauth_client_id == '' {
 		app.get_oauth_tokens_from_db()
 	}
-
 	if !os.exists(repo_storage_path) {
 		os.mkdir(repo_storage_path) or {
 			app.error('Repo storage can not created')
@@ -124,10 +123,7 @@ pub fn (mut app App) init_once() {
 		}
 		app.auth_user(new_user)
 	}
-
-
-	//go app.create_new_test_repo() // if it doesn't exist
-
+	// go app.create_new_test_repo() // if it doesn't exist
 	if '-cmdapi' in os.args {
 		go app.command_fetcher()
 	}
@@ -192,14 +188,12 @@ pub fn (mut app App) create_new_test_repo() {
 	app.update_repo()
 }
 */
-
 // pub fn (mut app App) tree(path string) {
 ['/:user/:repo/tree']
 pub fn (mut app App) tree(user, repo string) vweb.Result {
 	if !app.find_repo(user, repo) {
 		return app.vweb.not_found()
 	}
-
 	println('\n\n\ntree() user="$user" repo="' + repo + '"')
 	if app.path.contains('/favicon.svg') {
 		return vweb.not_found()
@@ -238,25 +232,23 @@ pub fn (mut app App) tree(user, repo string) vweb.Result {
 			readme = vweb.RawHtml(src)
 		}
 	}
-
 	// Fetch last commit message for this directory, printed at the top of the tree
 	mut last_commit := Commit{}
 	if can_up {
 		mut path := app.path
 		if path.ends_with('/') {
-			path = path[0..path.len-1]
+			path = path[0..path.len - 1]
 		}
 		if !path.contains('/') {
 			path = '/$path'
 		}
-		if dir := app.find_repo_file_by_path(app.repo.id, 'master', path)  {
-			println("hash=$dir.last_hash")
+		if dir := app.find_repo_file_by_path(app.repo.id, 'master', path) {
+			println('hash=$dir.last_hash')
 			last_commit = app.find_repo_commit_by_hash(app.repo.id, dir.last_hash)
 		}
 	} else {
 		last_commit = app.find_repo_last_commit(app.repo.id)
 	}
-
 	// println('app.tree() = ${time.ticks()-t}ms')
 	// branches := ['master'] TODO implemented usage
 	diff := int(time.ticks() - app.vweb.page_gen_start)
@@ -270,7 +262,7 @@ pub fn (mut app App) tree(user, repo string) vweb.Result {
 
 pub fn (mut app App) index() vweb.Result {
 	app.show_menu = false
-	//app.tree('','')
+	// app.tree('','')
 	return $vweb.html()
 }
 
@@ -279,7 +271,6 @@ pub fn (mut app App) update(user, repo string) vweb.Result {
 	if !app.find_repo(user, repo) {
 		return app.vweb.not_found()
 	}
-
 	secret := app.vweb.req.headers['X-Hub-Signature'][5..]
 	if secret == app.repo.webhook_secret && app.repo.webhook_secret != '' {
 		go app.update_repo_data(&app.repo)
@@ -312,7 +303,6 @@ pub fn (mut app App) commits(user, repo, page_str string) vweb.Result {
 		return app.vweb.not_found()
 	}
 	app.show_menu = true
-
 	page := if page_str.len >= 1 { page_str.int() } else { 0 }
 	mut commits := app.find_repo_commits_as_page(app.repo.id, page)
 	mut b_author := false
@@ -404,7 +394,6 @@ pub fn (mut app App) issues(user, repo, page_str string) vweb.Result {
 	if !app.find_repo(user, repo) {
 		app.vweb.not_found()
 	}
-
 	page := if page_str.len >= 1 { page_str.int() } else { 0 }
 	mut issues := app.find_repo_issues_as_page(app.repo.id, page)
 	mut first := false
@@ -412,7 +401,6 @@ pub fn (mut app App) issues(user, repo, page_str string) vweb.Result {
 	for index, issue in issues {
 		issues[index].author_name = app.find_username_by_id(issue.author_id)
 	}
-
 	if app.repo.nr_open_issues > commits_per_page {
 		offset := page * commits_per_page
 		delta := app.repo.nr_open_issues - offset
@@ -427,7 +415,6 @@ pub fn (mut app App) issues(user, repo, page_str string) vweb.Result {
 		last = true
 		first = true
 	}
-
 	mut last_site := 0
 	if page > 0 {
 		last_site = page - 1
@@ -611,9 +598,7 @@ pub fn (mut app App) register_post() vweb.Result {
 	if app.only_gh_login {
 		return app.vweb.redirect('/')
 	}
-
 	username := app.vweb.form['username']
-
 	user_chars := username.bytes()
 	if user_chars.len > max_username_len {
 		// Username too long
@@ -666,7 +651,6 @@ pub fn (mut app App) comment_post(user, repo string) vweb.Result {
 	}
 	text := app.vweb.form['text']
 	issue_id := app.vweb.form['issue_id']
-
 	if text == '' || issue_id == '' || !app.logged_in {
 		return app.vweb.redirect('/$user/$repo/issue/$issue_id')
 	}
@@ -676,23 +660,21 @@ pub fn (mut app App) comment_post(user, repo string) vweb.Result {
 		created_at: int(time.now().unix)
 		text: text
 	}
-
 	app.insert_comment(comm)
 	app.inc_issue_comments(comm.issue_id)
 	return app.vweb.redirect('/$user/$repo/issue/$issue_id')
 }
 
 fn gen_uuid_v4ish() string {
-    // UUIDv4 format: 4-2-2-2-6 bytes per section
-    a := rand.intn(math.max_i32 / 2).hex()
-    b := rand.intn(math.max_i16).hex()
-    c := rand.intn(math.max_i16).hex()
-    d := rand.intn(math.max_i16).hex()
-    e := rand.intn(math.max_i32 / 2).hex()
-    f := rand.intn(math.max_i16).hex()
-    return '${a:08}-${b:04}-${c:04}-${d:04}-${e:08}${f:04}'.replace(' ','0')
+	// UUIDv4 format: 4-2-2-2-6 bytes per section
+	a := rand.intn(math.max_i32 / 2).hex()
+	b := rand.intn(math.max_i16).hex()
+	c := rand.intn(math.max_i16).hex()
+	d := rand.intn(math.max_i16).hex()
+	e := rand.intn(math.max_i32 / 2).hex()
+	f := rand.intn(math.max_i16).hex()
+	return '${a:08}-${b:04}-${c:04}-${d:04}-${e:08}${f:04}'.replace(' ', '0')
 }
-
 
 pub fn (mut app App) new() vweb.Result {
 	if !app.logged_in {
