@@ -102,6 +102,7 @@ pub fn (mut app App) init_once() {
 	if app.oauth_client_id == '' {
 		app.get_oauth_tokens_from_db()
 	}
+
 	if !os.exists(app.repo_storage_path) {
 		os.mkdir(app.repo_storage_path) or {
 			app.error('Repo storage can not created')
@@ -110,8 +111,9 @@ pub fn (mut app App) init_once() {
 		}
 	}
 
-	go app.create_new_test_repo() // if it doesn't exist
-	if '-cmdapi' in os.args {
+	//go app.create_new_test_repo() // if it doesn't exist
+
+  if '-cmdapi' in os.args {
 		go app.command_fetcher()
 	}
 }
@@ -141,6 +143,7 @@ pub fn (mut app App) init() {
 	}
 }
 
+/*
 pub fn (mut app App) create_new_test_repo() {
 	if x := app.find_repo_by_name(1, 'v') {
 		app.info('test repo already exists')
@@ -155,12 +158,6 @@ pub fn (mut app App) create_new_test_repo() {
 	}
 	cur_dir := os.base_dir(os.executable())
 	git_dir := os.join_path(cur_dir, 'test_repo')
-	if !os.exists(git_dir) {
-		app.warn('Right now Gitly can only work with a single repo.')
-		app.warn('Create a test repo in a directory `test_repo` next to the Gitly executable. For example:')
-		app.warn('git clone https://github.com/vlang/v test_repo')
-		exit(1)
-	}
 	app.add_user('vlang', '', ['vlang@vlang.io'], true)
 	app.repo = Repo{
 		name: 'v'
@@ -179,6 +176,7 @@ pub fn (mut app App) create_new_test_repo() {
 	app.init_tags(app.repo)
 	app.update_repo()
 }
+*/
 
 // pub fn (mut app App) tree(path string) {
 ['/:user/:repo/tree']
