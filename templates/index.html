@@ -1,8 +1,19 @@
 @header
 
+<style>
+table, td {
+border-collapse:collapse;
+border:1px solid#dfdfdf;
+}
+td {
+	padding: 3px;
+}
+
+</style>
+
 <p>
 Gitly is an upcoming open-source development platform that is going to have
-<li>Source code hosting (git and Mercurial)
+<li>Source code hosting <!--(git and Mercurial)-->
 <li>Project management
 <li>CI & CD
 
@@ -18,13 +29,9 @@ Main features:
 - Works without JavaScript <br>
 - Detailed language stats for each directory <br>
 - "Top files" feature to give an overview of the project <br>
+- Very fast CI with pre-cached dependencies
 </p>
 
-<br><br>
-
-Check out Gitly in action by browsing the V language repo:
-
-<a href='/vlang/v/tree'>gitly.org/vlang/v</a>
 
 <br><br>
 
@@ -65,7 +72,12 @@ Check out Gitly in action by browsing the V language repo:
 	<td>Yes
 	<td>No
 	<td>Yes
-	<a target=_blank href='https://aws.amazon.com/lightsail/pricing/'>[2]</a>
+</tr>
+<tr>
+	<td>Detailed language stats
+	<td>No
+	<td>No
+	<td>Yes
 </tr>
 <tr>
 	<td>Installation size
@@ -73,7 +85,52 @@ Check out Gitly in action by browsing the V language repo:
 	<td>TODO
 	<td><1 MB
 </tr>
+<tr>
+	<td>CI features
+	<td>
+	<td>
+	<td>
+<tr>
+	<td># CPU cores
+	<td>2
+	<td>1
+	<td>4
+</tr>
+<tr>
+	<td>FreeBSD
+	<td>No
+	<td>No
+	<td>Yes
+</tr>
+<tr>
+	<td>macOS
+	<td>Yes
+	<td>No
+	<td>Yes
+</tr>
+<tr>
+	<td>Built-in dependency cache
+	<td>No
+	<td>No
+	<td>Yes
+</tr>
+<tr>
+	<td>CI minutes in a basic package
+	<td>3000
+	<a target=_blank href='https://docs.github.com/en/github/setting-up-and-managing-billing-and-payments-on-github/about-billing-for-github-actions'>[3]</a>
+	<td>2000
+	<a target=_blank href='https://about.gitlab.com/pricing/'>[4]</a>
+	<td>43200
+</tr>
 </table>
+
+<br><br>
+
+Check out Gitly in action by browsing the V language repo:
+
+<a href='/vlang/v/tree'>gitly.org/vlang/v</a>
+
+<img width=600 src='https://user-images.githubusercontent.com/687996/85933714-b195fe80-b8da-11ea-9ddd-09cadc2103e4.png'>
 
 
 
