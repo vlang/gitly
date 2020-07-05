@@ -11,6 +11,8 @@
 <h3> @user.username </h3>
 <h4> @user.name </h4>
 
+<a href='/new'>New repository</a> <br>
+
 @if repos.len > 0
 @for repo in repos
 	<a href="/@user.username/@repo.name/tree" class="userrepo">
@@ -19,7 +21,7 @@
 	</a>
 @end
 @else
-	<h2>This user don't have any repos</h2>
+	<h2>No repositories</h2>
 @end
 
 
