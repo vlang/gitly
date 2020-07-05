@@ -283,7 +283,7 @@ pub fn (mut app App) update(user, repo string) vweb.Result {
 	return app.vweb.redirect('/')
 }
 
-['/user/:username']
+['/:username']
 pub fn (mut app App) user(username string) vweb.Result {
 	app.show_menu = false
 	mut user := User{}
@@ -617,4 +617,18 @@ pub fn (mut app App) new() vweb.Result {
 		return app.vweb.redirect('/login')
 	}
 	return $vweb.html()
+}
+
+pub fn (mut app App) new_post() vweb.Result {
+	if !app.logged_in {
+		return app.vweb.redirect('/login')
+	}
+	name := app.vweb.form['name']
+	new_repo := Repo{
+		name: name
+		user_id: app.user.id
+		user_name: app.user.username
+	}
+	app.insert_repo(new_repo)
+	return app.vweb.redirect('/$app.user.username')
 }

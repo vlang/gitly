@@ -234,3 +234,9 @@ fn (mut app App) update_repo_nr_contributor(repo_id, nr_contributors int) {
 	}
 	app.repo.nr_contributors = nr_contributors
 }
+
+fn (mut app App) insert_repo(repo Repo) {
+	sql app.db {
+		insert repo into Repo
+	}
+}

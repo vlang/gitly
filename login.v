@@ -48,9 +48,11 @@ pub fn (mut app App) auth_user(user User) {
 	expires := time.utc().add_days(expire_length)
 	token := if user.token == '' { app.add_token(user.id) } else { user.token }
 	app.update_user_login_attempts(user.id, 0)
-	//println('setting token $token')
-	app.vweb.set_cookie_with_expire_date('id', user.id.str(), expires)
-	app.vweb.set_cookie_with_expire_date('token', token, expires)
+	//println('cookie: setting token=$token id=$user.id')
+	app.vweb.set_cookie('id', user.id.str())
+	app.vweb.set_cookie('token', token)
+	//app.vweb.set_cookie_with_expire_date('id', user.id.str(), expires)
+	//app.vweb.set_cookie_with_expire_date('token', token, expires)
 }
 
 pub fn (mut app App) logged_in() bool {
