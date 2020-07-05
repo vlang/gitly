@@ -8,8 +8,6 @@ import os
 import log
 import hl
 import sqlite
-import math
-import rand
 
 const (
 	commits_per_page   = 35
@@ -308,8 +306,10 @@ pub fn (mut app App) new_post() vweb.Result {
 
 ['/:username']
 pub fn (mut app App) user(username string) vweb.Result {
-	if username == 'login' || username == 'register' {
+	if username in ['login', 'register', 'new', 'new_post'] {
 		return app.$username()
+	} else if username.starts_with('oauth?code=') {
+		return app.oauth()
 	}
 
 	app.show_menu = false

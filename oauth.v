@@ -4,7 +4,6 @@ module main
 import vweb
 import json
 import net.http
-import time
 
 pub fn (mut app App) oauth() vweb.Result {
 	code := app.vweb.req.url.all_after('code=')
