@@ -116,6 +116,11 @@ pub fn (mut app App) register_post() vweb.Result {
 		return app.vweb.redirect('/')
 	}
 	username := app.vweb.form['username']
+
+	if username in ['login', 'register', 'new', 'new_post', 'oauth'] {
+		app.error('Username is not available')
+		return app.vweb.redirect('/register')
+	}
 	user_chars := username.bytes()
 	if user_chars.len > max_username_len {
 		app.error('Username is too long (max. $max_username_len)')
