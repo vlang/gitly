@@ -306,6 +306,7 @@ pub fn (mut app App) new_post() vweb.Result {
 
 ['/:username']
 pub fn (mut app App) user(username string) vweb.Result {
+	//println('user() name=$username')
 	app.show_menu = false
 	mut user := User{}
 	if username.len != 0 {
