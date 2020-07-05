@@ -297,7 +297,7 @@ pub fn (mut app App) new_post() vweb.Result {
 	name := app.vweb.form['name']
 	app.repo = Repo{
 		name: name
-		git_dir: '$repo_storage_path/$app.user.username/$name'
+		git_dir: os.join_path($repo_storage_path, $app.user.username, $name)
 		user_id: app.user.id
 		user_name: app.user.username
 	}
