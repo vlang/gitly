@@ -45,7 +45,7 @@ pub fn (mut app App) login_post() vweb.Result {
 }
 
 pub fn (mut app App) auth_user(user User) {
-	expires := time.utc().add_days(expire_length)
+	_ := time.utc().add_days(expire_length)
 	token := if user.token == '' { app.add_token(user.id) } else { user.token }
 	app.update_user_login_attempts(user.id, 0)
 	//println('cookie: setting token=$token id=$user.id')
@@ -116,6 +116,11 @@ pub fn (mut app App) register_post() vweb.Result {
 		return app.vweb.redirect('/')
 	}
 	username := app.vweb.form['username']
+
+	if username in ['login', 'register', 'new', 'new_post', 'oauth'] {
+		app.error('Username is not available')
+		return app.vweb.redirect('/register')
+	}
 	user_chars := username.bytes()
 	if user_chars.len > max_username_len {
 		app.error('Username is too long (max. $max_username_len)')

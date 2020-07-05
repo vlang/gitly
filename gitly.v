@@ -8,8 +8,6 @@ import os
 import log
 import hl
 import sqlite
-import math
-import rand
 
 const (
 	commits_per_page   = 35
