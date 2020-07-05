@@ -5,8 +5,9 @@ import vweb
 import json
 import net.http
 
-pub fn (mut app App) oauth() vweb.Result {
-	code := app.vweb.req.url.all_after('code=')
+pub fn (mut app App) oauth(parameter string) vweb.Result {
+	println(parameter)
+	code := parameter.all_after('code=')
 	if code == '' {
 		return app.vweb.not_found()
 	}
