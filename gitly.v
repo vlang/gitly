@@ -295,12 +295,16 @@ pub fn (mut app App) new_post() vweb.Result {
 		return app.vweb.redirect('/login')
 	}
 	name := app.vweb.form['name']
-	new_repo := Repo{
+	app.repo = Repo{
 		name: name
+		git_dir: os.join_path(repo_storage_path, app.user.username, name)
 		user_id: app.user.id
 		user_name: app.user.username
 	}
-	app.insert_repo(new_repo)
+	app.insert_repo(app.repo)
+	os.mkdir(app.repo.git_dir)
+	app.repo.git('init')
+	go app.update_repo()
 	return app.vweb.redirect('/$app.user.username')
 }
 
