@@ -73,7 +73,7 @@ fn check_password(password, username, hashed string) bool {
 pub fn (mut app App) add_user(username, password string, emails []string, github bool) {
 	mut user := app.find_user_by_username(username) or { User{} }
 	if user.id != 0 && user.is_registered {
-		app.error('User $username already exists')
+		app.info('User $username already exists')
 		return
 
 	}
@@ -87,11 +87,11 @@ pub fn (mut app App) add_user(username, password string, emails []string, github
 		}
 		app.insert_user(user)
 		mut u := app.find_user_by_username(user.username) or {
-			app.error('User was not inserted')
+			app.info('User was not inserted')
 			return
 		}
 		if u.password != user.password || u.name != user.name {
-			app.error('User was not inserted')
+			app.info('User was not inserted')
 			return
 		}
 		for email in emails {
@@ -127,8 +127,8 @@ pub fn (mut app App) add_user(username, password string, emails []string, github
 fn (mut app App) create_user_dir(username string) {
 	user_path := '$repo_storage_path/$username'
 	os.mkdir(user_path) or {
-		app.error('Failed to create $user_path')
-		app.error('Error: $err')
+		app.info('Failed to create $user_path')
+		app.info('Error: $err')
 	}
 }
 
@@ -145,11 +145,11 @@ pub fn (mut app App) create_empty_user(username, email string) int {
 	}
 	app.insert_user(user)
 	u := app.find_user_by_username(user.username) or {
-		app.error('User was not inserted')
+		app.info('User was not inserted')
 		return -1
 	}
 	if user.username != u.username {
-		app.error('User was not inserted')
+		app.info('User was not inserted')
 		return -1
 	}
 	mail := Email{

@@ -40,7 +40,7 @@ pub mut:
 	db                  sqlite.DB
 	logged_in           bool
 	user                User
-	form_error string
+	//form_error string
 }
 
 fn main() {
@@ -57,11 +57,13 @@ pub fn (mut app App) warn(msg string) {
 	app.cli_log.warn(msg)
 }
 
+/*
 pub fn (mut app App) error(msg string) {
 	app.file_log.error(msg)
 	app.cli_log.error(msg)
-	app.form_error = msg
+	//app.form_error = msg
 }
+*/
 
 pub fn (mut app App) init_once() {
 	os.mkdir('logs')
@@ -104,8 +106,8 @@ pub fn (mut app App) init_once() {
 	}
 	if !os.exists(repo_storage_path) {
 		os.mkdir(repo_storage_path) or {
-			app.error('Failed to create $repo_storage_path')
-			app.error('Error: $err')
+			app.info('Failed to create $repo_storage_path')
+			app.info('Error: $err')
 			exit(1)
 		}
 	}
@@ -296,14 +298,13 @@ pub fn (mut app App) new() vweb.Result {
 	return $vweb.html()
 }
 
-['/new_post']
 pub fn (mut app App) new_post() vweb.Result {
 	if !app.logged_in {
 		return app.vweb.redirect('/login')
 	}
 
 	if app.nr_user_repos(app.user.id) >= max_user_repos {
-		app.error('You have reached the limit for the number of repositories')
+		app.vweb.error('You have reached the limit for the number of repositories')
 		return app.new()
 	}
 
@@ -313,10 +314,14 @@ pub fn (mut app App) new_post() vweb.Result {
 		git_dir: os.join_path(repo_storage_path, app.user.username, name)
 		user_id: app.user.id
 		user_name: app.user.username
+		clone_url: app.vweb.form['clone_url']
 	}
 	os.mkdir(app.repo.git_dir)
 	app.repo.git('init')
+	app.insert_repo(app.repo)
+	println('start go')
 	go app.update_repo()
+	println('end go')
 	return app.vweb.redirect('/$app.user.username')
 }
 

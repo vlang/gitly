@@ -4,10 +4,10 @@
 
 <div id='div-center'>
 	<div class='form-error'>
-		@app.form_error
+		@app.vweb.form_error
 	</div>
 
-	<form method='post' action='new_post' id='aj-form'>
+	<form method='post' id='aj-form'>
 		<div id='form-errors'>
 		<!--
 			if .clone_failed
@@ -23,7 +23,7 @@
 		<input type='text' name='name' required autofocus id='txt-name'>
 
 		<div class='field'>Clone URL <i>(only if you want to clone an existing repo)</i></div>
-		<input type='text' name='cloneurl' placeholder='https://github.com/user/repo'>
+		<input type='text' name='clone_url' placeholder='https://github.com/user/repo'>
 		<!--
 		<div class='field'>Webtoken-Secret <i>(if you want to auto update your repo)</i></div>
 		<input type='text' name='webtoken' placeholder='Webtoken secret...'>

@@ -68,7 +68,7 @@ fn (mut app App) update_repo() {
 			tmp_commit.hash = args[0]
 			tmp_commit.author = args[4]
 			t := time.parse_rfc2822(args[2]) or {
-				app.error('Error: $err')
+				app.info('Error: $err')
 				return
 			}
 			tmp_commit.created_at = int(t.unix)
@@ -113,9 +113,12 @@ fn (mut app App) update_repo() {
 	repo := *r
 	lang_stats := repo.lang_stats
 	app.info(repo.git_dir)
+	/*
 	sql app.db {
 		insert repo into Repo
 	}
+	*/
+	app.update_repo_in_db(&repo)
 	for lang_stat in lang_stats {
 		sql app.db {
 			insert lang_stat into LangStat
@@ -146,7 +149,7 @@ fn (mut app App) update_repo_data(r &Repo) {
 			tmp_commit.hash = args[0]
 			tmp_commit.author = args[4]
 			t := time.parse_rfc2822(args[2]) or {
-				app.error('Error: $err')
+				app.info('Error: $err')
 				return
 			}
 			tmp_commit.created_at = int(t.unix)
@@ -425,7 +428,7 @@ fn (mut app App) cache_repo_files(mut r Repo, branch, path string) []File {
 	app.info('Repo.cache_files($r.name branch=$branch path=$path)')
 	app.info('path.len=$path.len')
 	if r.status == .caching {
-		app.error('repo `$r.name` is being cached already')
+		app.info('repo `$r.name` is being cached already')
 		return []
 	}
 	// ls-tree --name-only trunk

@@ -17,22 +17,22 @@ pub fn (mut app App) oauth() vweb.Result {
 	}
 	d := json.encode(req)
 	resp := http.post_json('https://github.com/login/oauth/access_token', d) or {
-		app.error(err)
+		app.info(err)
 		return app.vweb.not_found()
 	}
 	mut token := resp.text.find_between('access_token=', '&')
 	mut request := http.new_request('get', 'https://api.github.com/user', '') or {
-		app.error(err)
+		app.info(err)
 		return app.vweb.not_found()
 	}
 	request.add_header('Authorization', 'token $token')
 	user_js := request.do() or {
-		app.error(err)
+		app.info(err)
 		return app.vweb.not_found()
 	}
 	if user_js.status_code != 200 {
-		app.error(user_js.status_code.str())
-		app.error(user_js.text)
+		app.info(user_js.status_code.str())
+		app.info(user_js.text)
 		return app.vweb.text('Received $user_js.status_code error while attempting to contact GitHub')
 	}
 	gh_user := json.decode(GitHubUser, user_js.text) or {

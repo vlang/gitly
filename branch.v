@@ -27,7 +27,7 @@ fn (mut app App) fetch_branches(r Repo) {
 			branch.repo_id = r.id
 			branch.name = temp_branch.after('origin/')
 			hash_data := os.read_lines('.git/refs/heads/$branch.name') or {
-				app.error('Error: $err')
+				app.info(err)
 				return
 			}
 			branch.hash = hash_data[0].substr(0, 7)
@@ -37,7 +37,7 @@ fn (mut app App) fetch_branches(r Repo) {
 			u := app.find_user_by_email(email) or { User{username: email} }
 			branch.author = u.username
 			date := time.parse_rfc2822(args[1]) or {
-				app.error('Error: $err')
+				app.info('Error: $err')
 				return
 			}
 			branch.date = int(date.unix)
@@ -60,7 +60,7 @@ fn (mut app App) update_branches(r &Repo) {
 			branch.repo_id = r.id
 			branch.name = temp_branch.after('origin/')
 			hash_data := os.read_lines('.git/refs/heads/$branch.name') or {
-				app.error('Error: $err')
+				app.info('Error: $err')
 				return
 			}
 			branch.hash = hash_data[0].substr(0, 7)
@@ -70,7 +70,7 @@ fn (mut app App) update_branches(r &Repo) {
 			u := app.find_user_by_email(email) or { User{username: email} }
 			branch.author = u.username
 			date := time.parse_rfc2822(args[1]) or {
-				app.error('Error: $err')
+				app.info('Error: $err')
 				return
 			}
 			branch.date = int(date.unix)

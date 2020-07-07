@@ -195,15 +195,15 @@ fn (app &App) find_user_repos(user_id int) []Repo {
 
 fn (app &App) find_repo(user, name string) bool {
 	if user.len == 0 || name.len == 0 {
-		app.error('User or repo was not found')
+		app.info('User or repo was not found')
 		return false
 	}
 	u := app.find_user_by_username(user) or {
-		app.error('User was not found')
+		app.info('User was not found')
 		return false
 	}
 	app.repo = app.find_repo_by_name(u.id, name) or {
-		app.error('Repo was not found')
+		app.info('Repo was not found')
 		return false
 	}
 	app.repo.lang_stats = app.find_repo_lang_stats(app.repo.id)

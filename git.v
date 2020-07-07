@@ -34,7 +34,7 @@ fn (mut app App) git_info() vweb.Result {
 		GitService.unknown
 	}
 	if service == .unknown {
-		app.error('git: unknown info/refs service: $url')
+		app.info('git: unknown info/refs service: $url')
 		return vweb.Result{}
 	}
 	// Do auth here, we can communicate with the client only in inforefs

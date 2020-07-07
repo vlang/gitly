@@ -117,49 +117,48 @@ pub fn (mut app App) register_post() vweb.Result {
 		return app.vweb.redirect('/')
 	}
 	username := app.vweb.form['username']
-
 	if username in ['login', 'register', 'new', 'new_post', 'oauth'] {
-		app.error('Username is not available')
-		return app.vweb.redirect('/register')
+		app.vweb.error('Username `$username` is not available')
+		return app.register()
 	}
 	user_chars := username.bytes()
 	if user_chars.len > max_username_len {
-		app.error('Username is too long (max. $max_username_len)')
-		return app.vweb.redirect('/register')
+		app.vweb.error('Username is too long (max. $max_username_len)')
+		return app.register()
 	}
 	if username.contains('--') {
-		app.error('Username cannot contain two hyphens')
-		return app.vweb.redirect('/register')
+		app.vweb.error('Username cannot contain two hyphens')
+		return app.register()
 	}
 	if user_chars[0] == `-` || user_chars.last() == `-` {
-		app.error('Username cannot begin or end with a hyphen')
-		return app.vweb.redirect('/register')
+		app.vweb.error('Username cannot begin or end with a hyphen')
+		return app.register()
 	}
 	for char in user_chars {
 		if !char.is_letter() && !char.is_digit() && char != `-` {
-			app.error('Username cannot contain special charater')
-			return app.vweb.redirect('/register')
+			app.vweb.error('Username cannot contain special characters')
+			return app.register()
 		}
 	}
 	if app.vweb.form['password'] == '' {
-		app.error('Password cannot be empty')
-		return app.vweb.redirect('/register')
+		app.vweb.error('Password cannot be empty')
+		return app.register()
 	}
 	password := make_password(app.vweb.form['password'], username)
 	email := app.vweb.form['email']
 	if username == '' || email == '' {
-		app.error('Username or Email cannot be emtpy')
-		return app.vweb.redirect('/register')
+		app.vweb.error('Username or Email cannot be emtpy')
+		return app.register()
 	}
 	app.add_user(username, password, [email], false)
 	user := app.find_user_by_username(username) or {
-		app.error('User already exists')
-		return app.vweb.redirect('/register')
+		app.vweb.error('User already exists')
+		return app.register()
 	}
 	println("register: logging in")
 	app.auth_user(user)
 	app.only_gh_login = true
-	return app.vweb.redirect('/')
+	return app.vweb.redirect('/' + username)
 }
 
 fn gen_uuid_v4ish() string {
