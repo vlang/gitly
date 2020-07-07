@@ -85,6 +85,7 @@ fn (mut app App) create_tables() {
 		'is_github int default 0'
 		'is_blocked int default 0'
 		'is_registered int default 0'
+		'is_admin int default 0'
 		'login_attempts int default 0'
 		'UNIQUE(username)'
 		])
