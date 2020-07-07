@@ -15,6 +15,7 @@ struct User {
 	is_github     bool
 	is_registered bool
 	is_blocked    bool
+	is_admin      bool
 	token         string
 mut:
 	nr_posts      int
