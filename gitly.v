@@ -40,6 +40,7 @@ pub mut:
 	db                  sqlite.DB
 	logged_in           bool
 	user                User
+	form_error string
 }
 
 fn main() {
@@ -59,6 +60,7 @@ pub fn (mut app App) warn(msg string) {
 pub fn (mut app App) error(msg string) {
 	app.file_log.error(msg)
 	app.cli_log.error(msg)
+	app.form_error = msg
 }
 
 pub fn (mut app App) init_once() {
@@ -301,7 +303,8 @@ pub fn (mut app App) new_post() vweb.Result {
 	}
 
 	if app.nr_user_repos(app.user.id) >= max_user_repos {
-		return app.vweb.text('You already have too many repositories')
+		app.error('You have reached the limit for the number of repositories')
+		return app.new()
 	}
 
 	name := app.vweb.form['name']
