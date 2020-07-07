@@ -17,6 +17,7 @@ const (
 	max_username_len   = 32
 	max_login_attempts = 5
 	repo_storage_path  = './repos'
+	max_user_repos     = 5
 )
 
 struct App {
@@ -297,6 +298,11 @@ pub fn (mut app App) new_post() vweb.Result {
 	if !app.logged_in {
 		return app.vweb.redirect('/login')
 	}
+
+	if app.nr_user_repos(app.user.id) >= max_user_repos {
+		return app.vweb.redirect('/')
+	}
+
 	name := app.vweb.form['name']
 	app.repo = Repo{
 		name: name
@@ -304,7 +310,6 @@ pub fn (mut app App) new_post() vweb.Result {
 		user_id: app.user.id
 		user_name: app.user.username
 	}
-	//app.insert_repo(app.repo)
 	os.mkdir(app.repo.git_dir)
 	app.repo.git('init')
 	go app.update_repo()
