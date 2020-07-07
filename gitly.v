@@ -320,8 +320,12 @@ pub fn (mut app App) new_post() vweb.Result {
 		user_name: app.user.username
 		clone_url: app.vweb.form['clone_url']
 	}
-	os.mkdir(app.repo.git_dir)
-	app.repo.git('init')
+	if app.repo.clone_url == '' {
+		os.mkdir(app.repo.git_dir)
+		app.repo.git('init')
+	} else {
+		app.repo.clone()
+	}
 	app.insert_repo(app.repo)
 	println('start go')
 	if app.repo.clone_url != '' {
