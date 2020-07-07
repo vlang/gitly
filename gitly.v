@@ -18,6 +18,7 @@ const (
 	max_login_attempts = 5
 	repo_storage_path  = './repos'
 	max_user_repos     = 5
+	max_repo_name_len = 20
 )
 
 struct App {
@@ -290,7 +291,6 @@ pub fn (mut app App) update(user, repo string) vweb.Result {
 	return app.vweb.redirect('/')
 }
 
-['/new']
 pub fn (mut app App) new() vweb.Result {
 	if !app.logged_in {
 		return app.vweb.redirect('/login')
@@ -307,8 +307,12 @@ pub fn (mut app App) new_post() vweb.Result {
 		app.vweb.error('You have reached the limit for the number of repositories')
 		return app.new()
 	}
-
 	name := app.vweb.form['name']
+	if name.len > max_repo_name_len {
+		app.vweb.error('Repository name is too long (should be fewer than $max_repo_name_len characters)')
+		return app.new()
+	}
+
 	app.repo = Repo{
 		name: name
 		git_dir: os.join_path(repo_storage_path, app.user.username, name)
@@ -320,6 +324,9 @@ pub fn (mut app App) new_post() vweb.Result {
 	app.repo.git('init')
 	app.insert_repo(app.repo)
 	println('start go')
+	if app.repo.clone_url != '' {
+		app.repo.clone()
+	}
 	go app.update_repo()
 	println('end go')
 	return app.vweb.redirect('/$app.user.username')

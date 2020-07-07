@@ -49,6 +49,8 @@ const (
 enum RepoStatus {
 	done
 	caching
+	clone_failed
+	clone_done
 }
 
 fn (mut app App) update_repo() {
@@ -551,4 +553,22 @@ fn (mut app App) fetch_file_info(r &Repo, file &File) {
 	sql app.db {
 		update File set last_msg = last_msg, last_time = last_time where id == file_id
 	}
+}
+
+fn (mut r Repo) clone() {
+	if !r.clone_url.starts_with('https://') || r.clone_url.contains(' ') {
+		return
+	}
+	//defer r.Update()
+	println("starting git clone... $r.clone_url git_dir=$r.git_dir")
+	//"git clone --bare "
+	os.exec('git clone --mirror "$r.clone_url" $r.git_dir') or {
+	        r.status = .clone_failed
+	        println("git clone failed:")
+	        return
+	}
+	r.git("config receive.denyCurrentBranch ignore")
+	r.git("config core.bare false")
+	r.git("checkout master")
+	r.status = .clone_done
 }
