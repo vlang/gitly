@@ -300,7 +300,7 @@ pub fn (mut app App) new_post() vweb.Result {
 	}
 
 	if app.nr_user_repos(app.user.id) >= max_user_repos {
-		return app.vweb.redirect('/')
+		return app.vweb.text('You already have too many repositories')
 	}
 
 	name := app.vweb.form['name']
