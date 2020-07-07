@@ -274,7 +274,10 @@ pub fn (mut app App) update(user, repo string) vweb.Result {
 	if !app.find_repo(user, repo) {
 		return app.vweb.not_found()
 	}
-	secret := app.vweb.req.headers['X-Hub-Signature'][5..]
+	secret := if 'X-Hub-Signature' in app.vweb.req.headers { app.vweb.req.headers['X-Hub-Signature'][5..] } else { '' }
+	if secret == '' {
+		return app.vweb.redirect('/')
+	}
 	if secret == app.repo.webhook_secret && app.repo.webhook_secret != '' {
 		go app.update_repo_data(&app.repo)
 	}
@@ -301,7 +304,7 @@ pub fn (mut app App) new_post() vweb.Result {
 		user_id: app.user.id
 		user_name: app.user.username
 	}
-	app.insert_repo(app.repo)
+	//app.insert_repo(app.repo)
 	os.mkdir(app.repo.git_dir)
 	app.repo.git('init')
 	go app.update_repo()
