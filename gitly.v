@@ -156,7 +156,9 @@ pub fn (mut app App) init() {
 			User{}
 		}
 	}
+	app.add_visit()
 }
+
 
 /*
 pub fn (mut app App) create_new_test_repo() {
@@ -266,7 +268,6 @@ pub fn (mut app App) tree(user, repo string) vweb.Result {
 
 pub fn (mut app App) index() vweb.Result {
 	app.show_menu = false
-	// app.tree('','')
 	return $vweb.html()
 }
 

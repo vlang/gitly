@@ -139,6 +139,13 @@ fn (mut app App) create_tables() {
 		'date integer default 0'
 		'UNIQUE(repo_id, name)'
 	])
+	app.create_table('Visit', [
+		'id integer primary key'
+		'repo_id integer default 0'
+		"url text default ''"
+		"referer text default ''"
+		'created_at integer default 0'
+	])
 	app.create_table('GitlySettings', [
 		'id integer primary key'
 		'oauth_client_id text default ""'
