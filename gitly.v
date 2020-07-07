@@ -199,6 +199,18 @@ pub fn (mut app App) create_new_test_repo() {
 	app.update_repo()
 }
 */
+
+['/:user/settings']
+pub fn (mut app App) settings() vweb.Result {
+	println('user settings')
+	return app.vweb.text('settings')
+}
+
+['/:user/:repo']
+pub fn (mut app App) tree2(user, repo string) vweb.Result {
+	return app.tree(user, repo)
+}
+
 // pub fn (mut app App) tree(path string) {
 ['/:user/:repo/tree']
 pub fn (mut app App) tree(user, repo string) vweb.Result {
@@ -334,7 +346,7 @@ pub fn (mut app App) new_post() vweb.Result {
 
 ['/:username']
 pub fn (mut app App) user(username string) vweb.Result {
-	//println('user() name=$username')
+	println('user() name=$username')
 	app.show_menu = false
 	mut user := User{}
 	if username.len != 0 {
