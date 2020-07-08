@@ -8,7 +8,8 @@ import net.http
 pub fn (mut app App) oauth() vweb.Result {
 	code := app.vweb.query['code']
 	if code == '' {
-		return app.vweb.not_found()
+		app.info('Code is empty')
+		return app.vweb.redirect('/')
 	}
 	req := OAuth_Request {
 		client_id: app.oauth_client_id
@@ -18,17 +19,17 @@ pub fn (mut app App) oauth() vweb.Result {
 	d := json.encode(req)
 	resp := http.post_json('https://github.com/login/oauth/access_token', d) or {
 		app.info(err)
-		return app.vweb.not_found()
+		return app.vweb.redirect('/')
 	}
 	mut token := resp.text.find_between('access_token=', '&')
 	mut request := http.new_request('get', 'https://api.github.com/user', '') or {
 		app.info(err)
-		return app.vweb.not_found()
+		return app.vweb.redirect('/')
 	}
 	request.add_header('Authorization', 'token $token')
 	user_js := request.do() or {
 		app.info(err)
-		return app.vweb.not_found()
+		return app.vweb.redirect('/')
 	}
 	if user_js.status_code != 200 {
 		app.info(user_js.status_code.str())
@@ -36,13 +37,13 @@ pub fn (mut app App) oauth() vweb.Result {
 		return app.vweb.text('Received $user_js.status_code error while attempting to contact GitHub')
 	}
 	gh_user := json.decode(GitHubUser, user_js.text) or {
-		return app.vweb.not_found()
+		return app.vweb.redirect('/')
 	}
 	mut user := app.find_user_by_email(gh_user.email) or { User{} }
 	if !user.is_github {
 		app.add_user(gh_user.username, '', [gh_user.email], true)
 		user = app.find_user_by_email(gh_user.email) or {
-			return app.vweb.not_found()
+			return app.vweb.redirect('/')
 		}
 		app.update_user_avatar(gh_user.avatar, user.id)
 	}
