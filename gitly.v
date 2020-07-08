@@ -620,7 +620,7 @@ pub fn (mut app App) blob(user, repo string) vweb.Result {
 	return $vweb.html()
 }
 
-['/:user/:repo/new_issue']
+['/:user/:repo/issues/new']
 pub fn (mut app App) new_issue(user, repo string) vweb.Result {
 	if !app.find_repo(user, repo) {
 		return app.vweb.not_found()
