@@ -142,15 +142,7 @@ pub fn (mut app App) init() {
 	url := app.vweb.req.url
 	app.page_gen_time = ''
 	app.info('\n\ninit() url=$url')
-	if url.contains('/tree/') {
-		app.path = url.after('/tree/')
-	} else if url.contains('/blob/') {
-		app.path = url.after('/blob/')
-	} else if url.contains('/pull/') {
-		app.path = url.after('/pull/')
-	} else {
-		app.path = ''
-	}
+	app.path = ''
 	app.branch = 'master'
 	app.html_path = app.repo.html_path_to(app.path, app.branch)
 	app.info('path=$app.path')
@@ -208,16 +200,17 @@ pub fn (mut app App) settings() vweb.Result {
 
 ['/:user/:repo']
 pub fn (mut app App) tree2(user, repo string) vweb.Result {
-	return app.tree(user, repo)
+	return app.tree(user, repo, '')
 }
 
 // pub fn (mut app App) tree(path string) {
-['/:user/:repo/tree']
-pub fn (mut app App) tree(user, repo string) vweb.Result {
+['/:user/:repo/tree/:path...']
+pub fn (mut app App) tree(user, repo, path string) vweb.Result {
 	if !app.find_repo(user, repo) {
 		return app.vweb.not_found()
 	}
 	println('\n\n\ntree() user="$user" repo="' + repo + '"')
+	app.path = '/$path'
 	if app.path.contains('/favicon.svg') {
 		return vweb.not_found()
 	}
@@ -230,6 +223,10 @@ pub fn (mut app App) tree(user, repo string) vweb.Result {
 	if can_up {
 		up = app.vweb.req.url.all_before_last('/')
 	}
+	if !up.ends_with('/') {
+		up += '/'
+	}
+	println(up)
 	println('path=$app.path')
 	if app.path.starts_with('/') {
 		app.path = app.path[1..]
@@ -258,14 +255,14 @@ pub fn (mut app App) tree(user, repo string) vweb.Result {
 	// Fetch last commit message for this directory, printed at the top of the tree
 	mut last_commit := Commit{}
 	if can_up {
-		mut path := app.path
-		if path.ends_with('/') {
-			path = path[0..path.len - 1]
+		mut p := path
+		if p.ends_with('/') {
+			p = p[0..path.len - 1]
 		}
-		if !path.contains('/') {
-			path = '/$path'
+		if !p.contains('/') {
+			p = '/$p'
 		}
-		if dir := app.find_repo_file_by_path(app.repo.id, 'master', path) {
+		if dir := app.find_repo_file_by_path(app.repo.id, 'master', p) {
 			println('hash=$dir.last_hash')
 			last_commit = app.find_repo_commit_by_hash(app.repo.id, dir.last_hash)
 		}
@@ -585,18 +582,19 @@ pub fn (mut app App) releases(user_str, repo string) vweb.Result {
 	return $vweb.html()
 }
 
-['/:user/:repo/blob']
-pub fn (mut app App) blob(user, repo string) vweb.Result {
+['/:user/:repo/blob/:path...']
+pub fn (mut app App) blob(user, repo, path string) vweb.Result {
 	if !app.find_repo(user, repo) {
 		return app.vweb.not_found()
 	}
+	app.path = path
 	mut raw := false
 	if app.path.ends_with('/raw') {
 		app.path = app.path.substr(0, app.path.len - 4)
 		raw = true
 	}
 	blob_path := os.join_path(app.repo.git_dir, app.path)
-	plain_text := os.read_file(blob_path) or {
+	plain_text := os.read_file(path) or {
 		app.vweb.not_found()
 		return vweb.Result{}
 	}
