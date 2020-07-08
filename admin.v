@@ -11,7 +11,7 @@ pub fn (mut app App) admin() vweb.Result {
 }
 
 ['/admin/settings']
-pub fn (mut app App) settings() vweb.Result {
+pub fn (mut app App) admin_settings() vweb.Result {
 	if !app.is_admin() {
 		return app.vweb.redirect('/')
 	}
@@ -20,7 +20,7 @@ pub fn (mut app App) settings() vweb.Result {
 }
 
 ['/admin/settings_post']
-pub fn (mut app App) settings_post() vweb.Result {
+pub fn (mut app App) admin_settings_post() vweb.Result {
 	if !app.is_admin() {
 		return app.vweb.redirect('/')
 	}
@@ -29,7 +29,7 @@ pub fn (mut app App) settings_post() vweb.Result {
 }
 
 ['/admin/userlist']
-pub fn (mut app App) userlist() vweb.Result {
+pub fn (mut app App) admin_userlist() vweb.Result {
 	if !app.is_admin() {
 		return app.vweb.redirect('/')
 	}
@@ -38,7 +38,7 @@ pub fn (mut app App) userlist() vweb.Result {
 }
 
 ['/admin/edituser/:user']
-pub fn (mut app App) edituser() vweb.Result {
+pub fn (mut app App) admin_edituser() vweb.Result {
 	if !app.is_admin() {
 		return app.vweb.redirect('/')
 	}
@@ -47,7 +47,7 @@ pub fn (mut app App) edituser() vweb.Result {
 }
 
 ['/admin/edituser_post/:user']
-pub fn (mut app App) edituser_post() vweb.Result {
+pub fn (mut app App) admin_edituser_post() vweb.Result {
 	if !app.is_admin() {
 		return app.vweb.redirect('/')
 	}
