@@ -33,26 +33,38 @@ pub fn (mut app App) admin_userlist() vweb.Result {
 	if !app.is_admin() {
 		return app.vweb.redirect('/')
 	}
+	// TODO add pagination
 
-	return app.vweb.text('TODO')
-}
+	userlist := app.find_registered_user()
 
-['/admin/edituser/:user']
-pub fn (mut app App) admin_edituser() vweb.Result {
-	if !app.is_admin() {
-		return app.vweb.redirect('/')
-	}
-
-	return app.vweb.text('TODO')
+	return $vweb.html()
 }
 
 ['/admin/edituser_post/:user']
-pub fn (mut app App) admin_edituser_post() vweb.Result {
+pub fn (mut app App) admin_edituser_post(user string) vweb.Result {
 	if !app.is_admin() {
 		return app.vweb.redirect('/')
 	}
+	clear_session := 'stop-session' in app.vweb.form
+	is_blocked := 'is-blocked' in app.vweb.form
+	is_admin := 'is-admin' in app.vweb.form
 
-	return app.vweb.text('TODO')
+	if is_admin {
+		app.user_set_admin(user.int())
+	} else {
+		app.user_unset_admin(user.int())
+	}
+
+	if is_blocked {
+		app.block_user(user.int())
+	} else {
+		app.unblock_user(user.int())
+	}
+	if clear_session {
+		app.add_token(user.int())
+	}
+
+	return app.vweb.redirect('/admin')
 }
 
 fn (mut app App) is_admin() bool {

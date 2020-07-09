@@ -201,6 +201,18 @@ pub fn (mut app App) update_user_token(id int, token string) {
 	}
 }
 
+pub fn (mut app App) user_set_admin(id int) {
+	sql app.db {
+		update User set is_admin = true where id == id
+	}
+}
+
+pub fn (mut app App) user_unset_admin(id int) {
+	sql app.db {
+		update User set is_admin = false where id == id
+	}
+}
+
 pub fn (mut app App) find_user_sshkeys(id int) []SshKey {
 	return sql app.db {
 		select from SshKey where user == id
@@ -283,6 +295,12 @@ pub fn (mut app App) find_repo_registered_contributor(id int) []User {
 	return users
 }
 
+pub fn (mut app App) find_registered_user() []User {
+	return sql app.db {
+		select from User where is_registered == true
+	}
+}
+
 pub fn (mut app App) nr_repo_contributor(id int) int {
 	return sql app.db {
 		select count from Contributor where repo == id
@@ -321,6 +339,12 @@ pub fn (mut app App) update_user_login_attempts(user_id, attempts int) {
 pub fn (mut app App) block_user(user_id int) {
 	sql app.db {
 		update User set is_blocked = true where id == user_id
+	}
+}
+
+pub fn (mut app App) unblock_user(user_id int) {
+	sql app.db {
+		update User set is_blocked = false where id == user_id
 	}
 }
 
