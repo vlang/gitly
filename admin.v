@@ -70,6 +70,8 @@ pub fn (mut app App) admin_update() vweb.Result {
 		return app.vweb.redirect('/')
 	}
 
+	app.info('Updated V')
+	app.info('Update Gitly')
 	res = os.exec('git diff') or { os.Result{exit_code: 1} }
 
 	if res.exit_code != 0 || res.output != '' {
