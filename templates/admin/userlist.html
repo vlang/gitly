@@ -1,0 +1,30 @@
+@header
+
+<a href="/admin"><h1>Admin panel</h1></a>
+
+.users {
+	@for user in userlist
+		.user_item {
+			<form action='/admin/edituser_post/@user.id' method='post'>
+				<input name="username" value="@user.username" disabled><br>
+				<input name="stop-session" type="checkbox">
+				<label>Clear user sessions</label><br>
+				<input name="is-blocked" type="checkbox"
+				@if user.is_blocked
+					checked
+				@end
+				>
+				<label>Blocked status</label><br>
+				<input name="is-admin" type="checkbox" 
+				@if user.is_admin
+					checked
+				@end
+				>
+				<label>Admin user</label><br>
+				<input type="submit" value="Edit user">
+			</form>
+		}
+	@end
+}
+
+@footer
