@@ -70,11 +70,11 @@ fn check_password(password, username, hashed string) bool {
 	return make_password(password, username) == hashed
 }
 
-pub fn (mut app App) add_user(username, password string, emails []string, github bool) {
+pub fn (mut app App) add_user(username, password string, emails []string, github bool) bool {
 	mut user := app.find_user_by_username(username) or { User{} }
 	if user.id != 0 && user.is_registered {
 		app.info('User $username already exists')
-		return
+		return false
 
 	}
 	user = app.find_user_by_email(emails[0]) or { User{} }
@@ -88,11 +88,11 @@ pub fn (mut app App) add_user(username, password string, emails []string, github
 		app.insert_user(user)
 		mut u := app.find_user_by_username(user.username) or {
 			app.info('User was not inserted')
-			return
+			return false
 		}
 		if u.password != user.password || u.name != user.name {
 			app.info('User was not inserted')
-			return
+			return false
 		}
 		for email in emails {
 			mail := Email{
@@ -109,19 +109,20 @@ pub fn (mut app App) add_user(username, password string, emails []string, github
 				update User set username=username, password=password, name=name, is_registered=true where id==user.id
 			}
 			app.create_user_dir(username)
-			return
+			return true
 		}
 		if user.is_registered {
 			sql app.db {
 				update User set is_github = true where id==user.id
 			}
-			return
+			return true
 		}
 		sql app.db {
 			update User set username=username, name=name, is_registered=true, is_github = true where id==user.id
 		}
 	}
 	app.create_user_dir(username)
+	return true
 }
 
 fn (mut app App) create_user_dir(username string) {
