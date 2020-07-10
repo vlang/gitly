@@ -14,6 +14,7 @@ fn (mut app App) create_tables() {
 		"description text default ''"
 		'user_id int default 0'
 		"user_name text default ''"
+		'primary_branch text default ""'
 		'nr_views int default 0'
 		'nr_commits int default 0'
 		'nr_open_issues int default 0'
@@ -61,7 +62,7 @@ fn (mut app App) create_tables() {
 		'repo_id int default 0'
 		"message text default ''"
 		"created_at int default (strftime('%s', 'now'))"
-		'UNIQUE(hash)'
+		'UNIQUE(hash, repo_id)'
 	])
 	// author text default '' is to to avoid joins
 	app.create_table('LangStat', [
@@ -164,11 +165,12 @@ fn (app &App) update_repo_in_db(repo &Repo) {
 	nr_tags := repo.nr_tags
 	nr_open_issues := repo.nr_open_issues
 	nr_open_prs := repo.nr_open_prs
+	nr_branches := repo.nr_branches
 	nr_releases := repo.nr_releases
 	nr_contributors := repo.nr_contributors
 	nr_commits := repo.nr_commits
 	sql app.db {
-		update Repo set description = desc, nr_views = nr_views, webhook_secret = webhook_secret, nr_tags = nr_tags, nr_open_issues = nr_open_issues, nr_open_prs = nr_open_prs, nr_releases = nr_releases, nr_contributors = nr_contributors, nr_commits = nr_commits where id == id
+		update Repo set description = desc, nr_views = nr_views, webhook_secret = webhook_secret, nr_tags = nr_tags, nr_open_issues = nr_open_issues, nr_open_prs = nr_open_prs, nr_releases = nr_releases, nr_contributors = nr_contributors, nr_commits = nr_commits, nr_branches = nr_branches where id == id
 	}
 }
 

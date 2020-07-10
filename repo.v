@@ -15,7 +15,7 @@ struct Repo {
 	user_id            int
 	user_name          string
 	clone_url          string [skip]
-	primary_branch     string [skip]
+	primary_branch     string
 	description        string
 	is_public          bool [skip]
 	users_contributed  []string [skip]
@@ -58,7 +58,7 @@ fn (mut app App) update_repo() {
 	wg := sync.new_waitgroup()
 	wg.add(1)
 	go r.analyse_lang(wg)
-	data := r.git('--no-pager log --abbrev-commit --abbrev=8 --pretty="%h$log_field_separator%aE$log_field_separator%cD$log_field_separator%s$log_field_separator%aN"')
+	data := r.git('--no-pager log --abbrev-commit --abbrev=7 --pretty="%h$log_field_separator%aE$log_field_separator%cD$log_field_separator%s$log_field_separator%aN"')
 	mut tmp_commit := Commit{}
 	r.nr_contributors = 0
 	r.nr_commits = 0
@@ -140,7 +140,7 @@ fn (mut app App) update_repo_data(r &Repo) {
 	wg.add(1)
 	go r.analyse_lang(wg)
 
-	data := r.git('--no-pager log ${last_commit.hash}.. --abbrev-commit --abbrev=8 --pretty="%h$log_field_separator%aE$log_field_separator%cD$log_field_separator%s$log_field_separator%aN"')
+	data := r.git('--no-pager log ${last_commit.hash}.. --abbrev-commit --abbrev=7 --pretty="%h$log_field_separator%aE$log_field_separator%cD$log_field_separator%s$log_field_separator%aN"')
 
 	mut tmp_commit := Commit{}
 	app.db.exec('BEGIN TRANSACTION')
@@ -562,7 +562,7 @@ fn (mut r Repo) clone() {
 	//defer r.Update()
 	println("starting git clone... $r.clone_url git_dir=$r.git_dir")
 	//"git clone --bare "
-	os.exec('git clone --mirror "$r.clone_url" $r.git_dir') or {
+	os.exec('git clone "$r.clone_url" $r.git_dir') or {
 	        r.status = .clone_failed
 	        println("git clone failed:")
 	        return

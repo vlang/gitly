@@ -326,6 +326,7 @@ pub fn (mut app App) new_post() vweb.Result {
 		name: name
 		git_dir: os.join_path(repo_storage_path, app.user.username, name)
 		user_id: app.user.id
+		primary_branch: 'master'
 		user_name: app.user.username
 		clone_url: app.vweb.form['clone_url']
 	}
@@ -336,6 +337,10 @@ pub fn (mut app App) new_post() vweb.Result {
 		app.repo.clone()
 	}
 	app.insert_repo(app.repo)
+	app.repo = app.find_repo_by_name(app.user.id, app.repo.name) or {
+		app.info('Repo was not inserted')
+		return app.vweb.redirect('/new')
+	}
 	println('start go')
 	if app.repo.clone_url != '' {
 		app.repo.clone()
@@ -582,21 +587,32 @@ pub fn (mut app App) releases(user_str, repo string) vweb.Result {
 	return $vweb.html()
 }
 
-['/:user/:repo/blob/:path...']
-pub fn (mut app App) blob(user, repo, path string) vweb.Result {
+['/:user/:repo/blob/:branch/:path...']
+pub fn (mut app App) blob(user, repo, branch, path string) vweb.Result {
 	if !app.find_repo(user, repo) {
 		return app.vweb.not_found()
 	}
 	app.path = path
+
+	if !app.contains_repo_branch(branch, app.repo.id) && branch != app.repo.primary_branch {
+		app.info('Branch $branch not found')
+		return app.vweb.not_found()
+	}
 	mut raw := false
 	if app.path.ends_with('/raw') {
 		app.path = app.path.substr(0, app.path.len - 4)
 		raw = true
 	}
-	blob_path := os.join_path(app.repo.git_dir, app.path)
-	plain_text := os.read_file(path) or {
-		app.vweb.not_found()
-		return vweb.Result{}
+	mut blob_path := os.join_path(app.repo.git_dir, app.path)
+	mut plain_text := ''
+	if branch == app.repo.primary_branch {
+		plain_text = os.read_file(path) or {
+			app.vweb.not_found()
+			return vweb.Result{}
+		}
+	} else {
+		filename := app.path.split('/').last()
+		plain_text = app.repo.git('--no-pager show $branch:$filename')
 	}
 	mut source := vweb.RawHtml(plain_text.str())
 	// mut source := (plain_text.str())
