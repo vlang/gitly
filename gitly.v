@@ -219,7 +219,7 @@ pub fn (mut app App) tree(user, repo, path string) vweb.Result {
 	// t := time.ticks()
 	app.inc_repo_views(app.repo.id)
 	mut up := '/'
-	can_up := app.path != ''
+	can_up := path != ''
 	if can_up {
 		up = app.vweb.req.url.all_before_last('/')
 	}
