@@ -141,7 +141,6 @@ pub fn (mut app App) init() {
 	app.page_gen_time = ''
 	app.info('\n\ninit() url=$url')
 	app.path = ''
-	app.html_path = app.repo.html_path_to(app.path, 'master')
 	app.info('path=$app.path')
 	app.logged_in = app.logged_in()
 	if app.logged_in {

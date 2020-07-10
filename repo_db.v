@@ -210,7 +210,7 @@ fn (app &App) find_repo(user, name string) bool {
 		return false
 	}
 	app.repo.lang_stats = app.find_repo_lang_stats(app.repo.id)
-
+	app.html_path = app.repo.html_path_to(app.path, app.repo.primary_branch)
 	return true
 }
 
