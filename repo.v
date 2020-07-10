@@ -421,6 +421,7 @@ fn (r &Repo) parse_ls(ls, branch string) ?File {
 		parent_path: parent_path
 		repo_id: r.id
 		last_hash: hash
+		branch: branch
 		is_dir: typ == 'tree'
 	}
 }

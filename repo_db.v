@@ -40,7 +40,7 @@ fn (mut app App) create_tables() {
 		'size int default 0'
 		'nr_contributors int default 0'
 		'nr_views int default 0'
-		'UNIQUE(parent_path, name, repo_id) ON CONFLICT REPLACE'
+		'UNIQUE(parent_path, name, repo_id, branch) ON CONFLICT REPLACE'
 	])
 	//"created_at int default (strftime('%s', 'now'))"
 	app.create_table('Issue', [
@@ -210,7 +210,7 @@ fn (app &App) find_repo(user, name string) bool {
 		return false
 	}
 	app.repo.lang_stats = app.find_repo_lang_stats(app.repo.id)
-
+	app.html_path = app.repo.html_path_to(app.path, app.repo.primary_branch)
 	return true
 }
 

@@ -24,7 +24,7 @@ fn (mut app App) fetch_branches(r Repo) {
 			_ := r.git('checkout -t $temp_branch')
 			branch.repo_id = r.id
 			branch.name = temp_branch.after('origin/')
-			hash_data := os.read_lines('.git/refs/heads/$branch.name') or {
+			hash_data := os.read_lines('$r.git_dir/.git/refs/heads/$branch.name') or {
 				app.info(err)
 				return
 			}
@@ -54,7 +54,7 @@ fn (mut app App) update_branches(r &Repo) {
 			_ := r.git('checkout -t $temp_branch')
 			branch.repo_id = r.id
 			branch.name = temp_branch.after('origin/')
-			hash_data := os.read_lines('.git/refs/heads/$branch.name') or {
+			hash_data := os.read_lines('$r.git_dir/.git/refs/heads/$branch.name') or {
 				app.info('Error: $err')
 				return
 			}

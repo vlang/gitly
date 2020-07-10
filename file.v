@@ -25,9 +25,9 @@ mut:
 fn (f File) url() string {
 	typ := if f.is_dir { 'tree' } else { 'blob' }
 	if f.parent_path == '' {
-		return '$typ/$f.name'
+		return '$typ/$f.branch/$f.name'
 	}
-	return '$typ/$f.parent_path/$f.name'
+	return '$typ/$f.branch/$f.parent_path/$f.name'
 }
 
 fn (f &File) full_path() string {
@@ -56,7 +56,7 @@ fn (mut app App) insert_file(file File) {
 fn (mut app App) find_repo_files(repo_id2 int, branch, parent_path string) []File {
 	app.info('find files by repo(repo_id=$repo_id2, parent_path="$parent_path")')
 	mut files := sql app.db {
-		select from File where repo_id == repo_id2 && parent_path == parent_path
+		select from File where repo_id == repo_id2 && parent_path == parent_path && branch == branch
 	}
 	return files
 }
@@ -66,7 +66,7 @@ fn (mut app App) find_repo_file_by_path(repo_id int, branch, path string) ?File 
 	name := path.after('/')
 	app.info('find file parent_path=$parent_path name=$name')
 	file := sql app.db {
-		select from File where repo_id == repo_id && parent_path == parent_path && name == name limit 1
+		select from File where repo_id == repo_id && parent_path == parent_path && branch == branch && name == name limit 1
 	}
 	if file.name == '' {
 		return none
