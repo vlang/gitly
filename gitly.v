@@ -24,7 +24,6 @@ const (
 struct App {
 mut:
 	path                string // current path being viewed
-	branch              string
 	repo                Repo
 	version             string
 	html_path           vweb.RawHtml
@@ -91,7 +90,6 @@ pub fn (mut app App) init_once() {
 		os.write_file('static/assets/version', app.version)
 	}
 	app.path = ''
-	app.branch = ''
 	app.vweb.serve_static('/gitly.css', 'static/css/gitly.css', 'text/css')
 	app.vweb.serve_static('/jquery.js', 'static/js/jquery.js', 'text/javascript')
 	app.vweb.serve_static('/favicon.svg', 'static/assets/favicon.svg', 'image/svg+xml')
@@ -143,8 +141,7 @@ pub fn (mut app App) init() {
 	app.page_gen_time = ''
 	app.info('\n\ninit() url=$url')
 	app.path = ''
-	app.branch = 'master'
-	app.html_path = app.repo.html_path_to(app.path, app.branch)
+	app.html_path = app.repo.html_path_to(app.path, 'master')
 	app.info('path=$app.path')
 	app.logged_in = app.logged_in()
 	if app.logged_in {
@@ -200,6 +197,9 @@ pub fn (mut app App) settings() vweb.Result {
 
 ['/:user/:repo']
 pub fn (mut app App) tree2(user, repo string) vweb.Result {
+	if !app.find_repo(user, repo) {
+		return app.vweb.not_found()
+	}
 	return app.tree(user, repo, app.repo.primary_branch, '')
 }
 
@@ -370,6 +370,11 @@ pub fn (mut app App) user(username string) vweb.Result {
 	return $vweb.html()
 }
 
+['/:user/:repo/commits']
+pub fn (mut app App) commits2(user, repo string) vweb.Result {
+	return app.commits(user, repo, '0')
+}
+
 ['/:user/:repo/commits/:page_str']
 pub fn (mut app App) commits(user, repo, page_str string) vweb.Result {
 	if !app.find_repo(user, repo) {
@@ -460,6 +465,11 @@ pub fn (mut app App) commit(user, repo, hash string) vweb.Result {
 		sources[change.file] = vweb.RawHtml(src)
 	}
 	return $vweb.html()
+}
+
+['/:user/:repo/issues']
+pub fn (mut app App) issues2(user, repo string) vweb.Result {
+	return app.issues(user, repo, '0')
 }
 
 ['/:user/:repo/issues/:page_str']

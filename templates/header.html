@@ -6,11 +6,11 @@
 	<link rel='icon' type='image/svg+xml' href='/favicon.svg' sizes='any'>
 	<script>
 		var repoName = '@app.repo.name'
-		var branch = '@app.branch'
+		var branch = '@app.repo.primary_branch'
 		var path = '@app.path'
 		//var isTopFiles = {{.IsTopFiles}}
 
-		var fetchurl = '/@app.repo.name/tree-data?branch=@app.branch&path=@app.path'
+		var fetchurl = '/@app.repo.name/tree-data?branch=@app.repo.primary_branch&path=@app.path'
 
 		var sshUrl = 'ssh://git&#64;gitly.org/@app.repo.user_name/@app.repo.name'
 		var httpsUrl = 'https://@app.repo.user_name&#64;gitly.org/@app.repo.name'
