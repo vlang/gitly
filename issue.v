@@ -42,7 +42,7 @@ fn (mut app App) insert_issue(issue Issue) {
 
 fn (mut app App) find_issue_by_id(issue_id int) ?Issue {
 	issue := sql app.db {
-		select from Issue where id == issue_id limit 1 
+		select from Issue where id == issue_id limit 1
 	}
 	if issue.id == 0 {
 		return none
@@ -52,7 +52,7 @@ fn (mut app App) find_issue_by_id(issue_id int) ?Issue {
 
 fn (mut app App) find_pr_by_id(issue_id int) ?Issue {
 	pr := sql app.db {
-		select from Issue where id == issue_id limit 1 
+		select from Issue where id == issue_id limit 1
 	}
 	if pr.id == 0 {
 		return none
@@ -69,14 +69,14 @@ fn (mut app App) find_repo_issues_as_page(repo_id, page int) []Issue {
 
 fn (mut app App) find_repo_issues(repo_id int) []Issue {
 	issues := sql app.db {
-		select from Issue where repo_id == repo_id && is_pr == false 
+		select from Issue where repo_id == repo_id && is_pr == false
 	}
 	return issues
 }
 
 fn (mut app App) find_repo_prs(repo_id int) []Issue {
 	issues := sql app.db {
-		select from Issue where repo_id == repo_id && is_pr == true 
+		select from Issue where repo_id == repo_id && is_pr == true
 	}
 	return issues
 }

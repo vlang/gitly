@@ -467,6 +467,7 @@ pub fn (mut app App) issues(user, repo, page_str string) vweb.Result {
 	if !app.find_repo(user, repo) {
 		app.vweb.not_found()
 	}
+	app.show_menu = true
 	page := if page_str.len >= 1 { page_str.int() } else { 0 }
 	mut issues := app.find_repo_issues_as_page(app.repo.id, page)
 	mut first := false
@@ -501,6 +502,7 @@ pub fn (mut app App) issue(user, repo, id_str string) vweb.Result {
 	if !app.find_repo(user, repo) {
 		return app.vweb.not_found()
 	}
+	app.show_menu = true
 	mut id := 1
 	if id_str != '' {
 		id = id_str.int()
