@@ -79,7 +79,6 @@ fn (mut app App) create_tables() {
 		'name text default ""'
 		'username text default ""'
 		'password text default ""'
-		'token text default ""'
 		'avatar text default ""'
 		'nr_posts integer default 0'
 		'last_post_time integer default 0'
@@ -154,6 +153,11 @@ fn (mut app App) create_tables() {
 		'oauth_client_secret text default ""'
 		'only_gh_login int default 1'
 		'repo_storage_path text default "./repos"'
+	])
+	app.create_table('Token', [
+		'id integer primary key'
+		'user_id integer default 0'
+		"value text defaut ''"
 	])
 }
 

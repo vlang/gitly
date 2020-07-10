@@ -47,7 +47,8 @@ pub fn (mut app App) login_post() vweb.Result {
 
 pub fn (mut app App) auth_user(user User) {
 	_ := time.utc().add_days(expire_length)
-	token := if user.token == '' { app.add_token(user.id) } else { user.token }
+	//token := if user.token == '' { app.add_token(user.id) } else { user.token }
+	token := app.add_token(user.id)
 	app.update_user_login_attempts(user.id, 0)
 	//println('cookie: setting token=$token id=$user.id')
 	app.vweb.set_cookie(name: 'id', value:user.id.str())
@@ -78,12 +79,6 @@ pub fn (mut app App) logout() vweb.Result {
 	return app.vweb.redirect('/')
 }
 
-pub fn (mut app App) add_token(user_id int) string {
-	token := gen_uuid_v4ish()
-	app.update_user_token(user_id, token)
-	return token
-}
-
 pub fn (mut app App) get_user_from_cookies() ?User {
 	id := app.vweb.get_cookie('id') or {
 		return none
@@ -94,7 +89,7 @@ pub fn (mut app App) get_user_from_cookies() ?User {
 	mut user := app.find_user_by_id(id.int()) or {
 		return none
 	}
-	if user.token != token {
+	if token != app.find_user_token(user.id) {
 		return none
 	}
 	user.b_avatar = user.avatar != ''

@@ -16,7 +16,6 @@ struct User {
 	is_registered bool
 	is_blocked    bool
 	is_admin      bool
-	token         string
 mut:
 	nr_posts      int
 	last_post_time int
@@ -195,12 +194,6 @@ pub fn (mut app App) remove_ssh_key(title string, user_id int) {
 	}
 }
 
-pub fn (mut app App) update_user_token(id int, token string) {
-	sql app.db {
-		update User set token = token where id == id
-	}
-}
-
 pub fn (mut app App) user_set_admin(id int) {
 	sql app.db {
 		update User set is_admin = true where id == id
@@ -217,13 +210,6 @@ pub fn (mut app App) find_user_sshkeys(id int) []SshKey {
 	return sql app.db {
 		select from SshKey where user == id
 	}
-}
-
-pub fn (mut app App) find_user_token(id int) string {
-	user := app.find_user_by_id(id) or {
-		return ''
-	}
-	return user.token
 }
 
 pub fn (mut app App) find_username_by_id(id int) string {
