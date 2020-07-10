@@ -17,8 +17,6 @@ mut:
 
 fn (mut app App) fetch_branches(r Repo) {
 	mut branch := Branch{}
-	current := os.getwd()
-	os.chdir(r.git_dir)
 	data := r.git('branch -a')
 	for remote_branch in data.split_into_lines() {
 		if remote_branch.contains('remotes/') && !remote_branch.contains('HEAD') {
@@ -45,13 +43,10 @@ fn (mut app App) fetch_branches(r Repo) {
 		}
 	}
 	_ := r.git('checkout master')
-	os.chdir(current)
 }
 
 fn (mut app App) update_branches(r &Repo) {
 	mut branch := Branch{}
-	current := os.getwd()
-	os.chdir(r.git_dir)
 	data := r.git('branch -a')
 	for remote_branch in data.split_into_lines() {
 		if remote_branch.contains('remotes/') && !remote_branch.contains('HEAD') {
@@ -82,7 +77,6 @@ fn (mut app App) update_branches(r &Repo) {
 		}
 	}
 	_ := r.git('checkout master')
-	os.chdir(current)
 }
 
 fn (branch Branch) relative() string {
