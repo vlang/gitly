@@ -150,9 +150,8 @@ pub fn (mut app App) register_post() vweb.Result {
 		app.vweb.error('Username or Email cannot be emtpy')
 		return app.register()
 	}
-	add := app.add_user(username, password, [email], false)
-	if !add {
-		app.vweb.error('User can not created')
+	if !app.add_user(username, password, [email], false) {
+		app.vweb.error('Failed to register')
 		return app.register()
 	}
 	user := app.find_user_by_username(username) or {
