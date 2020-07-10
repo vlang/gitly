@@ -40,7 +40,7 @@ fn (mut app App) create_tables() {
 		'size int default 0'
 		'nr_contributors int default 0'
 		'nr_views int default 0'
-		'UNIQUE(parent_path, name, repo_id) ON CONFLICT REPLACE'
+		'UNIQUE(parent_path, name, repo_id, branch) ON CONFLICT REPLACE'
 	])
 	//"created_at int default (strftime('%s', 'now'))"
 	app.create_table('Issue', [

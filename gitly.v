@@ -200,12 +200,12 @@ pub fn (mut app App) settings() vweb.Result {
 
 ['/:user/:repo']
 pub fn (mut app App) tree2(user, repo string) vweb.Result {
-	return app.tree(user, repo, '')
+	return app.tree(user, repo, app.repo.primary_branch, '')
 }
 
 // pub fn (mut app App) tree(path string) {
-['/:user/:repo/tree/:path...']
-pub fn (mut app App) tree(user, repo, path string) vweb.Result {
+['/:user/:repo/tree/:branch/:path...']
+pub fn (mut app App) tree(user, repo, branch, path string) vweb.Result {
 	if !app.find_repo(user, repo) {
 		return app.vweb.not_found()
 	}
@@ -231,15 +231,15 @@ pub fn (mut app App) tree(user, repo, path string) vweb.Result {
 	if app.path.starts_with('/') {
 		app.path = app.path[1..]
 	}
-	mut files := app.find_repo_files(app.repo.id, 'master', app.path)
-	app.info('tree() nr files found: $files.len')
+	mut files := app.find_repo_files(app.repo.id, branch, app.path)
+	app.info('tree() nr files found: $files.len in branch $branch')
 	if files.len == 0 {
 		// No files in the db, fetch them from git and cache in db
 		app.info('caching files, repo_id=$app.repo.id')
 		t := time.ticks()
-		files = app.cache_repo_files(mut app.repo, 'master', app.path)
+		files = app.cache_repo_files(mut app.repo, branch, app.path)
 		println('caching files took ${time.ticks()-t}ms')
-		go app.slow_fetch_files_info('master', app.path)
+		go app.slow_fetch_files_info(branch, app.path)
 	}
 	mut readme := vweb.RawHtml('')
 	for file in files {
@@ -262,7 +262,7 @@ pub fn (mut app App) tree(user, repo, path string) vweb.Result {
 		if !p.contains('/') {
 			p = '/$p'
 		}
-		if dir := app.find_repo_file_by_path(app.repo.id, 'master', p) {
+		if dir := app.find_repo_file_by_path(app.repo.id, branch, p) {
 			println('hash=$dir.last_hash')
 			last_commit = app.find_repo_commit_by_hash(app.repo.id, dir.last_hash)
 		}
@@ -604,16 +604,13 @@ pub fn (mut app App) blob(user, repo, branch, path string) vweb.Result {
 		raw = true
 	}
 	mut blob_path := os.join_path(app.repo.git_dir, app.path)
-	mut plain_text := ''
-	if branch == app.repo.primary_branch {
-		plain_text = os.read_file(path) or {
-			app.vweb.not_found()
-			return vweb.Result{}
-		}
-	} else {
-		filename := app.path.split('/').last()
-		plain_text = app.repo.git('--no-pager show $branch:$filename')
-	}
+	//mut plain_text := ''
+	//println(blob_path)
+	/*if branch == app.repo.primary_branch {
+		//plain_text = os.read_file(path) or { 'Error' }
+	} else {*/
+		plain_text := app.repo.git('--no-pager show $branch:$app.path')
+	//}
 	mut source := vweb.RawHtml(plain_text.str())
 	// mut source := (plain_text.str())
 	if os.file_size(blob_path) < 1000000 {
