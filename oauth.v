@@ -39,7 +39,7 @@ pub fn (mut app App) oauth() vweb.Result {
 	gh_user := json.decode(GitHubUser, user_js.text) or {
 		return app.vweb.redirect('/')
 	}
-	if gh_user.email.len == 0 {
+	if gh_user.trim_space().email.len == 0 {
 		app.info('Email is empty')
 		return app.vweb.redirect('/')
 	}
