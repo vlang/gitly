@@ -4,7 +4,7 @@ gitly
 *.css.map
 .sass-cache/
 .lite_workspace.lua
+*.code-workspace
 static/assets/version
 logs/
 repos/
-
