@@ -6,7 +6,12 @@
 	@for user in userlist
 		.user_item {
 			<form action='/admin/edituser_post/@user.id' method='post'>
-				<input name="username" value="@user.username" disabled><br>
+				<label>@user.username</label><br>
+				<ul>
+					@for email in user.emails
+						<li>@email.email</li>
+					@end
+				</ul>
 				<input name="stop-session" type="checkbox">
 				<label>Clear user sessions</label><br>
 				<input name="is-blocked" type="checkbox"

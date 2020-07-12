@@ -283,9 +283,13 @@ pub fn (mut app App) find_repo_registered_contributor(id int) []User {
 }
 
 pub fn (mut app App) find_registered_user() []User {
-	return sql app.db {
+	mut users := sql app.db {
 		select from User where is_registered == true
 	}
+	for i, user in users {
+		users[i].emails = app.find_user_emails(user.id)
+	}
+	return users
 }
 
 pub fn (mut app App) nr_repo_contributor(id int) int {
