@@ -39,6 +39,10 @@ pub fn (mut app App) oauth() vweb.Result {
 	gh_user := json.decode(GitHubUser, user_js.text) or {
 		return app.vweb.redirect('/')
 	}
+	if gh_user.email.trim_space().len == 0 {
+		app.info('Email is empty')
+		return app.vweb.redirect('/')
+	}
 	mut user := app.find_user_by_email(gh_user.email) or { User{} }
 	if !user.is_github {
 		app.add_user(gh_user.username, '', [gh_user.email], true)
