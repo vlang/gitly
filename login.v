@@ -17,17 +17,21 @@ pub fn (mut app App) login() vweb.Result {
 
 pub fn (mut app App) login_post() vweb.Result {
 	if app.only_gh_login {
+		app.info('only gh login')
 		return app.r_home()
 	}
 	username := app.vweb.form['username']
 	password := app.vweb.form['password']
 	if username == '' || password == '' {
+		app.info('Username or password are empty')
 		return app.vweb.redirect('/login')
 	}
 	user := app.find_user_by_username(username) or {
+		app.info('User does not exists')
 		return app.vweb.redirect('/login')
 	}
 	if user.is_blocked {
+		app.info('User is blocked')
 		return app.vweb.redirect('/login')
 	}
 	if !check_password(password, username, user.password) {
@@ -36,9 +40,11 @@ pub fn (mut app App) login_post() vweb.Result {
 			app.warn('User $user.username got blocked')
 			app.block_user(user.id)
 		}
+		app.user('Wrong password')
 		return app.vweb.redirect('/login')
 	}
 	if !user.is_registered {
+		app.user('User is not registered')
 		return app.vweb.redirect('/login')
 	}
 	ip := app.client_ip(user.id.str()) or {
