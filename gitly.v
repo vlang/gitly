@@ -155,6 +155,16 @@ pub fn (mut app App) init() {
 	app.add_visit()
 }
 
+// Redirect to the home page
+pub fn (mut app App) r_home() vweb.Result {
+	return app.vweb.redirect('/')
+}
+
+// Redirect to the current repo main site
+pub fn (mut app App) r_repo() vweb.Result {
+	return app.vweb.redirect('/$app.user.username/$app.repo.name')
+}
+
 
 /*
 pub fn (mut app App) create_new_test_repo() {
@@ -199,24 +209,30 @@ pub fn (mut app App) settings() vweb.Result {
 
 ['/:user/:repo/settings']
 pub fn (mut app App) repo_settings(user, repo string) vweb.Result {
+	if !app.logged_in {
+		return app.vweb.redirect('/$user/$repo')
+	}
 	if !app.find_repo(user, repo) {
-		return app.vweb.not_found()
+		return app.vweb.redirect('/$user/$repo')
 	}
 	if app.repo.user_id != app.user.id {
 		return app.vweb.redirect('/$user/$repo')
 	}
+
 	app.show_menu = true
 	return $vweb.html()
 }
 
 ['/:user/:repo/repo_settings_post']
 pub fn (mut app App) repo_settings_post(user, repo string) vweb.Result {
-	if !app.find_repo(user, repo) {
-		return app.vweb.not_found()
+	if !app.logged_in {
+		return app.r_repo()
 	}
-
+	if !app.find_repo(user, repo) {
+		return app.r_repo()
+	}
 	if app.repo.user_id != app.user.id {
-		return app.vweb.redirect('/$user/$repo')
+		return app.r_repo()
 	}
 
 	if 'webhook_secret' in app.vweb.form && app.vweb.form['webhook_secret'] != app.repo.webhook_secret && app.vweb.form['webhook_secret'] != '' {
@@ -224,7 +240,7 @@ pub fn (mut app App) repo_settings_post(user, repo string) vweb.Result {
 		app.update_repo_webhook(app.repo.id, webhook)
 	}
 
-	return app.vweb.redirect('/$user/$repo')
+	return app.r_repo()
 }
 
 ['/:user/:repo']
@@ -324,7 +340,7 @@ pub fn (mut app App) update(user, repo string) vweb.Result {
 	}
 	/*secret := if 'X-Hub-Signature' in app.vweb.req.headers { app.vweb.req.headers['X-Hub-Signature'][5..] } else { '' }
 	if secret == '' {
-		return app.vweb.redirect('/')
+		return app.r_home()
 	}
 	if secret == app.repo.webhook_secret && app.repo.webhook_secret != '' {
 		go app.update_repo_data(&app.repo)
@@ -332,7 +348,7 @@ pub fn (mut app App) update(user, repo string) vweb.Result {
 	if app.user.is_admin {
 		go app.update_repo_data(&app.repo)
 	}
-	return app.vweb.redirect('/$user/$repo')
+	return app.r_home()
 }
 
 pub fn (mut app App) new() vweb.Result {
@@ -695,7 +711,7 @@ pub fn (mut app App) new_issue_post(user, repo string) vweb.Result {
 		return app.vweb.not_found()
 	}
 	if !app.logged_in || (app.logged_in && app.user.nr_posts >= posts_per_day) {
-		return app.vweb.redirect('/')
+		return app.r_home()
 	}
 	title := app.vweb.form['title'] // TODO use fn args
 	text := app.vweb.form['text']
