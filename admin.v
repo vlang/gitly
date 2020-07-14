@@ -4,7 +4,7 @@ import vweb
 
 pub fn (mut app App) admin() vweb.Result {
 	if !app.is_admin() {
-		return app.vweb.redirect('/')
+		return app.r_home()
 	}
 
 	return $vweb.html()
@@ -13,7 +13,7 @@ pub fn (mut app App) admin() vweb.Result {
 ['/admin/settings']
 pub fn (mut app App) admin_settings() vweb.Result {
 	if !app.is_admin() {
-		return app.vweb.redirect('/')
+		return app.r_home()
 	}
 
 	return $vweb.html()
@@ -22,7 +22,7 @@ pub fn (mut app App) admin_settings() vweb.Result {
 ['/admin/settings_post']
 pub fn (mut app App) admin_settings_post() vweb.Result {
 	if !app.is_admin() {
-		return app.vweb.redirect('/')
+		return app.r_home()
 	}
 
 	return app.vweb.text('TODO')
@@ -31,7 +31,7 @@ pub fn (mut app App) admin_settings_post() vweb.Result {
 ['/admin/userlist']
 pub fn (mut app App) admin_userlist() vweb.Result {
 	if !app.is_admin() {
-		return app.vweb.redirect('/')
+		return app.r_home()
 	}
 	// TODO add pagination
 
@@ -43,7 +43,7 @@ pub fn (mut app App) admin_userlist() vweb.Result {
 ['/admin/edituser_post/:user']
 pub fn (mut app App) admin_edituser_post(user string) vweb.Result {
 	if !app.is_admin() {
-		return app.vweb.redirect('/')
+		return app.r_home()
 	}
 	clear_session := 'stop-session' in app.vweb.form
 	is_blocked := 'is-blocked' in app.vweb.form

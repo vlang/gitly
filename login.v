@@ -17,7 +17,7 @@ pub fn (mut app App) login() vweb.Result {
 
 pub fn (mut app App) login_post() vweb.Result {
 	if app.only_gh_login {
-		return app.vweb.redirect('/')
+		return app.r_home()
 	}
 	username := app.vweb.form['username']
 	password := app.vweb.form['password']
@@ -42,10 +42,10 @@ pub fn (mut app App) login_post() vweb.Result {
 		return app.vweb.redirect('/login')
 	}
 	ip := app.client_ip(user.id.str()) or {
-		return app.vweb.redirect('/')
+		return app.r_home()
 	}
 	app.auth_user(user, ip)
-	return app.vweb.redirect('/')
+	return app.r_home()
 }
 
 pub fn (mut app App) auth_user(user User, ip string) {
@@ -82,7 +82,7 @@ pub fn (mut app App) logged_in() bool {
 pub fn (mut app App) logout() vweb.Result {
 	app.vweb.set_cookie(name:'id', value:'')
 	app.vweb.set_cookie(name:'token', value:'')
-	return app.vweb.redirect('/')
+	return app.r_home()
 }
 
 pub fn (mut app App) get_user_from_cookies() ?User {
@@ -110,7 +110,7 @@ pub fn (mut app App) get_user_from_cookies() ?User {
 
 pub fn (mut app App) register() vweb.Result {
 	if app.only_gh_login {
-		return app.vweb.redirect('/')
+		return app.r_home()
 	}
 	app.path = ''
 	return $vweb.html()
@@ -118,7 +118,7 @@ pub fn (mut app App) register() vweb.Result {
 
 pub fn (mut app App) register_post() vweb.Result {
 	if app.only_gh_login {
-		return app.vweb.redirect('/')
+		return app.r_home()
 	}
 	username := app.vweb.form['username']
 	if username in ['login', 'register', 'new', 'new_post', 'oauth'] {
