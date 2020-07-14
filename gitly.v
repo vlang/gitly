@@ -197,8 +197,11 @@ pub fn (mut app App) settings() vweb.Result {
 
 ['/:user/:repo/settings']
 pub fn (mut app App) repo_settings(user, repo string) vweb.Result {
+	if !app.logged_in {
+		return app.vweb.redirect('/$user/$repo')
+	}
 	if !app.find_repo(user, repo) {
-		return app.vweb.not_found()
+		return app.vweb.redirect('/$user/$repo')
 	}
 	if app.repo.user_id != app.user.id {
 		return app.vweb.redirect('/$user/$repo')
@@ -209,10 +212,12 @@ pub fn (mut app App) repo_settings(user, repo string) vweb.Result {
 
 ['/:user/:repo/repo_settings_post']
 pub fn (mut app App) repo_settings_post(user, repo string) vweb.Result {
-	if !app.find_repo(user, repo) {
-		return app.vweb.not_found()
+	if !app.logged_in {
+		return app.vweb.redirect('/$user/$repo')
 	}
-
+	if !app.find_repo(user, repo) {
+		return app.vweb.redirect('/$user/$repo')
+	}
 	if app.repo.user_id != app.user.id {
 		return app.vweb.redirect('/$user/$repo')
 	}
