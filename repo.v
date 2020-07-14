@@ -160,7 +160,7 @@ fn (mut app App) update_repo_data(repo Repo) {
 			} else {
 				empty_user := app.create_empty_user(tmp_commit.author, args[1])
 				app.insert_contributor(Contributor{
-					repo: r.id
+					repo r.id
 					user: empty_user
 				})
 			}
