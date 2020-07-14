@@ -18,7 +18,13 @@ fn (mut app App) update_user_token(user_id int, token string) {
 	}
 	else {
 		sql app.db {
-			update Token set value = token where user_id == user_id
+			// TODO fix a bug in ORM
+			//update Token set value = token where user_id == user_id
+			delete from Token where user_id == user_id
+		}
+		new_token := Token{user_id: user_id, value: token }
+		sql app.db {
+			insert new_token into Token
 		}
 	}
 }
