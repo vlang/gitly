@@ -345,3 +345,8 @@ pub fn (mut app App) check_user_blocked(user_id int) bool {
 	}
 	return user.is_blocked
 }
+
+pub fn (mut app App) client_ip(username string) ?string {
+	ip := app.vweb.conn.peer_ip() or { return none }
+	return make_password(ip, '${username}token')
+}

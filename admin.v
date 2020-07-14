@@ -61,7 +61,7 @@ pub fn (mut app App) admin_edituser_post(user string) vweb.Result {
 		app.unblock_user(user.int())
 	}
 	if clear_session {
-		app.add_token(user.int())
+		app.clear_sessions(user.int())
 	}
 
 	return app.vweb.redirect('/admin')
