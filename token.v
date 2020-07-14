@@ -6,39 +6,37 @@ struct Token {
 	id int
 	user_id int
 	value string
+	ip string
 }
 
-fn (mut app App) update_user_token(user_id int, token string) {
-	tok := app.find_user_token(user_id)
+fn (mut app App) update_user_token(user_id int, token, ip string) string {
+	tok := app.find_user_token(user_id, ip)
 	if tok == '' {
-		new_token := Token{user_id: user_id, value: token }
+		new_token := Token{user_id: user_id, value: token, ip: ip }
 		sql app.db {
 			insert new_token into Token
 		}
+		return token
 	}
-	else {
-		sql app.db {
-			// TODO fix a bug in ORM
-			//update Token set value = token where user_id == user_id
-			delete from Token where user_id == user_id
-		}
-		new_token := Token{user_id: user_id, value: token }
-		sql app.db {
-			insert new_token into Token
-		}
-	}
+	return tok
 }
 
-fn (mut app App) find_user_token(user_id int) string {
+fn (mut app App) find_user_token(user_id int, ip string) string {
 	tok := sql app.db {
-		select from Token where user_id == user_id limit 1
+		select from Token where user_id == user_id && ip == ip limit 1
 	}
 	return tok.value
 }
 
-fn (mut app App) add_token(user_id int) string {
-	token := gen_uuid_v4ish()
-	app.update_user_token(user_id, token)
+fn (mut app App) clear_sessions(user_id int) {
+	sql app.db {
+		delete from Token where user_id == user_id
+	}
+}
+
+fn (mut app App) add_token(user_id int, ip string) string {
+	mut token := gen_uuid_v4ish()
+	token = app.update_user_token(user_id, token, ip)
 	return token
 }
 

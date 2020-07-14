@@ -3,7 +3,7 @@
 module main
 
 fn (mut app App) create_table(name string, fields []string) {
-	app.db.exec('create table `$name` (' + fields.join(',') + ')')
+	app.db.exec('create table if not exists `$name` (' + fields.join(',') + ')')
 }
 
 fn (mut app App) create_tables() {
@@ -158,6 +158,7 @@ fn (mut app App) create_tables() {
 		'id integer primary key'
 		'user_id integer default 0'
 		"value text defaut ''"
+		'ip text default ""'
 	])
 }
 

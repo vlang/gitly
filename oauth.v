@@ -51,7 +51,11 @@ pub fn (mut app App) oauth() vweb.Result {
 		}
 		app.update_user_avatar(gh_user.avatar, user.id)
 	}
-	app.auth_user(user)
+	ip := app.client_ip(user.id.str()) or {
+		println('Can not fetch ip')
+		return app.vweb.redirect('/')
+	}
+	app.auth_user(user, ip)
 	return app.vweb.redirect('/')
 }
 
