@@ -26,7 +26,7 @@
 <body>
 
 #header {
-	<a id='mainlogo' href='https://gitly.org'>Gitly</a>
+	<a id='mainlogo' href='/'>Gitly</a>
 	.content {
 		&nbsp;&nbsp;
 		@if app.show_menu
@@ -108,6 +108,9 @@
 			@app.repo.nr_releases_fmt()
 		</a>
 
+		<a class='menu' href="/@app.repo.user_name/@app.repo.name/settings">
+			Settings
+		</a>
 	</div>
 @end
 

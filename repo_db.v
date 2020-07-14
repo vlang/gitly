@@ -249,6 +249,12 @@ fn (mut app App) update_repo_nr_commits(repo_id, nr_commits int) {
 	app.repo.nr_commits = nr_commits
 }
 
+fn (mut app App) update_repo_webhook(repo_id int, webhook string) {
+	sql app.db {
+		update Repo set webhook_secret = webhook where id == repo_id
+	}
+}
+
 fn (mut app App) update_repo_nr_contributor(repo_id, nr_contributors int) {
 	sql app.db {
 		update Repo set nr_contributors = nr_contributors where id == repo_id
