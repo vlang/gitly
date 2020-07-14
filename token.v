@@ -21,7 +21,7 @@ fn (mut app App) update_user_token(user_id int, token, ip string) {
     sql app.db {
 			// TODO fix a bug in ORM
 			//update Token set value = token where user_id == user_id
-			delete from Token where user_id == user_id
+			delete from Token where user_id == user_id && ip == ip
 		}
     new_token := Token{user_id: user_id, value: token, ip: ip }
 		sql app.db {
