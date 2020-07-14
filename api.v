@@ -2,16 +2,20 @@
 // Use of this source code is governed by a GPL license that can be found in the LICENSE file.
 module main
 
+//TODO make own structs without intern user data
+
+/*
 import vweb
 import json
-
+*/
 // TODO rename all these methods from '/api_issues' to `/api/issues'
-pub fn (mut app App) api_issues() vweb.Result {
+/*pub fn (mut app App) api_issues() vweb.Result {
 	issues := app.find_repo_issues(app.repo.id)
+	println(issues)
 	return app.vweb.json(json.encode(issues))
 }
 
 pub fn (mut app App) api_commits() vweb.Result {
 	commits := app.find_repo_commits(app.repo.id)
 	return app.vweb.json(json.encode(commits))
-}
+}*/
