@@ -144,6 +144,7 @@ pub fn (mut app App) init() {
 	app.path = ''
 	app.info('path=$app.path')
 	app.logged_in = app.logged_in()
+	app.repo = Repo{}
 	app.user = User{}
 	if app.logged_in {
 		app.user = app.get_user_from_cookies() or {
