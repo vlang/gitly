@@ -111,6 +111,12 @@
 		<a class='menu' href="/@app.repo.user_name/@app.repo.name/settings">
 			Settings
 		</a>
+
+		@if app.user.is_admin
+			<a class='menu' href="/@app.repo.user_name/@app.repo.name/update">
+				Update
+			</a>
+		@end
 	</div>
 @end
 
