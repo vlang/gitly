@@ -7,6 +7,7 @@ import time
 import os
 import log
 import hl
+import crypto.sha1
 import sqlite
 
 const (
@@ -192,6 +193,36 @@ pub fn (mut app App) create_new_test_repo() {
 pub fn (mut app App) settings() vweb.Result {
 	println('user settings')
 	return app.vweb.text('settings')
+}
+
+['/:user/:repo/settings']
+pub fn (mut app App) repo_settings(user, repo string) vweb.Result {
+	if !app.find_repo(user, repo) {
+		return app.vweb.not_found()
+	}
+	if app.repo.user_id != app.user.id {
+		return app.vweb.redirect('/$user/$repo')
+	}
+	app.show_menu = true
+	return $vweb.html()
+}
+
+['/:user/:repo/repo_settings_post']
+pub fn (mut app App) repo_settings_post(user, repo string) vweb.Result {
+	if !app.find_repo(user, repo) {
+		return app.vweb.not_found()
+	}
+
+	if app.repo.user_id != app.user.id {
+		return app.vweb.redirect('/$user/$repo')
+	}
+
+	if 'webhook_secret' in app.vweb.form && app.vweb.form['webhook_secret'] != app.repo.webhook_secret && app.vweb.form['webhook_secret'] != '' {
+		webhook := sha1.hexhash(app.vweb.form['webhook_secret'])
+		app.update_repo_webhook(app.repo.id, webhook)
+	}
+
+	return app.vweb.redirect('/$user/$repo')
 }
 
 ['/:user/:repo']

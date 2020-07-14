@@ -1,0 +1,8 @@
+@header
+
+<form action="/@app.user.username/@app.repo.name/repo_settings_post" method="post">
+	<input type="password" name="webhook_secret" value="@app.repo.webhook_secret" placeholder="WebhookSecret">
+	<input type="submit" value="Update repo">
+</form>
+
+@footer
