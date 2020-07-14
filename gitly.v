@@ -144,6 +144,8 @@ pub fn (mut app App) init() {
 	app.path = ''
 	app.info('path=$app.path')
 	app.logged_in = app.logged_in()
+	app.repo = Repo{}
+	app.user = User{}
 	if app.logged_in {
 		app.user = app.get_user_from_cookies() or {
 			app.logged_in = false
@@ -336,11 +338,14 @@ pub fn (mut app App) update(user, repo string) vweb.Result {
 	if !app.find_repo(user, repo) {
 		return app.vweb.not_found()
 	}
-	secret := if 'X-Hub-Signature' in app.vweb.req.headers { app.vweb.req.headers['X-Hub-Signature'][5..] } else { '' }
+	/*secret := if 'X-Hub-Signature' in app.vweb.req.headers { app.vweb.req.headers['X-Hub-Signature'][5..] } else { '' }
 	if secret == '' {
 		return app.r_home()
 	}
 	if secret == app.repo.webhook_secret && app.repo.webhook_secret != '' {
+		go app.update_repo_data(&app.repo)
+	}*/
+	if app.user.is_admin {
 		go app.update_repo_data(&app.repo)
 	}
 	return app.r_home()
