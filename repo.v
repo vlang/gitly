@@ -54,14 +54,12 @@ enum RepoStatus {
 }
 
 fn (mut app App) update_repo() {
-	mut r := &app.repo
+	mut r := app.repo
 	wg := sync.new_waitgroup()
 	wg.add(1)
-	go r.analyse_lang(wg)
+	go r.analyse_lang(wg, app)
 	data := r.git('--no-pager log --abbrev-commit --abbrev=7 --pretty="%h$log_field_separator%aE$log_field_separator%cD$log_field_separator%s$log_field_separator%aN"')
 	mut tmp_commit := Commit{}
-	r.nr_contributors = 0
-	r.nr_commits = 0
 	app.db.exec('BEGIN TRANSACTION')
 	for line in data.split_into_lines() {
 		args := line.split(log_field_separator)
@@ -94,14 +92,15 @@ fn (mut app App) update_repo() {
 			app.insert_commit(tmp_commit)
 		}
 	}
+	app.info(r.nr_contributors.str())
+	app.fetch_branches(r)
+
 	r.nr_commits = app.nr_repo_commits(r.id)
 	r.nr_contributors = app.nr_repo_contributor(r.id)
-	app.info(r.nr_contributors.str())
-	r.created_at = app.find_repo_first_commit(r.id).created_at
-	app.fetch_branches(r)
 	r.nr_branches = app.nr_repo_branches(r.id)
+	app.update_repo_nr_commits(r.id, r.nr_commits)
+	app.update_repo_nr_contributor(r.id, r.nr_contributors)
 	// TODO: TEMPORARY - UNTIL WE GET PERSISTENT RELEASE INFO
-	r.nr_releases = 0
 	for tag in app.find_repo_tags(r.id) {
 		release := &Release{
 			tag_id: tag.id
@@ -112,33 +111,26 @@ fn (mut app App) update_repo() {
 		r.nr_releases++
 	}
 	wg.wait()
-	repo := *r
-	lang_stats := repo.lang_stats
-	app.info(repo.git_dir)
 	/*
 	sql app.db {
 		insert repo into Repo
 	}
 	*/
-	app.update_repo_in_db(&repo)
-	for lang_stat in lang_stats {
-		sql app.db {
-			insert lang_stat into LangStat
-		}
-	}
+	app.update_repo_in_db(r)
 	app.db.exec('END TRANSACTION')
 	app.info('Repo updated')
 }
 
 // update_repo updated the repo in the db
-fn (mut app App) update_repo_data(r &Repo) {
+fn (mut app App) update_repo_data(repo Repo) {
+	mut r := repo
 	last_commit := app.find_repo_last_commit(r.id)
 	r.git('fetch --all')
 	r.git('pull --all')
 
 	wg := sync.new_waitgroup()
 	wg.add(1)
-	go r.analyse_lang(wg)
+	go r.analyse_lang(wg, app)
 
 	data := r.git('--no-pager log ${last_commit.hash}.. --abbrev-commit --abbrev=7 --pretty="%h$log_field_separator%aE$log_field_separator%cD$log_field_separator%s$log_field_separator%aN"')
 
@@ -178,28 +170,23 @@ fn (mut app App) update_repo_data(r &Repo) {
 
 	r.nr_commits = app.nr_repo_commits(r.id)
 	r.nr_contributors = app.nr_repo_contributor(r.id)
+	r.nr_branches = app.nr_repo_branches(r.id)
 
 	app.update_repo_nr_commits(r.id, r.nr_commits)
 	app.update_repo_nr_contributor(r.id, r.nr_contributors)
-
 	app.update_branches(r)
 
-	r.nr_branches = app.nr_repo_branches(r.id)
+
 
 	app.update_repo_in_db(r)
 
 	wg.wait()
-	for lang_stat in r.lang_stats {
-		sql app.db {
-			insert lang_stat into LangStat
-		}
-	}
 
 	app.db.exec('END TRANSACTION')
 	app.info('Repo updated')
 }
 
-fn (mut r Repo) analyse_lang(wg &sync.WaitGroup) {
+fn (r Repo) analyse_lang(wg &sync.WaitGroup, app &App) {
 	files := r.get_all_files(r.git_dir)
 	mut all_size := 0
 	mut lang_stats := map[string]int{}
@@ -222,7 +209,7 @@ fn (mut r Repo) analyse_lang(wg &sync.WaitGroup) {
 		lang_stats[lang.name] = lang_stats[lang.name] + size
 		all_size += size
 	}
-	r.lang_stats = []LangStat{}
+	mut d_lang_stats := []LangStat{}
 	mut tmp_a := []int{}
 	for lang, amount in lang_stats {
 		mut tmp := f32(amount) / f32(all_size)
@@ -232,7 +219,7 @@ fn (mut r Repo) analyse_lang(wg &sync.WaitGroup) {
 			tmp_a << pct
 		}
 		lang_data := langs[lang]
-		r.lang_stats << LangStat{
+		d_lang_stats << LangStat{
 			id: 0
 			repo_id: r.id
 			name: lang_data.name
@@ -250,7 +237,12 @@ fn (mut r Repo) analyse_lang(wg &sync.WaitGroup) {
 			tmp_stats << lang
 		}
 	}
-	r.lang_stats = tmp_stats
+
+	for lang_stat in d_lang_stats {
+		sql app.db {
+			insert lang_stat into LangStat
+		}
+	}
 	wg.done()
 }
 
