@@ -5,16 +5,40 @@ import vweb
 import json
 import net.http
 
+struct OAuthRequest {
+	client_id string
+	client_secret string
+	code string
+	state string
+}
+
+struct GitHubUser {
+	username string [json:'login']
+	name string
+	email string
+	avatar string [json:'avatar_url']
+}
+
+
 pub fn (mut app App) oauth() vweb.Result {
 	code := app.vweb.query['code']
+	state := app.vweb.query['state']
 	if code == '' {
 		app.info('Code is empty')
 		return app.r_home()
 	}
-	req := OAuth_Request {
+	csrf := app.vweb.get_cookie('csrf') or {
+		return app.r_home()
+	}
+	if csrf != state {
+		println('oauth: csrf != state')
+		return app.r_home()
+	}
+	req := OAuthRequest {
 		client_id: app.oauth_client_id
 		client_secret: app.oauth_client_secret
 		code: code
+		state: csrf
 	}
 	d := json.encode(req)
 	resp := http.post_json('https://github.com/login/oauth/access_token', d) or {
@@ -39,6 +63,9 @@ pub fn (mut app App) oauth() vweb.Result {
 	gh_user := json.decode(GitHubUser, user_js.text) or {
 		return app.r_home()
 	}
+	println('gh user:')
+	println(user_js.text)
+	println(gh_user)
 	if gh_user.email.trim_space().len == 0 {
 		app.info('Email is empty')
 		return app.r_home()

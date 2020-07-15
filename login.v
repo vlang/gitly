@@ -6,9 +6,12 @@ import vweb
 import time
 import rand
 import math
+import strings
 
 //['/login']
 pub fn (mut app App) login() vweb.Result {
+	csrf := rand.string(30)
+	app.vweb.set_cookie(name:'csrf', value:csrf)
 	if app.logged_in() {
 		return app.vweb.not_found()
 	}

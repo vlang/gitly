@@ -16,6 +16,7 @@ struct User {
 	is_registered bool
 	is_blocked    bool
 	is_admin      bool
+	oauth_state string [skip] // for github oauth XSRF protection
 mut:
 	nr_posts      int
 	last_post_time int
