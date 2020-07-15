@@ -45,10 +45,18 @@ Gitly will support Postgres and MySQL in the future (once V ORM does).
 
 
 ## Contributing
-Example workflow:
-[1] Fork the project
-[2] Add your feature
-[3] Push it to your fork
-[4] Make a pull request
+Workflow:
+1. Fork the project
+1. Add your feature
+1. Create a branch `git branch YOUR-FEATURE-TITLE`
+1. Checkout the branch `git checkout YOUR-FEATURE-TITLE`
+1. Add your features to the head `git add .`
+1. Commit your features `git commit -m "edit message"`
+1. Add your fork as remote `git remote add fork LINK-TO-THE-FORK-REPO`
+1. Push it to your fork `git push --set-upstream fork YOUR-FEATURE-TITLE`
+1. Create a pull request
 
-We want the code as simple as possible.
+
+GitHub Flow (https://guides.github.com/introduction/git-handbook/#github)
+
+We want the code as simple as possible. And please use the present tense and small case for the commit messages and the pull request title.
