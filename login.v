@@ -73,6 +73,9 @@ pub fn (mut app App) logged_in() bool {
 	token := app.vweb.get_cookie('token') or {
 		return false
 	}
+	if id == '' || token == '' {
+		return false
+	}
 	ip := app.client_ip(id) or {
 		return false
 	}
@@ -82,7 +85,7 @@ pub fn (mut app App) logged_in() bool {
 		app.logout()
 		return false
 	}
-	return id != '' && token != '' && t != '' && t == token
+	return t == token
 }
 
 pub fn (mut app App) logout() vweb.Result {
