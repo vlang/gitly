@@ -346,7 +346,7 @@ pub fn (mut app App) update(user, repo string) vweb.Result {
 		go app.update_repo_data(&app.repo)
 	}*/
 	if app.user.is_admin {
-		go app.update_repo_data(&app.repo)
+		go app.update_repo_data(app.repo)
 	}
 	return app.r_home()
 }
