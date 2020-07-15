@@ -160,6 +160,20 @@ fn (mut app App) create_tables() {
 		"value text defaut ''"
 		'ip text default ""'
 	])
+	app.create_table('Token2', [
+		'id integer primary key'
+		'user_id integer default 0'
+		"value text defaut ''"
+		'ip text default ""'
+	])
+	app.create_table('SecurityLog', [
+		'id integer primary key'
+		'user_id integer default 0'
+		"kind int default 0"
+		"ip text default ''"
+		"arg1 text default ''"
+		"arg2 text default ''"
+	])
 }
 
 fn (app &App) update_repo_in_db(repo &Repo) {

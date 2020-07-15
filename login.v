@@ -48,6 +48,7 @@ pub fn (mut app App) login_post() vweb.Result {
 		return app.r_home()
 	}
 	app.auth_user(user, ip)
+	app.security_log(user_id: user.id, kind: .logged_in)
 	return app.r_home()
 }
 
@@ -171,6 +172,7 @@ pub fn (mut app App) register_post() vweb.Result {
 		return app.register()
 	}
 	app.auth_user(user, ip)
+	app.security_log(user_id: user.id, kind: .registered)
 	app.only_gh_login = true
 	return app.vweb.redirect('/' + username)
 }
