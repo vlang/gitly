@@ -42,3 +42,13 @@ Required dependencies:
 Gitly will support Postgres and MySQL in the future (once V ORM does).
 
 ![](https://user-images.githubusercontent.com/687996/85933714-b195fe80-b8da-11ea-9ddd-09cadc2103e4.png)
+
+
+## Contributing
+Example workflow:
+[1] Fork the project
+[2] Add your feature
+[3] Push it to your fork
+[4] Make a pull request
+
+We want the code as simple as possible.
