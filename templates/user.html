@@ -11,7 +11,9 @@
 <h3> @user.username </h3>
 <h4> @user.name </h4>
 
+@if app.logged_in
 <a href='/new'>New repository</a> <br>
+@end
 
 @if repos.len > 0
 @for repo in repos
