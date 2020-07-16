@@ -6,6 +6,8 @@ $gray-dark: #777; // 888
 $font-size: 13px;
 $black: #24292e;
 $header-height: 50px;
+$medium-radius: 5px;
+$small-radius: 3px;
 @mixin mobile {
 	@media (max-width: $mob-max) {
 		@content;

@@ -125,8 +125,8 @@ a:hover {
 		height: 32px;
 		width: 32px;
 		border-radius: 0;
-		border-top-left-radius: 5px;
-		border-bottom-left-radius: 5px;
+		border-top-left-radius: $medium-radius;
+		border-bottom-left-radius: $medium-radius;
 		cursor: pointer;
 		border: 1px solid #ccc;
 		border-right: 0;
@@ -138,7 +138,7 @@ a:hover {
 		//margin-top: -28px;
 		margin-left: -4px;
 		//border-radius: 0px 5px 5px 0px;
-		border-radius: 5px 5px 5px 5px;
+		border-radius: $medium-radius;
 		font-weight: bold;
 		height: 19px;
 		border: 1px solid #ccc;
@@ -164,7 +164,7 @@ a:hover {
 }
 .avatar {
 	width: 25px;
-	border-radius: 3px;
+	border-radius: $small-radius;
 }
 .no-avatar {
 	cursor: pointer;
@@ -175,7 +175,7 @@ a:hover {
 	font-size: 23px;
 	font-weight: 300;
 	//border: 1px solid black;
-	border-radius: 5px;
+	border-radius: $medium-radius;
 		text-align: center;
 	background-color: #d6dadc;
 	    color: #4d4d4d;
@@ -261,11 +261,11 @@ input[type=text],input[type=password] {
 	user-select: none;
 	background-image: none;
 	border: 1px solid transparent;
-	border-radius: 2px;
+	border-radius: $small-radius;
 }
 input[type="button"]{
 	//background-color: #F5942E;
-	border-radius: 3px;
+	border-radius: $small-radius;
 	background-color: #fff;
 	border: 1px solid #ccc;
 	color: #333;
@@ -417,7 +417,7 @@ a.btn:hover {
 }
 .repo-stats {
 	border: 1px solid $gray;
-	border-radius: 5px;
+	border-radius: $medium-radius;
 	margin-bottom: 10px;
 	a.menu {
 		display: inline-block;
@@ -479,7 +479,7 @@ a.btn:hover {
 	line-height: 37px;
 	text-align: center;
 	border: 1px solid $gray ;
-	border-radius: 3px;
+	border-radius: $small-radius;
 }
 .langs {
 	display: flex;
@@ -489,14 +489,14 @@ a.btn:hover {
 	margin-left: 22%;
 	padding: 5px 5px 0 5px;
 	border: 1px solid $gray;
-	border-radius: 3px;
+	border-radius: $small-radius;
 	/////ou
 	//display: flex;
 	//flex-wrap: no-wrap;
 }
 .lang-stats-bar {
 	margin: 0 -5px -3px -5px;
-	border-bottom-left-radius: 5px;
+	border-bottom-left-radius: $medium-radius;
 	div {
 		margin-right: -4px;
 		height: 5px;
@@ -685,8 +685,8 @@ a.btn:hover {
 	margin-right: -2px;
 	background-color: #f1f8ff;
 	border: 1px solid #c8e1ff;
-	border-top-left-radius: 3px;
-	border-top-right-radius: 3px;
+	border-top-left-radius: $small-radius;
+	border-top-right-radius: $small-radius;
 }
 .blob-time {
 	float: right;
@@ -774,7 +774,7 @@ code a {
 	padding: 10px;
 }
 img.clog-avatar {
-	border-radius: 3px;
+	border-radius: $small-radius;
 	width: 35px;
 	//display: inline-block;
 	float: left;
@@ -809,7 +809,7 @@ img.clog-avatar {
 }
 .commit-file {
 	border: 1px solid $gray;
-	border-radius: 3px;
+	border-radius: $small-radius;
 	margin-top: 40px;
 	white-space: nowrap; // horizontal scrolling
 	overflow-x: scroll;
@@ -869,7 +869,7 @@ img.clog-avatar {
 	font-size: 80%;
 }
 .comment img, img.member {
-	border-radius: 3px;
+	border-radius: $small-radius;
 	margin-right: 5px;
 	height: 48px;
 	width: 48px;
@@ -890,7 +890,7 @@ img.clog-avatar {
 	padding: 8px;
 	font-family: Monaco;
 	border: 1px solid #ccc;
-	border-radius: 3px;
+	border-radius: $small-radius;
 	margin-left: 10px;
 }
 // BRANCHES ///////////////////////

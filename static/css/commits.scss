@@ -9,15 +9,15 @@
 }
 .clog:first-child {
 	border-top: 1px solid $gray;
-	border-top-left-radius: 5px !important;
-	border-top-right-radius: 5px !important;
+	border-top-left-radius: $medium-radius !important;
+	border-top-right-radius: $medium-radius !important;
 }
 .clog:last-child { // selects the last type of a class.
-	border-bottom-left-radius: 5px !important;
-	border-bottom-right-radius: 5px !important;
+	border-bottom-left-radius: $medium-radius !important;
+	border-bottom-right-radius: $medium-radius !important;
 }
 img.clog-avatar {
-	border-radius: 3px;
+	border-radius: $small-radius;
 	width: 35px;
 	//display: inline-block;
 	float: left;
