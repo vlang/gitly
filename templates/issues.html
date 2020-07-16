@@ -5,26 +5,28 @@
 .commit-day {
 }
 
-@for issue in issues
-	.clog {
-		.clog-msg {
-			<a href="/@app.repo.user_name/@app.repo.name/issue/@issue.id">@issue.title</a>
-		}
-		span.clog-author {
-			#@issue.id opened @issue.relative_time()
-			by @issue.author_name
-		}
-		@if issue.nr_comments > 0
-		.comments {
-			@if issue.nr_comments == 1
-				@issue.nr_comments comment
-			@else
-				@issue.nr_comments comments
+.clog-block {
+	@for issue in issues
+		.clog {
+			.clog-msg {
+				<a href="/@app.repo.user_name/@app.repo.name/issue/@issue.id">@issue.title</a>
+			}
+			span.clog-author {
+				#@issue.id opened @issue.relative_time()
+				by @issue.author_name
+			}
+			@if issue.nr_comments > 0
+			.comments {
+				@if issue.nr_comments == 1
+					@issue.nr_comments comment
+				@else
+					@issue.nr_comments comments
+				@end
+			}
 			@end
 		}
-		@end
-	}
-@end
+	@end
+}
 
 <div>
 <br>

@@ -1,12 +1,20 @@
-.commit-day {
-	color: #767676;
+.commit-day-title {
 	padding: 30px 0 10px 0;
-	border-bottom: 1px solid $gray;
+	color: #767676;
 }
 .clog {
 	border: 1px solid $gray;
-	border-top: 0;
 	padding: 10px;
+	border-top: 0;
+}
+.clog:first-child {
+	border-top: 1px solid $gray;
+	border-top-left-radius: 5px !important;
+	border-top-right-radius: 5px !important;
+}
+.clog:last-child { // selects the last type of a class.
+	border-bottom-left-radius: 5px !important;
+	border-bottom-right-radius: 5px !important;
 }
 img.clog-avatar {
 	border-radius: 3px;

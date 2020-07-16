@@ -3,15 +3,17 @@
 .branches {
 	@for branch in branches
 		.branch {
-			.clog {
-				.clog-msg {
-					<a href='/@app.repo.user_name/@app.repo.name/tree/@branch.name'>@branch.name</a>
-				}
-				span.clog-author {
-					<span >@branch.author</span>
-				}
-				span.clog-time {
-					updated @branch.relative()
+			.clog-block {
+				.clog {
+					.clog-msg {
+						<a href='/@app.repo.user_name/@app.repo.name/tree/@branch.name'>@branch.name</a>
+					}
+					span.clog-author {
+						<span >@branch.author</span>
+					}
+					span.clog-time {
+						updated @branch.relative()
+					}
 				}
 			}
 		}

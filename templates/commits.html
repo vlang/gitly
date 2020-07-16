@@ -18,24 +18,28 @@
 </style>
 @for day, commits in d_commits
 	.commit-day {
-		Commits @msg @day
-	}
-	@for commit in commits
-		.clog {
-			.clog-msg {
-				<a href='/@app.repo.user_name/@app.repo.name/commit/@commit.hash'>@commit.message</a>
-			}
-			span.clog-author {
-				<a href=''>@commit.author</a>
-			}
-			span.clog-time {
-				commited @commit.relative()
-			}
-<!--
-			<i class="commit_hash">@commit.hash</i>
-			-->
+		.commit-day-title {
+			Commits @msg @day
 		}
-	@end
+		.clog-block {
+			@for commit in commits
+				.clog {
+					.clog-msg {
+						<a href='/@app.repo.user_name/@app.repo.name/commit/@commit.hash'>@commit.message</a>
+					}
+					span.clog-author {
+						<a href=''>@commit.author</a>
+					}
+					span.clog-time {
+						commited @commit.relative()
+					}
+		<!--
+					<i class="commit_hash">@commit.hash</i>
+					-->
+				}
+			@end
+		}
+	}
 @end
 
 <div class="buttons">
