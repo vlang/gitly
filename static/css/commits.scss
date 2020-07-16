@@ -1,6 +1,6 @@
 .commit-day-title {
-	padding: 30px 0 10px 0;
 	color: #767676;
+	padding: 30px 0 10px 0;
 }
 .clog {
 	border: 1px solid $gray;
@@ -12,7 +12,7 @@
 	border-top-left-radius: $medium-radius !important;
 	border-top-right-radius: $medium-radius !important;
 }
-.clog:last-child { // selects the last type of a class.
+.clog:last-child {
 	border-bottom-left-radius: $medium-radius !important;
 	border-bottom-right-radius: $medium-radius !important;
 }
