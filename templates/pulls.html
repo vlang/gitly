@@ -2,17 +2,19 @@
 
 <h3> Pull Requests </h3>
 
-@for pr in prs
-	.clog {
-		.clog-msg {
-			<a href="/@app.repo.user_name/@app.repo.name/pull/@pr.id">@pr.title</a>
+.clog-block {
+	@for pr in prs
+		.clog {
+			.clog-msg {
+				<a href="/@app.repo.user_name/@app.repo.name/pull/@pr.id">@pr.title</a>
+			}
+			span.clog-author {
+				#@pr.id opened @pr.relative_time()
+				by pr.author
+			}
 		}
-		span.clog-author {
-			#@pr.id opened @pr.relative_time()
-			by pr.author
-		}
-	}
-@end
+	@end
+}
 
 <div>
 <br>

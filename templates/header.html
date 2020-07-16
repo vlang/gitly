@@ -42,24 +42,37 @@
 		<a href='/@app.repo.user_name/@app.repo.name'>@app.repo.name</a>
 		@end
 	}
-	.user {
+	<div class="user" tabindex="0">
 		@if app.logged_in
-			<div class='avatar'>
-			@if app.user.b_avatar
-				<img src="@app.user.avatar">
-			@else
-				<span>@app.user.avatar</span>
-			@end
-			</div>
-			<a href='/@app.user.username'>@app.user.username</a> &nbsp;
-			<a href='/logout'>sign out</a>
+			.avatar {
+				@if app.user.b_avatar
+					<img src="@app.user.avatar">
+				@else
+					<span>@app.user.avatar</span>
+				@end
+			}
+			.header-dropdown {
+				.username {
+					<span>Signed in as</span>
+					<a href='/@app.user.username'>@app.user.username</a>
+				}
+				.links {
+					<a href='/@app.user.username' class="link">Repositories</a>
+					<a href='/@app.user.username/issues' class="link">Issues</a>
+					<a href='/@app.user.username/prs' class="link">Pull requests</a>
+				}
+				.links {
+					<a href='/logout' class="link">Sign out</a>
+				}
+				<div class="dropdown-hoverzone"></div>
+			}
 		@else
-			<a href='/login'>Sign in</a>
+			<a href='/login' class='login-button'>Sign in</a>
 			<!--
 			<a href='/register'>Register</a>
 			-->
 		@end
-	}
+	</div>
 }
 
 

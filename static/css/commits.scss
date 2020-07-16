@@ -1,15 +1,23 @@
-.commit-day {
+.commit-day-title {
 	color: #767676;
 	padding: 30px 0 10px 0;
-	border-bottom: 1px solid $gray;
 }
 .clog {
 	border: 1px solid $gray;
-	border-top: 0;
 	padding: 10px;
+	border-top: 0;
+}
+.clog:first-child {
+	border-top: 1px solid $gray;
+	border-top-left-radius: $medium-radius !important;
+	border-top-right-radius: $medium-radius !important;
+}
+.clog:last-child {
+	border-bottom-left-radius: $medium-radius !important;
+	border-bottom-right-radius: $medium-radius !important;
 }
 img.clog-avatar {
-	border-radius: 3px;
+	border-radius: $small-radius;
 	width: 35px;
 	//display: inline-block;
 	float: left;
