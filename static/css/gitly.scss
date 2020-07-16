@@ -59,10 +59,72 @@ pre > code {
 	display: flex;
 	position: absolute;
 	top: 0;
-	right: 10px;
+	right: 0;
+	padding-right: 10px;
 }
-.user * {
-	margin-left: 10px;
+.user:focus {
+	outline: none;
+}
+.user:hover .header-dropdown, .header-dropdown:hover, .user:focus .header-dropdown {
+	transform: scale(1) translateY(0px);
+	opacity: 1;
+	pointer-events: all;
+}
+.user .header-dropdown * {
+	z-index: 10;
+	position: relative;
+}
+.user .header-dropdown .dropdown-hoverzone {
+	z-index: 5;
+	position: absolute;
+	top: -54px;
+	height: calc(100% + 54px + 4px);
+	width: calc(100% + 8px);
+	right: -4px;
+}
+.user .header-dropdown {
+	position: absolute;
+	color: $black;
+	border: 1px solid $gray;
+	border-radius: $medium-radius;
+	background: $white;
+	right: 4px;
+	top: 54px;
+	min-width: 145px;
+	transform: scale(0.95) translateY(-3px);
+	opacity: 0;
+	transform-origin: top;
+	pointer-events: none;
+	transition: transform 0.1s, opacity 0.1s;
+}
+.user .header-dropdown .username {
+	padding: 6px 12px;
+	span {
+		opacity: 0.9;
+		font-size: 13px;
+	}
+	a {
+		display: block;
+		padding: 0px;
+		font-size: 17px;
+		line-height: 1;
+		color: $black;
+	}
+}
+.user .header-dropdown .links {
+	border-top: 1px solid $gray;
+	padding: 4px 0px;
+}
+.user .header-dropdown .links a {
+	padding: 3px 12px;
+	display: block;
+	background-color: $white;
+	color: $black;
+	transition: background-color 0.07s, color 0.07s;
+}
+.user .header-dropdown .link:hover {
+	color: $white;
+	background-color: #1a7be9;
 }
 .avatar {
 	height: 40px;
@@ -72,6 +134,8 @@ pre > code {
 	background-color: $link_color;
 	margin-top: 5px;
 	overflow: hidden;
+	z-index: 15;
+	cursor: pointer;
 }
 .avatar > span {
 	line-height: 40px;
@@ -83,18 +147,14 @@ pre > code {
 	width: 40px;
 	margin: 0;
 }
+#header .login-button {
+	color: $white;
+	line-height: 50px;
+}
 #header {
-	background-color:#24292e;
+	background-color: $black;
 	height: $header-height;
 	color: white;
-	a {
-		line-height: 50px;
-		font-size:18px;
-		color:white;
-		&:hover {
-			color:#ddd;
-		}
-	}
 }
 #footer {
 	max-width: $mob-max;
@@ -111,6 +171,7 @@ pre > code {
 	font-size: 20px !important;
 	margin-left: 10px;
 	float: left;
+	color: white;
 }
 
 textarea, input {
