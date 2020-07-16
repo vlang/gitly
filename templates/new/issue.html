@@ -2,10 +2,7 @@
 
 <style>
 	input[type=text], textarea {
-		display: block;
 		width: 50%;
-		margin-bottom: 5px;
-		padding: 3px;
 	}
 	textarea {
 		height: 300px;
@@ -16,7 +13,7 @@
 New issue
 </h3>
 
-<form method='post' action='/@app.repo.user_name/@app.repo.name/new_issue_post'>
+<form method='post' class="vertical-form" action='/@app.repo.user_name/@app.repo.name/new_issue_post'>
 	<input type='text' name='title' placeholder='Title' required>
 	<textarea name='text' required></textarea>
 	<input type='submit' value='Submit new issue'>

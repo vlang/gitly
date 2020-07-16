@@ -5,6 +5,7 @@ $gray-light: #f3f3f3;
 $gray-dark: #777; // 888
 $font-size: 13px;
 $black: #24292e;
+$white: #ffffff;
 $header-height: 50px;
 $medium-radius: 5px;
 $small-radius: 3px;
@@ -110,6 +111,49 @@ pre > code {
 	font-size: 20px !important;
 	margin-left: 10px;
 	float: left;
+}
+
+textarea, input {
+	background: none;
+	color: $black;
+	border: 1px solid $gray;
+	padding: 5px 8px;
+	border-radius: $small-radius;
+	transition: border-color 0.07s;
+}
+
+textarea:focus, input:focus {
+	outline: none;
+	border: 1px solid #4392eb;
+} 
+
+.button, button, input[type="submit"] {
+	cursor: pointer;
+	background: none;
+	color: $black;
+	border: 1px solid $gray;
+	padding: 5px 8px;
+	border-radius: $small-radius;
+	transition: background-color 0.07s, border-color 0.07s, color 0.07s;
+}
+.button:hover, button:hover, input[type="submit"]:hover {
+	border: 1px solid #0366d6;
+	background-color:#1a7be9;
+	color: $white;
+}
+.button.disabled, button.disabled, input[type="submit"].disabled, button:disabled, input[type="submit"]:disabled {
+	color: rgba(0, 0, 0, 0.6);
+	border: 1px solid $gray-light;
+	pointer-events:none;
+}
+
+form.vertical-form * {
+	display: block;
+	margin-bottom: 5px;
+}
+
+form.vertical-form *:last-child {
+	margin-bottom: 0px;	
 }
 
 @import 'files', 'langs', 'tree', 'commits', 'hl_table', 'branches';
