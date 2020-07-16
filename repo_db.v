@@ -195,12 +195,12 @@ fn (app &App) update_repo_in_db(repo &Repo) {
 
 fn (app &App) find_repo_by_name(user int, name string) ?Repo {
 	x := sql app.db {
-		select from Repo where name == name && user_id == user
+		select from Repo where name == name && user_id == user limit 1
 	}
-	if x.len == 0 {
+	if x.id == 0 {
 		return none
 	}
-	return x[0]
+	return x
 }
 
 fn (app &App) nr_user_repos(user_id int) int {

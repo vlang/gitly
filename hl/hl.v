@@ -2,7 +2,7 @@
 // Use of this source code is governed by a GPL license that can be found in the LICENSE file.
 module hl
 
-import markdown
+//import markdown
 const (
 	tab = '        '
 )
@@ -11,7 +11,7 @@ pub fn highlight_text(st, ext string, commit bool) (string, int, int) {
 	if !commit {
 		if ext.split('.').last().to_lower() == 'md' {
 			// Markdown
-			output := markdown.to_html(st)
+			output := st // markdown.to_html(st)
 			return output, 0, 0
 		}
 	}
