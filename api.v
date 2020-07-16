@@ -5,13 +5,20 @@ module main
 import vweb
 import json
 
-// TODO rename all these methods from '/api_issues' to `/api/issues'
-pub fn (mut app App) api_issues() vweb.Result {
+['/api/:user/:repo/issues']
+pub fn (mut app App) api_issues(user, repo string) vweb.Result {
+	if !app.find_repo(user, repo) {
+		return app.vweb.json('{}')
+	}
 	issues := app.find_repo_issues(app.repo.id)
 	return app.vweb.json(json.encode(issues))
 }
 
-pub fn (mut app App) api_commits() vweb.Result {
+['/api/:user/:repo/commits']
+pub fn (mut app App) api_commits(user, repo string) vweb.Result {
+	if !app.find_repo(user, repo) {
+		return app.vweb.json('{}')
+	}
 	commits := app.find_repo_commits(app.repo.id)
 	return app.vweb.json(json.encode(commits))
 }
