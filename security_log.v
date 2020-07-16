@@ -27,7 +27,7 @@ struct SecurityLog {
 }
 
 fn (mut app App) security_log(log SecurityLog) {
-	ip := app.req.headers['X-Forwarded-For']
+	ip := app.vweb.req.headers['X-Forwarded-For']
 	log2 := { log | ip: ip } //app.vweb.ip() }
 	sql app.db {
 		insert log2 into SecurityLog
