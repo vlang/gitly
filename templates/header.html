@@ -42,6 +42,11 @@
 		<a href='/@app.repo.user_name/@app.repo.name'>@app.repo.name</a>
 		@end
 	}
+	@if app.logged_in
+	<div class="new">
+		<a href="/new">New repo</a>
+	</div>
+	@end
 	<div class="user" tabindex="0">
 		@if app.logged_in
 			.avatar {

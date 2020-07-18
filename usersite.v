@@ -6,8 +6,12 @@ fn (mut app App) check_username(user string) (bool, User) {
 	if user.len == 0 {
 		return false, User{}
 	}
-	u := app.find_user_by_username(user) or {
+	mut u := app.find_user_by_username(user) or {
 		return false, User{}
+	}
+	u.b_avatar = u.avatar != ''
+	if !u.b_avatar {
+		u.avatar = u.username.bytes()[0].str()
 	}
 	return u.is_registered, u
 }
@@ -16,31 +20,24 @@ fn (mut app App) check_username(user string) (bool, User) {
 pub fn (mut app App) user(username string) vweb.Result {
 	println('user() name=$username')
 	app.show_menu = false
-	mut user := User{}
-	if username.len != 0 {
-		user = app.find_user_by_username(username) or {
-			return app.vweb.not_found()
-		}
-	} else {
+	exists, u := app.check_username(username)
+	if !exists {
 		return app.vweb.not_found()
 	}
-	user.b_avatar = user.avatar != ''
-	if !user.b_avatar {
-		user.avatar = user.username.bytes()[0].str()
-	}
-	repos := app.find_user_repos(user.id)
+	user := u
 	return $vweb.html()
 }
 
 
-['/:user/repos']
-pub fn (mut app App) user_repos(user string) vweb.Result {
-	exists, u := app.check_username(user)
+['/:username/repos']
+pub fn (mut app App) user_repos(username string) vweb.Result {
+	exists, u := app.check_username(username)
 	if !exists {
 		return app.vweb.not_found()
 	}
-	/*repos*/_ := app.find_user_repos(u.id)
-	return app.vweb.text('TODO')
+	user := u
+	repos := app.find_user_repos(user.id)
+	return $vweb.html()
 }
 /*
 ['/:user/issues']

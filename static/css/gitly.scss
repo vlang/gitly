@@ -147,6 +147,16 @@ pre > code {
 	width: 40px;
 	margin: 0;
 }
+
+.new {
+	display: flex;
+	position: absolute;
+	top: 0;
+	right: 0;
+	padding-right: 150px;
+}
+
+
 #header .login-button {
 	color: $white;
 	line-height: 50px;

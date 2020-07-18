@@ -1,6 +1,4 @@
-
 @header
-
 
 <div class='avatar'>
 @if user.b_avatar
@@ -11,21 +9,5 @@
 </div>
 <h3> @user.username </h3>
 <h4> @user.name </h4>
-
-@if app.logged_in
-<a href='/new'>New repository</a> <br>
-@end
-
-@if repos.len > 0
-@for repo in repos
-	<a href="/@user.username/@repo.name" class="userrepo">
-		<h3>@repo.name</h3>
-		<p>@repo.description</p>
-	</a>
-@end
-@else
-	<h2>No repositories</h2>
-@end
-
 
 @footer
