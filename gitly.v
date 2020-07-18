@@ -139,6 +139,7 @@ pub fn (mut app App) init_once() {
 
 pub fn (mut app App) init() {
 	url := app.vweb.req.url
+	app.show_menu = false
 	app.page_gen_time = ''
 	app.info('\n\ninit() url=$url')
 	app.path = ''
