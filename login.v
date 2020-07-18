@@ -6,7 +6,6 @@ import vweb
 import time
 import rand
 import math
-import strings
 
 //['/login']
 pub fn (mut app App) login() vweb.Result {

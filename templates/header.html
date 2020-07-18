@@ -61,6 +61,11 @@
 					<a href='/@app.user.username/issues' class="link">Issues</a>
 					<a href='/@app.user.username/prs' class="link">Pull requests</a>
 				}
+				@if app.user.is_admin
+				.links {
+					<a href='/admin' class="link">Admin Panel</a>	
+				}
+				@end
 				.links {
 					<a href='/logout' class="link">Sign out</a>
 				}

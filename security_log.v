@@ -3,8 +3,6 @@
 module main
 
 import vweb
-import json
-import net.http
 
 enum SecurityLogKind {
 	registered

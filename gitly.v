@@ -401,26 +401,6 @@ pub fn (mut app App) new_post() vweb.Result {
 	return app.vweb.redirect('/$app.user.username')
 }
 
-['/:username']
-pub fn (mut app App) user(username string) vweb.Result {
-	println('user() name=$username')
-	app.show_menu = false
-	mut user := User{}
-	if username.len != 0 {
-		user = app.find_user_by_username(username) or {
-			return app.vweb.not_found()
-		}
-	} else {
-		return app.vweb.not_found()
-	}
-	user.b_avatar = user.avatar != ''
-	if !user.b_avatar {
-		user.avatar = user.username.bytes()[0].str()
-	}
-	repos := app.find_user_repos(user.id)
-	return $vweb.html()
-}
-
 ['/:user/:repo/commits']
 pub fn (mut app App) commits2(user, repo string) vweb.Result {
 	return app.commits(user, repo, '0')
