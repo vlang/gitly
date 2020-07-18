@@ -173,6 +173,7 @@ fn (mut app App) create_tables() {
 		"ip text default ''"
 		"arg1 text default ''"
 		"arg2 text default ''"
+		"created_at int default (strftime('%s', 'now'))"
 	])
 }
 

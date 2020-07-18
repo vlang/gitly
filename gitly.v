@@ -728,7 +728,7 @@ pub fn (mut app App) new_issue_post(user, repo string) vweb.Result {
 	app.inc_user_post(app.user)
 	app.insert_issue(issue)
 	app.inc_repo_issues(app.repo.id)
-	return app.vweb.redirect('/$user/$repo/issues/0')
+	return app.vweb.redirect('/$user/$repo/issues')
 }
 
 ['/:user/:repo/comment_post']

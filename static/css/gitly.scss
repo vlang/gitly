@@ -186,7 +186,7 @@ textarea, input {
 textarea:focus, input:focus {
 	outline: none;
 	border: 1px solid #4392eb;
-} 
+}
 
 .button, button, input[type="submit"] {
 	cursor: pointer;
@@ -214,7 +214,8 @@ form.vertical-form * {
 }
 
 form.vertical-form *:last-child {
-	margin-bottom: 0px;	
+	margin-bottom: 0px;
 }
+
 
 @import 'files', 'langs', 'tree', 'commits', 'hl_table', 'branches';

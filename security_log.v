@@ -24,12 +24,25 @@ struct SecurityLog {
 	ip string
 	arg1 string
 	arg2 string
+	created_at int
 }
 
 fn (mut app App) security_log(log SecurityLog) {
-	ip := app.vweb.req.headers['X-Forwarded-For']
-	log2 := { log | ip: ip } //app.vweb.ip() }
+	log2 := { log | ip: app.vweb.ip() }
 	sql app.db {
 		insert log2 into SecurityLog
 	}
+}
+
+fn (app &App) find_security_logs(user_id int) []SecurityLog {
+	return sql app.db {
+		select from SecurityLog where user_id == user_id order by id desc
+	}
+
+}
+
+['/settings/security']
+fn (mut app App) security() vweb.Result {
+	logs := app.find_security_logs(app.user.id)
+	return $vweb.html()
 }
