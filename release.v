@@ -25,3 +25,10 @@ pub fn (mut app App) find_repo_releases(repo_id int) []Release {
 		select from Release where repo_id == repo_id 
 	}
 }
+
+pub fn (mut app App) delete_repo_releases(repo_id int) {
+	sql app.db {
+		delete from Release where repo_id == repo_id
+	}
+}
+

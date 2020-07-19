@@ -123,3 +123,9 @@ fn (mut app App) contains_repo_branch(name string, repo_id int) bool {
 	}
 	return nr == 1
 }
+
+fn (mut app App) delete_repo_branches(repo_id int) {
+	sql app.db {
+		delete from Branch where repo_id == repo_id
+	}
+}

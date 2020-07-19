@@ -73,3 +73,13 @@ fn (mut app App) find_repo_file_by_path(repo_id int, branch, path string) ?File 
 	}
 	return file
 }
+
+fn (mut app App) delete_repo_files(repo_id int) {
+	sql app.db {
+		delete from File where repo_id == repo_id
+	}
+}
+
+fn (mut app App) delete_repo_folder(path string) {
+	os.rmdir_all(os.real_path(path))
+}

@@ -288,3 +288,37 @@ fn (mut app App) insert_repo(repo Repo) {
 		insert repo into Repo
 	}
 }
+
+fn (mut app App) delete_repo(id int, path string) {
+	// Remove repo
+	sql app.db {
+		delete from Repo where id == id
+	}
+	app.info('Removed repo entry ($id)')
+
+	// Remove all commits
+	sql app.db {
+		delete from Commit where repo_id == id
+	}
+	app.info('Removed repo commits ($id)')
+
+	// Remove all issues & prs
+	app.delete_repo_issues(id)
+	app.info('Removed repo issues ($id)')
+
+	// Remove all branches
+	app.delete_repo_branches(id)
+	app.info('Removed repo branches ($id)')
+
+	// Remove all releases
+	app.delete_repo_releases(id)
+	app.info('Removed repo releases ($id)')
+
+	// Remove all files
+	app.delete_repo_files(id)
+	app.info('Removed repo files ($id)')
+
+	// Remove physical files
+	app.delete_repo_folder(path)
+	app.info('Removed repo folder ($id)')
+}

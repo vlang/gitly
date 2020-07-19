@@ -224,24 +224,34 @@ pub fn (mut app App) repo_settings(user, repo string) vweb.Result {
 	return $vweb.html()
 }
 
+// Helper function
+fn (mut app App) check_repo(user, repo string) bool {
+	return app.logged_in && app.find_repo(user, repo) && app.repo.user_id == app.user.id
+}
+
 ['/:user/:repo/repo_settings_post']
 pub fn (mut app App) repo_settings_post(user, repo string) vweb.Result {
-	if !app.logged_in {
+	if !app.check_repo(user, repo) {
 		return app.r_repo()
 	}
-	if !app.find_repo(user, repo) {
-		return app.r_repo()
-	}
-	if app.repo.user_id != app.user.id {
-		return app.r_repo()
-	}
-
 	if 'webhook_secret' in app.vweb.form && app.vweb.form['webhook_secret'] != app.repo.webhook_secret && app.vweb.form['webhook_secret'] != '' {
 		webhook := sha1.hexhash(app.vweb.form['webhook_secret'])
 		app.update_repo_webhook(app.repo.id, webhook)
 	}
 
 	return app.r_repo()
+}
+
+['/:user/:repo/delete_repo_post']
+pub fn (mut app App) repo_delete_post(user, repo string) vweb.Result {
+	if !app.check_repo(user, repo) {
+		return app.r_repo()
+	}
+	if 'verify' in app.vweb.form && app.vweb.form['verify'] == '$user/$repo' {
+		go app.delete_repo(app.repo.id, app.repo.git_dir)
+	}
+
+	return app.r_home()
 }
 
 ['/:user/:repo']

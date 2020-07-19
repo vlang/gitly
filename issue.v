@@ -89,6 +89,12 @@ fn (mut app App) find_user_issues(user_id int) []Issue {
 	}
 }
 
+fn (mut app App) delete_repo_issues(repo_id int) {
+	sql app.db {
+		delete from Issue where repo_id == repo_id
+	}
+}
+
 fn (mut app App) inc_issue_comments(id int) {
 	sql app.db {
 		update Issue set nr_comments = nr_comments + 1 where id == id
