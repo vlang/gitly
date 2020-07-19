@@ -216,6 +216,12 @@ fn (app &App) find_user_repos(user_id int) []Repo {
 	}
 }
 
+fn (app &App) find_repo_by_id(repo_id int) Repo {
+	return sql app.db {
+		select from Repo where id == repo_id
+	}
+}
+
 fn (app &App) find_repo(user, name string) bool {
 	if user.len == 0 || name.len == 0 {
 		app.info('User or repo was not found')

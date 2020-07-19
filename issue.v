@@ -19,6 +19,8 @@ mut:
 	status        IssueStatus [skip]
 	linked_issues []int [skip]
 	author_name   string [skip]
+	repo_author   string [skip]
+	repo_name     string [skip]
 }
 
 enum IssueStatus {
@@ -79,6 +81,12 @@ fn (mut app App) find_repo_prs(repo_id int) []Issue {
 		select from Issue where repo_id == repo_id && is_pr == true
 	}
 	return issues
+}
+
+fn (mut app App) find_user_issues(user_id int) []Issue {
+	return sql app.db {
+		select from Issue where author_id == user_id && is_pr == false
+	}
 }
 
 fn (mut app App) inc_issue_comments(id int) {
