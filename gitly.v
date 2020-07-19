@@ -249,8 +249,34 @@ pub fn (mut app App) repo_delete_post(user, repo string) vweb.Result {
 	}
 	if 'verify' in app.vweb.form && app.vweb.form['verify'] == '$user/$repo' {
 		go app.delete_repo(app.repo.id, app.repo.git_dir)
+	} else {
+		app.vweb.error('Verification was wrong')
+		return app.repo_settings(user, repo)
 	}
 
+	return app.r_home()
+}
+
+['/:user/:repo/move_repo_post']
+pub fn (mut app App) repo_move_post(user, repo string) vweb.Result {
+	if !app.check_repo(user, repo) {
+		return app.r_repo()
+	}
+	if 'verify' in app.vweb.form && 'dest' in app.vweb.form && app.vweb.form['verify'] == '$user/$repo' {
+		dest_user := app.find_user_by_username(app.vweb.form['dest']) or {
+			app.vweb.error('User does not exists')
+			return app.repo_settings(user, repo)
+		}
+		if app.user_has_repo(dest_user.id, app.repo.name) {
+			app.vweb.error('User already has repo $app.repo.name')
+			return app.repo_settings(user, repo)
+		}
+		app.move_repo_to(app.repo.id, dest_user.id, dest_user.username)
+		return app.vweb.redirect('/$dest_user.username/$app.repo.name')
+	} else {
+		app.vweb.error('Verification was wrong')
+		return app.repo_settings(user, repo)
+	}
 	return app.r_home()
 }
 

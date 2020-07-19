@@ -1,19 +1,24 @@
 @header
+.div-center {
+	.form-error {
+		@app.vweb.form_error
+	}
 
-<form action="/@app.user.username/@app.repo.name/repo_settings_post" method="post">
-	<input type="password" name="webhook_secret" value="@app.repo.webhook_secret" placeholder="WebhookSecret">
-	<input type="submit" value="Update repo">
-</form>
+	<form action="/@app.user.username/@app.repo.name/repo_settings_post" method="post">
+		<input type="password" name="webhook_secret" value="@app.repo.webhook_secret" placeholder="WebhookSecret">
+		<input type="submit" value="Update repo">
+	</form>
 
-<form action="/@app.user.username/@app.repo.name/delete_repo_post" method="post">
-	<input type="text" name="verify" placeholder="Type your repo path username/reponame" required>
-	<input type="submit" value="Delete repo">
-</form>
+	<form action="/@app.user.username/@app.repo.name/delete_repo_post" method="post">
+		<input type="text" name="verify" placeholder="Type your repo path username/reponame" required>
+		<input type="submit" value="Delete repo">
+	</form>
 
-<form action="/@app.user.username/@app.repo.name/move_repo_post" method="post">
-	<input type="text" name="dest" placeholder="Destination username" required>
-	<input type="text" name="verify" placeholder="Type your repo path username/reponame" required>
-	<input type="submit" value="Move repo">
-</form>
+	<form action="/@app.user.username/@app.repo.name/move_repo_post" method="post">
+		<input type="text" name="dest" placeholder="Destination username" required>
+		<input type="text" name="verify" placeholder="Type your repo path username/reponame" required>
+		<input type="submit" value="Move repo">
+	</form>
 
+}
 @footer

@@ -322,3 +322,16 @@ fn (mut app App) delete_repo(id int, path string) {
 	app.delete_repo_folder(path)
 	app.info('Removed repo folder ($id)')
 }
+
+fn (mut app App) move_repo_to(repo_id, user_id int, user_name string) {
+	sql app.db {
+		update Repo set user_id = user_id, user_name = user_name where id == repo_id
+	}
+}
+
+fn (mut app App) user_has_repo(user_id int, repo_name string) bool {
+	count := sql app.db {
+		select count from Repo where user_id == user_id && name == repo_name
+	}
+	return count >= 0
+}
