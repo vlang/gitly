@@ -33,7 +33,7 @@ pub fn highlight_text(st, ext string, commit bool) (string, int, int) {
 	res << '<table class="hl_table">'.bytes()
 	res << `\n`
 	if !is_single_line(st) {
-		res << '<tr><td><a id="1" href="#1">1</a></td><td>'.bytes()
+		res << '<tr><td><a id="1" class="no_select" href="#1">1</a></td><td>'.bytes()
 		lines++
 	}
 	mut in_comment := false
@@ -52,9 +52,9 @@ pub fn highlight_text(st, ext string, commit bool) (string, int, int) {
 					class = 'class="d"'
 				}
 				res <<
-					'</td></tr>\n<tr><td><a id="$lines" href="#$lines">$lines</a></td><td $class>'.bytes()
+					'</td></tr>\n<tr><td><a id="$lines" class="no_select" href="#$lines">$lines</a></td><td $class>'.bytes()
 			} else {
-				res << '</td></tr>\n<tr><td><a id="$lines" href="#$lines">$lines</a></td><td>'.bytes()
+				res << '</td></tr>\n<tr><td><a id="$lines" class="no_select" href="#$lines">$lines</a></td><td>'.bytes()
 			}
 			if in_line_comment {
 				in_line_comment = false
