@@ -435,7 +435,7 @@ pub fn (mut app App) new_post() vweb.Result {
 	}
 	go app.update_repo()
 	println('end go')
-	return app.vweb.redirect('/$app.user.username')
+	return app.vweb.redirect('/$app.user.username/repos')
 }
 
 ['/:user/:repo/commits']
