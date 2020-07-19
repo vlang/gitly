@@ -19,7 +19,9 @@ const (
 	max_login_attempts = 5
 	repo_storage_path  = './repos'
 	max_user_repos     = 5
-	max_repo_name_len = 20
+	max_repo_name_len  = 20
+	max_namechanges    = 3
+	namechange_period  = time.hour * 24
 )
 
 struct App {

@@ -18,6 +18,8 @@ struct User {
 	is_admin      bool
 	oauth_state string [skip] // for github oauth XSRF protection
 mut:
+	nr_namechanges int
+	last_namechange_time int
 	nr_posts      int
 	last_post_time int
 	avatar        string
@@ -350,4 +352,17 @@ pub fn (mut app App) check_user_blocked(user_id int) bool {
 pub fn (mut app App) client_ip(username string) ?string {
 	ip := app.vweb.conn.peer_ip() or { return none }
 	return make_password(ip, '${username}token')
+}
+
+fn (mut app App) change_username(user_id int, username string) {
+	sql app.db {
+		update User set username = username where id == user_id
+	}
+}
+
+fn (mut app App) inc_namechanges(user_id int) {
+	now := int(time.now().unix)
+	sql app.db {
+		update User set nr_namechanges = nr_namechanges + 1, last_namechange_time = now where id == user_id
+	}
 }
