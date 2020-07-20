@@ -36,7 +36,7 @@ pub fn (l &LangStat) pct_html() vweb.RawHtml {
 
 pub fn (mut app App) find_repo_lang_stats(repo_id int) []LangStat {
 	lang_stats := sql app.db {
-		select from LangStat where repo_id == repo_id 
+		select from LangStat where repo_id == repo_id order by pct desc
 	}
 	return lang_stats
 }

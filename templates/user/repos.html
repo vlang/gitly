@@ -1,0 +1,23 @@
+@header
+
+<div class='avatar'>
+@if user.b_avatar
+	<img src="@user.avatar">
+@else
+	<span>@user.avatar</span>
+@end
+</div>
+<h3> @user.username s repositories</h3>
+
+@if repos.len > 0
+@for repo in repos
+	<a href="/@user.username/@repo.name" class="userrepo">
+		<h3>@repo.name</h3>
+		<p>@repo.description</p>
+	</a>
+@end
+@else
+	<h2>No repositories</h2>
+@end
+
+@footer

@@ -1,0 +1,55 @@
+@header
+
+<div class='avatar'>
+@if user.b_avatar
+	<img src="@user.avatar">
+@else
+	<span>@user.avatar</span>
+@end
+</div>
+<h3> @user.username s issues</h3>
+
+.commit-day {
+}
+
+.clog-block {
+	@for issue in issues
+		.clog {
+			.clog-msg {
+				<a href="/@issue.repo_author/@issue.repo_name/issue/@issue.id">@issue.title</a>
+			}
+			span.clog-author {
+				#@issue.id opened @issue.relative_time()
+				by @issue.author_name
+			}
+			@if issue.nr_comments > 0
+			.comments {
+				@if issue.nr_comments == 1
+					@issue.nr_comments comment
+				@else
+					@issue.nr_comments comments
+				@end
+			}
+			@end
+		}
+	@end
+}
+
+<div class="buttons">
+	<br>
+@if first
+	<a href="/@app.user.username/issues/@last_site" class="button disabled">Prev</a>
+@else
+	<a href="/@app.user.username/issues/@last_site" class="button">Prev</a>/
+@end
+
+@if last
+	<a href="/@app.user.username/issues/@next_site" class="button disabled">Next</a>
+@else
+	<a href="/@app.user.username/issues/@next_site" class="button">Next</a>
+@end
+</div>
+
+
+
+@footer

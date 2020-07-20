@@ -42,6 +42,11 @@
 		<a href='/@app.repo.user_name/@app.repo.name'>@app.repo.name</a>
 		@end
 	}
+	@if app.logged_in
+	<div class="new">
+		<a href="/new">New repo</a>
+	</div>
+	@end
 	<div class="user" tabindex="0">
 		@if app.logged_in
 			.avatar {
@@ -57,10 +62,16 @@
 					<a href='/@app.user.username'>@app.user.username</a>
 				}
 				.links {
-					<a href='/@app.user.username' class="link">Repositories</a>
+					<a href='/@app.user.username/repos' class="link">Repositories</a>
 					<a href='/@app.user.username/issues' class="link">Issues</a>
 					<a href='/@app.user.username/prs' class="link">Pull requests</a>
 				}
+				.links {
+					<a href="/@app.user.username/settings" class="link">Settings</a>
+				}
+				@if app.user.is_admin
+					<a href='/admin' class="link">Admin Panel</a>	
+				@end
 				.links {
 					<a href='/logout' class="link">Sign out</a>
 				}

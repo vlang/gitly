@@ -1,0 +1,16 @@
+@header
+
+<h2>User settings</h2>
+
+.div-center {
+	.form-error {
+		@app.vweb.form_error
+	}
+
+	<form action="/@app.user.username/settings_post" method="post">
+		<input type="text" name="name" value="@app.user.username">
+		<input type="submit" value="Save settings">
+	</form>
+}
+
+@footer

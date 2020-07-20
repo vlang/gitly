@@ -7,7 +7,7 @@ import json
 
 ['/api/:user/:repo/issues']
 pub fn (mut app App) api_issues(user, repo string) vweb.Result {
-	if !app.find_repo(user, repo) {
+	if !app.exists_user_repo(user, repo) {
 		return app.vweb.json('{}')
 	}
 	issues := app.find_repo_issues(app.repo.id)
@@ -16,7 +16,7 @@ pub fn (mut app App) api_issues(user, repo string) vweb.Result {
 
 ['/api/:user/:repo/commits']
 pub fn (mut app App) api_commits(user, repo string) vweb.Result {
-	if !app.find_repo(user, repo) {
+	if !app.exists_user_repo(user, repo) {
 		return app.vweb.json('{}')
 	}
 	commits := app.find_repo_commits(app.repo.id)

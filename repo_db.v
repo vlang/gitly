@@ -82,6 +82,8 @@ fn (mut app App) create_tables() {
 		'avatar text default ""'
 		'nr_posts integer default 0'
 		'last_post_time integer default 0'
+		'nr_namechanges integer default 0'
+		'last_namechange_time integer default 0'
 		'is_github int default 0'
 		'is_blocked int default 0'
 		'is_registered int default 0'
@@ -216,7 +218,13 @@ fn (app &App) find_user_repos(user_id int) []Repo {
 	}
 }
 
-fn (app &App) find_repo(user, name string) bool {
+fn (app &App) find_repo_by_id(repo_id int) Repo {
+	return sql app.db {
+		select from Repo where id == repo_id
+	}
+}
+
+fn (app &App) exists_user_repo(user, name string) bool {
 	if user.len == 0 || name.len == 0 {
 		app.info('User or repo was not found')
 		return false
@@ -281,4 +289,51 @@ fn (mut app App) insert_repo(repo Repo) {
 	sql app.db {
 		insert repo into Repo
 	}
+}
+
+fn (mut app App) delete_repo(id int, path, name string) {
+	// Remove repo
+	sql app.db {
+		delete from Repo where id == id
+	}
+	app.info('Removed repo entry ($id, $name)')
+
+	// Remove all commits
+	sql app.db {
+		delete from Commit where repo_id == id
+	}
+	app.info('Removed repo commits ($id, $name)')
+
+	// Remove all issues & prs
+	app.delete_repo_issues(id)
+	app.info('Removed repo issues ($id, $name)')
+
+	// Remove all branches
+	app.delete_repo_branches(id)
+	app.info('Removed repo branches ($id, $name)')
+
+	// Remove all releases
+	app.delete_repo_releases(id)
+	app.info('Removed repo releases ($id, $name)')
+
+	// Remove all files
+	app.delete_repo_files(id)
+	app.info('Removed repo files ($id, $name)')
+
+	// Remove physical files
+	app.delete_repo_folder(path)
+	app.info('Removed repo folder ($id, $name)')
+}
+
+fn (mut app App) move_repo_to_user(repo_id, user_id int, user_name string) {
+	sql app.db {
+		update Repo set user_id = user_id, user_name = user_name where id == repo_id
+	}
+}
+
+fn (mut app App) user_has_repo(user_id int, repo_name string) bool {
+	count := sql app.db {
+		select count from Repo where user_id == user_id && name == repo_name
+	}
+	return count >= 0
 }

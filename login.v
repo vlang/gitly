@@ -6,7 +6,6 @@ import vweb
 import time
 import rand
 import math
-import strings
 
 //['/login']
 pub fn (mut app App) login() vweb.Result {
@@ -58,8 +57,9 @@ pub fn (mut app App) auth_user(user User, ip string) {
 	token := app.add_token(user.id, ip)
 	app.update_user_login_attempts(user.id, 0)
 	//println('cookie: setting token=$token id=$user.id')
-	app.vweb.set_cookie(name: 'id', value:user.id.str())
-	app.vweb.set_cookie(name:'token', value:token)
+	expire_date := time.now().add_days(200)
+	app.vweb.set_cookie(name: 'id', value:user.id.str(), expires: expire_date)
+	app.vweb.set_cookie(name:'token', value:token, expires: expire_date)
 	//app.vweb.set_cookie_with_expire_date('id', user.id.str(), expires)
 	//app.vweb.set_cookie_with_expire_date('token', token, expires)
 }
