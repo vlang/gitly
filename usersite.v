@@ -42,10 +42,6 @@ pub fn (mut app App) user_repos(username string) vweb.Result {
 }
 
 ['/:username/issues']
-pub fn (mut app App) user_issues2(username string) vweb.Result {
-	return app.user_issues(username, '0')
-}
-
 ['/:username/issues/:page_str']
 pub fn (mut app App) user_issues(username, page_str string) vweb.Result {
 	if !app.logged_in {
@@ -100,8 +96,9 @@ pub fn (mut app App) user_settings(user string) vweb.Result {
 	return $vweb.html()
 }
 
-['/:user/settings_post']
-pub fn (mut app App) user_settings_post(user string) vweb.Result {
+[post]
+['/:user/settings']
+pub fn (mut app App) update_user_settings(user string) vweb.Result {
 	if !app.logged_in || user != app.user.username {
 		return app.r_home()
 	}
