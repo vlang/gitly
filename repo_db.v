@@ -291,38 +291,38 @@ fn (mut app App) insert_repo(repo Repo) {
 	}
 }
 
-fn (mut app App) delete_repo(id int, path string) {
+fn (mut app App) delete_repo(id int, path, name string) {
 	// Remove repo
 	sql app.db {
 		delete from Repo where id == id
 	}
-	app.info('Removed repo entry ($id)')
+	app.info('Removed repo entry ($id, $name)')
 
 	// Remove all commits
 	sql app.db {
 		delete from Commit where repo_id == id
 	}
-	app.info('Removed repo commits ($id)')
+	app.info('Removed repo commits ($id, $name)')
 
 	// Remove all issues & prs
 	app.delete_repo_issues(id)
-	app.info('Removed repo issues ($id)')
+	app.info('Removed repo issues ($id, $name)')
 
 	// Remove all branches
 	app.delete_repo_branches(id)
-	app.info('Removed repo branches ($id)')
+	app.info('Removed repo branches ($id, $name)')
 
 	// Remove all releases
 	app.delete_repo_releases(id)
-	app.info('Removed repo releases ($id)')
+	app.info('Removed repo releases ($id, $name)')
 
 	// Remove all files
 	app.delete_repo_files(id)
-	app.info('Removed repo files ($id)')
+	app.info('Removed repo files ($id, $name)')
 
 	// Remove physical files
 	app.delete_repo_folder(path)
-	app.info('Removed repo folder ($id)')
+	app.info('Removed repo folder ($id, $name)')
 }
 
 fn (mut app App) move_repo_to(repo_id, user_id int, user_name string) {

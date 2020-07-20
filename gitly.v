@@ -250,9 +250,9 @@ pub fn (mut app App) repo_delete_post(user, repo string) vweb.Result {
 		return app.r_repo()
 	}
 	if 'verify' in app.vweb.form && app.vweb.form['verify'] == '$user/$repo' {
-		go app.delete_repo(app.repo.id, app.repo.git_dir)
+		go app.delete_repo(app.repo.id, app.repo.git_dir, app.repo.name)
 	} else {
-		app.vweb.error('Verification was wrong')
+		app.vweb.error('Verification failed')
 		return app.repo_settings(user, repo)
 	}
 
@@ -265,18 +265,23 @@ pub fn (mut app App) repo_move_post(user, repo string) vweb.Result {
 		return app.r_repo()
 	}
 	if 'verify' in app.vweb.form && 'dest' in app.vweb.form && app.vweb.form['verify'] == '$user/$repo' {
-		dest_user := app.find_user_by_username(app.vweb.form['dest']) or {
-			app.vweb.error('User does not exists')
+		uname := app.vweb.form['dest']
+		dest_user := app.find_user_by_username(uname) or {
+			app.vweb.error('Unknown user $uname')
 			return app.repo_settings(user, repo)
 		}
 		if app.user_has_repo(dest_user.id, app.repo.name) {
-			app.vweb.error('User already has repo $app.repo.name')
+			app.vweb.error('User already owns repo $app.repo.name')
+			return app.repo_settings(user, repo)
+		}
+		if app.nr_user_repos(dest_user.id) >= max_user_repos {
+			app.vweb.error('User already reached the repo limit')
 			return app.repo_settings(user, repo)
 		}
 		app.move_repo_to(app.repo.id, dest_user.id, dest_user.username)
 		return app.vweb.redirect('/$dest_user.username/$app.repo.name')
 	} else {
-		app.vweb.error('Verification was wrong')
+		app.vweb.error('Verification failed')
 		return app.repo_settings(user, repo)
 	}
 	return app.r_home()
