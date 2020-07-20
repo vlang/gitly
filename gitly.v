@@ -392,6 +392,7 @@ pub fn (mut app App) update(user, repo string) vweb.Result {
 	return app.r_repo()
 }
 
+['/new']
 pub fn (mut app App) new() vweb.Result {
 	if !app.logged_in {
 		return app.vweb.redirect('/login')
@@ -399,7 +400,9 @@ pub fn (mut app App) new() vweb.Result {
 	return $vweb.html()
 }
 
-pub fn (mut app App) new_post() vweb.Result {
+[post]
+['/new']
+pub fn (mut app App) new_repo() vweb.Result {
 	if !app.logged_in {
 		return app.vweb.redirect('/login')
 	}
