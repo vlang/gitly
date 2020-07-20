@@ -358,6 +358,9 @@ fn (mut app App) change_username(user_id int, username string) {
 	sql app.db {
 		update User set username = username where id == user_id
 	}
+	sql app.db {
+		update Repo set user_name = username where user_id == user_id
+	}
 }
 
 fn (mut app App) inc_namechanges(user_id int) {
