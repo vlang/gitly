@@ -224,7 +224,7 @@ fn (app &App) find_repo_by_id(repo_id int) Repo {
 	}
 }
 
-fn (app &App) find_repo(user, name string) bool {
+fn (app &App) exists_user_repo(user, name string) bool {
 	if user.len == 0 || name.len == 0 {
 		app.info('User or repo was not found')
 		return false
@@ -325,7 +325,7 @@ fn (mut app App) delete_repo(id int, path, name string) {
 	app.info('Removed repo folder ($id, $name)')
 }
 
-fn (mut app App) move_repo_to(repo_id, user_id int, user_name string) {
+fn (mut app App) move_repo_to_user(repo_id, user_id int, user_name string) {
 	sql app.db {
 		update Repo set user_id = user_id, user_name = user_name where id == repo_id
 	}
