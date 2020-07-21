@@ -446,13 +446,12 @@ pub fn (mut app App) new_repo() vweb.Result {
 }
 
 ['/:user/:repo/commits']
-['/:user/:repo/commits/:page_str']
-pub fn (mut app App) commits(user, repo, page_str string) vweb.Result {
+['/:user/:repo/commits/:page']
+pub fn (mut app App) commits(user, repo string, page int) vweb.Result {
 	if !app.exists_user_repo(user, repo) {
 		return app.vweb.not_found()
 	}
 	app.show_menu = true
-	page := if page_str.len >= 1 { page_str.int() } else { 0 }
 	mut commits := app.find_repo_commits_as_page(app.repo.id, page)
 	mut b_author := false
 	mut last := false
@@ -539,13 +538,12 @@ pub fn (mut app App) commit(user, repo, hash string) vweb.Result {
 }
 
 ['/:user/:repo/issues']
-['/:user/:repo/issues/:page_str']
-pub fn (mut app App) issues(user, repo, page_str string) vweb.Result {
+['/:user/:repo/issues/:page']
+pub fn (mut app App) issues(user, repo string, page int) vweb.Result {
 	if !app.exists_user_repo(user, repo) {
 		app.vweb.not_found()
 	}
 	app.show_menu = true
-	page := if page_str.len >= 1 { page_str.int() } else { 0 }
 	mut issues := app.find_repo_issues_as_page(app.repo.id, page)
 	mut first := false
 	mut last := false
