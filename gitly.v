@@ -212,14 +212,8 @@ pub fn (mut app App) settings() vweb.Result {
 
 ['/:user/:repo/settings']
 pub fn (mut app App) repo_settings(user, repo string) vweb.Result {
-	if !app.logged_in {
-		return app.vweb.redirect('/$user/$repo')
-	}
-	if !app.exists_user_repo(user, repo) {
-		return app.vweb.redirect('/$user/$repo')
-	}
-	if app.repo.user_id != app.user.id {
-		return app.vweb.redirect('/$user/$repo')
+	if !app.repo_belongs_to(user, repo) {
+		return app.r_repo()
 	}
 
 	app.show_menu = true
@@ -231,8 +225,9 @@ fn (mut app App) repo_belongs_to(user, repo string) bool {
 	return app.logged_in && app.exists_user_repo(user, repo) && app.repo.user_id == app.user.id
 }
 
-['/:user/:repo/repo_settings_post']
-pub fn (mut app App) repo_settings_post(user, repo string) vweb.Result {
+[post]
+['/:user/:repo/settings']
+pub fn (mut app App) update_repo_settings(user, repo string) vweb.Result {
 	if !app.repo_belongs_to(user, repo) {
 		return app.r_repo()
 	}
@@ -244,8 +239,9 @@ pub fn (mut app App) repo_settings_post(user, repo string) vweb.Result {
 	return app.r_repo()
 }
 
-['/:user/:repo/delete_repo_post']
-pub fn (mut app App) repo_delete_post(user, repo string) vweb.Result {
+[post]
+['/:user/:repo/delete_repo']
+pub fn (mut app App) repo_delete(user, repo string) vweb.Result {
 	if !app.repo_belongs_to(user, repo) {
 		return app.r_repo()
 	}
@@ -259,8 +255,9 @@ pub fn (mut app App) repo_delete_post(user, repo string) vweb.Result {
 	return app.r_home()
 }
 
-['/:user/:repo/move_repo_post']
-pub fn (mut app App) repo_move_post(user, repo string) vweb.Result {
+[post]
+['/:user/:repo/move_repo']
+pub fn (mut app App) repo_move(user, repo string) vweb.Result {
 	if !app.repo_belongs_to(user, repo) {
 		return app.r_repo()
 	}
@@ -395,6 +392,7 @@ pub fn (mut app App) update(user, repo string) vweb.Result {
 	return app.r_repo()
 }
 
+['/new']
 pub fn (mut app App) new() vweb.Result {
 	if !app.logged_in {
 		return app.vweb.redirect('/login')
@@ -402,7 +400,9 @@ pub fn (mut app App) new() vweb.Result {
 	return $vweb.html()
 }
 
-pub fn (mut app App) new_post() vweb.Result {
+[post]
+['/new']
+pub fn (mut app App) new_repo() vweb.Result {
 	if !app.logged_in {
 		return app.vweb.redirect('/login')
 	}
@@ -446,17 +446,12 @@ pub fn (mut app App) new_post() vweb.Result {
 }
 
 ['/:user/:repo/commits']
-pub fn (mut app App) commits2(user, repo string) vweb.Result {
-	return app.commits(user, repo, '0')
-}
-
-['/:user/:repo/commits/:page_str']
-pub fn (mut app App) commits(user, repo, page_str string) vweb.Result {
+['/:user/:repo/commits/:page']
+pub fn (mut app App) commits(user, repo string, page int) vweb.Result {
 	if !app.exists_user_repo(user, repo) {
 		return app.vweb.not_found()
 	}
 	app.show_menu = true
-	page := if page_str.len >= 1 { page_str.int() } else { 0 }
 	mut commits := app.find_repo_commits_as_page(app.repo.id, page)
 	mut b_author := false
 	mut last := false
@@ -543,17 +538,12 @@ pub fn (mut app App) commit(user, repo, hash string) vweb.Result {
 }
 
 ['/:user/:repo/issues']
-pub fn (mut app App) issues2(user, repo string) vweb.Result {
-	return app.issues(user, repo, '0')
-}
-
-['/:user/:repo/issues/:page_str']
-pub fn (mut app App) issues(user, repo, page_str string) vweb.Result {
+['/:user/:repo/issues/:page']
+pub fn (mut app App) issues(user, repo string, page int) vweb.Result {
 	if !app.exists_user_repo(user, repo) {
 		app.vweb.not_found()
 	}
 	app.show_menu = true
-	page := if page_str.len >= 1 { page_str.int() } else { 0 }
 	mut issues := app.find_repo_issues_as_page(app.repo.id, page)
 	mut first := false
 	mut last := false
@@ -729,8 +719,9 @@ pub fn (mut app App) new_issue(user, repo string) vweb.Result {
 	return $vweb.html()
 }
 
-['/:user/:repo/new_issue_post']
-pub fn (mut app App) new_issue_post(user, repo string) vweb.Result {
+[post]
+['/:user/:repo/issues/new']
+pub fn (mut app App) add_issue(user, repo string) vweb.Result {
 	if !app.exists_user_repo(user, repo) {
 		return app.vweb.not_found()
 	}
@@ -755,8 +746,9 @@ pub fn (mut app App) new_issue_post(user, repo string) vweb.Result {
 	return app.vweb.redirect('/$user/$repo/issues')
 }
 
-['/:user/:repo/comment_post']
-pub fn (mut app App) comment_post(user, repo string) vweb.Result {
+[post]
+['/:user/:repo/comment']
+pub fn (mut app App) add_comment(user, repo string) vweb.Result {
 	if !app.exists_user_repo(user, repo) {
 		return app.vweb.not_found()
 	}

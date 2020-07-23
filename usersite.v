@@ -32,7 +32,10 @@ pub fn (mut app App) user(username string) vweb.Result {
 
 ['/:username/repos']
 pub fn (mut app App) user_repos(username string) vweb.Result {
+	println(username)
 	exists, u := app.check_username(username)
+	println(exists)
+	println(u)
 	if !exists {
 		return app.vweb.not_found()
 	}
@@ -42,12 +45,8 @@ pub fn (mut app App) user_repos(username string) vweb.Result {
 }
 
 ['/:username/issues']
-pub fn (mut app App) user_issues2(username string) vweb.Result {
-	return app.user_issues(username, '0')
-}
-
-['/:username/issues/:page_str']
-pub fn (mut app App) user_issues(username, page_str string) vweb.Result {
+['/:username/issues/:page']
+pub fn (mut app App) user_issues(username string, page int) vweb.Result {
 	if !app.logged_in {
 		return app.vweb.not_found()
 	}
@@ -59,7 +58,6 @@ pub fn (mut app App) user_issues(username, page_str string) vweb.Result {
 		return app.vweb.not_found()
 	}
 	user := u
-	page := if page_str.len >= 1 { page_str.int() } else { 0 }
 	mut issues := app.find_user_issues(user.id)
 	mut first := false
 	mut last := false
@@ -100,8 +98,9 @@ pub fn (mut app App) user_settings(user string) vweb.Result {
 	return $vweb.html()
 }
 
-['/:user/settings_post']
-pub fn (mut app App) user_settings_post(user string) vweb.Result {
+[post]
+['/:user/settings']
+pub fn (mut app App) update_user_settings(user string) vweb.Result {
 	if !app.logged_in || user != app.user.username {
 		return app.r_home()
 	}

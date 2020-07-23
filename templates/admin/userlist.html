@@ -5,7 +5,7 @@
 .users {
 	@for user in userlist
 		.user_item {
-			<form action='/admin/edituser_post/@user.id' method='post'>
+			<form action='/admin/edituser/@user.id' method='post'>
 				<label>@user.username</label><br>
 				<ul>
 					@for email in user.emails

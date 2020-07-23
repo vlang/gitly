@@ -7,7 +7,7 @@ import time
 import rand
 import math
 
-//['/login']
+['/login']
 pub fn (mut app App) login() vweb.Result {
 	csrf := rand.string(30)
 	app.vweb.set_cookie(name:'csrf', value:csrf)
@@ -17,7 +17,9 @@ pub fn (mut app App) login() vweb.Result {
 	return $vweb.html()
 }
 
-pub fn (mut app App) login_post() vweb.Result {
+[post]
+['/login']
+pub fn (mut app App) handle_login() vweb.Result {
 	if app.only_gh_login {
 		return app.r_home()
 	}
@@ -112,6 +114,7 @@ pub fn (mut app App) get_user_from_cookies() ?User {
 	return user
 }
 
+['/register']
 pub fn (mut app App) register() vweb.Result {
 	if app.only_gh_login {
 		return app.r_home()
@@ -120,7 +123,9 @@ pub fn (mut app App) register() vweb.Result {
 	return $vweb.html()
 }
 
-pub fn (mut app App) register_post() vweb.Result {
+[post]
+['/register']
+pub fn (mut app App) handle_register() vweb.Result {
 	if app.only_gh_login {
 		return app.r_home()
 	}
