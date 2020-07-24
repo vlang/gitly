@@ -101,6 +101,6 @@ fn (mut app App) inc_issue_comments(id int) {
 	}
 }
 
-fn (i Issue) relative_time() string {
+fn (i &Issue) relative_time() string {
 	return time.unix(i.created_at).relative()
 }
