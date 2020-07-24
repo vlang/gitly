@@ -10,10 +10,11 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: vlang/v
-      - name: Checkout gitly2
+      - name: Checkout gitly
         uses: actions/checkout@v2
         with:
           path: gitly
+      - run: git checkout HEAD^
       - name: Install SQLite Dependencies
         run: sudo apt install libsqlite3-dev          
       - name: Install Markdown
@@ -36,10 +37,11 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: vlang/v
-      - name: Checkout gitly2
+      - name: Checkout gitly
         uses: actions/checkout@v2
         with:
-          path: gitly          
+          path: gitly
+      - run: git checkout HEAD^         
       - name: Install Markdown
         uses: actions/checkout@v2
         with:
@@ -96,10 +98,11 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: vlang/v
-      - name: Checkout gitly2
+      - name: Checkout gitly
         uses: actions/checkout@v2
         with:
           path: gitly
+      - run: git checkout HEAD^
       - name: Install SQLite
         run: |
           .github\workflows\windows-install-sqlite.bat
@@ -125,10 +128,11 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: vlang/v
-      - name: Checkout gitly2
+      - name: Checkout gitly
         uses: actions/checkout@v2
         with:
           path: gitly
+      - run: git checkout HEAD^
       - name: Install SQLite Dependencies
         run: sudo apt install libsqlite3-dev          
       - name: Install Markdown
