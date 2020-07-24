@@ -55,7 +55,7 @@ enum RepoStatus {
 
 fn (mut app App) update_repo() {
 	mut r := app.repo
-	wg := sync.new_waitgroup()
+	mut wg := sync.new_waitgroup()
 	wg.add(1)
 	go r.analyse_lang(wg, app)
 	data := r.git('--no-pager log --abbrev-commit --abbrev=7 --pretty="%h$log_field_separator%aE$log_field_separator%cD$log_field_separator%s$log_field_separator%aN"')
@@ -128,7 +128,7 @@ fn (mut app App) update_repo_data(repo Repo) {
 	r.git('fetch --all')
 	r.git('pull --all')
 
-	wg := sync.new_waitgroup()
+	mut wg := sync.new_waitgroup()
 	wg.add(1)
 	go r.analyse_lang(wg, app)
 
@@ -186,7 +186,7 @@ fn (mut app App) update_repo_data(repo Repo) {
 	app.info('Repo updated')
 }
 
-fn (r Repo) analyse_lang(wg &sync.WaitGroup, app &App) {
+fn (r Repo) analyse_lang(mut wg &sync.WaitGroup, app &App) {
 	files := r.get_all_files(r.git_dir)
 	mut all_size := 0
 	mut lang_stats := map[string]int{}
@@ -305,7 +305,7 @@ fn (r Repo) get_all_files(path string) []string {
 	return returnval
 }
 
-fn (r &Repo) nr_commits_fmt() vweb.RawHtml {
+fn (r Repo) nr_commits_fmt() vweb.RawHtml {
 	nr := r.nr_commits
 	if nr == 1 {
 		return '<b>1</b> commit'
@@ -313,7 +313,7 @@ fn (r &Repo) nr_commits_fmt() vweb.RawHtml {
 	return '<b>$nr</b> commits'
 }
 
-fn (r &Repo) nr_branches_fmt() vweb.RawHtml {
+fn (r Repo) nr_branches_fmt() vweb.RawHtml {
 	nr := r.nr_branches
 	if nr == 1 {
 		return '<b>1</b> branch'
@@ -321,7 +321,7 @@ fn (r &Repo) nr_branches_fmt() vweb.RawHtml {
 	return '<b>$nr</b> branches'
 }
 
-fn (r &Repo) nr_open_prs_fmt() vweb.RawHtml {
+fn (r Repo) nr_open_prs_fmt() vweb.RawHtml {
 	nr := r.nr_open_prs
 	if nr == 1 {
 		return '<b>1</b> pull request'
@@ -329,7 +329,7 @@ fn (r &Repo) nr_open_prs_fmt() vweb.RawHtml {
 	return '<b>$nr</b> pull requests'
 }
 
-fn (r &Repo) nr_open_issues_fmt() vweb.RawHtml {
+fn (r Repo) nr_open_issues_fmt() vweb.RawHtml {
 	nr := r.nr_open_issues
 	if nr == 1 {
 		return '<b>1</b> issue'
@@ -337,7 +337,7 @@ fn (r &Repo) nr_open_issues_fmt() vweb.RawHtml {
 	return '<b>$nr</b> issues'
 }
 
-fn (r &Repo) nr_contributors_fmt() vweb.RawHtml {
+fn (r Repo) nr_contributors_fmt() vweb.RawHtml {
 	nr := r.nr_contributors
 	if nr == 1 {
 		return '<b>1</b> contributor'
@@ -345,7 +345,7 @@ fn (r &Repo) nr_contributors_fmt() vweb.RawHtml {
 	return '<b>$nr</b> contributors'
 }
 
-fn (r &Repo) nr_topics_fmt() vweb.RawHtml {
+fn (r Repo) nr_topics_fmt() vweb.RawHtml {
 	nr := r.nr_topics
 	if nr == 1 {
 		return '<b>1</b> discussion'
@@ -353,7 +353,7 @@ fn (r &Repo) nr_topics_fmt() vweb.RawHtml {
 	return '<b>$nr</b> discussions'
 }
 
-fn (r &Repo) nr_releases_fmt() vweb.RawHtml {
+fn (r Repo) nr_releases_fmt() vweb.RawHtml {
 	nr := r.nr_releases
 	if nr == 1 {
 		return '<b>1</b> release'
@@ -361,7 +361,7 @@ fn (r &Repo) nr_releases_fmt() vweb.RawHtml {
 	return '<b>$nr</b> releases'
 }
 
-fn (r &Repo) git(cmd_ string) string {
+fn (r Repo) git(cmd_ string) string {
 	mut cmd := cmd_
 	if cmd.contains('&') || cmd.contains(';') {
 		return ''
@@ -387,7 +387,7 @@ fn (r &Repo) git(cmd_ string) string {
 	return res
 }
 
-fn (r &Repo) parse_ls(ls, branch string) ?File {
+fn (r Repo) parse_ls(ls, branch string) ?File {
 	words := ls.fields()
 	// println(words)
 	if words.len < 4 {
@@ -471,7 +471,7 @@ fn (mut app App) cache_repo_files(mut r Repo, branch, path string) []File {
 	return dirs
 }
 
-fn (r &Repo) html_path_to(path, branch string) vweb.RawHtml {
+fn (r Repo) html_path_to(path, branch string) vweb.RawHtml {
 	vals := path.trim_space().trim_right('/').split('/')
 	mut res := ''
 	mut growp := ''

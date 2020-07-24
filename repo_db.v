@@ -179,7 +179,7 @@ fn (mut app App) create_tables() {
 	])
 }
 
-fn (app &App) update_repo_in_db(repo &Repo) {
+fn (mut app App) update_repo_in_db(repo &Repo) {
 	id := repo.id
 	desc := repo.description
 	nr_views := repo.nr_views
@@ -196,7 +196,7 @@ fn (app &App) update_repo_in_db(repo &Repo) {
 	}
 }
 
-fn (app &App) find_repo_by_name(user int, name string) ?Repo {
+fn (mut app App) find_repo_by_name(user int, name string) ?Repo {
 	x := sql app.db {
 		select from Repo where name == name && user_id == user limit 1
 	}
@@ -206,25 +206,25 @@ fn (app &App) find_repo_by_name(user int, name string) ?Repo {
 	return x
 }
 
-fn (app &App) nr_user_repos(user_id int) int {
+fn (mut app App) nr_user_repos(user_id int) int {
 	return sql app.db {
 		select count from Repo where user_id == user_id
 	}
 }
 
-fn (app &App) find_user_repos(user_id int) []Repo {
+fn (mut app App) find_user_repos(user_id int) []Repo {
 	return sql app.db {
 		select from Repo where user_id == user_id
 	}
 }
 
-fn (app &App) find_repo_by_id(repo_id int) Repo {
+fn (mut app App) find_repo_by_id(repo_id int) Repo {
 	return sql app.db {
 		select from Repo where id == repo_id
 	}
 }
 
-fn (app &App) exists_user_repo(user, name string) bool {
+fn (mut app App) exists_user_repo(user, name string) bool {
 	if user.len == 0 || name.len == 0 {
 		app.info('User or repo was not found')
 		return false
@@ -242,7 +242,7 @@ fn (app &App) exists_user_repo(user, name string) bool {
 	return true
 }
 
-fn (app &App) retrieve_repo(id int) Repo {
+fn (mut app App) retrieve_repo(id int) Repo {
 	return app.repo
 }
 

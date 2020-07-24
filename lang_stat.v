@@ -28,7 +28,7 @@ struct LangStat {
 	color    string
 }
 
-pub fn (l &LangStat) pct_html() vweb.RawHtml {
+pub fn (l LangStat) pct_html() vweb.RawHtml {
 	x := f64(l.pct) / 10.0
 	sloc := if l.nr_lines < 1000 { l.nr_lines.str() } else { (l.nr_lines / 1000).str() + 'k' }
 	return '<span>$x%</span> <span class=lang-stat-loc>$sloc loc</span>'

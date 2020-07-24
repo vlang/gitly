@@ -30,7 +30,7 @@ fn (f File) url() string {
 	return '$typ/$f.branch/$f.parent_path/$f.name'
 }
 
-fn (f &File) full_path() string {
+fn (f File) full_path() string {
 	if f.parent_path == '' {
 		return f.name
 	}

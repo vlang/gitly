@@ -301,7 +301,7 @@ pub fn (mut app App) nr_repo_contributor(id int) int {
 	}
 }
 
-pub fn (mut app App) inc_user_post(user &User) {
+pub fn (mut app App) inc_user_post(mut user User) {
 	user.nr_posts++
 	u := *user
 	id := u.id
