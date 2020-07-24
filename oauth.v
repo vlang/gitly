@@ -90,7 +90,7 @@ pub fn (mut app App) oauth() vweb.Result {
 	return app.r_home()
 }
 
-fn (app &App) get_oauth_tokens_from_db() {
+fn (mut app &App) get_oauth_tokens_from_db() {
 	data := sql app.db {
 		select from GitlySettings limit 1
 	}
@@ -98,5 +98,3 @@ fn (app &App) get_oauth_tokens_from_db() {
 	app.oauth_client_secret = data.oauth_client_secret
 	app.only_gh_login = data.only_gh_login
 }
-
-
