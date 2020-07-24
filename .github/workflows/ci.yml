@@ -10,7 +10,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: vlang/v
-      - name: Checkout gitly2
+      - name: Checkout gitly
         uses: actions/checkout@v2
         with:
           path: gitly
@@ -36,10 +36,10 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: vlang/v
-      - name: Checkout gitly2
+      - name: Checkout gitly
         uses: actions/checkout@v2
         with:
-          path: gitly          
+          path: gitly
       - name: Install Markdown
         uses: actions/checkout@v2
         with:
@@ -96,7 +96,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: vlang/v
-      - name: Checkout gitly2
+      - name: Checkout gitly
         uses: actions/checkout@v2
         with:
           path: gitly
@@ -125,7 +125,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: vlang/v
-      - name: Checkout gitly2
+      - name: Checkout gitly
         uses: actions/checkout@v2
         with:
           path: gitly

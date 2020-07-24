@@ -55,9 +55,10 @@ enum RepoStatus {
 
 fn (mut app App) update_repo() {
 	mut r := app.repo
-	wg := sync.new_waitgroup()
+	mut wg := sync.new_waitgroup()
 	wg.add(1)
-	go r.analyse_lang(wg, app)
+	r_p := &r
+	go r_p.analyse_lang(wg, app)
 	data := r.git('--no-pager log --abbrev-commit --abbrev=7 --pretty="%h$log_field_separator%aE$log_field_separator%cD$log_field_separator%s$log_field_separator%aN"')
 	mut tmp_commit := Commit{}
 	app.db.exec('BEGIN TRANSACTION')
@@ -128,9 +129,10 @@ fn (mut app App) update_repo_data(repo Repo) {
 	r.git('fetch --all')
 	r.git('pull --all')
 
-	wg := sync.new_waitgroup()
+	mut wg := sync.new_waitgroup()
 	wg.add(1)
-	go r.analyse_lang(wg, app)
+	r_p := &r
+	go r_p.analyse_lang(wg, app)
 
 	data := r.git('--no-pager log ${last_commit.hash}.. --abbrev-commit --abbrev=7 --pretty="%h$log_field_separator%aE$log_field_separator%cD$log_field_separator%s$log_field_separator%aN"')
 
@@ -186,7 +188,7 @@ fn (mut app App) update_repo_data(repo Repo) {
 	app.info('Repo updated')
 }
 
-fn (r Repo) analyse_lang(wg &sync.WaitGroup, app &App) {
+fn (r &Repo) analyse_lang(mut wg &sync.WaitGroup, app &App) {
 	files := r.get_all_files(r.git_dir)
 	mut all_size := 0
 	mut lang_stats := map[string]int{}
@@ -287,7 +289,7 @@ fn calc_lines_of_code(lines []string, lang hl.Lang) int {
 	return size
 }
 
-fn (r Repo) get_all_files(path string) []string {
+fn (r &Repo) get_all_files(path string) []string {
 	files := os.ls(path) or {
 		return []
 	}
@@ -471,7 +473,7 @@ fn (mut app App) cache_repo_files(mut r Repo, branch, path string) []File {
 	return dirs
 }
 
-fn (r &Repo) html_path_to(path, branch string) vweb.RawHtml {
+fn (r Repo) html_path_to(path, branch string) vweb.RawHtml {
 	vals := path.trim_space().trim_right('/').split('/')
 	mut res := ''
 	mut growp := ''
