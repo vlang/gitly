@@ -2,6 +2,9 @@ FROM alpine:3.12
 
 LABEL maintainer="shiipou <shiishii@nocturlab.fr>"
 
+ENV GITLY_OAUTH_CLIENT_ID ${GITLY_OAUTH_CLIENT_ID}
+ENV GITLY_OAUTH_SECRET ${GITLY_OAUTH_SECRET}
+
 ENV V_HOME /opt/v
 ENV GITLY_HOME /opt/gitly
 
@@ -16,6 +19,7 @@ RUN apk --no-cache add \
   musl-dev \
   openssl-dev sqlite-dev \
   libx11-dev glfw-dev freetype-dev \
+  libsqlite3-dev \
   sassc
 
 RUN apk --no-cache add --virtual sdl2deps sdl2-dev sdl2_ttf-dev sdl2_mixer-dev sdl2_image-dev
@@ -25,11 +29,15 @@ RUN git clone https://github.com/vlang/v ${V_HOME} \
  && ${V_HOME}/v symlink \
  && v version
 
+RUN v install markdown
+
 WORKDIR ${GITLY_HOME}
 
-COPY . ${GITLY_HOME}
-
-RUN sassc ${GITLY_HOME}/static/css/gitly.scss > ${GITLY_HOME}/static/css/gitly.css \
+RUN git clone https://github.com/spytheman/gitly.git ${GITLY_HOME} \
+ && ls -lia \
+ && sassc ${GITLY_HOME}/static/css/gitly.scss > ${GITLY_HOME}/static/css/gitly.css \
  && v .
+
+EXPOSE 8080
 
 CMD ${GITLY_HOME}/gitly
