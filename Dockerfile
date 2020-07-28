@@ -33,9 +33,8 @@ RUN v install markdown
 
 WORKDIR ${GITLY_HOME}
 
-RUN git clone https://github.com/spytheman/gitly.git ${GITLY_HOME} \
- && ls -lia \
- && sassc ${GITLY_HOME}/static/css/gitly.scss > ${GITLY_HOME}/static/css/gitly.css \
+COPY . .
+RUN sassc ${GITLY_HOME}/static/css/gitly.scss > ${GITLY_HOME}/static/css/gitly.css \
  && v .
 
 EXPOSE 8080
