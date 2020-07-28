@@ -22,7 +22,7 @@ fn (s GitService) to_str() string {
 // /vlang/info/refs?service=git-upload-pack
 fn (mut app App) git_info() vweb.Result {
 	app.info('/info/refs')
-	app.info(app.vweb.req.method)
+	app.info(app.vweb.req.method.str())
 	// Get service type from the git request.
 	// Receive (git push) or upload	(git pull)
 	url := app.vweb.req.url
