@@ -9,6 +9,9 @@ ENV GITLY_HOME /opt/gitly
 
 WORKDIR ${GITLY_HOME}
 
+RUN apk --no-cache add \
+  sassc
+
 RUN v install markdown
 
 COPY . .
