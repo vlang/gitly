@@ -42,7 +42,7 @@ jobs:
         
     - name: Build & Push
       run: |
-        IMAGE_ID=vlang/gitly
+        IMAGE_ID=thevlang/gitly
         # Change all uppercase to lowercase
         IMAGE_ID=$(echo ${IMAGE_ID} | tr '[A-Z]' '[a-z]')
         # Strip git ref prefix from version
@@ -79,9 +79,10 @@ jobs:
         fi
         echo "::set-env name=BRANCH_NAME::${BRANCH_NAME}"
     - run: |
-        IMAGE_ID=vlang/gitly
+        IMAGE_ID=thevlang/gitly
         # Change all uppercase to lowercase
         IMAGE_ID=$(echo ${IMAGE_ID} | tr '[A-Z]' '[a-z]')
+        
         echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u ${{ secrets.DOCKER_USER }} --password-stdin
         
         docker manifest create ${IMAGE_ID}:${{ env.BRANCH_NAME }} \
