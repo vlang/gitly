@@ -79,9 +79,9 @@
 			}
 		@else
 			<a href='/login' class='login-button'>Sign in</a>
-			<!--
-			<a href='/register'>Register</a>
-			-->
+			@if !app.only_gh_login
+				<a href='/register' class="login-button" style="margin-left: 5px">Register</a>
+			@end
 		@end
 	</div>
 }
