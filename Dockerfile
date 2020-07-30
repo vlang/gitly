@@ -18,11 +18,8 @@ RUN apk --no-cache add \
   git make upx gcc \
   musl-dev \
   openssl-dev sqlite-dev \
-  libx11-dev glfw-dev freetype-dev \
   libsqlite3-dev \
   sassc
-
-RUN apk --no-cache add --virtual sdl2deps sdl2-dev sdl2_ttf-dev sdl2_mixer-dev sdl2_image-dev
 
 RUN git clone https://github.com/vlang/v ${V_HOME} \
  && make \
