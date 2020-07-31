@@ -18,7 +18,6 @@ RUN apk --no-cache add \
   git make upx gcc \
   musl-dev \
   openssl-dev sqlite-dev \
-  libsqlite3-dev \
   sassc
 
 RUN git clone https://github.com/vlang/v ${V_HOME} \
