@@ -108,7 +108,7 @@ pub fn highlight_text(st, ext string, commit bool) (string, int, int) {
 			for i in 0 .. delta {
 				data << runes[word_start + i]
 			}
-			w := string(data)
+			w := data.bytestr()
 			pos--
 			if w in lang.keywords {
 				res << '<b>$w</b>'.bytes()
@@ -132,7 +132,7 @@ pub fn highlight_text(st, ext string, commit bool) (string, int, int) {
 	}
 	res << '</tr>'.bytes()
 	res << '</table>'.bytes()
-	return string(res, res.len), lines, sloc
+	return res.bytestr(), lines, sloc
 }
 
 fn write(c byte) []byte {
