@@ -740,7 +740,7 @@ pub fn (mut app App) add_issue(user, repo string) vweb.Result {
 		author_id: app.user.id
 		created_at: int(time.now().unix)
 	}
-	app.inc_user_post(app.user)
+	app.inc_user_post(mut app.user)
 	app.insert_issue(issue)
 	app.inc_repo_issues(app.repo.id)
 	return app.vweb.redirect('/$user/$repo/issues')
@@ -767,5 +767,3 @@ pub fn (mut app App) add_comment(user, repo string) vweb.Result {
 	app.inc_issue_comments(comm.issue_id)
 	return app.vweb.redirect('/$user/$repo/issue/$issue_id')
 }
-
-
