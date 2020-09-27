@@ -58,7 +58,7 @@ fn (mut app App) update_repo() {
 	mut wg := sync.new_waitgroup()
 	wg.add(1)
 	r_p := &r
-	go r_p.analyse_lang(wg, app)
+	go r_p.analyse_lang(mut wg, app)
 	data := r.git('--no-pager log --abbrev-commit --abbrev=7 --pretty="%h$log_field_separator%aE$log_field_separator%cD$log_field_separator%s$log_field_separator%aN"')
 	mut tmp_commit := Commit{}
 	app.db.exec('BEGIN TRANSACTION')
@@ -132,7 +132,7 @@ fn (mut app App) update_repo_data(repo Repo) {
 	mut wg := sync.new_waitgroup()
 	wg.add(1)
 	r_p := &r
-	go r_p.analyse_lang(wg, app)
+	go r_p.analyse_lang(mut wg, app)
 
 	data := r.git('--no-pager log ${last_commit.hash}.. --abbrev-commit --abbrev=7 --pretty="%h$log_field_separator%aE$log_field_separator%cD$log_field_separator%s$log_field_separator%aN"')
 
