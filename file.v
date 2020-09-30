@@ -62,7 +62,7 @@ fn (mut app App) find_repo_files(repo_id2 int, branch, parent_path string) []Fil
 }
 
 fn (mut app App) find_repo_file_by_path(repo_id int, branch, path string) ?File {
-	parent_path := os.base_dir(path)
+	parent_path := os.dir(path)
 	name := path.after('/')
 	app.info('find file parent_path=$parent_path name=$name')
 	file := sql app.db {

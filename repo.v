@@ -396,7 +396,7 @@ fn (r &Repo) parse_ls(ls, branch string) ?File {
 		return none
 	}
 	typ := words[1]
-	mut parent_path := os.base_dir(words[3])
+	mut parent_path := os.dir(words[3])
 	hash := r.git('log -n 1 --format="%h" ${words[3]}')
 	println(hash)
 	name := words[3].after('/') // os.basename(words[3])
