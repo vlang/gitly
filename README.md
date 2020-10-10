@@ -17,10 +17,10 @@ https://gitly.org
 The V web framework and Gitly are at an early stage of development. Lots of features are missing.
 The biggest missing features that will be implemented soon:
 
-- <strike>Multiple users and multiple repos</strike>
-- `git push`
-- Access via ssh
-- Pull requests
+- [x] <strike>Multiple users and multiple repos</strike>
+- [ ] `git push`
+- [ ] Access via ssh
+- [ ] Pull requests
 
 ```sh
 sassc static/css/gitly.scss > static/css/gitly.css
@@ -36,7 +36,7 @@ wget -O static/css/gitly.css https://gitly.org/gitly.css
 Required dependencies:
 * V 0.1.28.1 (https://vlang.io)
 * SQLite (Ubuntu/Debian: `libsqlite3-dev`)
-<---* Markdown (`v install markdown`) ->>
+<!--* Markdown (`v install markdown`) -->
 * sassc
 
 Gitly will support Postgres and MySQL in the future (once V ORM does).
