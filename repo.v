@@ -14,16 +14,16 @@ struct Repo {
 	name               string
 	user_id            int
 	user_name          string
-	clone_url          string [skip]
+	clone_url          string            [skip]
 	primary_branch     string
 	description        string
-	is_public          bool [skip]
-	users_contributed  []string [skip]
-	users_authorized   []string [skip]
-	nr_topics          int [skip]
+	is_public          bool              [skip]
+	users_contributed  []string          [skip]
+	users_authorized   []string          [skip]
+	nr_topics          int               [skip]
 	nr_views           int
-	latest_update_hash string [skip]
-	latest_activity    time.Time [skip]
+	latest_update_hash string            [skip]
+	latest_activity    time.Time         [skip]
 mut:
 	webhook_secret     string
 	nr_tags            int
@@ -31,12 +31,12 @@ mut:
 	nr_open_prs        int
 	nr_releases        int
 	nr_branches        int
-	lang_stats         []LangStat [skip]
+	lang_stats         []LangStat        [skip]
 	created_at         int // time.Time
 	nr_contributors    int
 	nr_commits         int
-	labels             []Label [skip]
-	status             RepoStatus [skip]
+	labels             []Label           [skip]
+	status             RepoStatus        [skip]
 	msg_cache          map[string]string [skip]
 }
 
@@ -95,7 +95,6 @@ fn (mut app App) update_repo() {
 	}
 	app.info(r.nr_contributors.str())
 	app.fetch_branches(r)
-
 	r.nr_commits = app.nr_repo_commits(r.id)
 	r.nr_contributors = app.nr_repo_contributor(r.id)
 	r.nr_branches = app.nr_repo_branches(r.id)
@@ -128,14 +127,11 @@ fn (mut app App) update_repo_data(repo Repo) {
 	last_commit := app.find_repo_last_commit(r.id)
 	r.git('fetch --all')
 	r.git('pull --all')
-
 	mut wg := sync.new_waitgroup()
 	wg.add(1)
 	r_p := &r
 	go r_p.analyse_lang(mut wg, app)
-
 	data := r.git('--no-pager log ${last_commit.hash}.. --abbrev-commit --abbrev=7 --pretty="%h$log_field_separator%aE$log_field_separator%cD$log_field_separator%s$log_field_separator%aN"')
-
 	mut tmp_commit := Commit{}
 	app.db.exec('BEGIN TRANSACTION')
 	for line in data.split_into_lines() {
@@ -169,26 +165,19 @@ fn (mut app App) update_repo_data(repo Repo) {
 			app.insert_commit(tmp_commit)
 		}
 	}
-
 	r.nr_commits = app.nr_repo_commits(r.id)
 	r.nr_contributors = app.nr_repo_contributor(r.id)
 	r.nr_branches = app.nr_repo_branches(r.id)
-
 	app.update_repo_nr_commits(r.id, r.nr_commits)
 	app.update_repo_nr_contributor(r.id, r.nr_contributors)
 	app.update_branches(r)
-
-
-
 	app.update_repo_in_db(r)
-
 	wg.wait()
-
 	app.db.exec('END TRANSACTION')
 	app.info('Repo updated')
 }
 
-fn (r &Repo) analyse_lang(mut wg &sync.WaitGroup, app &App) {
+fn (r &Repo) analyse_lang(mut wg sync.WaitGroup, app &App) {
 	files := r.get_all_files(r.git_dir)
 	mut all_size := 0
 	mut lang_stats := map[string]int{}
@@ -239,7 +228,6 @@ fn (r &Repo) analyse_lang(mut wg &sync.WaitGroup, app &App) {
 			tmp_stats << lang
 		}
 	}
-
 	for lang_stat in d_lang_stats {
 		sql app.db {
 			insert lang_stat into LangStat
@@ -389,7 +377,7 @@ fn (r &Repo) git(cmd_ string) string {
 	return res
 }
 
-fn (r &Repo) parse_ls(ls, branch string) ?File {
+fn (r &Repo) parse_ls(ls string, branch string) ?File {
 	words := ls.fields()
 	// println(words)
 	if words.len < 4 {
@@ -421,7 +409,7 @@ fn (r &Repo) parse_ls(ls, branch string) ?File {
 }
 
 // Fetches all files via `git ls-tree` and saves them in db
-fn (mut app App) cache_repo_files(mut r Repo, branch, path string) []File {
+fn (mut app App) cache_repo_files(mut r Repo, branch string, path string) []File {
 	app.info('Repo.cache_files($r.name branch=$branch path=$path)')
 	app.info('path.len=$path.len')
 	if r.status == .caching {
@@ -473,7 +461,7 @@ fn (mut app App) cache_repo_files(mut r Repo, branch, path string) []File {
 	return dirs
 }
 
-fn (r Repo) html_path_to(path, branch string) vweb.RawHtml {
+fn (r Repo) html_path_to(path string, branch string) vweb.RawHtml {
 	vals := path.trim_space().trim_right('/').split('/')
 	mut res := ''
 	mut growp := ''
@@ -500,7 +488,7 @@ fn (r Repo) html_path_to(path, branch string) vweb.RawHtml {
 
 // fetches last message and last time for each file
 // this is slow, so it's run in the background thread
-fn (mut app App) slow_fetch_files_info(branch, path string) {
+fn (mut app App) slow_fetch_files_info(branch string, path string) {
 	files := app.find_repo_files(app.repo.id, branch, path)
 	// t := time.ticks()
 	// for file in files {
@@ -554,16 +542,16 @@ fn (mut r Repo) clone() {
 	if !r.clone_url.starts_with('https://') || r.clone_url.contains(' ') {
 		return
 	}
-	//defer r.Update()
-	println("starting git clone... $r.clone_url git_dir=$r.git_dir")
-	//"git clone --bare "
+	// defer r.Update()
+	println('starting git clone... $r.clone_url git_dir=$r.git_dir')
+	// "git clone --bare "
 	os.exec('git clone "$r.clone_url" $r.git_dir') or {
-	        r.status = .clone_failed
-	        println("git clone failed:")
-	        return
+		r.status = .clone_failed
+		println('git clone failed:')
+		return
 	}
-	r.git("config receive.denyCurrentBranch ignore")
-	r.git("config core.bare false")
-	r.git("checkout master")
+	r.git('config receive.denyCurrentBranch ignore')
+	r.git('config core.bare false')
+	r.git('checkout master')
 	r.status = .clone_done
 }

@@ -29,12 +29,10 @@ pub fn (mut app App) command_fetcher() {
 					}
 				}
 			} else {
-
-			error('Unkown syntax. Use !<command>')
+				error('Unkown syntax. Use !<command>')
 			}
 		} else {
 			error('Unkown syntax. Use !<command>')
 		}
 	}
 }
-
