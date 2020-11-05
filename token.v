@@ -9,7 +9,7 @@ struct Token {
 	ip string
 }
 
-fn (mut app App) update_user_token(user_id int, token, ip string) string {
+fn (mut app App) update_user_token(user_id int, token string, ip string) string {
 	tok := app.find_user_token(user_id, ip)
 	if tok == '' {
 		new_token := Token{user_id: user_id, value: token, ip: ip }

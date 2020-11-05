@@ -2,12 +2,12 @@
 // Use of this source code is governed by a GPL license that can be found in the LICENSE file.
 module hl
 
-//import markdown
+// import markdown
 const (
 	tab = '        '
 )
 
-pub fn highlight_text(st, ext string, commit bool) (string, int, int) {
+pub fn highlight_text(st string, ext string, commit bool) (string, int, int) {
 	if !commit {
 		if ext.split('.').last().to_lower() == 'md' {
 			// Markdown
@@ -40,7 +40,7 @@ pub fn highlight_text(st, ext string, commit bool) (string, int, int) {
 	mut in_line_comment := false
 	mut in_string := false
 	mut runes := text.bytes()
-	for pos := 0; pos < runes.len - 1; pos++	{
+	for pos := 0; pos < runes.len - 1; pos++ {
 		mut c := runes[pos]
 		if c == `\n` {
 			lines++
@@ -54,7 +54,8 @@ pub fn highlight_text(st, ext string, commit bool) (string, int, int) {
 				res <<
 					'</td></tr>\n<tr><td><a id="$lines" class="no_select" href="#$lines">$lines</a></td><td $class>'.bytes()
 			} else {
-				res << '</td></tr>\n<tr><td><a id="$lines" class="no_select" href="#$lines">$lines</a></td><td>'.bytes()
+				res <<
+					'</td></tr>\n<tr><td><a id="$lines" class="no_select" href="#$lines">$lines</a></td><td>'.bytes()
 			}
 			if in_line_comment {
 				in_line_comment = false

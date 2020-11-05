@@ -62,7 +62,7 @@ fn (mut app App) find_pr_by_id(issue_id int) ?Issue {
 	return pr
 }
 
-fn (mut app App) find_repo_issues_as_page(repo_id, page int) []Issue {
+fn (mut app App) find_repo_issues_as_page(repo_id int, page int) []Issue {
 	off := page * commits_per_page
 	return sql app.db {
 		select from Issue where repo_id == repo_id && is_pr == false limit 35 offset off
