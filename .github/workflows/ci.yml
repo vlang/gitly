@@ -114,7 +114,7 @@ jobs:
           ./make.bat -gcc -skip-path
       - name: Compile gitly
         run: |
-          .\v.exe gitly\
+          .\v.exe gitly
 
   ubuntu-tcc:
     runs-on: ubuntu-latest
