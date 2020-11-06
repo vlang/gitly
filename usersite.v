@@ -29,7 +29,6 @@ pub fn (mut app App) user(username string) vweb.Result {
 	return $vweb.html()
 }
 
-
 ['/:username/repos']
 pub fn (mut app App) user_repos(username string) vweb.Result {
 	println(username)
@@ -116,8 +115,11 @@ pub fn (mut app App) update_user_settings(user string) vweb.Result {
 		app.vweb.error('You can not change your username, limit reached')
 		return app.user_settings(user)
 	}
-	if app.user.last_namechange_time == 0 || app.user.last_namechange_time + namechange_period <= time.now().unix {
-		u := app.find_user_by_username(name) or { User{} }
+	if app.user.last_namechange_time == 0 ||
+		app.user.last_namechange_time + namechange_period <= time.now().unix {
+		u := app.find_user_by_username(name) or {
+			User{}
+		}
 		if u.id != 0 {
 			app.vweb.error('Name already exists')
 			return app.user_settings(user)

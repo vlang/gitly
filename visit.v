@@ -5,10 +5,10 @@ module main
 import time
 
 struct Visit {
-	id int
-	repo_id int
-	url string
-	referer string
+	id         int
+	repo_id    int
+	url        string
+	referer    string
 	created_at int
 }
 

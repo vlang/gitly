@@ -3,8 +3,8 @@
 module main
 
 struct GitlySettings {
-	id int
-	oauth_client_id string
+	id                  int
+	oauth_client_id     string
 	oauth_client_secret string
-	only_gh_login bool = true
+	only_gh_login       bool = true
 }

@@ -1,30 +1,33 @@
 // Copyright (c) 2020 Alexander Medvednikov. All rights reserved.
 // Use of this source code is governed by a GPL license that can be found in the LICENSE file.
 module main
+
 import vweb
 import json
 import net.http
 
 struct OAuthRequest {
-	client_id string
+	client_id     string
 	client_secret string
-	code string
-	state string
+	code          string
+	state         string
 }
 
 struct GitHubUser {
-	username string [json:'login']
-	name string
-	email string
-	avatar string [json:'avatar_url']
+	username string [json: 'login']
+	name     string
+	email    string
+	avatar   string [json: 'avatar_url']
 }
-
 
 pub fn (mut app App) oauth() vweb.Result {
 	code := app.vweb.query['code']
 	state := app.vweb.query['state']
 	if code == '' {
-		app.security_log(user_id: app.user.id, kind: .empty_oauth_code)
+		app.security_log({
+			user_id: app.user.id
+			kind: .empty_oauth_code
+		})
 		app.info('Code is empty')
 		return app.r_home()
 	}
@@ -32,10 +35,15 @@ pub fn (mut app App) oauth() vweb.Result {
 		return app.r_home()
 	}
 	if csrf != state || csrf == '' {
-		app.security_log(user_id: app.user.id, kind: .wrong_oauth_state, arg1: 'csrf=$csrf', arg2:'state=$state')
+		app.security_log({
+			user_id: app.user.id
+			kind: .wrong_oauth_state
+			arg1: 'csrf=$csrf'
+			arg2: 'state=$state'
+		})
 		return app.r_home()
 	}
-	req := OAuthRequest {
+	req := OAuthRequest{
 		client_id: app.oauth_client_id
 		client_secret: app.oauth_client_secret
 		code: code
@@ -68,13 +76,23 @@ pub fn (mut app App) oauth() vweb.Result {
 	println(user_js.text)
 	println(gh_user)
 	if gh_user.email.trim_space().len == 0 {
-		app.security_log(user_id: app.user.id, kind: .empty_oauth_email, arg1:user_js.text)
+		app.security_log({
+			user_id: app.user.id
+			kind: .empty_oauth_email
+			arg1: user_js.text
+		})
 		app.info('Email is empty')
 		return app.r_home()
 	}
-	mut user := app.find_user_by_email(gh_user.email) or { User{} }
+	mut user := app.find_user_by_email(gh_user.email) or {
+		User{}
+	}
 	if !user.is_github {
-		app.security_log(user_id: user.id, kind: .registered_via_github, arg1:user_js.text)
+		app.security_log({
+			user_id: user.id
+			kind: .registered_via_github
+			arg1: user_js.text
+		})
 		app.add_user(gh_user.username, '', [gh_user.email], true)
 		user = app.find_user_by_email(gh_user.email) or {
 			return app.r_home()
@@ -86,7 +104,11 @@ pub fn (mut app App) oauth() vweb.Result {
 		return app.r_home()
 	}
 	app.auth_user(user, ip)
-	app.security_log(user_id: user.id, kind: .logged_in_via_github, arg1:user_js.text)
+	app.security_log({
+		user_id: user.id
+		kind: .logged_in_via_github
+		arg1: user_js.text
+	})
 	return app.r_home()
 }
 
@@ -98,5 +120,3 @@ fn (mut app App) get_oauth_tokens_from_db() {
 	app.oauth_client_secret = data.oauth_client_secret
 	app.only_gh_login = data.only_gh_login
 }
-
-

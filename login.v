@@ -10,7 +10,10 @@ import math
 ['/login']
 pub fn (mut app App) login() vweb.Result {
 	csrf := rand.string(30)
-	app.vweb.set_cookie(name:'csrf', value:csrf)
+	app.vweb.set_cookie({
+		name: 'csrf'
+		value: csrf
+	})
 	if app.logged_in() {
 		return app.vweb.not_found()
 	}
@@ -49,21 +52,32 @@ pub fn (mut app App) handle_login() vweb.Result {
 		return app.r_home()
 	}
 	app.auth_user(user, ip)
-	app.security_log(user_id: user.id, kind: .logged_in)
+	app.security_log({
+		user_id: user.id
+		kind: .logged_in
+	})
 	return app.r_home()
 }
 
 pub fn (mut app App) auth_user(user User, ip string) {
 	_ := time.utc().add_days(expire_length)
-	//token := if user.token == '' { app.add_token(user.id) } else { user.token }
+	// token := if user.token == '' { app.add_token(user.id) } else { user.token }
 	token := app.add_token(user.id, ip)
 	app.update_user_login_attempts(user.id, 0)
-	//println('cookie: setting token=$token id=$user.id')
+	// println('cookie: setting token=$token id=$user.id')
 	expire_date := time.now().add_days(200)
-	app.vweb.set_cookie(name: 'id', value:user.id.str(), expires: expire_date)
-	app.vweb.set_cookie(name:'token', value:token, expires: expire_date)
-	//app.vweb.set_cookie_with_expire_date('id', user.id.str(), expires)
-	//app.vweb.set_cookie_with_expire_date('token', token, expires)
+	app.vweb.set_cookie({
+		name: 'id'
+		value: user.id.str()
+		expires: expire_date
+	})
+	app.vweb.set_cookie({
+		name: 'token'
+		value: token
+		expires: expire_date
+	})
+	// app.vweb.set_cookie_with_expire_date('id', user.id.str(), expires)
+	// app.vweb.set_cookie_with_expire_date('token', token, expires)
 }
 
 pub fn (mut app App) logged_in() bool {
@@ -86,8 +100,14 @@ pub fn (mut app App) logged_in() bool {
 }
 
 pub fn (mut app App) logout() vweb.Result {
-	app.vweb.set_cookie(name:'id', value:'')
-	app.vweb.set_cookie(name:'token', value:'')
+	app.vweb.set_cookie({
+		name: 'id'
+		value: ''
+	})
+	app.vweb.set_cookie({
+		name: 'token'
+		value: ''
+	})
 	return app.r_home()
 }
 
@@ -171,13 +191,16 @@ pub fn (mut app App) handle_register() vweb.Result {
 		app.vweb.error('User already exists')
 		return app.register()
 	}
-	println("register: logging in")
+	println('register: logging in')
 	ip := app.client_ip(user.id.str()) or {
 		app.vweb.error('Failed to register')
 		return app.register()
 	}
 	app.auth_user(user, ip)
-	app.security_log(user_id: user.id, kind: .registered)
+	app.security_log({
+		user_id: user.id
+		kind: .registered
+	})
 	app.only_gh_login = true
 	return app.vweb.redirect('/' + username)
 }
@@ -192,5 +215,3 @@ fn gen_uuid_v4ish() string {
 	f := rand.intn(math.max_i16).hex()
 	return '${a:08}-${b:04}-${c:04}-${d:04}-${e:08}${f:04}'.replace(' ', '0')
 }
-
-

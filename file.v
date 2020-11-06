@@ -53,7 +53,7 @@ fn (mut app App) insert_file(file File) {
 	}
 }
 
-fn (mut app App) find_repo_files(repo_id2 int, branch, parent_path string) []File {
+fn (mut app App) find_repo_files(repo_id2 int, branch string, parent_path string) []File {
 	app.info('find files by repo(repo_id=$repo_id2, parent_path="$parent_path")')
 	mut files := sql app.db {
 		select from File where repo_id == repo_id2 && parent_path == parent_path && branch == branch
@@ -61,7 +61,7 @@ fn (mut app App) find_repo_files(repo_id2 int, branch, parent_path string) []Fil
 	return files
 }
 
-fn (mut app App) find_repo_file_by_path(repo_id int, branch, path string) ?File {
+fn (mut app App) find_repo_file_by_path(repo_id int, branch string, path string) ?File {
 	parent_path := os.dir(path)
 	name := path.after('/')
 	app.info('find file parent_path=$parent_path name=$name')

@@ -8,24 +8,25 @@ import os
 import time
 
 struct User {
-	id            int
-	name          string
-	username      string
-	password      string
-	is_github     bool
-	is_registered bool
-	is_blocked    bool
-	is_admin      bool
-	oauth_state string [skip] // for github oauth XSRF protection
+	id                   int
+	name                 string
+	username             string
+	password             string
+	is_github            bool
+	is_registered        bool
+	is_blocked           bool
+	is_admin             bool
+	oauth_state          string  [skip]
 mut:
-	nr_namechanges int
+	// for github oauth XSRF protection
+	nr_namechanges       int
 	last_namechange_time int
-	nr_posts      int
-	last_post_time int
-	avatar        string
-	b_avatar      bool [skip]
-	emails        []Email [skip]
-	login_attempts int
+	nr_posts             int
+	last_post_time       int
+	avatar               string
+	b_avatar             bool    [skip]
+	emails               []Email [skip]
+	login_attempts       int
 }
 
 struct SshKey {
@@ -49,19 +50,19 @@ struct Contributor {
 }
 
 struct OAuth_Request {
-	client_id string
+	client_id     string
 	client_secret string
-	code string
+	code          string
 }
 
 struct GitHubUser {
-	username string [json:'login']
-	name string
-	email string
-	avatar string [json:'avatar_url']
+	username string [json: 'login']
+	name     string
+	email    string
+	avatar   string [json: 'avatar_url']
 }
 
-fn make_password(password, username string) string {
+fn make_password(password string, username string) string {
 	mut seed := [u32(username[0]), u32(username[1])]
 	rand.seed(seed)
 	salt := rand.i64().str()
@@ -69,18 +70,21 @@ fn make_password(password, username string) string {
 	return sha256.sum(pw.bytes()).hex().str()
 }
 
-fn check_password(password, username, hashed string) bool {
+fn check_password(password string, username string, hashed string) bool {
 	return make_password(password, username) == hashed
 }
 
-pub fn (mut app App) add_user(username, password string, emails []string, github bool) bool {
-	mut user := app.find_user_by_username(username) or { User{} }
+pub fn (mut app App) add_user(username string, password string, emails []string, github bool) bool {
+	mut user := app.find_user_by_username(username) or {
+		User{}
+	}
 	if user.id != 0 && user.is_registered {
 		app.info('User $username already exists')
 		return false
-
 	}
-	user = app.find_user_by_email(emails[0]) or { User{} }
+	user = app.find_user_by_email(emails[0]) or {
+		User{}
+	}
 	if user.id == 0 {
 		user = User{
 			username: username
@@ -109,19 +113,21 @@ pub fn (mut app App) add_user(username, password string, emails []string, github
 		name := user.username
 		if !github {
 			sql app.db {
-				update User set username=username, password=password, name=name, is_registered=true where id==user.id
+				update User set username = username, password = password, name = name, is_registered = true where id ==
+				user.id
 			}
 			app.create_user_dir(username)
 			return true
 		}
 		if user.is_registered {
 			sql app.db {
-				update User set is_github = true where id==user.id
+				update User set is_github = true where id == user.id
 			}
 			return true
 		}
 		sql app.db {
-			update User set username=username, name=name, is_registered=true, is_github = true where id==user.id
+			update User set username = username, name = name, is_registered = true, is_github = true where id ==
+			user.id
 		}
 	}
 	app.create_user_dir(username)
@@ -142,7 +148,7 @@ pub fn (mut app App) update_user_avatar(data string, id int) {
 	}
 }
 
-pub fn (mut app App) create_empty_user(username, email string) int {
+pub fn (mut app App) create_empty_user(username string, email string) int {
 	mut user := User{
 		username: username
 		is_registered: false
@@ -165,28 +171,28 @@ pub fn (mut app App) create_empty_user(username, email string) int {
 }
 
 pub fn (mut app App) insert_user(user User) {
-	//app.info('Insert user: $user.username')
+	// app.info('Insert user: $user.username')
 	sql app.db {
 		insert user into User
 	}
 }
 
 pub fn (mut app App) insert_email(email Email) {
-	//app.info('Inserting email: $email.email')
+	// app.info('Inserting email: $email.email')
 	sql app.db {
 		insert email into Email
 	}
 }
 
 pub fn (mut app App) insert_sshkey(sshkey SshKey) {
-	//app.info('Inserting sshkey: $sshkey.title')
+	// app.info('Inserting sshkey: $sshkey.title')
 	sql app.db {
 		insert sshkey into SshKey
 	}
 }
 
 pub fn (mut app App) insert_contributor(contributor Contributor) {
-	//app.info('Inserting contributor: $contributor.user')
+	// app.info('Inserting contributor: $contributor.user')
 	sql app.db {
 		insert contributor into Contributor
 	}
@@ -275,7 +281,7 @@ pub fn (mut app App) find_repo_registered_contributor(id int) []User {
 	contributors := sql app.db {
 		select from Contributor where repo == id
 	}
-	mut users := []User{cap:contributors.len}
+	mut users := []User{cap: contributors.len}
 	for contrib in contributors {
 		x := app.find_user_by_id(contrib.user) or {
 			continue
@@ -324,7 +330,7 @@ pub fn (mut app App) inc_user_login_attempts(user_id int) {
 	}
 }
 
-pub fn (mut app App) update_user_login_attempts(user_id, attempts int) {
+pub fn (mut app App) update_user_login_attempts(user_id int, attempts int) {
 	sql app.db {
 		update User set login_attempts = attempts where id == user_id
 	}
@@ -350,7 +356,9 @@ pub fn (mut app App) check_user_blocked(user_id int) bool {
 }
 
 pub fn (mut app App) client_ip(username string) ?string {
-	ip := app.vweb.conn.peer_ip() or { return none }
+	ip := app.vweb.conn.peer_ip() or {
+		return none
+	}
 	return make_password(ip, '${username}token')
 }
 
@@ -366,6 +374,7 @@ fn (mut app App) change_username(user_id int, username string) {
 fn (mut app App) inc_namechanges(user_id int) {
 	now := int(time.now().unix)
 	sql app.db {
-		update User set nr_namechanges = nr_namechanges + 1, last_namechange_time = now where id == user_id
+		update User set nr_namechanges = nr_namechanges + 1, last_namechange_time = now where id ==
+		user_id
 	}
 }

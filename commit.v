@@ -88,7 +88,7 @@ fn (mut app App) find_repo_commits(repo_id int) []Commit {
 	}
 }
 
-fn (mut app App) find_repo_commits_as_page(repo_id, page int) []Commit {
+fn (mut app App) find_repo_commits_as_page(repo_id int, page int) []Commit {
 	offs := page * commits_per_page
 	return sql app.db {
 		select from Commit where repo_id == repo_id order by created_at desc limit 35 offset offs
