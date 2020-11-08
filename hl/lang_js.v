@@ -3,7 +3,7 @@ module hl
 fn init_js() Lang {
     return Lang{
         name: 'JavaScript'
-        lang_extensions: ['js', 'mjs']
+        lang_extensions: ['js', 'mjs', 'jsx']
         line_comments: '//'
         mline_comments: ['/*', '*/']
         string_start: ['"', '\'']
@@ -12,7 +12,9 @@ fn init_js() Lang {
             'break', 'do', 'instanceof', 'typeof', 'case', 'else', 'new',
             'var', 'catch', 'finally', 'return', 'void', 'continue', 'for',
             'switch', 'while', 'debugger', 'function', 'this', 'with', 'default',
-            'if', 'throw', 'delete', 'in', 'try', 'as'
+            'if', 'throw', 'delete', 'in', 'try', 'as',
+            'let', 'const', 'import', 'export', 'yield',
+            'false', 'true'
         ]
     }
 }
