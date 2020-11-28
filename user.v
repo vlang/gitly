@@ -230,13 +230,13 @@ pub fn (mut app App) find_username_by_id(id int) string {
 }
 
 pub fn (mut app App) find_user_by_username(username string) ?User {
-	user := sql app.db {
+	users := sql app.db {
 		select from User where username == username
 	}
-	if user.len == 0 {
+	if users.len == 0 {
 		return error('User not found')
 	}
-	mut u := user[0]
+	mut u := users[0]
 	emails := app.find_user_emails(u.id)
 	u.emails = emails
 	return u
