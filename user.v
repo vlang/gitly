@@ -55,13 +55,6 @@ struct OAuth_Request {
 	code          string
 }
 
-struct GitHubUser {
-	username string [json: 'login']
-	name     string
-	email    string
-	avatar   string [json: 'avatar_url']
-}
-
 fn make_password(password string, username string) string {
 	mut seed := [u32(username[0]), u32(username[1])]
 	rand.seed(seed)
