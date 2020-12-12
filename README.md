@@ -32,6 +32,11 @@ If you don't want to install `sassc`, you can simply run
 ```
 wget -O static/css/gitly.css https://gitly.org/gitly.css
 ```
+or, if you do prefer `curl`
+```
+curl https://gitly.org/gitly.css --output static/css/gitly.css
+```
+
 
 Required dependencies:
 * V 0.1.28.1 (https://vlang.io)
