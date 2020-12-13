@@ -169,6 +169,20 @@ pre > code {
 	color: $white;
 	line-height: 50px;
 }
+
+#header a {
+	line-height: 50px;
+	font-size: 20px !important;
+	color: $white;
+}
+
+#header .slash {
+	display: inline;
+	line-height: 50px;
+	font-size: 20px !important;
+	color: $white;
+}
+
 #header {
 	background-color: $black;
 	height: $header-height;
