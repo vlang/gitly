@@ -161,7 +161,13 @@ pre > code {
 	position: absolute;
 	top: 0;
 	right: 0;
-	padding-right: 150px;
+	padding-right: 75px;
+}
+
+.new a {
+	line-height: 50px;
+	font-size: 16px !important;
+	color: $white;
 }
 
 
@@ -170,16 +176,17 @@ pre > code {
 	line-height: 50px;
 }
 
-#header a {
+
+#header a.repo-author, #header a.repo-name {
 	line-height: 50px;
-	font-size: 20px !important;
+	font-size: 16px !important;
 	color: $white;
 }
 
 #header .slash {
 	display: inline;
 	line-height: 50px;
-	font-size: 20px !important;
+	font-size: 16px !important;
 	color: $white;
 }
 
