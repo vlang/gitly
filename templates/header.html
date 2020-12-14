@@ -34,12 +34,12 @@
 			<!--
 			<a href='https://gitly.org/@app.repo.user_name'>@app.repo.user_name</a> /
 			-->
-			<a href='/@app.repo.user_name'>@app.repo.user_name</a> /
+			<a class="repo-author" href='/@app.repo.user_name'>@app.repo.user_name</a> <p class="slash">/</p>
 		@end
 		<!--
 		<a href='/@app.repo.user_name/@app.repo.name'>@app.repo.name</a>
 		-->
-		<a href='/@app.repo.user_name/@app.repo.name'>@app.repo.name</a>
+		<a class="repo-name" href='/@app.repo.user_name/@app.repo.name'>@app.repo.name</a>
 		@end
 	}
 	@if app.logged_in
