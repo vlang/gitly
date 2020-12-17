@@ -201,11 +201,6 @@ pub fn (mut app App) create_new_test_repo() {
 	app.update_repo()
 }
 */
-['/:user/settings']
-pub fn (mut app App) settings() vweb.Result {
-	println('user settings')
-	return app.vweb.text('settings')
-}
 
 ['/:user/:repo/settings']
 pub fn (mut app App) repo_settings(user string, repo string) vweb.Result {
@@ -327,6 +322,7 @@ pub fn (mut app App) tree(user string, repo string, branch string, path string) 
 		go app.slow_fetch_files_info(branch, app.path)
 	}
 	mut readme := vweb.RawHtml('')
+	println(files)
 	for file in files {
 		if file.name.to_lower() == 'readme.md' {
 			blob_path := os.join_path(app.repo.git_dir, '$file.parent_path$file.name')
@@ -442,6 +438,10 @@ pub fn (mut app App) new_repo() vweb.Result {
 }
 
 ['/:user/:repo/commits']
+pub fn (mut app App) commits_0(user string, repo string) vweb.Result {
+	return app.commits(user, repo, 0)
+}
+
 ['/:user/:repo/commits/:page']
 pub fn (mut app App) commits(user string, repo string, page int) vweb.Result {
 	if !app.exists_user_repo(user, repo) {
@@ -519,6 +519,7 @@ pub fn (mut app App) commit(user string, repo string, hash string) vweb.Result {
 	if !app.exists_user_repo(user, repo) {
 		return app.vweb.not_found()
 	}
+	app.show_menu = true
 	commit := app.find_repo_commit_by_hash(app.repo.id, hash)
 	changes := commit.get_changes(app.repo)
 	mut all_adds := 0
@@ -534,6 +535,10 @@ pub fn (mut app App) commit(user string, repo string, hash string) vweb.Result {
 }
 
 ['/:user/:repo/issues']
+pub fn (mut app App) issues_0(user string, repo string) vweb.Result {
+	return app.issues(user, repo, 0)
+}
+
 ['/:user/:repo/issues/:page']
 pub fn (mut app App) issues(user string, repo string, page int) vweb.Result {
 	if !app.exists_user_repo(user, repo) {
@@ -612,6 +617,7 @@ pub fn (mut app App) contributors(user string, repo string) vweb.Result {
 	if !app.exists_user_repo(user, repo) {
 		return app.vweb.not_found()
 	}
+	app.show_menu = true
 	contributors := app.find_repo_registered_contributor(app.repo.id)
 	return $vweb.html()
 }
@@ -710,9 +716,11 @@ pub fn (mut app App) new_issue(user string, repo string) vweb.Result {
 	if !app.exists_user_repo(user, repo) {
 		return app.vweb.not_found()
 	}
+
 	if !app.logged_in {
 		return app.vweb.not_found()
 	}
+	app.show_menu = true
 	return $vweb.html()
 }
 
@@ -763,4 +771,8 @@ pub fn (mut app App) add_comment(user string, repo string) vweb.Result {
 	app.insert_comment(comm)
 	app.inc_issue_comments(comm.issue_id)
 	return app.vweb.redirect('/$user/$repo/issue/$issue_id')
+}
+
+fn (mut app App) rename_user_dir(old_name string, new_name string) {
+	os.mv('$repo_storage_path/$old_name', '$repo_storage_path/$new_name')
 }
