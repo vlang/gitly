@@ -44,6 +44,10 @@ pub fn (mut app App) user_repos(username string) vweb.Result {
 }
 
 ['/:username/issues']
+pub fn (mut app App) user_issues_0(username string) vweb.Result {
+	return app.user_issues(username, 0)
+}
+
 ['/:username/issues/:page']
 pub fn (mut app App) user_issues(username string, page int) vweb.Result {
 	if !app.logged_in {
@@ -126,6 +130,7 @@ pub fn (mut app App) update_user_settings(user string) vweb.Result {
 		}
 		app.change_username(app.user.id, name)
 		app.inc_namechanges(app.user.id)
+		app.rename_user_dir(user, name)
 		return app.vweb.redirect('/$name')
 	}
 	app.vweb.error('You need to wait until you can change the name again')
