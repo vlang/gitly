@@ -79,7 +79,6 @@
     margin-bottom: 5px;
     display: flex;
     align-items: center;
-    justify-content: space-between;
 }
 
 .data-options > div > label {
@@ -89,6 +88,10 @@
 .m-right > div > label {
     margin-left: 0px;
     margin-right: 5px;
+}
+
+.m-right > div {
+    justify-content: space-between;
 }
 
 .m-right > div > input[type='text'] {

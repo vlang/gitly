@@ -4,6 +4,8 @@
 function onClick(id) {
 	elem = document.getElementById(id)
 	elem.style.display = elem.style.display == 'flex' ? 'none' : 'flex'
+	document.getElementById('l_' + id).innerText = 
+		document.getElementById('l_' + id).innerText.toLowerCase().startsWith('show') ? 'Hide user' : 'Show user'
 }
 </script>
 
@@ -24,7 +26,7 @@ function onClick(id) {
 					}
 					<label>@user.username</label>
 				}
-				<label class='data-show-user' onclick='onClick(@user.id)'>Show user</label>
+				<label class='data-show-user' id='l_@user.id' onclick='onClick(@user.id)'>Show user</label>
 				<div class='data-box' id='@user.id'>
 					.clog-block data-emails {
 						<label>User emails</label>
