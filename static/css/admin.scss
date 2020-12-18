@@ -101,3 +101,7 @@
 .settings {
     width: 1000px;
 }
+
+::placeholder {
+    color: rgba(0, 0, 0, 0.8);
+}
