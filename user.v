@@ -128,7 +128,7 @@ pub fn (mut app App) add_user(username string, password string, emails []string,
 }
 
 fn (mut app App) create_user_dir(username string) {
-	user_path := '$repo_storage_path/$username'
+	user_path := '$app.settings.repo_storage_path/$username'
 	os.mkdir(user_path) or {
 		app.info('Failed to create $user_path')
 		app.info('Error: $err')
@@ -289,6 +289,10 @@ pub fn (mut app App) find_registered_user() []User {
 		select from User where is_registered == true
 	}
 	for i, user in users {
+		users[i].b_avatar = user.avatar != ''
+		if !users[i].b_avatar {
+			users[i].avatar = user.username.bytes()[0].str()
+		}
 		users[i].emails = app.find_user_emails(user.id)
 	}
 	return users

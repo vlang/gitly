@@ -23,7 +23,7 @@ pub fn (mut app App) login() vweb.Result {
 [post]
 ['/login']
 pub fn (mut app App) handle_login() vweb.Result {
-	if app.only_gh_login {
+	if app.settings.only_gh_login {
 		return app.r_home()
 	}
 	username := app.vweb.form['username']
@@ -136,7 +136,7 @@ pub fn (mut app App) get_user_from_cookies() ?User {
 
 ['/register']
 pub fn (mut app App) register() vweb.Result {
-	if app.only_gh_login {
+	if app.settings.only_gh_login {
 		return app.r_home()
 	}
 	app.path = ''
@@ -146,7 +146,7 @@ pub fn (mut app App) register() vweb.Result {
 [post]
 ['/register']
 pub fn (mut app App) handle_register() vweb.Result {
-	if app.only_gh_login {
+	if app.settings.only_gh_login {
 		return app.r_home()
 	}
 	username := app.vweb.form['username']
@@ -201,7 +201,7 @@ pub fn (mut app App) handle_register() vweb.Result {
 		user_id: user.id
 		kind: .registered
 	})
-	app.only_gh_login = true
+	app.settings.only_gh_login = true
 	return app.vweb.redirect('/' + username)
 }
 

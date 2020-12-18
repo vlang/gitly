@@ -9,6 +9,7 @@ import log
 import hl
 import crypto.sha1
 import sqlite
+import math
 
 const (
 	commits_per_page   = 35
@@ -17,7 +18,6 @@ const (
 	posts_per_day      = 5
 	max_username_len   = 32
 	max_login_attempts = 5
-	repo_storage_path  = './repos'
 	max_user_repos     = 5
 	max_repo_name_len  = 20
 	max_namechanges    = 3
@@ -26,6 +26,7 @@ const (
 
 struct App {
 mut:
+	started_at          u64
 	path                string // current path being viewed
 	repo                Repo
 	version             string
@@ -33,9 +34,7 @@ mut:
 	page_gen_time       string
 	is_tree             bool
 	show_menu           bool
-	oauth_client_id     string
-	oauth_client_secret string
-	only_gh_login       bool
+	settings            GitlySettings
 pub mut:
 	file_log            log.Log
 	cli_log             log.Log
@@ -68,6 +67,7 @@ pub fn (mut app App) error(msg string) {
 }
 */
 pub fn (mut app App) init_once() {
+	app.started_at = time.now().unix
 	os.mkdir('logs')
 	app.file_log = log.Log{}
 	app.cli_log = log.Log{}
@@ -100,21 +100,22 @@ pub fn (mut app App) init_once() {
 		panic(err)
 	}
 	app.create_tables()
-	app.oauth_client_id = os.getenv('GITLY_OAUTH_CLIENT_ID')
+	/*app.oauth_client_id = os.getenv('GITLY_OAUTH_CLIENT_ID')
 	app.oauth_client_secret = os.getenv('GITLY_OAUTH_SECRET')
 	if app.oauth_client_id == '' {
 		app.get_oauth_tokens_from_db()
-	}
-	if !os.exists(repo_storage_path) {
-		os.mkdir(repo_storage_path) or {
-			app.info('Failed to create $repo_storage_path')
+	}*/
+	app.load_settings()
+	if !os.exists(app.settings.repo_storage_path) {
+		os.mkdir(app.settings.repo_storage_path) or {
+			app.info('Failed to create $app.settings.repo_storage_path')
 			app.info('Error: $err')
 			exit(1)
 		}
 	}
 	// Create the first admin user if the db is empty
 	app.find_user_by_id(1) or {
-		app.only_gh_login = false // allow admin to register
+		app.settings.only_gh_login = false // allow admin to register
 		/*
 		println('Creating admin...')
 		user := User{
@@ -411,7 +412,7 @@ pub fn (mut app App) new_repo() vweb.Result {
 	}
 	app.repo = Repo{
 		name: name
-		git_dir: os.join_path(repo_storage_path, app.user.username, name)
+		git_dir: os.join_path(app.settings.repo_storage_path, app.user.username, name)
 		user_id: app.user.id
 		primary_branch: 'master'
 		user_name: app.user.username
@@ -774,5 +775,14 @@ pub fn (mut app App) add_comment(user string, repo string) vweb.Result {
 }
 
 fn (mut app App) rename_user_dir(old_name string, new_name string) {
-	os.mv('$repo_storage_path/$old_name', '$repo_storage_path/$new_name')
+	os.mv('$app.settings.repo_storage_path/$old_name', '$app.settings.repo_storage_path/$new_name')
+}
+
+pub fn (mut app App) running_since() string {
+	dur := time.now().unix - app.started_at
+	seconds := dur % 60
+	minutes := int(math.floor(dur / 60)) % 60
+	hours := int(math.floor(minutes / 60)) % 24
+	days := int(math.floor(hours / 24))
+	return '$days days $hours hours $minutes minutes and $seconds seconds'
 }

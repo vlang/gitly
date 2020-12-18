@@ -1,3 +1,33 @@
 @header
 
+<a href="/admin"><h1>Admin panel</h1></a>
+<br>
+
+<h3>Settings</h3>
+<form action='/admin/settings' method='post' class='user-settings settings '>
+    .data-options m-right {
+        <div>
+            <label>OAuth client id</label>
+            <input name='oauth_client_id' type='text' placeholder='e.g.: SJP1JME7H0XN3GBU1DXP'>
+        </div>
+        <div>
+            <label>OAuth client secret</label>
+            <input name='oauth_client_secret' type='text' placeholder='e.g.: 2XL8M65OVQQVV8BXZGOYHV9FX2QG9WJ7IFYGPG2J'>
+        </div>
+        <div>
+            <label>Only GitHub login</label>
+            <input name='only_gh_login' type='checkbox'
+            @if app.settings.only_gh_login
+                checked
+            @end
+            >
+        </div>
+        <div>
+            <label>Repo storage path</label>
+            <input name='repo_storage_path' type='text' value='@app.settings.repo_storage_path'>
+        </div>
+    }
+    <input type='submit' value='Update settings'>
+</form>
+
 @footer
