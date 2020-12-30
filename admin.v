@@ -23,7 +23,23 @@ pub fn (mut app App) update_admin_settings() vweb.Result {
 	if !app.is_admin() {
 		return app.r_home()
 	}
-	return app.vweb.text('TODO')
+	oauth_client_id := app.vweb.form['oauth_client_id']
+	oauth_client_secret := app.vweb.form['oauth_client_secret']
+	only_gh_login := 'only_gh_login' in app.vweb.form
+	repo_storage_path := app.vweb.form['repo_storage_path']
+
+	if oauth_client_id != '' {
+		app.settings.oauth_client_id = oauth_client_id
+	}
+	if oauth_client_secret != '' {
+		app.settings.oauth_client_secret = oauth_client_secret
+	}
+	app.settings.only_gh_login = only_gh_login
+	app.settings.repo_storage_path = repo_storage_path
+
+	app.update_settings()
+
+	return app.vweb.redirect('/admin')
 }
 
 ['/admin/userlist']
@@ -59,6 +75,15 @@ pub fn (mut app App) admin_edituser(user string) vweb.Result {
 		app.clear_sessions(user.int())
 	}
 	return app.vweb.redirect('/admin')
+}
+
+['/admin/statics']
+pub fn (mut app App) admin_statics() vweb.Result {
+	if !app.is_admin() {
+		return app.r_home()
+	}
+
+	return $vweb.html()
 }
 
 fn (mut app App) is_admin() bool {

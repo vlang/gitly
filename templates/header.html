@@ -68,10 +68,10 @@
 				}
 				.links {
 					<a href="/@app.user.username/settings" class="link">Settings</a>
-				}
 				@if app.user.is_admin
 					<a href='/admin' class="link">Admin Panel</a>	
 				@end
+				}
 				.links {
 					<a href='/logout' class="link">Sign out</a>
 				}
@@ -79,7 +79,7 @@
 			}
 		@else
 			<a href='/login' class='login-button'>Sign in</a>
-			@if !app.only_gh_login
+			@if !app.settings.only_gh_login
 				<a href='/register' class="login-button" style="margin-left: 5px">Register</a>
 			@end
 		@end

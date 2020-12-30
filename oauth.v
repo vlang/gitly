@@ -44,8 +44,8 @@ pub fn (mut app App) oauth() vweb.Result {
 		return app.r_home()
 	}
 	req := OAuthRequest{
-		client_id: app.oauth_client_id
-		client_secret: app.oauth_client_secret
+		client_id: app.settings.oauth_client_id
+		client_secret: app.settings.oauth_client_secret
 		code: code
 		state: csrf
 	}
@@ -112,11 +112,20 @@ pub fn (mut app App) oauth() vweb.Result {
 	return app.r_home()
 }
 
-fn (mut app App) get_oauth_tokens_from_db() {
+fn (mut app App) load_settings() {
 	data := sql app.db {
 		select from GitlySettings limit 1
 	}
-	app.oauth_client_id = data.oauth_client_id
-	app.oauth_client_secret = data.oauth_client_secret
-	app.only_gh_login = data.only_gh_login
+	app.settings = data
+}
+
+fn (mut app App) update_settings() {
+	id := app.settings.id
+	oauth_client_id := app.settings.oauth_client_id
+	oauth_client_secret := app.settings.oauth_client_secret
+	only_gh_login := if app.settings.only_gh_login { 1 } else { 0 }
+	repo_storage_path := app.settings.repo_storage_path
+	sql app.db {
+		update GitlySettings set oauth_client_id = oauth_client_id, oauth_client_secret = oauth_client_secret, repo_storage_path = repo_storage_path where id == id
+	}
 }
