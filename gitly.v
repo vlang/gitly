@@ -330,6 +330,7 @@ pub fn (mut app App) tree(user string, repo string, branch string, path string) 
 		go app.slow_fetch_files_info(branch, app.path)
 	}
 	mut readme := vweb.RawHtml('')
+	/*
 	println(files)
 	for file in files {
 		if file.name.to_lower() == 'readme.md' {
@@ -341,6 +342,7 @@ pub fn (mut app App) tree(user string, repo string, branch string, path string) 
 			readme = vweb.RawHtml(src)
 		}
 	}
+	*/
 	// Fetch last commit message for this directory, printed at the top of the tree
 	mut last_commit := Commit{}
 	if can_up {
