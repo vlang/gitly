@@ -290,6 +290,13 @@ pub fn (mut app App) tree(user string, repo string, branch string, path string) 
 	if !app.exists_user_repo(user, repo) {
 		return app.vweb.not_found()
 	}
+	_, u := app.check_username(user)
+	if !app.repo.is_public {
+		if u.id != app.user.id {
+			return app.vweb.not_found()
+		}
+	}
+
 	println('\n\n\ntree() user="$user" repo="' + repo + '"')
 	app.path = '/$path'
 	if app.path.contains('/favicon.svg') {
@@ -408,6 +415,10 @@ pub fn (mut app App) new_repo() vweb.Result {
 	name := app.vweb.form['name']
 	if name.len > max_repo_name_len {
 		app.vweb.error('Repository name is too long (should be fewer than $max_repo_name_len characters)')
+		return app.new()
+	}
+	if app.exists_user_repo(app.user.username, name) {
+		app.vweb.error('A repository with the name "$name" already exists')
 		return app.new()
 	}
 	app.repo = Repo{
