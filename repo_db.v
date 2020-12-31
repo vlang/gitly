@@ -15,6 +15,7 @@ fn (mut app App) create_tables() {
 		'user_id int default 0'
 		"user_name text default ''"
 		'primary_branch text default ""'
+		'is_public int default 0'
 		'nr_views int default 0'
 		'nr_commits int default 0'
 		'nr_open_issues int default 0'
@@ -185,6 +186,7 @@ fn (mut app App) update_repo_in_db(repo &Repo) {
 	nr_views := repo.nr_views
 	webhook_secret := repo.webhook_secret
 	nr_tags := repo.nr_tags
+	is_public := if repo.is_public { 1 } else { 0 }
 	nr_open_issues := repo.nr_open_issues
 	nr_open_prs := repo.nr_open_prs
 	nr_branches := repo.nr_branches
@@ -192,7 +194,7 @@ fn (mut app App) update_repo_in_db(repo &Repo) {
 	nr_contributors := repo.nr_contributors
 	nr_commits := repo.nr_commits
 	sql app.db {
-		update Repo set description = desc, nr_views = nr_views, webhook_secret = webhook_secret, nr_tags = nr_tags, nr_open_issues = nr_open_issues, nr_open_prs = nr_open_prs, nr_releases = nr_releases, nr_contributors = nr_contributors, nr_commits = nr_commits, nr_branches = nr_branches where id == id
+		update Repo set description = desc, nr_views = nr_views, is_public = is_public, webhook_secret = webhook_secret, nr_tags = nr_tags, nr_open_issues = nr_open_issues, nr_open_prs = nr_open_prs, nr_releases = nr_releases, nr_contributors = nr_contributors, nr_commits = nr_commits, nr_branches = nr_branches where id == id
 	}
 }
 
@@ -215,6 +217,18 @@ fn (mut app App) nr_user_repos(user_id int) int {
 fn (mut app App) find_user_repos(user_id int) []Repo {
 	return sql app.db {
 		select from Repo where user_id == user_id
+	}
+}
+
+fn (mut app App) nr_user_public_repos(user_id int) int {
+	return sql app.db {
+		select count from Repo where user_id == user_id && is_public == true
+	}
+}
+
+fn (mut app App) find_user_public_repos(user_id int) []Repo {
+	return sql app.db {
+		select from Repo where user_id == user_id && is_public == true
 	}
 }
 

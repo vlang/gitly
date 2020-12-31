@@ -31,15 +31,16 @@ pub fn (mut app App) user(username string) vweb.Result {
 
 ['/:username/repos']
 pub fn (mut app App) user_repos(username string) vweb.Result {
-	println(username)
 	exists, u := app.check_username(username)
-	println(exists)
-	println(u)
 	if !exists {
 		return app.vweb.not_found()
 	}
 	user := u
-	repos := app.find_user_repos(user.id)
+	mut repos := app.find_user_public_repos(user.id)
+	if user.id == app.user.id {
+		repos = app.find_user_repos(user.id)
+	}
+	
 	return $vweb.html()
 }
 

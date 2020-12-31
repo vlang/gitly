@@ -17,7 +17,7 @@ struct Repo {
 	clone_url          string            [skip]
 	primary_branch     string
 	description        string
-	is_public          bool              [skip]
+	is_public          bool
 	users_contributed  []string          [skip]
 	users_authorized   []string          [skip]
 	nr_topics          int               [skip]
