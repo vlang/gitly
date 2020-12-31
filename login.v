@@ -10,12 +10,12 @@ import math
 ['/login']
 pub fn (mut app App) login() vweb.Result {
 	csrf := rand.string(30)
-	app.vweb.set_cookie({
+	app.set_cookie({
 		name: 'csrf'
 		value: csrf
 	})
 	if app.logged_in() {
-		return app.vweb.not_found()
+		return app.not_found()
 	}
 	return $vweb.html()
 }
@@ -26,16 +26,16 @@ pub fn (mut app App) handle_login() vweb.Result {
 	if app.settings.only_gh_login {
 		return app.r_home()
 	}
-	username := app.vweb.form['username']
-	password := app.vweb.form['password']
+	username := app.form['username']
+	password := app.form['password']
 	if username == '' || password == '' {
-		return app.vweb.redirect('/login')
+		return app.redirect('/login')
 	}
 	user := app.find_user_by_username(username) or {
-		return app.vweb.redirect('/login')
+		return app.redirect('/login')
 	}
 	if user.is_blocked {
-		return app.vweb.redirect('/login')
+		return app.redirect('/login')
 	}
 	if !check_password(password, username, user.password) {
 		app.inc_user_login_attempts(user.id)
@@ -43,10 +43,10 @@ pub fn (mut app App) handle_login() vweb.Result {
 			app.warn('User $user.username got blocked')
 			app.block_user(user.id)
 		}
-		return app.vweb.redirect('/login')
+		return app.redirect('/login')
 	}
 	if !user.is_registered {
-		return app.vweb.redirect('/login')
+		return app.redirect('/login')
 	}
 	ip := app.client_ip(user.id.str()) or {
 		return app.r_home()
@@ -66,25 +66,25 @@ pub fn (mut app App) auth_user(user User, ip string) {
 	app.update_user_login_attempts(user.id, 0)
 	// println('cookie: setting token=$token id=$user.id')
 	expire_date := time.now().add_days(200)
-	app.vweb.set_cookie({
+	app.set_cookie({
 		name: 'id'
 		value: user.id.str()
 		expires: expire_date
 	})
-	app.vweb.set_cookie({
+	app.set_cookie({
 		name: 'token'
 		value: token
 		expires: expire_date
 	})
-	// app.vweb.set_cookie_with_expire_date('id', user.id.str(), expires)
-	// app.vweb.set_cookie_with_expire_date('token', token, expires)
+	// app.set_cookie_with_expire_date('id', user.id.str(), expires)
+	// app.set_cookie_with_expire_date('token', token, expires)
 }
 
 pub fn (mut app App) logged_in() bool {
-	id := app.vweb.get_cookie('id') or {
+	id := app.get_cookie('id') or {
 		return false
 	}
-	token := app.vweb.get_cookie('token') or {
+	token := app.get_cookie('token') or {
 		return false
 	}
 	ip := app.client_ip(id) or {
@@ -100,11 +100,11 @@ pub fn (mut app App) logged_in() bool {
 }
 
 pub fn (mut app App) logout() vweb.Result {
-	app.vweb.set_cookie({
+	app.set_cookie({
 		name: 'id'
 		value: ''
 	})
-	app.vweb.set_cookie({
+	app.set_cookie({
 		name: 'token'
 		value: ''
 	})
@@ -112,10 +112,10 @@ pub fn (mut app App) logout() vweb.Result {
 }
 
 pub fn (mut app App) get_user_from_cookies() ?User {
-	id := app.vweb.get_cookie('id') or {
+	id := app.get_cookie('id') or {
 		return none
 	}
-	token := app.vweb.get_cookie('token') or {
+	token := app.get_cookie('token') or {
 		return none
 	}
 	mut user := app.find_user_by_id(id.int()) or {
@@ -149,51 +149,51 @@ pub fn (mut app App) handle_register() vweb.Result {
 	if app.settings.only_gh_login {
 		return app.r_home()
 	}
-	username := app.vweb.form['username']
+	username := app.form['username']
 	if username in ['login', 'register', 'new', 'new_post', 'oauth'] {
-		app.vweb.error('Username `$username` is not available')
+		app.error('Username `$username` is not available')
 		return app.register()
 	}
 	user_chars := username.bytes()
 	if user_chars.len > max_username_len {
-		app.vweb.error('Username is too long (max. $max_username_len)')
+		app.error('Username is too long (max. $max_username_len)')
 		return app.register()
 	}
 	if username.contains('--') {
-		app.vweb.error('Username cannot contain two hyphens')
+		app.error('Username cannot contain two hyphens')
 		return app.register()
 	}
 	if user_chars[0] == `-` || user_chars.last() == `-` {
-		app.vweb.error('Username cannot begin or end with a hyphen')
+		app.error('Username cannot begin or end with a hyphen')
 		return app.register()
 	}
 	for char in user_chars {
 		if !char.is_letter() && !char.is_digit() && char != `-` {
-			app.vweb.error('Username cannot contain special characters')
+			app.error('Username cannot contain special characters')
 			return app.register()
 		}
 	}
-	if app.vweb.form['password'] == '' {
-		app.vweb.error('Password cannot be empty')
+	if app.form['password'] == '' {
+		app.error('Password cannot be empty')
 		return app.register()
 	}
-	password := make_password(app.vweb.form['password'], username)
-	email := app.vweb.form['email']
+	password := make_password(app.form['password'], username)
+	email := app.form['email']
 	if username == '' || email == '' {
-		app.vweb.error('Username or Email cannot be emtpy')
+		app.error('Username or Email cannot be emtpy')
 		return app.register()
 	}
 	if !app.add_user(username, password, [email], false) {
-		app.vweb.error('Failed to register')
+		app.error('Failed to register')
 		return app.register()
 	}
 	user := app.find_user_by_username(username) or {
-		app.vweb.error('User already exists')
+		app.error('User already exists')
 		return app.register()
 	}
 	println('register: logging in')
 	ip := app.client_ip(user.id.str()) or {
-		app.vweb.error('Failed to register')
+		app.error('Failed to register')
 		return app.register()
 	}
 	app.auth_user(user, ip)
@@ -202,7 +202,7 @@ pub fn (mut app App) handle_register() vweb.Result {
 		kind: .registered
 	})
 	app.settings.only_gh_login = true
-	return app.vweb.redirect('/' + username)
+	return app.redirect('/' + username)
 }
 
 fn gen_uuid_v4ish() string {

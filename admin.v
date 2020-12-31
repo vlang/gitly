@@ -23,10 +23,10 @@ pub fn (mut app App) update_admin_settings() vweb.Result {
 	if !app.is_admin() {
 		return app.r_home()
 	}
-	oauth_client_id := app.vweb.form['oauth_client_id']
-	oauth_client_secret := app.vweb.form['oauth_client_secret']
-	only_gh_login := 'only_gh_login' in app.vweb.form
-	repo_storage_path := app.vweb.form['repo_storage_path']
+	oauth_client_id := app.form['oauth_client_id']
+	oauth_client_secret := app.form['oauth_client_secret']
+	only_gh_login := 'only_gh_login' in app.form
+	repo_storage_path := app.form['repo_storage_path']
 
 	if oauth_client_id != '' {
 		app.settings.oauth_client_id = oauth_client_id
@@ -39,7 +39,7 @@ pub fn (mut app App) update_admin_settings() vweb.Result {
 
 	app.update_settings()
 
-	return app.vweb.redirect('/admin')
+	return app.redirect('/admin')
 }
 
 ['/admin/userlist']
@@ -58,9 +58,9 @@ pub fn (mut app App) admin_edituser(user string) vweb.Result {
 	if !app.is_admin() {
 		return app.r_home()
 	}
-	clear_session := 'stop-session' in app.vweb.form
-	is_blocked := 'is-blocked' in app.vweb.form
-	is_admin := 'is-admin' in app.vweb.form
+	clear_session := 'stop-session' in app.form
+	is_blocked := 'is-blocked' in app.form
+	is_admin := 'is-admin' in app.form
 	if is_admin {
 		app.user_set_admin(user.int())
 	} else {
@@ -74,7 +74,7 @@ pub fn (mut app App) admin_edituser(user string) vweb.Result {
 	if clear_session {
 		app.clear_sessions(user.int())
 	}
-	return app.vweb.redirect('/admin')
+	return app.redirect('/admin')
 }
 
 ['/admin/statics']

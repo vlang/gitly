@@ -23,7 +23,7 @@ pub fn (mut app App) user(username string) vweb.Result {
 	app.show_menu = false
 	exists, u := app.check_username(username)
 	if !exists {
-		return app.vweb.not_found()
+		return app.not_found()
 	}
 	user := u
 	return $vweb.html()
@@ -33,7 +33,7 @@ pub fn (mut app App) user(username string) vweb.Result {
 pub fn (mut app App) user_repos(username string) vweb.Result {
 	exists, u := app.check_username(username)
 	if !exists {
-		return app.vweb.not_found()
+		return app.not_found()
 	}
 	user := u
 	mut repos := app.find_user_public_repos(user.id)
@@ -52,14 +52,14 @@ pub fn (mut app App) user_issues_0(username string) vweb.Result {
 ['/:username/issues/:page']
 pub fn (mut app App) user_issues(username string, page int) vweb.Result {
 	if !app.logged_in {
-		return app.vweb.not_found()
+		return app.not_found()
 	}
 	if app.user.username != username {
-		return app.vweb.not_found()
+		return app.not_found()
 	}
 	exists, u := app.check_username(username)
 	if !exists {
-		return app.vweb.not_found()
+		return app.not_found()
 	}
 	user := u
 	mut issues := app.find_user_issues(user.id)
@@ -108,16 +108,16 @@ pub fn (mut app App) update_user_settings(user string) vweb.Result {
 	if !app.logged_in || user != app.user.username {
 		return app.r_home()
 	}
-	name := if 'name' in app.vweb.form { app.vweb.form['name'] } else { '' }
+	name := if 'name' in app.form { app.form['name'] } else { '' }
 	if name == '' {
-		app.vweb.error('New name is empty')
+		app.error('New name is empty')
 		return app.user_settings(user)
 	}
 	if name == user {
 		return app.user_settings(user)
 	}
 	if app.user.nr_namechanges > max_namechanges {
-		app.vweb.error('You can not change your username, limit reached')
+		app.error('You can not change your username, limit reached')
 		return app.user_settings(user)
 	}
 	if app.user.last_namechange_time == 0 ||
@@ -126,14 +126,14 @@ pub fn (mut app App) update_user_settings(user string) vweb.Result {
 			User{}
 		}
 		if u.id != 0 {
-			app.vweb.error('Name already exists')
+			app.error('Name already exists')
 			return app.user_settings(user)
 		}
 		app.change_username(app.user.id, name)
 		app.inc_namechanges(app.user.id)
 		app.rename_user_dir(user, name)
-		return app.vweb.redirect('/$name')
+		return app.redirect('/$name')
 	}
-	app.vweb.error('You need to wait until you can change the name again')
+	app.error('You need to wait until you can change the name again')
 	return app.user_settings(user)
 }

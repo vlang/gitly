@@ -15,8 +15,8 @@ struct Visit {
 fn (mut app App) add_visit() {
 	visit := Visit{
 		repo_id: app.repo.id
-		url: app.vweb.req.url
-		referer: app.vweb.req.referer()
+		url: app.req.url
+		referer: app.req.referer()
 		created_at: int(time.now().unix)
 	}
 	sql app.db {

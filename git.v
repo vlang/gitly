@@ -22,10 +22,10 @@ fn (s GitService) to_str() string {
 // /vlang/info/refs?service=git-upload-pack
 fn (mut app App) git_info() vweb.Result {
 	app.info('/info/refs')
-	app.info(app.vweb.req.method.str())
+	app.info(app.req.method.str())
 	// Get service type from the git request.
 	// Receive (git push) or upload	(git pull)
-	url := app.vweb.req.url
+	url := app.req.url
 	service := if url.contains('?service=git-upload-pack') {
 		GitService.upload
 	} else if url.contains('?service=git-receive-pack') {
@@ -41,7 +41,7 @@ fn (mut app App) git_info() vweb.Result {
 	if false && !app.repo.is_public {
 		// Private repos are always closed
 		// if !auth() {
-		return app.vweb.not_found()
+		return app.not_found()
 		// }
 	} else {
 		// public repo push
@@ -50,13 +50,13 @@ fn (mut app App) git_info() vweb.Result {
 			app.info('info/refs user="$user"')
 			if user == '' {
 				// app.vweb.write_header(http.status_unauthorized)
-				return app.vweb.not_found()
+				return app.not_found()
 			}
 		}
 	}
-	app.vweb.set_content_type('application/x-git-$service-advertisement')
+	app.set_content_type('application/x-git-$service-advertisement')
 	// hdrNocache(c.Writer)
-	app.vweb.add_header('Cache-Control', 'no-cache')
+	app.add_header('Cache-Control', 'no-cache')
 	mut sb := strings.new_builder(100)
 	sb.write(packet_write('# service=git-$service\n'))
 	sb.write(packet_flush())
@@ -64,7 +64,7 @@ fn (mut app App) git_info() vweb.Result {
 	app.info('refs = ')
 	app.info(refs)
 	sb.write(refs)
-	return app.vweb.ok(sb.str())
+	return app.ok(sb.str())
 }
 
 fn packet_flush() string {

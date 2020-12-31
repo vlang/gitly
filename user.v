@@ -68,16 +68,12 @@ fn check_password(password string, username string, hashed string) bool {
 }
 
 pub fn (mut app App) add_user(username string, password string, emails []string, github bool) bool {
-	mut user := app.find_user_by_username(username) or {
-		User{}
-	}
+	mut user := app.find_user_by_username(username) or { User{} }
 	if user.id != 0 && user.is_registered {
 		app.info('User $username already exists')
 		return false
 	}
-	user = app.find_user_by_email(emails[0]) or {
-		User{}
-	}
+	user = app.find_user_by_email(emails[0]) or { User{} }
 	if user.id == 0 {
 		user = User{
 			username: username
@@ -106,8 +102,8 @@ pub fn (mut app App) add_user(username string, password string, emails []string,
 		name := user.username
 		if !github {
 			sql app.db {
-				update User set username = username, password = password, name = name, is_registered = true where id ==
-				user.id
+				update User set username = username, password = password, name = name, is_registered = true
+				where id == user.id
 			}
 			app.create_user_dir(username)
 			return true
@@ -119,8 +115,8 @@ pub fn (mut app App) add_user(username string, password string, emails []string,
 			return true
 		}
 		sql app.db {
-			update User set username = username, name = name, is_registered = true, is_github = true where id ==
-			user.id
+			update User set username = username, name = name, is_registered = true, is_github = true
+			where id == user.id
 		}
 	}
 	app.create_user_dir(username)
@@ -276,9 +272,7 @@ pub fn (mut app App) find_repo_registered_contributor(id int) []User {
 	}
 	mut users := []User{cap: contributors.len}
 	for contrib in contributors {
-		x := app.find_user_by_id(contrib.user) or {
-			continue
-		}
+		x := app.find_user_by_id(contrib.user) or { continue }
 		users << x
 	}
 	return users
@@ -346,16 +340,12 @@ pub fn (mut app App) unblock_user(user_id int) {
 }
 
 pub fn (mut app App) check_user_blocked(user_id int) bool {
-	user := app.find_user_by_id(user_id) or {
-		return false
-	}
+	user := app.find_user_by_id(user_id) or { return false }
 	return user.is_blocked
 }
 
 pub fn (mut app App) client_ip(username string) ?string {
-	ip := app.vweb.conn.peer_ip() or {
-		return none
-	}
+	ip := app.conn.peer_ip() or { return none }
 	return make_password(ip, '${username}token')
 }
 

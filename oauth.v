@@ -21,8 +21,8 @@ struct GitHubUser {
 }
 
 pub fn (mut app App) oauth() vweb.Result {
-	code := app.vweb.query['code']
-	state := app.vweb.query['state']
+	code := app.query['code']
+	state := app.query['state']
 	if code == '' {
 		app.security_log({
 			user_id: app.user.id
@@ -31,7 +31,7 @@ pub fn (mut app App) oauth() vweb.Result {
 		app.info('Code is empty')
 		return app.r_home()
 	}
-	csrf := app.vweb.get_cookie('csrf') or {
+	csrf := app.get_cookie('csrf') or {
 		return app.r_home()
 	}
 	if csrf != state || csrf == '' {
@@ -67,7 +67,7 @@ pub fn (mut app App) oauth() vweb.Result {
 	if user_js.status_code != 200 {
 		app.info(user_js.status_code.str())
 		app.info(user_js.text)
-		return app.vweb.text('Received $user_js.status_code error while attempting to contact GitHub')
+		return app.text('Received $user_js.status_code error while attempting to contact GitHub')
 	}
 	gh_user := json.decode(GitHubUser, user_js.text) or {
 		return app.r_home()
