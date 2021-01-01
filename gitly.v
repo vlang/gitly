@@ -38,7 +38,6 @@ mut:
 	settings      GitlySettings
 	file_log      log.Log
 	cli_log       log.Log
-pub mut:
 	db            sqlite.DB
 	logged_in     bool
 	user          User
@@ -143,7 +142,7 @@ pub fn (mut app App) init() {
 	app.page_gen_time = ''
 	app.info('\n\ninit() url=$url')
 	app.path = ''
-	app.info('path=$app.path')
+	// app.info('path=$app.path')
 	app.logged_in = app.logged_in()
 	app.repo = Repo{}
 	app.user = User{}

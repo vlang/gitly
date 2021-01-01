@@ -24,23 +24,18 @@ pub fn (mut app App) oauth() vweb.Result {
 	code := app.query['code']
 	state := app.query['state']
 	if code == '' {
-		app.security_log({
-			user_id: app.user.id
-			kind: .empty_oauth_code
-		})
+		app.security_log(user_id: app.user.id, kind: .empty_oauth_code)
 		app.info('Code is empty')
 		return app.r_home()
 	}
-	csrf := app.get_cookie('csrf') or {
-		return app.r_home()
-	}
+	csrf := app.get_cookie('csrf') or { return app.r_home() }
 	if csrf != state || csrf == '' {
-		app.security_log({
+		app.security_log(
 			user_id: app.user.id
 			kind: .wrong_oauth_state
 			arg1: 'csrf=$csrf'
 			arg2: 'state=$state'
-		})
+		)
 		return app.r_home()
 	}
 	req := OAuthRequest{
@@ -69,34 +64,21 @@ pub fn (mut app App) oauth() vweb.Result {
 		app.info(user_js.text)
 		return app.text('Received $user_js.status_code error while attempting to contact GitHub')
 	}
-	gh_user := json.decode(GitHubUser, user_js.text) or {
-		return app.r_home()
-	}
+	gh_user := json.decode(GitHubUser, user_js.text) or { return app.r_home() }
 	println('gh user:')
 	println(user_js.text)
 	println(gh_user)
 	if gh_user.email.trim_space().len == 0 {
-		app.security_log({
-			user_id: app.user.id
-			kind: .empty_oauth_email
-			arg1: user_js.text
-		})
+		app.security_log(user_id: app.user.id, kind: .empty_oauth_email, arg1: user_js.text)
 		app.info('Email is empty')
-		return app.r_home()
+		// return app.r_home()
 	}
-	mut user := app.find_user_by_email(gh_user.email) or {
-		User{}
-	}
+	mut user := app.find_user_by_github_username(gh_user.username) or { User{} }
 	if !user.is_github {
-		app.security_log({
-			user_id: user.id
-			kind: .registered_via_github
-			arg1: user_js.text
-		})
+		// Register a new user via github
+		app.security_log(user_id: user.id, kind: .registered_via_github, arg1: user_js.text)
 		app.add_user(gh_user.username, '', [gh_user.email], true)
-		user = app.find_user_by_email(gh_user.email) or {
-			return app.r_home()
-		}
+		user = app.find_user_by_github_username(gh_user.username) or { return app.r_home() }
 		app.update_user_avatar(gh_user.avatar, user.id)
 	}
 	ip := app.client_ip(user.id.str()) or {
@@ -104,11 +86,7 @@ pub fn (mut app App) oauth() vweb.Result {
 		return app.r_home()
 	}
 	app.auth_user(user, ip)
-	app.security_log({
-		user_id: user.id
-		kind: .logged_in_via_github
-		arg1: user_js.text
-	})
+	app.security_log(user_id: user.id, kind: .logged_in_via_github, arg1: user_js.text)
 	return app.r_home()
 }
 
@@ -126,6 +104,7 @@ fn (mut app App) update_settings() {
 	only_gh_login := if app.settings.only_gh_login { 1 } else { 0 }
 	repo_storage_path := app.settings.repo_storage_path
 	sql app.db {
-		update GitlySettings set oauth_client_id = oauth_client_id, oauth_client_secret = oauth_client_secret, repo_storage_path = repo_storage_path where id == id
+		update GitlySettings set oauth_client_id = oauth_client_id, oauth_client_secret = oauth_client_secret,
+		repo_storage_path = repo_storage_path where id == id
 	}
 }

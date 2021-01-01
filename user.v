@@ -11,6 +11,7 @@ struct User {
 	id                   int
 	name                 string
 	username             string
+	github_username      string
 	password             string
 	is_github            bool
 	is_registered        bool
@@ -80,6 +81,7 @@ pub fn (mut app App) add_user(username string, password string, emails []string,
 			password: password
 			is_registered: true
 			is_github: github
+			github_username: username
 		}
 		app.insert_user(user)
 		mut u := app.find_user_by_username(user.username) or {
@@ -234,6 +236,18 @@ pub fn (mut app App) find_user_by_username(username string) ?User {
 pub fn (mut app App) find_user_by_id(id2 int) ?User {
 	mut user := sql app.db {
 		select from User where id == id2
+	}
+	if user.id == 0 {
+		return none
+	}
+	emails := app.find_user_emails(user.id)
+	user.emails = emails
+	return user
+}
+
+pub fn (mut app App) find_user_by_github_username(name string) ?User {
+	mut user := sql app.db {
+		select from User where github_username == name limit 1
 	}
 	if user.id == 0 {
 		return none

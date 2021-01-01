@@ -5,13 +5,13 @@ module main
 import vweb
 
 enum SecurityLogKind {
-	registered
+	registered // 0
 	logged_in
-	registered_via_github
+	registered_via_github // 2
 	logged_in_via_github
-	wrong_password
+	wrong_password // 4
 	wrong_oauth_state
-	empty_oauth_code
+	empty_oauth_code // 6
 	empty_oauth_email
 }
 
