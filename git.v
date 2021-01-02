@@ -5,11 +5,24 @@ module main
 import vweb
 import strings
 import encoding.base64
+import io
+import strconv
+import time
 
 enum GitService {
 	receive
 	upload
 	unknown
+}
+
+struct Push {
+	old string
+	new string
+	ref string
+mut:
+	branch string
+	user_id int
+	repo_id int
 }
 
 fn (s GitService) to_str() string {
@@ -134,13 +147,43 @@ fn (mut app App) git_receive_pack(user string, repo string) vweb.Result {
 	if !app.exists_user_repo(user, repo) {
 		return app.not_found()
 	}
-	user := app.get_user() or {
+	u := app.get_user() or {
 		return app.not_found()
 	}
 	app.set_content_type('application/x-git-receive-pack-result')
 	by := app.req.data
-	refs :=
+
+	mut refs := parse_binary_push(make_reader(by.bytes())) or {
+		return app.not_found()
+	}
+	for i, ref in refs {
+		refs[i].user_id = u.id
+		refs[i].repo_id = app.repo.id
+		handle_ref_push_before(ref)
+	}
+	tmp := app.repo.git('receive-pack $by')
+	// pre-receive hook is run here
+	// ...
+	//
+	// post-receive
+
+	// TODO need Alex help
+	/*for i, ref in refs {
+		push := m.retrieve_push_slow(ref.new)
+		if push.is_approved {
+			app.repo.handle_ref_push()
+		}
+	}*/
+
+	return app.ok('')
 }
+
+['/head']
+fn (mut app App) head() vweb.Result {
+	return app.ok('')
+}
+
+///////////////////////////////////////7
 
 fn packet_flush() string {
 	return '0000' // .bytes()
@@ -153,4 +196,83 @@ fn packet_write(str string) string {
 		s = strings.repeat(`0`, 4 - s.len % 4) + s
 	}
 	return s + str
+}
+
+fn parse_binary_push(input io.Reader) ?[]&Push {
+	mut head := []byte{len: 4, init: 0}
+	mut n := 0
+	mut pushes := []&Push{}
+	for {
+		n = input.read(head) or {
+			return error(err)
+		}
+		if n < 4 {
+			println('N=$n')
+			break
+		}
+		if head[0] == `0` && head[1] == `0` {
+			size := strconv.parse_int(head[2..4].str(), 16, 32)
+			if size == 0 {
+				break
+			}
+			mut line := []byte{len: int(size)}
+			n = input.read(line) or {
+				return error(err)
+			}
+			if n < int(size) {
+				println('did not read enought bytes: expected $size got $n')
+				break
+			}
+			idx := line.str().index_any('\000')
+			if idx > -1 {
+				line = line[..idx]
+			}
+
+			fields := line.str().split_by_whitespace()
+			println('\n\n GIT VALS=$fields')
+			if fields.len >= 3 {
+				pushes << &Push{
+					old: fields[0]
+					new: fields[1]
+					ref: fields[2]
+				}
+			}
+		} else {
+			break
+		}
+	}
+	return pushes
+}
+
+fn handle_ref_push_before(mut push &Push) {
+	mut branch := 'master'
+	println('handle before ${time.now().unix}')
+	pos := push.ref.index_any('refs/heads/')
+	if pos == 0 {
+		branch = push.ref[pos+11..]
+	}
+	println('branch=$branch')
+	push.branch = branch
+	//push.insert_push()
+}
+
+struct Buf {
+pub:
+	bytes []byte
+mut:
+	i     int
+}
+
+fn (mut b Buf) read(mut buf []byte) ?int {
+	if !(b.i < b.bytes.len) {
+		return none
+	}
+	n := copy(buf, b.bytes[b.i..])
+	b.i += n
+	return n
+}
+
+
+fn make_reader(buf []byte) io.Reader {
+	return Buf{buf, 0}
 }
