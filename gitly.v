@@ -370,6 +370,10 @@ pub fn (mut app App) tree(user string, repo string, branch string, path string) 
 
 pub fn (mut app App) index() vweb.Result {
 	app.show_menu = false
+	// println(' all_users =$app.nr_all_users()')
+	if app.nr_all_users() == 0 {
+		return app.redirect('/register')
+	}
 	return $vweb.html()
 }
 
