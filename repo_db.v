@@ -91,6 +91,7 @@ fn (mut app App) create_tables() {
 		'is_admin int default 0',
 		'login_attempts int default 0',
 		'github_username text default ""',
+		'key text default ""'
 		'UNIQUE(username)',
 	])
 	app.create_table('Email', [
@@ -159,12 +160,6 @@ fn (mut app App) create_tables() {
 		'repo_storage_path text default "./repos"',
 	])
 	app.create_table('Token', [
-		'id integer primary key',
-		'user_id integer default 0',
-		"value text defaut ''",
-		'ip text default ""',
-	])
-	app.create_table('Token2', [
 		'id integer primary key',
 		'user_id integer default 0',
 		"value text defaut ''",

@@ -6,6 +6,8 @@ import vweb
 import time
 import rand
 import math
+import libsodium
+import encoding.base64
 
 ['/login']
 pub fn (mut app App) login() vweb.Result {
@@ -64,6 +66,7 @@ pub fn (mut app App) auth_user(user User, ip string) {
 	_ := time.utc().add_days(expire_length)
 	// token := if user.token == '' { app.add_token(user.id) } else { user.token }
 	token := app.add_token(user.id, ip)
+	println(token)
 	app.update_user_login_attempts(user.id, 0)
 	// println('cookie: setting token=$token id=$user.id')
 	expire_date := time.now().add_days(200)
@@ -97,7 +100,9 @@ pub fn (mut app App) logged_in() bool {
 		app.logout()
 		return false
 	}
-	return id != '' && token != '' && t != '' && t == token
+	u := app.find_user_by_id(id.int()) or { return false }
+	//de_cry := libsodium.new_secret_box(u.key).decrypt_string(base64.decode(token).bytes())
+	return id != '' && token != '' && t != '' && base64.decode(token) == t /*libsodium.new_secret_box(u.key).decrypt_string(token.bytes()) == t*/
 }
 
 pub fn (mut app App) logout() vweb.Result {
@@ -125,7 +130,7 @@ pub fn (mut app App) get_user_from_cookies() ?User {
 	ip := app.client_ip(id) or {
 		return none
 	}
-	if token != app.find_user_token(user.id, ip) {
+	if base64.decode(token) != app.find_user_token(user.id, ip) {
 		return none
 	}
 	user.b_avatar = user.avatar != ''

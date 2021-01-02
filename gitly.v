@@ -144,6 +144,7 @@ pub fn (mut app App) init() {
 	app.path = ''
 	// app.info('path=$app.path')
 	app.logged_in = app.logged_in()
+	println(app.logged_in)
 	app.repo = Repo{}
 	app.user = User{}
 	if app.logged_in {
@@ -287,7 +288,7 @@ pub fn (mut app App) tree(user string, repo string, branch string, path string) 
 	}
 	_, u := app.check_username(user)
 	if !app.repo.is_public {
-		if u.id != app.user.id {
+		if !app.repo_belongs_to(user, repo) {
 			return app.not_found()
 		}
 	}
@@ -375,7 +376,12 @@ pub fn (mut app App) update(user string, repo string) vweb.Result {
 	if !app.exists_user_repo(user, repo) {
 		return app.not_found()
 	}
-	/*
+	if !app.repo.is_public {
+		if !app.repo_belongs_to(user, repo) {
+			return app.not_found()
+		}
+	}
+		/*
 	secret := if 'X-Hub-Signature' in app.req.headers { app.req.headers['X-Hub-Signature'][5..] } else { '' }
 	if secret == '' {
 		return app.r_home()
@@ -455,6 +461,11 @@ pub fn (mut app App) commits(user string, repo string, page int) vweb.Result {
 	if !app.exists_user_repo(user, repo) {
 		return app.not_found()
 	}
+	if !app.repo.is_public {
+		if !app.repo_belongs_to(user, repo) {
+			return app.not_found()
+		}
+	}
 	app.show_menu = true
 	mut commits := app.find_repo_commits_as_page(app.repo.id, page)
 	mut b_author := false
@@ -527,6 +538,11 @@ pub fn (mut app App) commit(user string, repo string, hash string) vweb.Result {
 	if !app.exists_user_repo(user, repo) {
 		return app.not_found()
 	}
+	if !app.repo.is_public {
+		if !app.repo_belongs_to(user, repo) {
+			return app.not_found()
+		}
+	}
 	app.show_menu = true
 	commit := app.find_repo_commit_by_hash(app.repo.id, hash)
 	changes := commit.get_changes(app.repo)
@@ -551,6 +567,11 @@ pub fn (mut app App) issues_0(user string, repo string) vweb.Result {
 pub fn (mut app App) issues(user string, repo string, page int) vweb.Result {
 	if !app.exists_user_repo(user, repo) {
 		app.not_found()
+	}
+	if !app.repo.is_public {
+		if !app.repo_belongs_to(user, repo) {
+			return app.not_found()
+		}
 	}
 	app.show_menu = true
 	mut issues := app.find_repo_issues_as_page(app.repo.id, page)
@@ -586,6 +607,11 @@ pub fn (mut app App) issue(user string, repo string, id_str string) vweb.Result 
 	if !app.exists_user_repo(user, repo) {
 		return app.not_found()
 	}
+	if !app.repo.is_public {
+		if !app.repo_belongs_to(user, repo) {
+			return app.not_found()
+		}
+	}
 	app.show_menu = true
 	mut id := 1
 	if id_str != '' {
@@ -602,6 +628,11 @@ pub fn (mut app App) issue(user string, repo string, id_str string) vweb.Result 
 pub fn (mut app App) pull(user string, repo string, id_str string) vweb.Result {
 	if !app.exists_user_repo(user, repo) {
 		return app.not_found()
+	}
+	if !app.repo.is_public {
+		if !app.repo_belongs_to(user, repo) {
+			return app.not_found()
+		}
 	}
 	_ := app.path.split('/')
 	id := 0
@@ -621,6 +652,11 @@ pub fn (mut app App) contributors(user string, repo string) vweb.Result {
 	if !app.exists_user_repo(user, repo) {
 		return app.not_found()
 	}
+	if !app.repo.is_public {
+		if !app.repo_belongs_to(user, repo) {
+			return app.not_found()
+		}
+	}
 	app.show_menu = true
 	contributors := app.find_repo_registered_contributor(app.repo.id)
 	return $vweb.html()
@@ -631,15 +667,25 @@ pub fn (mut app App) branches(user string, repo string) vweb.Result {
 	if !app.exists_user_repo(user, repo) {
 		return app.not_found()
 	}
+	if !app.repo.is_public {
+		if !app.repo_belongs_to(user, repo) {
+			return app.not_found()
+		}
+	}
 	app.show_menu = true
 	mut branches := app.find_repo_branches(app.repo.id)
 	return $vweb.html()
 }
 
 ['/:user/:repo/releases']
-pub fn (mut app App) releases(user_str string, repo string) vweb.Result {
-	if !app.exists_user_repo(user_str, repo) {
+pub fn (mut app App) releases(user string, repo string) vweb.Result {
+	if !app.exists_user_repo(user, repo) {
 		return app.not_found()
+	}
+	if !app.repo.is_public {
+		if !app.repo_belongs_to(user, repo) {
+			return app.not_found()
+		}
 	}
 	app.show_menu = true
 	mut releases := []Release{}
@@ -659,9 +705,9 @@ pub fn (mut app App) releases(user_str string, repo string) vweb.Result {
 				break
 			}
 		}
-		for user in users {
-			if user.id == user_id {
-				release.user = user.username
+		for u in users {
+			if u.id == user_id {
+				release.user = u.username
 				break
 			}
 		}
@@ -674,6 +720,11 @@ pub fn (mut app App) releases(user_str string, repo string) vweb.Result {
 pub fn (mut app App) blob(user string, repo string, branch string, path string) vweb.Result {
 	if !app.exists_user_repo(user, repo) {
 		return app.not_found()
+	}
+	if !app.repo.is_public {
+		if !app.repo_belongs_to(user, repo) {
+			return app.not_found()
+		}
 	}
 	app.path = path
 	if !app.contains_repo_branch(branch, app.repo.id) && branch != app.repo.primary_branch {
@@ -720,6 +771,11 @@ pub fn (mut app App) new_issue(user string, repo string) vweb.Result {
 	if !app.exists_user_repo(user, repo) {
 		return app.not_found()
 	}
+	if !app.repo.is_public {
+		if !app.repo_belongs_to(user, repo) {
+			return app.not_found()
+		}
+	}
 	if !app.logged_in {
 		return app.not_found()
 	}
@@ -732,6 +788,11 @@ pub fn (mut app App) new_issue(user string, repo string) vweb.Result {
 pub fn (mut app App) add_issue(user string, repo string) vweb.Result {
 	if !app.exists_user_repo(user, repo) {
 		return app.not_found()
+	}
+	if !app.repo.is_public {
+		if !app.repo_belongs_to(user, repo) {
+			return app.not_found()
+		}
 	}
 	if !app.logged_in || (app.logged_in && app.user.nr_posts >= posts_per_day) {
 		return app.r_home()
@@ -759,6 +820,11 @@ pub fn (mut app App) add_issue(user string, repo string) vweb.Result {
 pub fn (mut app App) add_comment(user string, repo string) vweb.Result {
 	if !app.exists_user_repo(user, repo) {
 		return app.not_found()
+	}
+	if !app.repo.is_public {
+		if !app.repo_belongs_to(user, repo) {
+			return app.not_found()
+		}
 	}
 	text := app.form['text']
 	issue_id := app.form['issue_id']

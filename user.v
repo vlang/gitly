@@ -11,8 +11,9 @@ struct User {
 	id                   int
 	name                 string
 	username             string
-	github_username      string
+	github_username      string [skip]
 	password             string
+	key string
 	is_github            bool
 	is_registered        bool
 	is_blocked           bool
@@ -61,7 +62,7 @@ fn make_password(password string, username string) string {
 	rand.seed(seed)
 	salt := rand.i64().str()
 	pw := '$password$salt'
-	return sha256.sum(pw.bytes()).hex().str()
+	return sha256.sum(pw.bytes()).hex()
 }
 
 fn check_password(password string, username string, hashed string) bool {
@@ -75,6 +76,7 @@ pub fn (mut app App) add_user(username string, password string, emails []string,
 		return false
 	}
 	user = app.find_user_by_email(emails[0]) or { User{} }
+	key := sha256.sum((username + password).bytes()).hex()
 	if user.id == 0 {
 		user = User{
 			username: username
@@ -82,6 +84,7 @@ pub fn (mut app App) add_user(username string, password string, emails []string,
 			is_registered: true
 			is_github: github
 			github_username: username
+			key: key
 		}
 		app.insert_user(user)
 		mut u := app.find_user_by_username(user.username) or {
@@ -104,7 +107,7 @@ pub fn (mut app App) add_user(username string, password string, emails []string,
 		name := user.username
 		if !github {
 			sql app.db {
-				update User set username = username, password = password, name = name, is_registered = true
+				update User set username = username, password = password, name = name, is_registered = true, key = key
 				where id == user.id
 			}
 			app.create_user_dir(username)
@@ -117,7 +120,7 @@ pub fn (mut app App) add_user(username string, password string, emails []string,
 			return true
 		}
 		sql app.db {
-			update User set username = username, name = name, is_registered = true, is_github = true
+			update User set username = username, name = name, is_registered = true, is_github = true, key = key
 			where id == user.id
 		}
 	}
