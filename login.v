@@ -6,7 +6,7 @@ import vweb
 import time
 import rand
 import math
-import libsodium
+//import libsodium
 import encoding.base64
 
 ['/login']
