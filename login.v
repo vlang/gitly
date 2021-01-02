@@ -184,7 +184,7 @@ pub fn (mut app App) handle_register() vweb.Result {
 		return app.register()
 	}
 	if !app.add_user(username, password, [email], false) {
-		app.error('Failed to register')
+		app.error('Failed to register (2)')
 		return app.register()
 	}
 	user := app.find_user_by_username(username) or {
@@ -193,7 +193,7 @@ pub fn (mut app App) handle_register() vweb.Result {
 	}
 	println('register: logging in')
 	ip := app.client_ip(user.id.str()) or {
-		app.error('Failed to register')
+		app.error('Failed to register (1)')
 		return app.register()
 	}
 	app.auth_user(user, ip)

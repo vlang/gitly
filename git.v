@@ -4,6 +4,7 @@ module main
 
 import vweb
 import strings
+import encoding.base64
 
 enum GitService {
 	receive
@@ -17,6 +18,49 @@ fn (s GitService) to_str() string {
 		.upload { 'upload-pack' }
 		else { 'unknown' }
 	}
+}
+
+
+fn (mut app App) auth() bool {
+	user := app.get_user() or {
+		println('bad auth!')
+		return false
+	}
+
+	return app.repo_belongs_to(user.username, app.repo.name)
+}
+
+fn (mut app App) get_user() ?User {
+	auth_head := app.get_header('Authorization')
+	if auth_head.len == 0 {
+		app.add_header('WWW-Authenticate', 'Basic realm="."')
+		app.set_status(401, '401 Unauthorized')
+		app.send_response_to_client(vweb.mime_types['.txt'], '')
+	}
+	println('GET USER $auth_head')
+	auths := auth_head.split_by_whitespace()
+	if auths.len != 2 || auths[0] != 'Basic' {
+		return error('no basic auth and digit auth')
+	}
+	name, pwd := app.basic_auth_decode(auths[1]) or {
+		return error('no basic auth and digit auth')
+	}
+	user := app.find_user_by_email(name) or {
+		return error('user not found')
+	}
+	if !check_password(pwd, user.username, user.password) {
+		return error('wrong password or email')
+	}
+	return user
+
+}
+
+fn (mut app App) basic_auth_decode(encoded string) ?(string, string) {
+	s := base64.decode(encoded)
+
+	tmp := s.split(':')
+	auth := [tmp[0], tmp[1..].join(':')]
+	return auth[0], auth[1]
 }
 
 // /vlang/info/refs?service=git-upload-pack
@@ -65,6 +109,37 @@ fn (mut app App) git_info() vweb.Result {
 	app.info(refs)
 	sb.write(refs)
 	return app.ok(sb.str())
+}
+
+['/:user/:repo/git-upload-pack']
+fn (mut app App) git_upload_pack(user string, repo string) vweb.Result {
+	if !app.exists_user_repo(user, repo) {
+		return app.not_found()
+	}
+	if !app.repo.is_public {
+		if !app.auth() {
+			return app.not_found()
+		}
+	}
+	body := app.req.data
+	// TODO Handle gzip
+	app.set_content_type('application/x-git-upload-pack-result')
+	tmp := app.repo.git('upload-pack $body')
+	println(tmp)
+	return app.ok(tmp)
+}
+
+['/:user/:repo/git-receive-pack']
+fn (mut app App) git_receive_pack(user string, repo string) vweb.Result {
+	if !app.exists_user_repo(user, repo) {
+		return app.not_found()
+	}
+	user := app.get_user() or {
+		return app.not_found()
+	}
+	app.set_content_type('application/x-git-receive-pack-result')
+	by := app.req.data
+	refs :=
 }
 
 fn packet_flush() string {
