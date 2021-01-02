@@ -9,6 +9,7 @@ import math
 
 ['/login']
 pub fn (mut app App) login() vweb.Result {
+	random_seed()
 	csrf := rand.string(30)
 	app.set_cookie({
 		name: 'csrf'
@@ -206,12 +207,10 @@ pub fn (mut app App) handle_register() vweb.Result {
 }
 
 fn gen_uuid_v4ish() string {
-	// UUIDv4 format: 4-2-2-2-6 bytes per section
-	a := rand.intn(math.max_i32 / 2).hex()
-	b := rand.intn(math.max_i16).hex()
-	c := rand.intn(math.max_i16).hex()
-	d := rand.intn(math.max_i16).hex()
-	e := rand.intn(math.max_i32 / 2).hex()
-	f := rand.intn(math.max_i16).hex()
-	return '${a:08}-${b:04}-${c:04}-${d:04}-${e:08}${f:04}'.replace(' ', '0')
+	random_seed()
+	return rand.uuid_v4()
+}
+
+fn random_seed() {
+	rand.seed([u32(math.floor(math.sin(time.now().unix/2)*1000)), u32(math.floor(math.cos(time.now().unix/2)*1000))])
 }
