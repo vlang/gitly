@@ -6,16 +6,20 @@ import libsodium
 import encoding.base64
 
 struct Token {
-	id int
+	id      int
 	user_id int
-	value string
-	ip string
+	value   string
+	ip      string
 }
 
 fn (mut app App) update_user_token(user_id int, token string, ip string) string {
 	tok := app.find_user_token(user_id, ip)
 	if tok == '' {
-		new_token := Token{user_id: user_id, value: token, ip: ip }
+		new_token := Token{
+			user_id: user_id
+			value: token
+			ip: ip
+		}
 		sql app.db {
 			insert new_token into Token
 		}
@@ -44,10 +48,6 @@ fn (mut app App) add_token(user_id int, ip string) string {
 	}
 	mut token := gen_uuid_v4ish()
 	token = app.update_user_token(user_id, token, ip)
-	println(token)
-	cr_token := base64.encode(/*string(libsodium.new_secret_box(u.key).encrypt_string(token))*/token)
-	return cr_token
+	//cr_token := string(libsodium.new_secret_box(u.key).encrypt_string(token))
+	return base64.encode(token)
 }
-
-
-

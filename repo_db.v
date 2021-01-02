@@ -91,7 +91,7 @@ fn (mut app App) create_tables() {
 		'is_admin int default 0',
 		'login_attempts int default 0',
 		'github_username text default ""',
-		'key text default ""'
+		'key text default ""',
 		'UNIQUE(username)',
 	])
 	app.create_table('Email', [

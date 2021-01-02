@@ -46,8 +46,8 @@ fn (f File) pretty_size() string {
 }
 
 fn (mut app App) insert_file(file File) {
-	//app.info('inserting file:')
-	//app.info(file.name)
+	// app.info('inserting file:')
+	// app.info(file.name)
 	sql app.db {
 		insert file into File
 	}
@@ -66,7 +66,8 @@ fn (mut app App) find_repo_file_by_path(repo_id int, branch string, path string)
 	name := path.after('/')
 	app.info('find file parent_path=$parent_path name=$name')
 	file := sql app.db {
-		select from File where repo_id == repo_id && parent_path == parent_path && branch == branch && name == name limit 1
+		select from File where repo_id == repo_id &&
+		parent_path == parent_path && branch == branch && name == name limit 1
 	}
 	if file.name == '' {
 		return none

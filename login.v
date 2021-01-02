@@ -56,7 +56,6 @@ pub fn (mut app App) auth_user(user User, ip string) {
 	_ := time.utc().add_days(expire_length)
 	// token := if user.token == '' { app.add_token(user.id) } else { user.token }
 	token := app.add_token(user.id, ip)
-	println(token)
 	app.update_user_login_attempts(user.id, 0)
 	// println('cookie: setting token=$token id=$user.id')
 	expire_date := time.now().add_days(200)
@@ -77,8 +76,8 @@ pub fn (mut app App) logged_in() bool {
 		return false
 	}
 	u := app.find_user_by_id(id.int()) or { return false }
-	//de_cry := libsodium.new_secret_box(u.key).decrypt_string(base64.decode(token).bytes())
-	return id != '' && token != '' && t != '' && base64.decode(token) == t /*libsodium.new_secret_box(u.key).decrypt_string(token.bytes()) == t*/
+	// de_cry := libsodium.new_secret_box(u.key).decrypt_string(base64.decode(token).bytes())
+	return id != '' && token != '' && t != '' && base64.decode(token) == t // libsodium.new_secret_box(u.key).decrypt_string(token.bytes()) == t
 }
 
 pub fn (mut app App) logout() vweb.Result {
@@ -88,18 +87,10 @@ pub fn (mut app App) logout() vweb.Result {
 }
 
 pub fn (mut app App) get_user_from_cookies() ?User {
-	id := app.get_cookie('id') or {
-		return none
-	}
-	token := app.get_cookie('token') or {
-		return none
-	}
-	mut user := app.find_user_by_id(id.int()) or {
-		return none
-	}
-	ip := app.client_ip(id) or {
-		return none
-	}
+	id := app.get_cookie('id') or { return none }
+	token := app.get_cookie('token') or { return none }
+	mut user := app.find_user_by_id(id.int()) or { return none }
+	ip := app.client_ip(id) or { return none }
 	if base64.decode(token) != app.find_user_token(user.id, ip) {
 		return none
 	}
@@ -187,5 +178,6 @@ fn gen_uuid_v4ish() string {
 }
 
 fn random_seed() {
-	rand.seed([u32(math.floor(math.sin(time.now().unix/2)*1000)), u32(math.floor(math.cos(time.now().unix/2)*1000))])
+	rand.seed([u32(math.floor(math.sin(time.now().unix / 2) * 1000)), u32(math.floor(math.cos(time.now().unix /
+		2) * 1000))])
 }

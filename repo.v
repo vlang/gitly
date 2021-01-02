@@ -74,9 +74,7 @@ fn (mut app App) update_repo() {
 			}
 			tmp_commit.created_at = int(t.unix)
 			tmp_commit.message = args[3]
-			user := app.find_user_by_email(args[1]) or {
-				User{}
-			}
+			user := app.find_user_by_email(args[1]) or { User{} }
 			if user.username != '' {
 				app.insert_contributor(Contributor{
 					user: user.id
@@ -146,9 +144,7 @@ fn (mut app App) update_repo_data(repo Repo) {
 			}
 			tmp_commit.created_at = int(t.unix)
 			tmp_commit.message = args[3]
-			user := app.find_user_by_email(args[1]) or {
-				User{}
-			}
+			user := app.find_user_by_email(args[1]) or { User{} }
 			if user.username != '' {
 				app.insert_contributor(Contributor{
 					user: user.id
@@ -183,12 +179,8 @@ fn (r &Repo) analyse_lang(mut wg sync.WaitGroup, app &App) {
 	mut lang_stats := map[string]int{}
 	mut langs := map[string]hl.Lang{}
 	for file in files {
-		lang := hl.extension_to_lang(file.split('.').last()) or {
-			continue
-		}
-		f_text := os.read_file(file) or {
-			''
-		}
+		lang := hl.extension_to_lang(file.split('.').last()) or { continue }
+		f_text := os.read_file(file) or { '' }
 		lines := f_text.split_into_lines()
 		size := calc_lines_of_code(lines, lang)
 		if lang.name !in lang_stats {
@@ -278,9 +270,7 @@ fn calc_lines_of_code(lines []string, lang hl.Lang) int {
 }
 
 fn (r &Repo) get_all_files(path string) []string {
-	files := os.ls(path) or {
-		return []
-	}
+	files := os.ls(path) or { return [] }
 	mut returnval := []string{}
 	for file in files {
 		if !os.is_dir('$path/$file') {
@@ -503,9 +493,7 @@ fn (mut app App) slow_fetch_files_info(branch string, path string) {
 }
 
 fn (r Repo) git_advertise(a string) string {
-	cmd := os.exec('git $a --stateless-rpc --advertise-refs $r.git_dir') or {
-		return ''
-	}
+	cmd := os.exec('git $a --stateless-rpc --advertise-refs $r.git_dir') or { return '' }
 	if cmd.exit_code != 0 {
 		// eprintln("advertise error", err)
 		// eprintln("\n\ngit advertise output: $cmd.output\n\n")
@@ -514,9 +502,7 @@ fn (r Repo) git_advertise(a string) string {
 }
 
 fn first_line(s string) string {
-	pos := s.index('\n') or {
-		return s
-	}
+	pos := s.index('\n') or { return s }
 	return s[..pos]
 }
 

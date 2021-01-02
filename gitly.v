@@ -26,10 +26,10 @@ const (
 
 struct App {
 	vweb.Context
+mut:
 	started_at    u64
 	path          string // current path being viewed
 	repo          Repo
-mut:
 	version       string
 	html_path     vweb.RawHtml
 	page_gen_time string
@@ -144,7 +144,6 @@ pub fn (mut app App) init() {
 	app.path = ''
 	// app.info('path=$app.path')
 	app.logged_in = app.logged_in()
-	println(app.logged_in)
 	app.repo = Repo{}
 	app.user = User{}
 	if app.logged_in {
@@ -214,7 +213,7 @@ fn (mut app App) repo_belongs_to(user string, repo string) bool {
 	return app.logged_in && app.exists_user_repo(user, repo) && app.repo.user_id == app.user.id
 }
 
-fn (mut app App) user_has_access() {
+fn (mut app App) user_has_access() bool {
 	return app.repo.is_public || (!app.repo.is_public && app.repo.user_id == app.user.id)
 }
 

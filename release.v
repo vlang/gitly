@@ -8,9 +8,9 @@ struct Release {
 mut:
 	tag_id   int
 	notes    string
-	tag_name string [skip]
-	tag_hash string [skip]
-	user     string [skip]
+	tag_name string    [skip]
+	tag_hash string    [skip]
+	user     string    [skip]
 	date     time.Time [skip]
 }
 
@@ -22,7 +22,7 @@ pub fn (mut app App) insert_release(release Release) {
 
 pub fn (mut app App) find_repo_releases(repo_id int) []Release {
 	return sql app.db {
-		select from Release where repo_id == repo_id 
+		select from Release where repo_id == repo_id
 	}
 }
 
@@ -31,4 +31,3 @@ pub fn (mut app App) delete_repo_releases(repo_id int) {
 		delete from Release where repo_id == repo_id
 	}
 }
-

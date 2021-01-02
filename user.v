@@ -11,9 +11,9 @@ struct User {
 	id                   int
 	name                 string
 	username             string
-	github_username      string [skip]
+	github_username      string  [skip]
 	password             string
-	key string
+	key                  string
 	is_github            bool
 	is_registered        bool
 	is_blocked           bool
@@ -107,8 +107,8 @@ pub fn (mut app App) add_user(username string, password string, emails []string,
 		name := user.username
 		if !github {
 			sql app.db {
-				update User set username = username, password = password, name = name, is_registered = true, key = key
-				where id == user.id
+				update User set username = username, password = password, name = name, is_registered = true,
+				key = key where id == user.id
 			}
 			app.create_user_dir(username)
 			return true
@@ -120,8 +120,8 @@ pub fn (mut app App) add_user(username string, password string, emails []string,
 			return true
 		}
 		sql app.db {
-			update User set username = username, name = name, is_registered = true, is_github = true, key = key
-			where id == user.id
+			update User set username = username, name = name, is_registered = true, is_github = true,
+			key = key where id == user.id
 		}
 	}
 	app.create_user_dir(username)

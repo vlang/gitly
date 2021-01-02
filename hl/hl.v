@@ -15,9 +15,7 @@ pub fn highlight_text(st string, ext string, commit bool) (string, int, int) {
 			return output, 0, 0
 		}
 	}
-	lang := extension_to_lang(ext) or {
-		Lang{}
-	}
+	lang := extension_to_lang(ext) or { Lang{} }
 	text := '$st '
 	mut res := []byte{}
 	mut lines := 0
