@@ -309,6 +309,12 @@ pub fn (mut app App) find_registered_user() []User {
 	return users
 }
 
+pub fn (mut app App) nr_all_users() int {
+	return sql app.db {
+		select count from User
+	}
+}
+
 pub fn (mut app App) nr_repo_contributor(id int) int {
 	return sql app.db {
 		select count from Contributor where repo == id

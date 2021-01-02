@@ -13,10 +13,7 @@ import encoding.base64
 pub fn (mut app App) login() vweb.Result {
 	random_seed()
 	csrf := rand.string(30)
-	app.set_cookie({
-		name: 'csrf'
-		value: csrf
-	})
+	app.set_cookie(name: 'csrf', value: csrf)
 	if app.logged_in() {
 		return app.not_found()
 	}
@@ -34,9 +31,7 @@ pub fn (mut app App) handle_login() vweb.Result {
 	if username == '' || password == '' {
 		return app.redirect('/login')
 	}
-	user := app.find_user_by_username(username) or {
-		return app.redirect('/login')
-	}
+	user := app.find_user_by_username(username) or { return app.redirect('/login') }
 	if user.is_blocked {
 		return app.redirect('/login')
 	}
@@ -51,14 +46,9 @@ pub fn (mut app App) handle_login() vweb.Result {
 	if !user.is_registered {
 		return app.redirect('/login')
 	}
-	ip := app.client_ip(user.id.str()) or {
-		return app.r_home()
-	}
+	ip := app.client_ip(user.id.str()) or { return app.r_home() }
 	app.auth_user(user, ip)
-	app.security_log({
-		user_id: user.id
-		kind: .logged_in
-	})
+	app.security_log(user_id: user.id, kind: .logged_in)
 	return app.r_home()
 }
 
@@ -70,30 +60,16 @@ pub fn (mut app App) auth_user(user User, ip string) {
 	app.update_user_login_attempts(user.id, 0)
 	// println('cookie: setting token=$token id=$user.id')
 	expire_date := time.now().add_days(200)
-	app.set_cookie({
-		name: 'id'
-		value: user.id.str()
-		expires: expire_date
-	})
-	app.set_cookie({
-		name: 'token'
-		value: token
-		expires: expire_date
-	})
+	app.set_cookie(name: 'id', value: user.id.str(), expires: expire_date)
+	app.set_cookie(name: 'token', value: token, expires: expire_date)
 	// app.set_cookie_with_expire_date('id', user.id.str(), expires)
 	// app.set_cookie_with_expire_date('token', token, expires)
 }
 
 pub fn (mut app App) logged_in() bool {
-	id := app.get_cookie('id') or {
-		return false
-	}
-	token := app.get_cookie('token') or {
-		return false
-	}
-	ip := app.client_ip(id) or {
-		return false
-	}
+	id := app.get_cookie('id') or { return false }
+	token := app.get_cookie('token') or { return false }
+	ip := app.client_ip(id) or { return false }
 	t := app.find_user_token(id.int(), ip)
 	blocked := app.check_user_blocked(id.int())
 	if blocked {
@@ -106,14 +82,8 @@ pub fn (mut app App) logged_in() bool {
 }
 
 pub fn (mut app App) logout() vweb.Result {
-	app.set_cookie({
-		name: 'id'
-		value: ''
-	})
-	app.set_cookie({
-		name: 'token'
-		value: ''
-	})
+	app.set_cookie(name: 'id', value: '')
+	app.set_cookie(name: 'token', value: '')
 	return app.r_home()
 }
 
@@ -142,7 +112,9 @@ pub fn (mut app App) get_user_from_cookies() ?User {
 
 ['/register']
 pub fn (mut app App) register() vweb.Result {
-	if app.settings.only_gh_login {
+	no_users := app.nr_all_users() == 0
+	if app.settings.only_gh_login && !no_users {
+		println('only gh')
 		return app.r_home()
 	}
 	app.path = ''
@@ -150,9 +122,10 @@ pub fn (mut app App) register() vweb.Result {
 }
 
 [post]
-['/register']
+['/register_post']
 pub fn (mut app App) handle_register() vweb.Result {
-	if app.settings.only_gh_login {
+	no_users := app.nr_all_users() == 0
+	if app.settings.only_gh_login && !no_users {
 		return app.r_home()
 	}
 	username := app.form['username']
@@ -203,10 +176,7 @@ pub fn (mut app App) handle_register() vweb.Result {
 		return app.register()
 	}
 	app.auth_user(user, ip)
-	app.security_log({
-		user_id: user.id
-		kind: .registered
-	})
+	app.security_log(user_id: user.id, kind: .registered)
 	app.settings.only_gh_login = true
 	return app.redirect('/' + username)
 }
