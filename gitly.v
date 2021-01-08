@@ -48,14 +48,16 @@ fn main() {
 	vweb.run<App>(http_port)
 }
 
-pub fn (mut app App) info(msg string) {
+pub fn (mut app App) info(msg string) vweb.Result {
 	app.file_log.info(msg)
 	app.cli_log.info(msg)
+	return app.text('ok')
 }
 
-pub fn (mut app App) warn(msg string) {
+pub fn (mut app App) warn(msg string) vweb.Result {
 	app.file_log.warn(msg)
 	app.cli_log.warn(msg)
+	return app.text('ok')
 }
 
 /*

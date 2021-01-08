@@ -130,6 +130,7 @@ fn (mut app App) create_user_dir(username string) {
 	os.mkdir(user_path) or {
 		app.info('Failed to create $user_path')
 		app.info('Error: $err')
+		return
 	}
 }
 
