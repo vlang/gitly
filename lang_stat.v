@@ -15,7 +15,7 @@ const (
 			nr_lines: 1131
 			color: '#f1e05a'
 			pct: 11
-		}
+		},
 	]
 )
 

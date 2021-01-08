@@ -7,9 +7,7 @@ fn (mut app App) check_username(user string) (bool, User) {
 	if user.len == 0 {
 		return false, User{}
 	}
-	mut u := app.find_user_by_username(user) or {
-		return false, User{}
-	}
+	mut u := app.find_user_by_username(user) or { return false, User{} }
 	u.b_avatar = u.avatar != ''
 	if !u.b_avatar {
 		u.avatar = u.username.bytes()[0].str()
@@ -40,7 +38,6 @@ pub fn (mut app App) user_repos(username string) vweb.Result {
 	if user.id == app.user.id {
 		repos = app.find_user_repos(user.id)
 	}
-	
 	return $vweb.html()
 }
 
@@ -122,9 +119,7 @@ pub fn (mut app App) update_user_settings(user string) vweb.Result {
 	}
 	if app.user.last_namechange_time == 0 ||
 		app.user.last_namechange_time + namechange_period <= time.now().unix {
-		u := app.find_user_by_username(name) or {
-			User{}
-		}
+		u := app.find_user_by_username(name) or { User{} }
 		if u.id != 0 {
 			app.error('Name already exists')
 			return app.user_settings(user)

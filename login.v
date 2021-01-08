@@ -6,9 +6,12 @@ import vweb
 import time
 import rand
 import math
+//import libsodium
+import encoding.base64
 
 ['/login']
 pub fn (mut app App) login() vweb.Result {
+	random_seed()
 	csrf := rand.string(30)
 	app.set_cookie(name: 'csrf', value: csrf)
 	if app.logged_in() {
@@ -72,7 +75,9 @@ pub fn (mut app App) logged_in() bool {
 		app.logout()
 		return false
 	}
-	return id != '' && token != '' && t != '' && t == token
+	u := app.find_user_by_id(id.int()) or { return false }
+	// de_cry := libsodium.new_secret_box(u.key).decrypt_string(base64.decode(token).bytes())
+	return id != '' && token != '' && t != '' && base64.decode(token) == t // libsodium.new_secret_box(u.key).decrypt_string(token.bytes()) == t
 }
 
 pub fn (mut app App) logout() vweb.Result {
@@ -86,7 +91,7 @@ pub fn (mut app App) get_user_from_cookies() ?User {
 	token := app.get_cookie('token') or { return none }
 	mut user := app.find_user_by_id(id.int()) or { return none }
 	ip := app.client_ip(id) or { return none }
-	if token != app.find_user_token(user.id, ip) {
+	if base64.decode(token) != app.find_user_token(user.id, ip) {
 		return none
 	}
 	user.b_avatar = user.avatar != ''
@@ -168,12 +173,11 @@ pub fn (mut app App) handle_register() vweb.Result {
 }
 
 fn gen_uuid_v4ish() string {
-	// UUIDv4 format: 4-2-2-2-6 bytes per section
-	a := rand.intn(math.max_i32 / 2).hex()
-	b := rand.intn(math.max_i16).hex()
-	c := rand.intn(math.max_i16).hex()
-	d := rand.intn(math.max_i16).hex()
-	e := rand.intn(math.max_i32 / 2).hex()
-	f := rand.intn(math.max_i16).hex()
-	return '${a:08}-${b:04}-${c:04}-${d:04}-${e:08}${f:04}'.replace(' ', '0')
+	random_seed()
+	return rand.uuid_v4()
+}
+
+fn random_seed() {
+	rand.seed([u32(math.floor(math.sin(time.now().unix / 2) * 1000)), u32(math.floor(math.cos(time.now().unix /
+		2) * 1000))])
 }
