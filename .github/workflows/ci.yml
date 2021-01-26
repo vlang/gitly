@@ -119,7 +119,7 @@ jobs:
   ubuntu-tcc:
     runs-on: ubuntu-latest
     env:
-      VFLAGS: -cc /var/tmp/tcc/bin/tcc -cflags -bt10
+      VFLAGS: -cc tcc -cflags -bt10
     steps:
       - name: Checkout V
         uses: actions/checkout@v2
