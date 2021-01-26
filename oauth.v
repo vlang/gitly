@@ -101,7 +101,7 @@ fn (mut app App) update_settings() {
 	id := app.settings.id
 	oauth_client_id := app.settings.oauth_client_id
 	oauth_client_secret := app.settings.oauth_client_secret
-	only_gh_login := if app.settings.only_gh_login { 1 } else { 0 }
+	// TODO: only_gh_login := if app.settings.only_gh_login { 1 } else { 0 }
 	repo_storage_path := app.settings.repo_storage_path
 	sql app.db {
 		update GitlySettings set oauth_client_id = oauth_client_id, oauth_client_secret = oauth_client_secret,

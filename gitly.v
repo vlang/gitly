@@ -69,7 +69,7 @@ pub fn (mut app App) error(msg string) {
 */
 pub fn (mut app App) init_once() {
 	app.started_at = time.now().unix
-	os.mkdir('logs')
+	os.mkdir('logs') or { panic(err) }
 	app.file_log = log.Log{}
 	app.cli_log = log.Log{}
 	app.file_log.set_level(.info)
@@ -86,7 +86,7 @@ pub fn (mut app App) init_once() {
 		app.version = result.output.trim_space()
 	}
 	if version != app.version {
-		os.write_file('static/assets/version', app.version)
+		os.write_file('static/assets/version', app.version) or { panic(err) }
 	}
 	app.path = ''
 	app.serve_static('/gitly.css', 'static/css/gitly.css', 'text/css')
@@ -432,7 +432,7 @@ pub fn (mut app App) new_repo() vweb.Result {
 		clone_url: app.form['clone_url']
 	}
 	if app.repo.clone_url == '' {
-		os.mkdir(app.repo.git_dir)
+		os.mkdir(app.repo.git_dir) or { panic(err) }
 		app.repo.git('init')
 	} else {
 		app.repo.clone()
@@ -783,7 +783,7 @@ pub fn (mut app App) add_comment(user string, repo string) vweb.Result {
 }
 
 fn (mut app App) rename_user_dir(old_name string, new_name string) {
-	os.mv('$app.settings.repo_storage_path/$old_name', '$app.settings.repo_storage_path/$new_name')
+	os.mv('$app.settings.repo_storage_path/$old_name', '$app.settings.repo_storage_path/$new_name') or { panic(err) }
 }
 
 pub fn (mut app App) running_since() string {
