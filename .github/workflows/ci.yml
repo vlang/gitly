@@ -15,7 +15,7 @@ jobs:
         with:
           path: gitly
       - name: Install SQLite Dependencies
-        run: sudo apt install libsqlite3-dev          
+        run: sudo apt install libsqlite3-dev
       - name: Install Markdown
         uses: actions/checkout@v2
         with:
@@ -74,7 +74,7 @@ jobs:
 #      - name: Install SQLite
 #        run: |
 #          .github\workflows\windows-install-sqlite.bat
-#          dir thirdparty\sqlite\          
+#          dir thirdparty\sqlite\
 #      - name: Install Markdown
 #        uses: actions/checkout@v2
 #        with:
@@ -85,7 +85,7 @@ jobs:
 #          ./make.bat -msvc -skip-path
 #      - name: Compile gitly
 #        run: |
-#          .\v.exe gitly\  
+#          .\v.exe gitly\
 
   windows-gcc:
     runs-on: windows-latest
@@ -103,7 +103,7 @@ jobs:
       - name: Install SQLite
         run: |
           .github\workflows\windows-install-sqlite.bat
-          dir thirdparty\sqlite\          
+          dir thirdparty\sqlite\
       - name: Install Markdown
         uses: actions/checkout@v2
         with:
@@ -111,7 +111,7 @@ jobs:
           path: vlib/markdown
       - name: Build V
         run: |
-          ./make.bat -gcc -skip-path
+          ./make.bat -gcc
       - name: Compile gitly
         run: |
           .\v.exe gitly
@@ -119,7 +119,7 @@ jobs:
   ubuntu-tcc:
     runs-on: ubuntu-latest
     env:
-      VFLAGS: -cc /var/tmp/tcc/bin/tcc -cflags -bt10
+      VFLAGS: -cc tcc -cflags -bt10
     steps:
       - name: Checkout V
         uses: actions/checkout@v2
@@ -130,7 +130,7 @@ jobs:
         with:
           path: gitly
       - name: Install SQLite Dependencies
-        run: sudo apt install libsqlite3-dev          
+        run: sudo apt install libsqlite3-dev
       - name: Install Markdown
         uses: actions/checkout@v2
         with:

@@ -81,5 +81,5 @@ fn (mut app App) delete_repo_files(repo_id int) {
 }
 
 fn (mut app App) delete_repo_folder(path string) {
-	os.rmdir_all(os.real_path(path))
+	os.rmdir_all(os.real_path(path)) or { panic(err) }
 }
