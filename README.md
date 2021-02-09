@@ -1,7 +1,7 @@
 <div align="center">
-<p>
-    <img width="250" src="https://raw.githubusercontent.com/AldrinMathew/GitlyLogo/main/raster/gitly-logo-card.png">
-</p>
+<a href="https://gitly.org"><img width="250" src="https://raw.githubusercontent.com/AldrinMathew/GitlyLogo/main/raster/gitly-logo-card.png"></a>
+
+### [**gitly.org**](https://gitly.org) written in [**V**](https://github.com/vlang/v)
 
 #
 
@@ -9,8 +9,6 @@
 </div>
 
 GitHub/GitLab alternative written in V.
-
-https://gitly.org
 
 - Light and fast
 - Minimal amount of RAM usage (works great on the cheapest $3.5 AWS Lightsail instance)
