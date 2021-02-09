@@ -1,6 +1,6 @@
 <div align="center">
 <p>
-    <img width="150" src="https://raw.githubusercontent.com/AldrinMathew/GitlyLogo/main/raster/gitly-logo-card.png">
+    <img width="250" src="https://raw.githubusercontent.com/AldrinMathew/GitlyLogo/main/raster/gitly-logo-card.png">
 </p>
 
 #
