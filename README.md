@@ -1,5 +1,12 @@
-# Gitly
+<div align="center">
+<p>
+    <img width="150" src="https://raw.githubusercontent.com/AldrinMathew/GitlyLogo/main/raster/gitly-logo-card.png">
+</p>
+
+#
+
 ![CI](https://github.com/vlang/gitly/workflows/CI/badge.svg?branch=master)
+</div>
 
 GitHub/GitLab alternative written in V.
 
