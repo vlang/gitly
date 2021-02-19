@@ -26,8 +26,8 @@ struct SecurityLog {
 }
 
 fn (mut app App) security_log(log SecurityLog) {
-	log2 := {
-		log |
+	log2 := SecurityLog{
+		...log
 		ip: app.ip()
 	}
 	sql app.db {
