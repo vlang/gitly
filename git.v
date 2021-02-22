@@ -57,12 +57,12 @@ fn (mut app App) git_info() vweb.Result {
 	// hdrNocache(c.Writer)
 	app.add_header('Cache-Control', 'no-cache')
 	mut sb := strings.new_builder(100)
-	sb.write(packet_write('# service=git-$service\n'))
-	sb.write(packet_flush())
+	sb.write_string(packet_write('# service=git-$service\n'))
+	sb.write_string(packet_flush())
 	refs := app.repo.git_advertise(service.to_str())
 	app.info('refs = ')
 	app.info(refs)
-	sb.write(refs)
+	sb.write_string(refs)
 	return app.ok(sb.str())
 }
 
