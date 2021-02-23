@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2020 Alexander Medvednikov. All rights reserved.
+// Copyright (c) 2019-2021 Alexander Medvednikov. All rights reserved.
 // Use of this source code is governed by a GPL license that can be found in the LICENSE file.
 module main
 
@@ -8,16 +8,16 @@ import os
 import time
 
 struct User {
-	id                   int
-	name                 string
-	username             string
-	github_username      string
-	password             string
-	is_github            bool
-	is_registered        bool
-	is_blocked           bool
-	is_admin             bool
-	oauth_state          string  [skip]
+	id              int
+	name            string
+	username        string
+	github_username string
+	password        string
+	is_github       bool
+	is_registered   bool
+	is_blocked      bool
+	is_admin        bool
+	oauth_state     string [skip]
 mut:
 	// for github oauth XSRF protection
 	nr_namechanges       int
@@ -382,7 +382,6 @@ fn (mut app App) change_username(user_id int, username string) {
 fn (mut app App) inc_namechanges(user_id int) {
 	now := int(time.now().unix)
 	sql app.db {
-		update User set nr_namechanges = nr_namechanges + 1, last_namechange_time = now where id ==
-		user_id
+		update User set nr_namechanges = nr_namechanges + 1, last_namechange_time = now where id == user_id
 	}
 }
