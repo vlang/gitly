@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2020 Alexander Medvednikov. All rights reserved.
+// Copyright (c) 2019-2021 Alexander Medvednikov. All rights reserved.
 // Use of this source code is governed by a GPL license that can be found in the LICENSE file.
 module hl
 
@@ -15,9 +15,7 @@ pub fn highlight_text(st string, ext string, commit bool) (string, int, int) {
 			return output, 0, 0
 		}
 	}
-	lang := extension_to_lang(ext) or {
-		Lang{}
-	}
+	lang := extension_to_lang(ext) or { Lang{} }
 	text := '$st '
 	mut res := []byte{}
 	mut lines := 0
@@ -51,11 +49,9 @@ pub fn highlight_text(st string, ext string, commit bool) (string, int, int) {
 				} else if runes[pos + 1] == `-` {
 					class = 'class="d"'
 				}
-				res <<
-					'</td></tr>\n<tr><td><a id="$lines" class="no_select" href="#$lines">$lines</a></td><td $class>'.bytes()
+				res << '</td></tr>\n<tr><td><a id="$lines" class="no_select" href="#$lines">$lines</a></td><td $class>'.bytes()
 			} else {
-				res <<
-					'</td></tr>\n<tr><td><a id="$lines" class="no_select" href="#$lines">$lines</a></td><td>'.bytes()
+				res << '</td></tr>\n<tr><td><a id="$lines" class="no_select" href="#$lines">$lines</a></td><td>'.bytes()
 			}
 			if in_line_comment {
 				in_line_comment = false
@@ -70,7 +66,7 @@ pub fn highlight_text(st string, ext string, commit bool) (string, int, int) {
 			continue
 		}
 		if c == `\t` {
-			res << tab.bytes()
+			res << hl.tab.bytes()
 			continue
 		}
 		if in_comment {

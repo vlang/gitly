@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2020 Alexander Medvednikov. All rights reserved.
+// Copyright (c) 2019-2021 Alexander Medvednikov. All rights reserved.
 // Use of this source code is governed by a GPL license that can be found in the LICENSE file.
 module main
 
@@ -84,7 +84,7 @@ fn (mut app App) insert_commit(commit Commit) {
 
 fn (mut app App) find_repo_commits(repo_id int) []Commit {
 	return sql app.db {
-		select from Commit where repo_id == repo_id limit 10 
+		select from Commit where repo_id == repo_id limit 10
 	}
 }
 
@@ -97,13 +97,13 @@ fn (mut app App) find_repo_commits_as_page(repo_id int, page int) []Commit {
 
 fn (mut app App) nr_repo_commits(repo_id int) int {
 	return sql app.db {
-		select count from Commit where repo_id == repo_id 
+		select count from Commit where repo_id == repo_id
 	}
 }
 
 fn (mut app App) find_repo_commit_by_hash(repo_id int, hash string) Commit {
 	commits := sql app.db {
-		select from Commit where repo_id == repo_id && hash == hash 
+		select from Commit where repo_id == repo_id && hash == hash
 	}
 	if commits.len == 1 {
 		return commits[0]
@@ -125,6 +125,6 @@ fn (mut app App) find_repo_first_commit(repo_id int) Commit {
 
 fn (mut app App) find_repo_commits_by_author(repo_id int, author string) []Commit {
 	return sql app.db {
-		select from Commit where repo_id == repo_id && author == author limit 10 
+		select from Commit where repo_id == repo_id && author == author limit 10
 	}
 }

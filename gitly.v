@@ -1,4 +1,4 @@
-// Copyright (c) 2020 Alexander Medvednikov. All rights reserved.
+// Copyright (c) 2020-2021 Alexander Medvednikov. All rights reserved.
 // Use of this source code is governed by a GPL license that can be found in the LICENSE file.
 module main
 
@@ -221,8 +221,8 @@ pub fn (mut app App) update_repo_settings(user string, repo string) vweb.Result 
 	if !app.repo_belongs_to(user, repo) {
 		return app.r_repo()
 	}
-	if 'webhook_secret' in app.form &&
-		app.form['webhook_secret'] != app.repo.webhook_secret && app.form['webhook_secret'] != '' {
+	if 'webhook_secret' in app.form && app.form['webhook_secret'] != app.repo.webhook_secret
+		&& app.form['webhook_secret'] != '' {
 		webhook := sha1.hexhash(app.form['webhook_secret'])
 		app.update_repo_webhook(app.repo.id, webhook)
 	}
@@ -783,7 +783,9 @@ pub fn (mut app App) add_comment(user string, repo string) vweb.Result {
 }
 
 fn (mut app App) rename_user_dir(old_name string, new_name string) {
-	os.mv('$app.settings.repo_storage_path/$old_name', '$app.settings.repo_storage_path/$new_name') or { panic(err) }
+	os.mv('$app.settings.repo_storage_path/$old_name', '$app.settings.repo_storage_path/$new_name') or {
+		panic(err)
+	}
 }
 
 pub fn (mut app App) running_since() string {

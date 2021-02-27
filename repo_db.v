@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2020 Alexander Medvednikov. All rights reserved.
+// Copyright (c) 2019-2021 Alexander Medvednikov. All rights reserved.
 // Use of this source code is governed by a GPL license that can be found in the LICENSE file.
 module main
 
@@ -196,9 +196,9 @@ fn (mut app App) update_repo_in_db(repo &Repo) {
 	nr_commits := repo.nr_commits
 	sql app.db {
 		update Repo set description = desc, nr_views = nr_views, is_public = is_public, webhook_secret = webhook_secret,
-		nr_tags = nr_tags, nr_open_issues = nr_open_issues, nr_open_prs = nr_open_prs, nr_releases = nr_releases,
-		nr_contributors = nr_contributors, nr_commits = nr_commits, nr_branches = nr_branches
-		where id == id
+		nr_tags = nr_tags, nr_open_issues = nr_open_issues, nr_open_prs = nr_open_prs,
+		nr_releases = nr_releases, nr_contributors = nr_contributors, nr_commits = nr_commits,
+		nr_branches = nr_branches where id == id
 	}
 }
 

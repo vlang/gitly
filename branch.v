@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2020 Alexander Medvednikov. All rights reserved.
+// Copyright (c) 2019-2021 Alexander Medvednikov. All rights reserved.
 // Use of this source code is governed by a GPL license that can be found in the LICENSE file.
 module main
 
@@ -7,12 +7,12 @@ import time
 
 struct Branch {
 mut:
-	id     int
+	id      int
 	repo_id int
-	name   string // branch name
-	author string // author of latest commit on branch
-	hash   string // hash of latest commit on branch
-	date   int // time of latest commit on branch
+	name    string // branch name
+	author  string // author of latest commit on branch
+	hash    string // hash of latest commit on branch
+	date    int    // time of latest commit on branch
 }
 
 fn (mut app App) fetch_branches(r Repo) {
@@ -32,7 +32,9 @@ fn (mut app App) fetch_branches(r Repo) {
 			branch_data := r.git('log -1 --pretty="%aE$log_field_separator%cD" $branch.hash')
 			args := branch_data.split(log_field_separator)
 			email := args[0]
-			u := app.find_user_by_email(email) or { User{username: email} }
+			u := app.find_user_by_email(email) or { User{
+				username: email
+			} }
 			branch.author = u.username
 			date := time.parse_rfc2822(args[1]) or {
 				app.info('Error: $err')
@@ -62,7 +64,9 @@ fn (mut app App) update_branches(r &Repo) {
 			branch_data := r.git('log -1 --pretty="%aE$log_field_separator%cD" $branch.hash')
 			args := branch_data.split(log_field_separator)
 			email := args[0]
-			u := app.find_user_by_email(email) or { User{username: email} }
+			u := app.find_user_by_email(email) or { User{
+				username: email
+			} }
 			branch.author = u.username
 			date := time.parse_rfc2822(args[1]) or {
 				app.info('Error: $err')
@@ -94,7 +98,7 @@ fn (mut app App) update_branch(branch Branch) {
 }
 
 fn (mut app App) insert_branch(branch Branch) {
-		sql app.db {
+	sql app.db {
 		insert branch into Branch
 	}
 }

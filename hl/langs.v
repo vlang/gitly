@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2020 Alexander Medvednikov. All rights reserved.
+// Copyright (c) 2019-2021 Alexander Medvednikov. All rights reserved.
 // Use of this source code is governed by a GPL license that can be found in the LICENSE file.
 module hl
 
@@ -15,22 +15,20 @@ struct Lang {
 	lang_extensions []string
 	string_start    []string
 pub:
-	line_comments   string
-	mline_comments  []string
-	color string
-	name            string
+	line_comments  string
+	mline_comments []string
+	color          string
+	name           string
 }
 
 fn is_source(ext string) bool {
-	extension_to_lang(ext) or {
-		return false
-	}
+	extension_to_lang(ext) or { return false }
 	return true
 }
 
 pub fn extension_to_lang(ext string) ?Lang {
 	ending := ext.split('.').last()
-	for lang in langs {
+	for lang in hl.langs {
 		if ending in lang.lang_extensions {
 			return lang
 		}
@@ -39,7 +37,7 @@ pub fn extension_to_lang(ext string) ?Lang {
 }
 
 fn init_langs() []Lang {
-	mut langs_ := []Lang{cap:10}
+	mut langs_ := []Lang{cap: 10}
 	langs_ << init_c()
 	langs_ << init_v()
 	langs_ << init_js()

@@ -1,26 +1,26 @@
-// Copyright (c) 2019-2020 Alexander Medvednikov. All rights reserved.
+// Copyright (c) 2019-2021 Alexander Medvednikov. All rights reserved.
 // Use of this source code is governed by a GPL license that can be found in the LICENSE file.
 module main
 
 import time
 
 struct Issue {
-	id            int
+	id int
 mut:
 	author_id     int
 	repo_id       int
 	is_pr         bool
-	assigned      []int [skip]
-	labels        []int [skip]
+	assigned      []int       [skip]
+	labels        []int       [skip]
 	nr_comments   int
 	title         string
 	text          string
 	created_at    int
 	status        IssueStatus [skip]
-	linked_issues []int [skip]
-	author_name   string [skip]
-	repo_author   string [skip]
-	repo_name     string [skip]
+	linked_issues []int       [skip]
+	author_name   string      [skip]
+	repo_author   string      [skip]
+	repo_name     string      [skip]
 }
 
 enum IssueStatus {

@@ -1,18 +1,22 @@
-// Copyright (c) 2019-2020 Alexander Medvednikov. All rights reserved.
+// Copyright (c) 2019-2021 Alexander Medvednikov. All rights reserved.
 // Use of this source code is governed by a GPL license that can be found in the LICENSE file.
 module main
 
 struct Token {
-	id int
+	id      int
 	user_id int
-	value string
-	ip string
+	value   string
+	ip      string
 }
 
 fn (mut app App) update_user_token(user_id int, token string, ip string) string {
 	tok := app.find_user_token(user_id, ip)
 	if tok == '' {
-		new_token := Token{user_id: user_id, value: token, ip: ip }
+		new_token := Token{
+			user_id: user_id
+			value: token
+			ip: ip
+		}
 		sql app.db {
 			insert new_token into Token
 		}
@@ -39,6 +43,3 @@ fn (mut app App) add_token(user_id int, ip string) string {
 	token = app.update_user_token(user_id, token, ip)
 	return token
 }
-
-
-
