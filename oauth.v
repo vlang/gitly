@@ -46,17 +46,17 @@ pub fn (mut app App) oauth() vweb.Result {
 	}
 	d := json.encode(req)
 	resp := http.post_json('https://github.com/login/oauth/access_token', d) or {
-		app.info(err)
+		app.info(err.msg)
 		return app.r_home()
 	}
 	mut token := resp.text.find_between('access_token=', '&')
 	mut request := http.new_request(.get, 'https://api.github.com/user', '') or {
-		app.info(err)
+		app.info(err.msg)
 		return app.r_home()
 	}
 	request.add_header('Authorization', 'token $token')
 	user_js := request.do() or {
-		app.info(err)
+		app.info(err.msg)
 		return app.r_home()
 	}
 	if user_js.status_code != 200 {

@@ -69,7 +69,9 @@ pub fn (mut app App) error(msg string) {
 */
 pub fn (mut app App) init_once() {
 	app.started_at = time.now().unix
-	os.mkdir('logs') or { panic(err) }
+	if !os.is_dir('logs') {
+		os.mkdir('logs') or { panic('cannot create folder logs') }
+	}
 	app.file_log = log.Log{}
 	app.cli_log = log.Log{}
 	app.file_log.set_level(.info)
