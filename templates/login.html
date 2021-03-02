@@ -1,4 +1,4 @@
-@header
+@include 'header.html'
 
 @if !app.settings.only_gh_login
 <h3>
@@ -14,5 +14,5 @@ Sign in
 
 <a href='https://github.com/login/oauth/authorize?response_type=code&state=$csrf&client_id=@app.settings.oauth_client_id'>Login via GitHub</a>
 
-@footer
+@include 'footer.html'
 
