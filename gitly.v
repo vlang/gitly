@@ -45,13 +45,13 @@ mut:
 }
 
 fn main() {
-	vweb.run<App>(http_port)
+	vweb.run<App>(http_port+1)
 }
 
-pub fn (mut app App) info(msg string) vweb.Result {
+pub fn (mut app App) info(msg string) { // vweb.Result {
 	app.file_log.info(msg)
 	app.cli_log.info(msg)
-	return app.text('ok')
+	//return app.text('ok')
 }
 
 pub fn (mut app App) warn(msg string) vweb.Result {
@@ -79,7 +79,7 @@ pub fn (mut app App) init_once() {
 	date := time.now()
 	date_s := '$date.ymmdd()'
 	app.file_log.set_full_logpath('./logs/log_${date_s}.log')
-	app.info('init_once()')
+	//app.info('init_once()')
 	version := os.read_file('static/assets/version') or { 'unknown' }
 	result := os.exec('git rev-parse --short HEAD') or { os.Result{
 		output: version
