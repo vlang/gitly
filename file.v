@@ -4,7 +4,6 @@ module main
 
 import time
 import os
-import vweb
 
 struct File {
 	id              int

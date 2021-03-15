@@ -77,9 +77,7 @@ pub fn (mut app App) init_once() {
 	app.file_log.set_full_logpath('./logs/log_${date_s}.log')
 	//app.info('init_once()')
 	version := os.read_file('static/assets/version') or { 'unknown' }
-	result := os.exec('git rev-parse --short HEAD') or { os.Result{
-		output: version
-	} }
+	result := os.execute('git rev-parse --short HEAD')
 	if !result.output.contains('fatal') {
 		app.version = result.output.trim_space()
 	}
