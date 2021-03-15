@@ -3,6 +3,7 @@
 module main
 
 import os
+import rand
 import time
 import vweb
 import crypto.sha256
@@ -23,30 +24,34 @@ mut:
 }
 
 fn (mut app App) get_session(mut c vweb.Context) &Session {
-	if id := c.get_cookie('sess_id') {
-		if id in app.user_sessions {
-			return app.user_sessions[id]
+	mut sess := app.user_sessions[c.get_cookie('sess_id') or { '' }]
+	defer {
+		sess.logged_in = app.logged_in(mut c)
+		if sess.logged_in {
+				sess.user = app.get_user_from_cookies(mut c) or {
+				sess.logged_in = false
+				User{}
+			}
 		}
 	}
+
+	if sess != 0 {
+		return sess
+	}
+
 	// TODO: cache eviction
-	sess_id := generate_session_id()
+	// TODO: is rand.string strong enough for session IDs?
+	sess_id := rand.string(32)
 	cookie := vweb.Cookie{
 		name: 'sess_id',
 		value: sess_id,
 		secure: true,
 		http_only: true,
-		expires: time.now().add_days(1),
+		// expires: time.now().add_days(1),
 	}
 	c.set_cookie(cookie)
-	app.user_sessions[sess_id] = &Session{}
-	return app.user_sessions[sess_id]
-}
 
-fn generate_session_id() string {
-	mut f := os.open_file('/dev/urandom', 'r') or {
-		panic('could not open /dev/urandom')
-	}
-	defer { f.close() }
-	b := f.read_bytes(256)
-	return base64.encode(sha256.sum(b))
+	sess = &Session{}
+	app.user_sessions[sess_id] = sess
+	return sess
 }
