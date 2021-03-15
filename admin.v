@@ -2,31 +2,34 @@ module main
 
 import vweb
 
-pub fn (mut app App) admin() vweb.Result {
-	if !app.is_admin() {
-		return app.r_home()
+pub fn (mut app App) admin(mut c vweb.Context) vweb.Result {
+	mut sess := app.get_session(mut c)
+	if !app.is_admin(mut c) {
+		return app.r_home(mut c)
 	}
 	return $vweb.html()
 }
 
 ['/admin/settings']
-pub fn (mut app App) admin_settings() vweb.Result {
-	if !app.is_admin() {
-		return app.r_home()
+pub fn (mut app App) admin_settings(mut c vweb.Context) vweb.Result {
+	mut sess := app.get_session(mut c)
+	if !app.is_admin(mut c) {
+		return app.r_home(mut c)
 	}
 	return $vweb.html()
 }
 
 [post]
 ['/admin/settings']
-pub fn (mut app App) update_admin_settings() vweb.Result {
-	if !app.is_admin() {
-		return app.r_home()
+pub fn (mut app App) update_admin_settings(mut c vweb.Context) vweb.Result {
+	mut sess := app.get_session(mut c)
+	if !app.is_admin(mut c) {
+		return app.r_home(mut c)
 	}
-	oauth_client_id := app.form['oauth_client_id']
-	oauth_client_secret := app.form['oauth_client_secret']
-	only_gh_login := 'only_gh_login' in app.form
-	repo_storage_path := app.form['repo_storage_path']
+	oauth_client_id := c.form['oauth_client_id']
+	oauth_client_secret := c.form['oauth_client_secret']
+	only_gh_login := 'only_gh_login' in c.form
+	repo_storage_path := c.form['repo_storage_path']
 
 	if oauth_client_id != '' {
 		app.settings.oauth_client_id = oauth_client_id
@@ -39,13 +42,14 @@ pub fn (mut app App) update_admin_settings() vweb.Result {
 
 	app.update_settings()
 
-	return app.redirect('/admin')
+	return c.redirect('/admin')
 }
 
 ['/admin/userlist']
-pub fn (mut app App) admin_userlist() vweb.Result {
-	if !app.is_admin() {
-		return app.r_home()
+pub fn (mut app App) admin_userlist(mut c vweb.Context) vweb.Result {
+	mut sess := app.get_session(mut c)
+	if !app.is_admin(mut c) {
+		return app.r_home(mut c)
 	}
 	// TODO add pagination
 	userlist := app.find_registered_user()
@@ -54,13 +58,14 @@ pub fn (mut app App) admin_userlist() vweb.Result {
 
 [post]
 ['/admin/edituser/:user']
-pub fn (mut app App) admin_edituser(user string) vweb.Result {
-	if !app.is_admin() {
-		return app.r_home()
+pub fn (mut app App) admin_edituser(mut c vweb.Context, user string) vweb.Result {
+	mut sess := app.get_session(mut c)
+	if !app.is_admin(mut c) {
+		return app.r_home(mut c)
 	}
-	clear_session := 'stop-session' in app.form
-	is_blocked := 'is-blocked' in app.form
-	is_admin := 'is-admin' in app.form
+	clear_session := 'stop-session' in c.form
+	is_blocked := 'is-blocked' in c.form
+	is_admin := 'is-admin' in c.form
 	if is_admin {
 		app.user_set_admin(user.int())
 	} else {
@@ -74,18 +79,20 @@ pub fn (mut app App) admin_edituser(user string) vweb.Result {
 	if clear_session {
 		app.clear_sessions(user.int())
 	}
-	return app.redirect('/admin')
+	return c.redirect('/admin')
 }
 
 ['/admin/statics']
-pub fn (mut app App) admin_statics() vweb.Result {
-	if !app.is_admin() {
-		return app.r_home()
+pub fn (mut app App) admin_statics(mut c vweb.Context) vweb.Result {
+	mut sess := app.get_session(mut c)
+	if !app.is_admin(mut c) {
+		return app.r_home(mut c)
 	}
 
 	return $vweb.html()
 }
 
-fn (mut app App) is_admin() bool {
-	return app.logged_in && app.user.is_admin
+fn (mut app App) is_admin(mut c vweb.Context) bool {
+	mut sess := app.get_session(mut c)
+	return sess.logged_in && sess.user.is_admin
 }

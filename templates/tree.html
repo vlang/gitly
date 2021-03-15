@@ -14,7 +14,7 @@ $(document).ready(function(){
 
 .lang-stats-header {
 	.langs {
-		@for stat in app.repo.lang_stats
+		@for stat in sess.repo.lang_stats
 			.lang-stat {
 				<span class='lang-stat-dot' style='background-color:@{stat.color}'>&nbsp;</span>
 				<b>@stat.name</b>
@@ -24,7 +24,7 @@ $(document).ready(function(){
 	}
 
 	.lang-stats-bar {
-		@for stat in app.repo.lang_stats
+		@for stat in sess.repo.lang_stats
 			<div style='flex:@{stat.pct}; background-color:@stat.color'>
 			</div>
 		@end
@@ -37,7 +37,7 @@ $(document).ready(function(){
 			@last_commit.author
 		}
 		span.last_commit_msg {
-			commited <a href="/@app.repo.user_name/@app.repo.name/commit/@last_commit.hash" class="hash_string">@last_commit.hash</a>
+			commited <a href="/@sess.repo.user_name/@sess.repo.name/commit/@last_commit.hash" class="hash_string">@last_commit.hash</a>
 		}
 		span.time {
 			@last_commit.relative()
@@ -68,7 +68,7 @@ $(document).ready(function(){
 				<!--
 				<a href='@file.url()'>@file.name (path=@file.full_path())</a>
 				-->
-				<a href='/@app.repo.user_name/@app.repo.name/@file.url()'>@file.name</a>
+				<a href='/@sess.repo.user_name/@sess.repo.name/@file.url()'>@file.name</a>
 			}
 			<!--
 			span.file-size {
@@ -76,7 +76,7 @@ $(document).ready(function(){
 			}
 			-->
 			span.file-msg {
-				<a href="/@app.repo.user_name/@app.repo.name/commit/@file.last_hash#@file.full_path()">@file.last_msg</a>
+				<a href="/@sess.repo.user_name/@sess.repo.name/commit/@file.last_hash#@file.full_path()">@file.last_msg</a>
 			}
 			span.file-time {
 				@file.pretty_last_time()

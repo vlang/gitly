@@ -2,6 +2,8 @@
 // Use of this source code is governed by a GPL license that can be found in the LICENSE file.
 module main
 
+import vweb
+
 fn (mut app App) create_table(name string, fields []string) {
 	app.db.exec('create table if not exists `$name` (' + fields.join(',') + ')')
 }
@@ -242,7 +244,8 @@ fn (mut app App) find_repo_by_id(repo_id int) Repo {
 	}
 }
 
-fn (mut app App) exists_user_repo(user string, name string) bool {
+fn (mut app App) exists_user_repo(mut c vweb.Context, user string, name string) bool {
+	mut sess := app.get_session(mut c)
 	if user.len == 0 || name.len == 0 {
 		app.info('User or repo was not found')
 		return false
@@ -251,17 +254,13 @@ fn (mut app App) exists_user_repo(user string, name string) bool {
 		app.info('User was not found')
 		return false
 	}
-	app.repo = app.find_repo_by_name(u.id, name) or {
+	sess.repo = app.find_repo_by_name(u.id, name) or {
 		app.info('Repo was not found')
 		return false
 	}
-	app.repo.lang_stats = app.find_repo_lang_stats(app.repo.id)
-	app.html_path = app.repo.html_path_to(app.path, app.repo.primary_branch)
+	sess.repo.lang_stats = app.find_repo_lang_stats(sess.repo.id)
+	sess.html_path = sess.repo.html_path_to(sess.path, sess.repo.primary_branch)
 	return true
-}
-
-fn (mut app App) retrieve_repo(id int) Repo {
-	return app.repo
 }
 
 fn (mut app App) inc_repo_views(repo_id int) {
@@ -276,18 +275,20 @@ fn (mut app App) inc_file_views(file_id int) {
 	}
 }
 
-fn (mut app App) inc_repo_issues(repo_id int) {
+fn (mut app App) inc_repo_issues(mut c vweb.Context, repo_id int) {
+	mut sess := app.get_session(mut c)
 	sql app.db {
 		update Repo set nr_open_issues = nr_open_issues + 1 where id == repo_id
 	}
-	app.repo.nr_open_issues++
+	sess.repo.nr_open_issues++
 }
 
-fn (mut app App) update_repo_nr_commits(repo_id int, nr_commits int) {
+fn (mut app App) update_repo_nr_commits(mut c vweb.Context, repo_id int, nr_commits int) {
+	mut sess := app.get_session(mut c)
 	sql app.db {
 		update Repo set nr_commits = nr_commits where id == repo_id
 	}
-	app.repo.nr_commits = nr_commits
+	sess.repo.nr_commits = nr_commits
 }
 
 fn (mut app App) update_repo_webhook(repo_id int, webhook string) {
@@ -296,11 +297,12 @@ fn (mut app App) update_repo_webhook(repo_id int, webhook string) {
 	}
 }
 
-fn (mut app App) update_repo_nr_contributor(repo_id int, nr_contributors int) {
+fn (mut app App) update_repo_nr_contributor(mut c vweb.Context, repo_id int, nr_contributors int) {
+	mut sess := app.get_session(mut c)
 	sql app.db {
 		update Repo set nr_contributors = nr_contributors where id == repo_id
 	}
-	app.repo.nr_contributors = nr_contributors
+	sess.repo.nr_contributors = nr_contributors
 }
 
 fn (mut app App) insert_repo(repo Repo) {

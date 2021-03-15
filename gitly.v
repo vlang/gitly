@@ -25,48 +25,44 @@ const (
 )
 
 struct App {
-	vweb.Context
 mut:
 	started_at    u64
-	path          string // current path being viewed
-	repo          Repo
 	version       string
-	html_path     vweb.RawHtml
-	page_gen_time string
-	is_tree       bool
-	show_menu     bool
 	settings      GitlySettings
 	file_log      log.Log
 	cli_log       log.Log
 	db            sqlite.DB
-	logged_in     bool
-	user          User
-	// form_error string
+	user_sessions map[string]&Session
 }
 
 fn main() {
-	vweb.run<App>(http_port+1)
+	mut conf := vweb.Config{
+		port: http_port+1
+	}
+	conf.serve_static('/gitly.css', 'static/css/gitly.css', 'text/css')
+	conf.serve_static('/jquery.js', 'static/js/jquery.js', 'text/javascript')
+	conf.serve_static('/favicon.svg', 'static/assets/favicon.svg', 'image/svg+xml')
+
+	mut app := App{}
+	app.init_once()
+	vweb.run_app<App>(mut app, conf)
 }
 
-pub fn (mut app App) info(msg string) { // vweb.Result {
+pub fn (mut app App) info(msg string) {
 	app.file_log.info(msg)
 	app.cli_log.info(msg)
-	//return app.text('ok')
 }
 
-pub fn (mut app App) warn(msg string) vweb.Result {
+pub fn (mut app App) warn(msg string) {
 	app.file_log.warn(msg)
 	app.cli_log.warn(msg)
-	return app.text('ok')
 }
 
-/*
 pub fn (mut app App) error(msg string) {
 	app.file_log.error(msg)
 	app.cli_log.error(msg)
-	//app.form_error = msg
 }
-*/
+
 pub fn (mut app App) init_once() {
 	app.started_at = time.now().unix
 	if !os.is_dir('logs') {
@@ -90,10 +86,6 @@ pub fn (mut app App) init_once() {
 	if version != app.version {
 		os.write_file('static/assets/version', app.version) or { panic(err) }
 	}
-	app.path = ''
-	app.serve_static('/gitly.css', 'static/css/gitly.css', 'text/css')
-	app.serve_static('/jquery.js', 'static/js/jquery.js', 'text/javascript')
-	app.serve_static('/favicon.svg', 'static/assets/favicon.svg', 'image/svg+xml')
 	app.db = sqlite.connect('gitly.sqlite') or {
 		println('failed to connect to db')
 		panic(err)
@@ -140,43 +132,45 @@ pub fn (mut app App) init_once() {
 	}
 }
 
-pub fn (mut app App) init() {
-	url := app.req.url
-	app.show_menu = false
-	app.page_gen_time = ''
-	app.info('\n\ninit() url=$url')
-	app.path = ''
-	// app.info('path=$app.path')
-	app.logged_in = app.logged_in()
-	app.repo = Repo{}
-	app.user = User{}
-	if app.logged_in {
-		app.user = app.get_user_from_cookies() or {
-			app.logged_in = false
-			User{}
-		}
-	}
-	app.add_visit()
-}
+// pub fn (mut app App) init() {
+// 	url := app.req.url
+// 	app.show_menu = false
+// 	app.page_gen_time = ''
+// 	app.info('\n\ninit() url=$url')
+// 	app.path = ''
+// 	app.logged_in = app.logged_in()
+// 	app.repo = Repo{}
+// 	app.user = User{}
+// 	if app.logged_in {
+// 		app.user = app.get_user_from_cookies() or {
+// 			app.logged_in = false
+// 			User{}
+// 		}
+// 	}
+// 	app.add_visit()
+// }
 
 // Redirect to the home page
-pub fn (mut app App) r_home() vweb.Result {
-	return app.redirect('/')
+pub fn (mut app App) r_home(mut c vweb.Context) vweb.Result {
+	mut sess := app.get_session(mut c)
+	return c.redirect('/')
 }
 
 // Redirect to the current repo main site
-pub fn (mut app App) r_repo() vweb.Result {
-	return app.redirect('/$app.user.username/$app.repo.name')
+pub fn (mut app App) r_repo(mut c vweb.Context) vweb.Result {
+	mut sess := app.get_session(mut c)
+	return c.redirect('/$sess.user.username/$sess.repo.name')
 }
 
 /*
 pub fn (mut app App) create_new_test_repo() {
+	mut sess := app.get_session(mut c)
 	if x := app.find_repo_by_name(1, 'v') {
 		app.info('test repo already exists')
-		app.repo = x
-		app.repo.lang_stats = app.find_repo_lang_stats(app.repo.id)
+		sess.repo = x
+		sess.repo.lang_stats = app.find_repo_lang_stats(sess.repo.id)
 		// init branches list for existing repo
-		app.update_repo_data(app.repo)
+		app.update_repo_data(sess.repo)
 		return
 	}
 	_ := os.ls('.') or {
@@ -185,7 +179,7 @@ pub fn (mut app App) create_new_test_repo() {
 	cur_dir := os.base_dir(os.executable())
 	git_dir := os.join_path(cur_dir, 'test_repo')
 	app.add_user('vlang', '', ['vlang@vlang.io'], true)
-	app.repo = Repo{
+	sess.repo = Repo{
 		name: 'v'
 		user_name: 'vlang'
 		git_dir: git_dir
@@ -199,140 +193,147 @@ pub fn (mut app App) create_new_test_repo() {
 		id: 1
 	}
 	app.info('inserting test repo')
-	app.init_tags(app.repo)
+	app.init_tags(sess.repo)
 	app.update_repo()
 }
 */
 ['/:user/:repo/settings']
-pub fn (mut app App) repo_settings(user string, repo string) vweb.Result {
-	if !app.repo_belongs_to(user, repo) {
-		return app.r_repo()
+pub fn (mut app App) repo_settings(mut c vweb.Context, user string, repo string) vweb.Result {
+	mut sess := app.get_session(mut c)
+	if !app.repo_belongs_to(mut c, user, repo) {
+		return app.r_repo(mut c)
 	}
-	app.show_menu = true
+	sess.show_menu = true
 	return $vweb.html()
 }
 
 // Helper function
-fn (mut app App) repo_belongs_to(user string, repo string) bool {
-	return app.logged_in && app.exists_user_repo(user, repo) && app.repo.user_id == app.user.id
+fn (mut app App) repo_belongs_to(mut c vweb.Context, user string, repo string) bool {
+	mut sess := app.get_session(mut c)
+	return sess.logged_in && app.exists_user_repo(mut c, user, repo) && sess.repo.user_id == sess.user.id
 }
 
 [post]
 ['/:user/:repo/settings']
-pub fn (mut app App) update_repo_settings(user string, repo string) vweb.Result {
-	if !app.repo_belongs_to(user, repo) {
-		return app.r_repo()
+pub fn (mut app App) update_repo_settings(mut c vweb.Context, user string, repo string) vweb.Result {
+	mut sess := app.get_session(mut c)
+	if !app.repo_belongs_to(mut c, user, repo) {
+		return app.r_repo(mut c)
 	}
-	if 'webhook_secret' in app.form && app.form['webhook_secret'] != app.repo.webhook_secret
-		&& app.form['webhook_secret'] != '' {
-		webhook := sha1.hexhash(app.form['webhook_secret'])
-		app.update_repo_webhook(app.repo.id, webhook)
+	if 'webhook_secret' in c.form && c.form['webhook_secret'] != sess.repo.webhook_secret
+		&& c.form['webhook_secret'] != '' {
+		webhook := sha1.hexhash(c.form['webhook_secret'])
+		app.update_repo_webhook(sess.repo.id, webhook)
 	}
-	return app.r_repo()
+	return app.r_repo(mut c)
 }
 
 [post]
 ['/:user/:repo/delete_repo']
-pub fn (mut app App) repo_delete(user string, repo string) vweb.Result {
-	if !app.repo_belongs_to(user, repo) {
-		return app.r_repo()
+pub fn (mut app App) repo_delete(mut c vweb.Context, user string, repo string) vweb.Result {
+	mut sess := app.get_session(mut c)
+	if !app.repo_belongs_to(mut c, user, repo) {
+		return app.r_repo(mut c)
 	}
-	if 'verify' in app.form && app.form['verify'] == '$user/$repo' {
-		go app.delete_repo(app.repo.id, app.repo.git_dir, app.repo.name)
+	if 'verify' in c.form && c.form['verify'] == '$user/$repo' {
+		go app.delete_repo(sess.repo.id, sess.repo.git_dir, sess.repo.name)
 	} else {
-		app.error('Verification failed')
-		return app.repo_settings(user, repo)
+		c.error('Verification failed')
+		return app.repo_settings(mut c, user, repo)
 	}
-	return app.r_home()
+	return app.r_home(mut c)
 }
 
 [post]
 ['/:user/:repo/move_repo']
-pub fn (mut app App) repo_move(user string, repo string) vweb.Result {
-	if !app.repo_belongs_to(user, repo) {
-		return app.r_repo()
+pub fn (mut app App) repo_move(mut c vweb.Context, user string, repo string) vweb.Result {
+	mut sess := app.get_session(mut c)
+	if !app.repo_belongs_to(mut c, user, repo) {
+		return app.r_repo(mut c)
 	}
-	if 'verify' in app.form && 'dest' in app.form && app.form['verify'] == '$user/$repo' {
-		uname := app.form['dest']
+	if 'verify' in c.form && 'dest' in c.form && c.form['verify'] == '$user/$repo' {
+		uname := c.form['dest']
 		dest_user := app.find_user_by_username(uname) or {
-			app.error('Unknown user $uname')
-			return app.repo_settings(user, repo)
+			c.error('Unknown user $uname')
+			return app.repo_settings(mut c, user, repo)
 		}
-		if app.user_has_repo(dest_user.id, app.repo.name) {
-			app.error('User already owns repo $app.repo.name')
-			return app.repo_settings(user, repo)
+		if app.user_has_repo(dest_user.id, sess.repo.name) {
+			c.error('User already owns repo $sess.repo.name')
+			return app.repo_settings(mut c, user, repo)
 		}
 		if app.nr_user_repos(dest_user.id) >= max_user_repos {
-			app.error('User already reached the repo limit')
-			return app.repo_settings(user, repo)
+			c.error('User already reached the repo limit')
+			return app.repo_settings(mut c, user, repo)
 		}
-		app.move_repo_to_user(app.repo.id, dest_user.id, dest_user.username)
-		return app.redirect('/$dest_user.username/$app.repo.name')
+		app.move_repo_to_user(sess.repo.id, dest_user.id, dest_user.username)
+		return c.redirect('/$dest_user.username/$sess.repo.name')
 	} else {
-		app.error('Verification failed')
-		return app.repo_settings(user, repo)
+		c.error('Verification failed')
+		return app.repo_settings(mut c, user, repo)
 	}
-	return app.r_home()
+	return app.r_home(mut c)
 }
 
 ['/:user/:repo']
-pub fn (mut app App) tree2(user string, repo string) vweb.Result {
-	if !app.exists_user_repo(user, repo) {
-		return app.not_found()
+pub fn (mut app App) tree2(mut c vweb.Context, user string, repo string) vweb.Result {
+	mut sess := app.get_session(mut c)
+	if !app.exists_user_repo(mut c, user, repo) {
+		return c.not_found()
 	}
-	return app.tree(user, repo, app.repo.primary_branch, '')
+	return app.tree(mut c, user, repo, sess.repo.primary_branch, '')
 }
 
 // pub fn (mut app App) tree(path string) {
 ['/:user/:repo/tree/:branch/:path...']
-pub fn (mut app App) tree(user string, repo string, branch string, path string) vweb.Result {
-	if !app.exists_user_repo(user, repo) {
-		return app.not_found()
+pub fn (mut app App) tree(mut c vweb.Context, user string, repo string, branch string, path string) vweb.Result {
+	mut sess := app.get_session(mut c)
+	if !app.exists_user_repo(mut c, user, repo) {
+		return c.not_found()
 	}
 	_, u := app.check_username(user)
-	if !app.repo.is_public {
-		if u.id != app.user.id {
-			return app.not_found()
+	if !sess.repo.is_public {
+		if u.id != sess.user.id {
+			return c.not_found()
 		}
 	}
 	println('\n\n\ntree() user="$user" repo="' + repo + '"')
-	app.path = '/$path'
-	if app.path.contains('/favicon.svg') {
-		return vweb.not_found()
+	sess.path = '/$path'
+	if sess.path.contains('/favicon.svg') {
+		return c.not_found()
 	}
-	app.is_tree = true
-	app.show_menu = true
+	sess.is_tree = true
+	sess.show_menu = true
 	// t := time.ticks()
-	app.inc_repo_views(app.repo.id)
+	app.inc_repo_views(sess.repo.id)
 	mut up := '/'
 	can_up := path != ''
 	if can_up {
-		up = app.req.url.all_before_last('/')
+		up = c.req.url.all_before_last('/')
 	}
 	if !up.ends_with('/') {
 		up += '/'
 	}
 	println(up)
-	println('path=$app.path')
-	if app.path.starts_with('/') {
-		app.path = app.path[1..]
+	println('path=$sess.path')
+	if sess.path.starts_with('/') {
+		sess.path = sess.path[1..]
 	}
-	mut files := app.find_repo_files(app.repo.id, branch, app.path)
+	mut files := app.find_repo_files(sess.repo.id, branch, sess.path)
 	app.info('tree() nr files found: $files.len in branch $branch')
 	if files.len == 0 {
 		// No files in the db, fetch them from git and cache in db
-		app.info('caching files, repo_id=$app.repo.id')
+		app.info('caching files, repo_id=$sess.repo.id')
 		t := time.ticks()
-		files = app.cache_repo_files(mut app.repo, branch, app.path)
+		files = app.cache_repo_files(mut sess.repo, branch, sess.path)
 		println('caching files took ${time.ticks() - t}ms')
-		go app.slow_fetch_files_info(branch, app.path)
+		go app.slow_fetch_files_info(mut c, branch, sess.path)
 	}
 	mut readme := vweb.RawHtml('')
 	/*
 	println(files)
 	for file in files {
 		if file.name.to_lower() == 'readme.md' {
-			blob_path := os.join_path(app.repo.git_dir, '$file.parent_path$file.name')
+			blob_path := os.join_path(sess.repo.git_dir, '$file.parent_path$file.name')
 			plain_text := os.read_file(blob_path) or {
 				''
 			}
@@ -351,120 +352,126 @@ pub fn (mut app App) tree(user string, repo string, branch string, path string) 
 		if !p.contains('/') {
 			p = '/$p'
 		}
-		if dir := app.find_repo_file_by_path(app.repo.id, branch, p) {
+		if dir := app.find_repo_file_by_path(sess.repo.id, branch, p) {
 			println('hash=$dir.last_hash')
-			last_commit = app.find_repo_commit_by_hash(app.repo.id, dir.last_hash)
+			last_commit = app.find_repo_commit_by_hash(sess.repo.id, dir.last_hash)
 		}
 	} else {
-		last_commit = app.find_repo_last_commit(app.repo.id)
+		last_commit = app.find_repo_last_commit(sess.repo.id)
 	}
 	// println('app.tree() = ${time.ticks()-t}ms')
 	// branches := ['master'] TODO implemented usage
-	diff := int(time.ticks() - app.page_gen_start)
+	diff := int(time.ticks() - c.page_gen_start)
 	if diff == 0 {
-		app.page_gen_time = '<1ms'
+		sess.page_gen_time = '<1ms'
 	} else {
-		app.page_gen_time = '${diff}ms'
+		sess.page_gen_time = '${diff}ms'
 	}
 	return $vweb.html()
 }
 
-pub fn (mut app App) index() vweb.Result {
-	app.show_menu = false
+pub fn (mut app App) index(mut c vweb.Context) vweb.Result {
+	mut sess := app.get_session(mut c)
+	sess.show_menu = false
 	// println(' all_users =$app.nr_all_users()')
 	if app.nr_all_users() == 0 {
-		return app.redirect('/register')
+		return c.redirect('/register')
 	}
 	return $vweb.html()
 }
 
 ['/:user/:repo/update']
-pub fn (mut app App) update(user string, repo string) vweb.Result {
-	if !app.exists_user_repo(user, repo) {
-		return app.not_found()
+pub fn (mut app App) update(mut c vweb.Context, user string, repo string) vweb.Result {
+	mut sess := app.get_session(mut c)
+	if !app.exists_user_repo(mut c, user, repo) {
+		return c.not_found()
 	}
 	/*
-	secret := if 'X-Hub-Signature' in app.req.headers { app.req.headers['X-Hub-Signature'][5..] } else { '' }
+	secret := if 'X-Hub-Signature' in c.req.headers { c.req.headers['X-Hub-Signature'][5..] } else { '' }
 	if secret == '' {
-		return app.r_home()
+		return app.r_home(mut c)
 	}
-	if secret == app.repo.webhook_secret && app.repo.webhook_secret != '' {
-		go app.update_repo_data(&app.repo)
+	if secret == sess.repo.webhook_secret && sess.repo.webhook_secret != '' {
+		go app.update_repo_data(&sess.repo)
 	}
 	*/
-	if app.user.is_admin {
-		go app.update_repo_data(app.repo)
+	if sess.user.is_admin {
+		go app.update_repo_data(mut c, sess.repo)
 	}
-	return app.r_repo()
+	return app.r_repo(mut c)
 }
 
 ['/new']
-pub fn (mut app App) new() vweb.Result {
-	if !app.logged_in {
-		return app.redirect('/login')
+pub fn (mut app App) new(mut c vweb.Context) vweb.Result {
+	mut sess := app.get_session(mut c)
+	if !sess.logged_in {
+		return c.redirect('/login')
 	}
 	return $vweb.html()
 }
 
 [post]
 ['/new']
-pub fn (mut app App) new_repo() vweb.Result {
-	if !app.logged_in {
-		return app.redirect('/login')
+pub fn (mut app App) new_repo(mut c vweb.Context) vweb.Result {
+	mut sess := app.get_session(mut c)
+	if !sess.logged_in {
+		return c.redirect('/login')
 	}
-	if app.nr_user_repos(app.user.id) >= max_user_repos {
-		app.error('You have reached the limit for the number of repositories')
-		return app.new()
+	if app.nr_user_repos(sess.user.id) >= max_user_repos {
+		c.error('You have reached the limit for the number of repositories')
+		return app.new(mut c)
 	}
-	name := app.form['name']
+	name := c.form['name']
 	if name.len > max_repo_name_len {
-		app.error('Repository name is too long (should be fewer than $max_repo_name_len characters)')
-		return app.new()
+		c.error('Repository name is too long (should be fewer than $max_repo_name_len characters)')
+		return app.new(mut c)
 	}
-	if app.exists_user_repo(app.user.username, name) {
-		app.error('A repository with the name "$name" already exists')
-		return app.new()
+	if app.exists_user_repo(mut c, sess.user.username, name) {
+		c.error('A repository with the name "$name" already exists')
+		return app.new(mut c)
 	}
-	app.repo = Repo{
+	sess.repo = Repo{
 		name: name
-		git_dir: os.join_path(app.settings.repo_storage_path, app.user.username, name)
-		user_id: app.user.id
+		git_dir: os.join_path(app.settings.repo_storage_path, sess.user.username, name)
+		user_id: sess.user.id
 		primary_branch: 'master'
-		user_name: app.user.username
-		clone_url: app.form['clone_url']
+		user_name: sess.user.username
+		clone_url: c.form['clone_url']
 	}
-	if app.repo.clone_url == '' {
-		os.mkdir(app.repo.git_dir) or { panic(err) }
-		app.repo.git('init')
+	if sess.repo.clone_url == '' {
+		os.mkdir(sess.repo.git_dir) or { panic(err) }
+		sess.repo.git('init')
 	} else {
-		app.repo.clone()
+		sess.repo.clone()
 	}
-	app.insert_repo(app.repo)
-	app.repo = app.find_repo_by_name(app.user.id, app.repo.name) or {
+	app.insert_repo(sess.repo)
+	sess.repo = app.find_repo_by_name(sess.user.id, sess.repo.name) or {
 		app.info('Repo was not inserted')
-		return app.redirect('/new')
+		return c.redirect('/new')
 	}
 	println('start go')
-	if app.repo.clone_url != '' {
-		app.repo.clone()
+	if sess.repo.clone_url != '' {
+		sess.repo.clone()
 	}
-	go app.update_repo()
+	go app.update_repo(mut c)
 	println('end go')
-	return app.redirect('/$app.user.username/repos')
+	return c.redirect('/$sess.user.username/repos')
 }
 
 ['/:user/:repo/commits']
-pub fn (mut app App) commits_0(user string, repo string) vweb.Result {
-	return app.commits(user, repo, 0)
+pub fn (mut app App) commits_0(mut c vweb.Context, user string, repo string) vweb.Result {
+	mut sess := app.get_session(mut c)
+	return app.commits(mut c, user, repo, 0)
 }
 
 ['/:user/:repo/commits/:page']
-pub fn (mut app App) commits(user string, repo string, page int) vweb.Result {
-	if !app.exists_user_repo(user, repo) {
-		return app.not_found()
+pub fn (mut app App) commits(mut c vweb.Context, user string, repo string, page int) vweb.Result {
+	mut sess := app.get_session(mut c)
+	if !app.exists_user_repo(mut c, user, repo) {
+		return c.not_found()
 	}
-	app.show_menu = true
-	mut commits := app.find_repo_commits_as_page(app.repo.id, page)
+	sess.show_menu = true
+	mut commits := app.find_repo_commits_as_page(sess.repo.id, page)
 	mut b_author := false
 	mut last := false
 	mut first := false
@@ -472,23 +479,23 @@ pub fn (mut app App) commits(user string, repo string, page int) vweb.Result {
 	if args.len == 2 {
 		println(typeof(args[0].int()))
 		if !args[0].starts_with('&') {
-			commits = app.repo.get_commits_by_year(args[0].int())
+			commits = sess.repo.get_commits_by_year(args[0].int())
 		} else {
 			b_author = true
 			author := args[0]
-			commits = app.repo.get_commits_by_author(author[1..author.len])
+			commits = sess.repo.get_commits_by_author(author[1..author.len])
 		}
 	} else if args.len == 3 {
-		commits = app.repo.get_commits_by_year_month(args[0].int(), args[1].int())
+		commits = sess.repo.get_commits_by_year_month(args[0].int(), args[1].int())
 	} else if args.len == 4 {
-		commits = app.repo.get_commits_by_year_month_day(args[0].int(), args[1].int(), args[2].int())
+		commits = sess.repo.get_commits_by_year_month_day(args[0].int(), args[1].int(), args[2].int())
 	}
 	*/
-	if app.repo.nr_commits > commits_per_page {
+	if sess.repo.nr_commits > commits_per_page {
 		offset := page * commits_per_page
-		delta := app.repo.nr_commits - offset
+		delta := sess.repo.nr_commits - offset
 		if delta > 0 {
-			if delta == app.repo.nr_commits && page == 0 {
+			if delta == sess.repo.nr_commits && page == 0 {
 				first = true
 			} else {
 				last = true
@@ -531,13 +538,14 @@ pub fn (mut app App) commits(user string, repo string, page int) vweb.Result {
 }
 
 ['/:user/:repo/commit/:hash']
-pub fn (mut app App) commit(user string, repo string, hash string) vweb.Result {
-	if !app.exists_user_repo(user, repo) {
-		return app.not_found()
+pub fn (mut app App) commit(mut c vweb.Context, user string, repo string, hash string) vweb.Result {
+	mut sess := app.get_session(mut c)
+	if !app.exists_user_repo(mut c, user, repo) {
+		return c.not_found()
 	}
-	app.show_menu = true
-	commit := app.find_repo_commit_by_hash(app.repo.id, hash)
-	changes := commit.get_changes(app.repo)
+	sess.show_menu = true
+	commit := app.find_repo_commit_by_hash(sess.repo.id, hash)
+	changes := commit.get_changes(sess.repo)
 	mut all_adds := 0
 	mut all_dels := 0
 	mut sources := map[string]vweb.RawHtml{}
@@ -551,27 +559,29 @@ pub fn (mut app App) commit(user string, repo string, hash string) vweb.Result {
 }
 
 ['/:user/:repo/issues']
-pub fn (mut app App) issues_0(user string, repo string) vweb.Result {
-	return app.issues(user, repo, 0)
+pub fn (mut app App) issues_0(mut c vweb.Context, user string, repo string) vweb.Result {
+	mut sess := app.get_session(mut c)
+	return app.issues(mut c, user, repo, 0)
 }
 
 ['/:user/:repo/issues/:page']
-pub fn (mut app App) issues(user string, repo string, page int) vweb.Result {
-	if !app.exists_user_repo(user, repo) {
-		app.not_found()
+pub fn (mut app App) issues(mut c vweb.Context, user string, repo string, page int) vweb.Result {
+	mut sess := app.get_session(mut c)
+	if !app.exists_user_repo(mut c, user, repo) {
+		c.not_found()
 	}
-	app.show_menu = true
-	mut issues := app.find_repo_issues_as_page(app.repo.id, page)
+	sess.show_menu = true
+	mut issues := app.find_repo_issues_as_page(sess.repo.id, page)
 	mut first := false
 	mut last := false
 	for index, issue in issues {
 		issues[index].author_name = app.find_username_by_id(issue.author_id)
 	}
-	if app.repo.nr_open_issues > commits_per_page {
+	if sess.repo.nr_open_issues > commits_per_page {
 		offset := page * commits_per_page
-		delta := app.repo.nr_open_issues - offset
+		delta := sess.repo.nr_open_issues - offset
 		if delta > 0 {
-			if delta == app.repo.nr_open_issues && page == 0 {
+			if delta == sess.repo.nr_open_issues && page == 0 {
 				first = true
 			} else {
 				last = true
@@ -590,16 +600,17 @@ pub fn (mut app App) issues(user string, repo string, page int) vweb.Result {
 }
 
 ['/:user/:repo/issue/:id']
-pub fn (mut app App) issue(user string, repo string, id_str string) vweb.Result {
-	if !app.exists_user_repo(user, repo) {
-		return app.not_found()
+pub fn (mut app App) issue(mut c vweb.Context, user string, repo string, id_str string) vweb.Result {
+	mut sess := app.get_session(mut c)
+	if !app.exists_user_repo(mut c, user, repo) {
+		return c.not_found()
 	}
-	app.show_menu = true
+	sess.show_menu = true
 	mut id := 1
 	if id_str != '' {
 		id = id_str.int()
 	}
-	issue0 := app.find_issue_by_id(id) or { return app.not_found() }
+	issue0 := app.find_issue_by_id(id) or { return c.not_found() }
 	mut issue := issue0 // TODO bug with optionals (.data)
 	issue.author_name = app.find_username_by_id(issue.author_id)
 	comments := app.find_issue_comments(issue.id)
@@ -607,54 +618,59 @@ pub fn (mut app App) issue(user string, repo string, id_str string) vweb.Result 
 }
 
 ['/:user/:repo/pull/:id']
-pub fn (mut app App) pull(user string, repo string, id_str string) vweb.Result {
-	if !app.exists_user_repo(user, repo) {
-		return app.not_found()
+pub fn (mut app App) pull(mut c vweb.Context, user string, repo string, id_str string) vweb.Result {
+	mut sess := app.get_session(mut c)
+	if !app.exists_user_repo(mut c, user, repo) {
+		return c.not_found()
 	}
-	_ := app.path.split('/')
+	_ := sess.path.split('/')
 	id := 0
-	pr0 := app.find_pr_by_id(id) or { return app.not_found() }
+	pr0 := app.find_pr_by_id(id) or { return c.not_found() }
 	pr := pr0
 	comments := app.find_issue_comments(pr.id)
 	return $vweb.html()
 }
 
-pub fn (mut app App) pulls() vweb.Result {
-	prs := app.find_repo_prs(app.repo.id)
+pub fn (mut app App) pulls(mut c vweb.Context) vweb.Result {
+	mut sess := app.get_session(mut c)
+	prs := app.find_repo_prs(sess.repo.id)
 	return $vweb.html()
 }
 
 ['/:user/:repo/contributors']
-pub fn (mut app App) contributors(user string, repo string) vweb.Result {
-	if !app.exists_user_repo(user, repo) {
-		return app.not_found()
+pub fn (mut app App) contributors(mut c vweb.Context, user string, repo string) vweb.Result {
+	mut sess := app.get_session(mut c)
+	if !app.exists_user_repo(mut c, user, repo) {
+		return c.not_found()
 	}
-	app.show_menu = true
-	contributors := app.find_repo_registered_contributor(app.repo.id)
+	sess.show_menu = true
+	contributors := app.find_repo_registered_contributor(sess.repo.id)
 	return $vweb.html()
 }
 
 ['/:user/:repo/branches']
-pub fn (mut app App) branches(user string, repo string) vweb.Result {
-	if !app.exists_user_repo(user, repo) {
-		return app.not_found()
+pub fn (mut app App) branches(mut c vweb.Context, user string, repo string) vweb.Result {
+	mut sess := app.get_session(mut c)
+	if !app.exists_user_repo(mut c, user, repo) {
+		return c.not_found()
 	}
-	app.show_menu = true
-	mut branches := app.find_repo_branches(app.repo.id)
+	sess.show_menu = true
+	mut branches := app.find_repo_branches(sess.repo.id)
 	return $vweb.html()
 }
 
 ['/:user/:repo/releases']
-pub fn (mut app App) releases(user_str string, repo string) vweb.Result {
-	if !app.exists_user_repo(user_str, repo) {
-		return app.not_found()
+pub fn (mut app App) releases(mut c vweb.Context, user_str string, repo string) vweb.Result {
+	mut sess := app.get_session(mut c)
+	if !app.exists_user_repo(mut c, user_str, repo) {
+		return c.not_found()
 	}
-	app.show_menu = true
+	sess.show_menu = true
 	mut releases := []Release{}
 	mut release := Release{}
-	tags := app.find_repo_tags(app.repo.id)
-	rels := app.find_repo_releases(app.repo.id)
-	users := app.find_repo_registered_contributor(app.repo.id)
+	tags := app.find_repo_tags(sess.repo.id)
+	rels := app.find_repo_releases(sess.repo.id)
+	users := app.find_repo_registered_contributor(sess.repo.id)
 	for rel in rels {
 		release.notes = rel.notes
 		mut user_id := 0
@@ -679,29 +695,30 @@ pub fn (mut app App) releases(user_str string, repo string) vweb.Result {
 }
 
 ['/:user/:repo/blob/:branch/:path...']
-pub fn (mut app App) blob(user string, repo string, branch string, path string) vweb.Result {
-	if !app.exists_user_repo(user, repo) {
-		return app.not_found()
+pub fn (mut app App) blob(mut c vweb.Context, user string, repo string, branch string, path string) vweb.Result {
+	mut sess := app.get_session(mut c)
+	if !app.exists_user_repo(mut c, user, repo) {
+		return c.not_found()
 	}
-	app.path = path
-	if !app.contains_repo_branch(branch, app.repo.id) && branch != app.repo.primary_branch {
+	sess.path = path
+	if !app.contains_repo_branch(branch, sess.repo.id) && branch != sess.repo.primary_branch {
 		app.info('Branch $branch not found')
-		return app.not_found()
+		return c.not_found()
 	}
 	mut raw := false
-	if app.path.ends_with('/raw') {
-		app.path = app.path.substr(0, app.path.len - 4)
+	if sess.path.ends_with('/raw') {
+		sess.path = sess.path.substr(0, sess.path.len - 4)
 		raw = true
 	}
-	mut blob_path := os.join_path(app.repo.git_dir, app.path)
+	mut blob_path := os.join_path(sess.repo.git_dir, sess.path)
 	// mut plain_text := ''
 	// println(blob_path)
 	/*
-	if branch == app.repo.primary_branch {
+	if branch == sess.repo.primary_branch {
 		//plain_text = os.read_file(path) or { 'Error' }
 	} else {
 	*/
-	plain_text := app.repo.git('--no-pager show $branch:$app.path')
+	plain_text := sess.repo.git('--no-pager show $branch:$sess.path')
 	// }
 	mut source := vweb.RawHtml(plain_text.str())
 	// mut source := (plain_text.str())
@@ -713,7 +730,7 @@ pub fn (mut app App) blob(user string, repo string, branch string, path string) 
 	}
 	// Increase file's number of views
 	/*
-	file := app.find_file_by_path(app.repo.id, 'master', blob_path) or {
+	file := app.find_file_by_path(sess.repo.id, 'master', blob_path) or {
 		println('FILE NOT FOUND')
 		return vweb.Result{}
 	}
@@ -724,64 +741,67 @@ pub fn (mut app App) blob(user string, repo string, branch string, path string) 
 }
 
 ['/:user/:repo/issues/new']
-pub fn (mut app App) new_issue(user string, repo string) vweb.Result {
-	if !app.exists_user_repo(user, repo) {
-		return app.not_found()
+pub fn (mut app App) new_issue(mut c vweb.Context, user string, repo string) vweb.Result {
+	mut sess := app.get_session(mut c)
+	if !app.exists_user_repo(mut c, user, repo) {
+		return c.not_found()
 	}
-	if !app.logged_in {
-		return app.not_found()
+	if !sess.logged_in {
+		return c.not_found()
 	}
-	app.show_menu = true
+	sess.show_menu = true
 	return $vweb.html()
 }
 
 [post]
 ['/:user/:repo/issues/new']
-pub fn (mut app App) add_issue(user string, repo string) vweb.Result {
-	if !app.exists_user_repo(user, repo) {
-		return app.not_found()
+pub fn (mut app App) add_issue(mut c vweb.Context, user string, repo string) vweb.Result {
+	mut sess := app.get_session(mut c)
+	if !app.exists_user_repo(mut c, user, repo) {
+		return c.not_found()
 	}
-	if !app.logged_in || (app.logged_in && app.user.nr_posts >= posts_per_day) {
-		return app.r_home()
+	if !sess.logged_in || (sess.logged_in && sess.user.nr_posts >= posts_per_day) {
+		return app.r_home(mut c)
 	}
-	title := app.form['title'] // TODO use fn args
-	text := app.form['text']
+	title := c.form['title'] // TODO use fn args
+	text := c.form['text']
 	if title == '' || text == '' {
-		return app.redirect('/$user/$repo/new_issue')
+		return c.redirect('/$user/$repo/new_issue')
 	}
 	issue := Issue{
 		title: title
 		text: text
-		repo_id: app.repo.id
-		author_id: app.user.id
+		repo_id: sess.repo.id
+		author_id: sess.user.id
 		created_at: int(time.now().unix)
 	}
-	app.inc_user_post(mut app.user)
+	app.inc_user_post(mut sess.user)
 	app.insert_issue(issue)
-	app.inc_repo_issues(app.repo.id)
-	return app.redirect('/$user/$repo/issues')
+	app.inc_repo_issues(mut c, sess.repo.id)
+	return c.redirect('/$user/$repo/issues')
 }
 
 [post]
 ['/:user/:repo/comment']
-pub fn (mut app App) add_comment(user string, repo string) vweb.Result {
-	if !app.exists_user_repo(user, repo) {
-		return app.not_found()
+pub fn (mut app App) add_comment(mut c vweb.Context, user string, repo string) vweb.Result {
+	mut sess := app.get_session(mut c)
+	if !app.exists_user_repo(mut c, user, repo) {
+		return c.not_found()
 	}
-	text := app.form['text']
-	issue_id := app.form['issue_id']
-	if text == '' || issue_id == '' || !app.logged_in {
-		return app.redirect('/$user/$repo/issue/$issue_id')
+	text := c.form['text']
+	issue_id := c.form['issue_id']
+	if text == '' || issue_id == '' || !sess.logged_in {
+		return c.redirect('/$user/$repo/issue/$issue_id')
 	}
 	comm := Comment{
-		author_id: app.user.id
+		author_id: sess.user.id
 		issue_id: issue_id.int()
 		created_at: int(time.now().unix)
 		text: text
 	}
 	app.insert_comment(comm)
 	app.inc_issue_comments(comm.issue_id)
-	return app.redirect('/$user/$repo/issue/$issue_id')
+	return c.redirect('/$user/$repo/issue/$issue_id')
 }
 
 fn (mut app App) rename_user_dir(old_name string, new_name string) {

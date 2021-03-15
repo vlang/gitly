@@ -25,10 +25,10 @@ struct SecurityLog {
 	created_at int
 }
 
-fn (mut app App) security_log(log SecurityLog) {
+fn (mut app App) security_log(c &vweb.Context, log SecurityLog) {
 	log2 := SecurityLog{
 		...log
-		ip: app.ip()
+		ip: c.ip()
 	}
 	sql app.db {
 		insert log2 into SecurityLog
@@ -42,7 +42,8 @@ fn (app &App) find_security_logs(user_id int) []SecurityLog {
 }
 
 ['/settings/security']
-fn (mut app App) security() vweb.Result {
-	logs := app.find_security_logs(app.user.id)
+fn (mut app App) security(mut c vweb.Context) vweb.Result {
+	mut sess := app.get_session(mut c)
+	logs := app.find_security_logs(sess.user.id)
 	return $vweb.html()
 }

@@ -20,23 +20,24 @@ struct GitHubUser {
 	avatar   string [json: 'avatar_url']
 }
 
-pub fn (mut app App) oauth() vweb.Result {
-	code := app.query['code']
-	state := app.query['state']
+pub fn (mut app App) oauth(mut c vweb.Context) vweb.Result {
+	mut sess := app.get_session(mut c)
+	code := c.query['code']
+	state := c.query['state']
 	if code == '' {
-		app.security_log(user_id: app.user.id, kind: .empty_oauth_code)
+		app.security_log(c, user_id: sess.user.id, kind: .empty_oauth_code)
 		app.info('Code is empty')
-		return app.r_home()
+		return app.r_home(mut c)
 	}
-	csrf := app.get_cookie('csrf') or { return app.r_home() }
+	csrf := c.get_cookie('csrf') or { return app.r_home(mut c) }
 	if csrf != state || csrf == '' {
-		app.security_log(
-			user_id: app.user.id
+		app.security_log(c, 
+			user_id: sess.user.id
 			kind: .wrong_oauth_state
 			arg1: 'csrf=$csrf'
 			arg2: 'state=$state'
 		)
-		return app.r_home()
+		return app.r_home(mut c)
 	}
 	req := OAuthRequest{
 		client_id: app.settings.oauth_client_id
@@ -47,47 +48,47 @@ pub fn (mut app App) oauth() vweb.Result {
 	d := json.encode(req)
 	resp := http.post_json('https://github.com/login/oauth/access_token', d) or {
 		app.info(err.msg)
-		return app.r_home()
+		return app.r_home(mut c)
 	}
 	mut token := resp.text.find_between('access_token=', '&')
 	mut request := http.new_request(.get, 'https://api.github.com/user', '') or {
 		app.info(err.msg)
-		return app.r_home()
+		return app.r_home(mut c)
 	}
 	request.add_header('Authorization', 'token $token')
 	user_js := request.do() or {
 		app.info(err.msg)
-		return app.r_home()
+		return app.r_home(mut c)
 	}
 	if user_js.status_code != 200 {
 		app.info(user_js.status_code.str())
 		app.info(user_js.text)
-		return app.text('Received $user_js.status_code error while attempting to contact GitHub')
+		return c.text('Received $user_js.status_code error while attempting to contact GitHub')
 	}
-	gh_user := json.decode(GitHubUser, user_js.text) or { return app.r_home() }
+	gh_user := json.decode(GitHubUser, user_js.text) or { return app.r_home(mut c) }
 	println('gh user:')
 	println(user_js.text)
 	println(gh_user)
 	if gh_user.email.trim_space().len == 0 {
-		app.security_log(user_id: app.user.id, kind: .empty_oauth_email, arg1: user_js.text)
+		app.security_log(c, user_id: sess.user.id, kind: .empty_oauth_email, arg1: user_js.text)
 		app.info('Email is empty')
-		// return app.r_home()
+		// return app.r_home(mut c)
 	}
 	mut user := app.find_user_by_github_username(gh_user.username) or { User{} }
 	if !user.is_github {
 		// Register a new user via github
-		app.security_log(user_id: user.id, kind: .registered_via_github, arg1: user_js.text)
+		app.security_log(c, user_id: user.id, kind: .registered_via_github, arg1: user_js.text)
 		app.add_user(gh_user.username, '', [gh_user.email], true)
-		user = app.find_user_by_github_username(gh_user.username) or { return app.r_home() }
+		user = app.find_user_by_github_username(gh_user.username) or { return app.r_home(mut c) }
 		app.update_user_avatar(gh_user.avatar, user.id)
 	}
-	ip := app.client_ip(user.id.str()) or {
+	ip := app.client_ip(c, user.id.str()) or {
 		println('Can not fetch ip')
-		return app.r_home()
+		return app.r_home(mut c)
 	}
-	app.auth_user(user, ip)
-	app.security_log(user_id: user.id, kind: .logged_in_via_github, arg1: user_js.text)
-	return app.r_home()
+	app.auth_user(mut c, user, ip)
+	app.security_log(c, user_id: user.id, kind: .logged_in_via_github, arg1: user_js.text)
+	return app.r_home(mut c)
 }
 
 fn (mut app App) load_settings() {

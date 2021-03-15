@@ -4,11 +4,11 @@
 
 .div-center {
 	.form-error {
-		@app.form_error
+		@sess.form_error
 	}
 
-	<form action="/@app.user.username/settings" method="post">
-		<input type="text" name="name" value="@app.user.username">
+	<form action="/@sess.user.username/settings" method="post">
+		<input type="text" name="name" value="@sess.user.username">
 		<input type="submit" value="Save settings">
 	</form>
 }

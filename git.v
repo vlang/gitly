@@ -20,12 +20,13 @@ fn (s GitService) to_str() string {
 }
 
 // /vlang/info/refs?service=git-upload-pack
-fn (mut app App) git_info() vweb.Result {
+fn (mut app App) git_info(mut c vweb.Context) vweb.Result {
+	mut sess := app.get_session(mut c)
 	app.info('/info/refs')
-	app.info(app.req.method.str())
+	app.info(c.req.method.str())
 	// Get service type from the git request.
 	// Receive (git push) or upload	(git pull)
-	url := app.req.url
+	url := c.req.url
 	service := if url.contains('?service=git-upload-pack') {
 		GitService.upload
 	} else if url.contains('?service=git-receive-pack') {
@@ -34,14 +35,14 @@ fn (mut app App) git_info() vweb.Result {
 		GitService.unknown
 	}
 	if service == .unknown {
-		return app.not_found() // TODO
+		return c.not_found() // TODO
 		//return app.info('git: unknown info/refs service: $url')
 	}
 	// Do auth here, we can communicate with the client only in inforefs
-	if false && !app.repo.is_public {
+	if false && !sess.repo.is_public {
 		// Private repos are always closed
 		// if !auth() {
-		return app.not_found()
+		return c.not_found()
 		// }
 	} else {
 		// public repo push
@@ -50,21 +51,21 @@ fn (mut app App) git_info() vweb.Result {
 			app.info('info/refs user="$user"')
 			if user == '' {
 				// app.vweb.write_header(http.status_unauthorized)
-				return app.not_found()
+				return c.not_found()
 			}
 		}
 	}
-	app.set_content_type('application/x-git-$service-advertisement')
+	c.set_content_type('application/x-git-$service-advertisement')
 	// hdrNocache(c.Writer)
-	app.add_header('Cache-Control', 'no-cache')
+	c.add_header('Cache-Control', 'no-cache')
 	mut sb := strings.new_builder(100)
 	sb.write_string(packet_write('# service=git-$service\n'))
 	sb.write_string(packet_flush())
-	refs := app.repo.git_advertise(service.to_str())
+	refs := sess.repo.git_advertise(service.to_str())
 	app.info('refs = ')
 	app.info(refs)
 	sb.write_string(refs)
-	return app.ok(sb.str())
+	return c.ok(sb.str())
 }
 
 fn packet_flush() string {

@@ -9,7 +9,7 @@
 	@for issue in issues
 		.clog {
 			.clog-msg {
-				<a href="/@app.repo.user_name/@app.repo.name/issue/@issue.id">@issue.title</a>
+				<a href="/@sess.repo.user_name/@sess.repo.name/issue/@issue.id">@issue.title</a>
 			}
 			span.clog-author {
 				#@issue.id opened @issue.relative_time()
@@ -30,23 +30,23 @@
 
 <div>
 <br>
-@if app.logged_in
-<a href='/@app.repo.user_name/@app.repo.name/issues/new'>New issue</a>
+@if sess.logged_in
+<a href='/@sess.repo.user_name/@sess.repo.name/issues/new'>New issue</a>
 @end
 </div>
 
 <div class="buttons">
 	<br>
 @if first
-	<a href="/@app.repo.user_name/@app.repo.name/issues/@last_site" class="button disabled">Prev</a>
+	<a href="/@sess.repo.user_name/@sess.repo.name/issues/@last_site" class="button disabled">Prev</a>
 @else
-	<a href="/@app.repo.user_name/@app.repo.name/issues/@last_site" class="button">Prev</a>/
+	<a href="/@sess.repo.user_name/@sess.repo.name/issues/@last_site" class="button">Prev</a>/
 @end
 
 @if last
-	<a href="/@app.repo.user_name/@app.repo.name/issues/@next_site" class="button disabled">Next</a>
+	<a href="/@sess.repo.user_name/@sess.repo.name/issues/@next_site" class="button disabled">Next</a>
 @else
-	<a href="/@app.repo.user_name/@app.repo.name/issues/@next_site" class="button">Next</a>
+	<a href="/@sess.repo.user_name/@sess.repo.name/issues/@next_site" class="button">Next</a>
 @end
 </div>
 

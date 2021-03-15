@@ -20,8 +20,8 @@
 }
 
 @end
-@if app.logged_in
-<form method='post' action='/@app.repo.user_name/@app.repo.name/comment'>
+@if sess.logged_in
+<form method='post' action='/@sess.repo.user_name/@sess.repo.name/comment'>
 	<textarea type='text' name='text' placeholder='Write the command...' required></textarea>
 	<input type='number' class='new_comment' name='issue_id' value='@issue.id' style='visibility: hidden; position: absolute;'>
 	<input type='submit' name='submit' value='Comment'>

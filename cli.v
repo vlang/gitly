@@ -11,9 +11,10 @@ pub fn (mut app App) command_fetcher() {
 			args := line[1..].split(' ')
 			if args.len > 0 {
 				match args[0] {
-					'updaterepo' {
-						app.update_repo()
-					}
+					// commented out during vweb.Context refactor
+					// 'updaterepo' {
+					// 	app.update_repo()
+					// }
 					'adduser' {
 						if args.len > 4 {
 							app.add_user(args[1], args[2], args[3..], false)

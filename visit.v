@@ -3,6 +3,7 @@
 module main
 
 import time
+import vweb
 
 struct Visit {
 	id         int
@@ -12,11 +13,12 @@ struct Visit {
 	created_at int
 }
 
-fn (mut app App) add_visit() {
+fn (mut app App) add_visit(mut c vweb.Context) {
+	mut sess := app.get_session(mut c)
 	visit := Visit{
-		repo_id: app.repo.id
-		url: app.req.url
-		referer: app.req.referer()
+		repo_id: sess.repo.id
+		url: c.req.url
+		referer: c.req.referer()
 		created_at: int(time.now().unix)
 	}
 	sql app.db {

@@ -53,8 +53,9 @@ enum RepoStatus {
 	clone_done
 }
 
-fn (mut app App) update_repo() {
-	mut r := app.repo
+fn (mut app App) update_repo(mut c vweb.Context) {
+	mut sess := app.get_session(mut c)
+	mut r := sess.repo
 	mut wg := sync.new_waitgroup()
 	wg.add(1)
 	r_p := &r
@@ -96,8 +97,8 @@ fn (mut app App) update_repo() {
 	r.nr_commits = app.nr_repo_commits(r.id)
 	r.nr_contributors = app.nr_repo_contributor(r.id)
 	r.nr_branches = app.nr_repo_branches(r.id)
-	app.update_repo_nr_commits(r.id, r.nr_commits)
-	app.update_repo_nr_contributor(r.id, r.nr_contributors)
+	app.update_repo_nr_commits(mut c, r.id, r.nr_commits)
+	app.update_repo_nr_contributor(mut c, r.id, r.nr_contributors)
 	// TODO: TEMPORARY - UNTIL WE GET PERSISTENT RELEASE INFO
 	for tag in app.find_repo_tags(r.id) {
 		release := &Release{
@@ -120,7 +121,7 @@ fn (mut app App) update_repo() {
 }
 
 // update_repo updated the repo in the db
-fn (mut app App) update_repo_data(repo Repo) {
+fn (mut app App) update_repo_data(mut c vweb.Context, repo Repo) {
 	mut r := repo
 	last_commit := app.find_repo_last_commit(r.id)
 	r.git('fetch --all')
@@ -164,8 +165,8 @@ fn (mut app App) update_repo_data(repo Repo) {
 	r.nr_commits = app.nr_repo_commits(r.id)
 	r.nr_contributors = app.nr_repo_contributor(r.id)
 	r.nr_branches = app.nr_repo_branches(r.id)
-	app.update_repo_nr_commits(r.id, r.nr_commits)
-	app.update_repo_nr_contributor(r.id, r.nr_contributors)
+	app.update_repo_nr_commits(mut c, r.id, r.nr_commits)
+	app.update_repo_nr_contributor(mut c, r.id, r.nr_contributors)
 	app.update_branches(r)
 	app.update_repo_in_db(r)
 	wg.wait()
@@ -478,8 +479,9 @@ fn (r Repo) html_path_to(path string, branch string) vweb.RawHtml {
 
 // fetches last message and last time for each file
 // this is slow, so it's run in the background thread
-fn (mut app App) slow_fetch_files_info(branch string, path string) {
-	files := app.find_repo_files(app.repo.id, branch, path)
+fn (mut app App) slow_fetch_files_info(mut c vweb.Context, branch string, path string) {
+	mut sess := app.get_session(mut c)
+	files := app.find_repo_files(sess.repo.id, branch, path)
 	// t := time.ticks()
 	// for file in files {
 	for i in 0 .. files.len {
@@ -487,7 +489,7 @@ fn (mut app App) slow_fetch_files_info(branch string, path string) {
 			app.warn('skipping ${files[i].name}')
 			continue
 		}
-		app.fetch_file_info(app.repo, files[i])
+		app.fetch_file_info(sess.repo, files[i])
 	}
 	// println('slow fetch file info= ${time.ticks()-t}ms')
 }
