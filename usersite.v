@@ -10,7 +10,7 @@ fn (mut app App) check_username(user string) (bool, User) {
 	mut u := app.find_user_by_username(user) or { return false, User{} }
 	u.b_avatar = u.avatar != ''
 	if !u.b_avatar {
-		u.avatar = u.username.bytes()[0].str()
+		u.avatar = u.username[..1]
 	}
 	return u.is_registered, u
 }

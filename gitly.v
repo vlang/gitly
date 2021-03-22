@@ -155,6 +155,10 @@ pub fn (mut app App) init() {
 			app.logged_in = false
 			User{}
 		}
+		app.user.b_avatar = app.user.avatar == ''
+		if !app.user.b_avatar {
+			app.user.avatar = app.user.username[..1]
+		}
 	}
 	app.add_visit()
 }
@@ -277,6 +281,21 @@ pub fn (mut app App) repo_move(user string, repo string) vweb.Result {
 
 ['/:user/:repo']
 pub fn (mut app App) tree2(user string, repo string) vweb.Result {
+	match repo {
+		'repos' {
+			return app.user_repos(user)
+		}
+		'issues' {
+			return app.user_issues_0(user)
+		}
+		/*'prs' {
+			return app.user_pullrequests(user)
+		}*/
+		'settings' {
+			return app.user_settings(user)
+		}
+		else {}
+	}
 	if !app.exists_user_repo(user, repo) {
 		return app.not_found()
 	}
