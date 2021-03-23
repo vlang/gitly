@@ -91,7 +91,7 @@ pub fn (mut app App) get_user_from_cookies() ?User {
 	}
 	user.b_avatar = user.avatar != ''
 	if !user.b_avatar {
-		user.avatar = user.username.bytes()[0].str()
+		user.avatar = user.username[..1]
 	}
 	return user
 }
