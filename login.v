@@ -156,6 +156,9 @@ pub fn (mut app App) handle_register() vweb.Result {
 		app.error('User already exists')
 		return app.register()
 	}
+	if no_users {
+		app.user_set_admin(user.id)
+	}
 	println('register: logging in')
 	ip := app.client_ip(user.id.str()) or {
 		app.error('Failed to register')

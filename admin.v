@@ -25,6 +25,7 @@ pub fn (mut app App) update_admin_settings() vweb.Result {
 	}
 	oauth_client_id := app.form['oauth_client_id']
 	oauth_client_secret := app.form['oauth_client_secret']
+	hostname := app.form['hostname']
 	only_gh_login := 'only_gh_login' in app.form
 	repo_storage_path := app.form['repo_storage_path']
 
@@ -33,6 +34,9 @@ pub fn (mut app App) update_admin_settings() vweb.Result {
 	}
 	if oauth_client_secret != '' {
 		app.settings.oauth_client_secret = oauth_client_secret
+	}
+	if hostname != '' {
+		app.settings.hostname = hostname
 	}
 	app.settings.only_gh_login = only_gh_login
 	app.settings.repo_storage_path = repo_storage_path
