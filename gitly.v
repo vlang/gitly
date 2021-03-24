@@ -41,6 +41,8 @@ mut:
 	db            sqlite.DB
 	logged_in     bool
 	user          User
+	path_splt     []string
+	branch        string
 	// form_error string
 }
 
@@ -142,6 +144,7 @@ pub fn (mut app App) init_once() {
 
 pub fn (mut app App) init() {
 	url := app.req.url
+	eprintln(app.req)
 	app.show_menu = false
 	app.page_gen_time = ''
 	app.info('\n\ninit() url=$url')
@@ -214,6 +217,18 @@ pub fn (mut app App) repo_settings(user string, repo string) vweb.Result {
 	}
 	app.show_menu = true
 	return $vweb.html()
+}
+
+fn (mut app App) user_can_access_repo(user string, repo string) bool {
+	repo_exists := app.exists_user_repo(user, repo)
+	if !repo_exists {
+		return false
+	}
+	if app.repo.is_public {
+		eprintln('public')
+		return true
+	}
+	return app.logged_in && app.repo.user_id == app.user.id
 }
 
 // Helper function
@@ -305,7 +320,7 @@ pub fn (mut app App) tree2(user string, repo string) vweb.Result {
 // pub fn (mut app App) tree(path string) {
 ['/:user/:repo/tree/:branch/:path...']
 pub fn (mut app App) tree(user string, repo string, branch string, path string) vweb.Result {
-	if !app.exists_user_repo(user, repo) {
+	if !app.user_can_access_repo(user, repo) {
 		return app.not_found()
 	}
 	_, u := app.check_username(user)
@@ -319,8 +334,10 @@ pub fn (mut app App) tree(user string, repo string, branch string, path string) 
 	if app.path.contains('/favicon.svg') {
 		return vweb.not_found()
 	}
+	app.path_splt = '$repo/$path'.split('/')
 	app.is_tree = true
 	app.show_menu = true
+	app.branch = branch
 	// t := time.ticks()
 	app.inc_repo_views(app.repo.id)
 	mut up := '/'
@@ -479,7 +496,7 @@ pub fn (mut app App) commits_0(user string, repo string) vweb.Result {
 
 ['/:user/:repo/commits/:page']
 pub fn (mut app App) commits(user string, repo string, page int) vweb.Result {
-	if !app.exists_user_repo(user, repo) {
+	if !app.user_can_access_repo(user, repo) {
 		return app.not_found()
 	}
 	app.show_menu = true
@@ -551,7 +568,7 @@ pub fn (mut app App) commits(user string, repo string, page int) vweb.Result {
 
 ['/:user/:repo/commit/:hash']
 pub fn (mut app App) commit(user string, repo string, hash string) vweb.Result {
-	if !app.exists_user_repo(user, repo) {
+	if !app.user_can_access_repo(user, repo) {
 		return app.not_found()
 	}
 	app.show_menu = true
@@ -576,7 +593,7 @@ pub fn (mut app App) issues_0(user string, repo string) vweb.Result {
 
 ['/:user/:repo/issues/:page']
 pub fn (mut app App) issues(user string, repo string, page int) vweb.Result {
-	if !app.exists_user_repo(user, repo) {
+	if !app.user_can_access_repo(user, repo) {
 		app.not_found()
 	}
 	app.show_menu = true
@@ -610,7 +627,7 @@ pub fn (mut app App) issues(user string, repo string, page int) vweb.Result {
 
 ['/:user/:repo/issue/:id']
 pub fn (mut app App) issue(user string, repo string, id_str string) vweb.Result {
-	if !app.exists_user_repo(user, repo) {
+	if !app.user_can_access_repo(user, repo) {
 		return app.not_found()
 	}
 	app.show_menu = true
@@ -627,7 +644,7 @@ pub fn (mut app App) issue(user string, repo string, id_str string) vweb.Result 
 
 ['/:user/:repo/pull/:id']
 pub fn (mut app App) pull(user string, repo string, id_str string) vweb.Result {
-	if !app.exists_user_repo(user, repo) {
+	if !app.user_can_access_repo(user, repo) {
 		return app.not_found()
 	}
 	_ := app.path.split('/')
@@ -645,7 +662,7 @@ pub fn (mut app App) pulls() vweb.Result {
 
 ['/:user/:repo/contributors']
 pub fn (mut app App) contributors(user string, repo string) vweb.Result {
-	if !app.exists_user_repo(user, repo) {
+	if !app.user_can_access_repo(user, repo) {
 		return app.not_found()
 	}
 	app.show_menu = true
@@ -655,7 +672,7 @@ pub fn (mut app App) contributors(user string, repo string) vweb.Result {
 
 ['/:user/:repo/branches']
 pub fn (mut app App) branches(user string, repo string) vweb.Result {
-	if !app.exists_user_repo(user, repo) {
+	if !app.user_can_access_repo(user, repo) {
 		return app.not_found()
 	}
 	app.show_menu = true
@@ -665,7 +682,7 @@ pub fn (mut app App) branches(user string, repo string) vweb.Result {
 
 ['/:user/:repo/releases']
 pub fn (mut app App) releases(user_str string, repo string) vweb.Result {
-	if !app.exists_user_repo(user_str, repo) {
+	if !app.user_can_access_repo(user_str, repo) {
 		return app.not_found()
 	}
 	app.show_menu = true
@@ -699,10 +716,12 @@ pub fn (mut app App) releases(user_str string, repo string) vweb.Result {
 
 ['/:user/:repo/blob/:branch/:path...']
 pub fn (mut app App) blob(user string, repo string, branch string, path string) vweb.Result {
-	if !app.exists_user_repo(user, repo) {
+	if !app.user_can_access_repo(user, repo) {
 		return app.not_found()
 	}
 	app.path = path
+	app.path_splt = '$repo/$path'.split('/')
+	app.path_splt = app.path_splt[..app.path_splt.len-1]
 	if !app.contains_repo_branch(branch, app.repo.id) && branch != app.repo.primary_branch {
 		app.info('Branch $branch not found')
 		return app.not_found()
@@ -744,7 +763,7 @@ pub fn (mut app App) blob(user string, repo string, branch string, path string) 
 
 ['/:user/:repo/issues/new']
 pub fn (mut app App) new_issue(user string, repo string) vweb.Result {
-	if !app.exists_user_repo(user, repo) {
+	if !app.user_can_access_repo(user, repo) {
 		return app.not_found()
 	}
 	if !app.logged_in {
@@ -757,7 +776,7 @@ pub fn (mut app App) new_issue(user string, repo string) vweb.Result {
 [post]
 ['/:user/:repo/issues/new']
 pub fn (mut app App) add_issue(user string, repo string) vweb.Result {
-	if !app.exists_user_repo(user, repo) {
+	if !app.user_can_access_repo(user, repo) {
 		return app.not_found()
 	}
 	if !app.logged_in || (app.logged_in && app.user.nr_posts >= posts_per_day) {
@@ -784,7 +803,7 @@ pub fn (mut app App) add_issue(user string, repo string) vweb.Result {
 [post]
 ['/:user/:repo/comment']
 pub fn (mut app App) add_comment(user string, repo string) vweb.Result {
-	if !app.exists_user_repo(user, repo) {
+	if !app.user_can_access_repo(user, repo) {
 		return app.not_found()
 	}
 	text := app.form['text']
@@ -816,4 +835,14 @@ pub fn (mut app App) running_since() string {
 	hours := int(math.floor(minutes / 60)) % 24
 	days := int(math.floor(hours / 24))
 	return '$days days $hours hours $minutes minutes and $seconds seconds'
+}
+
+pub fn (mut app App) make_path(i int) string {
+	if i == 0 {
+		return app.path_splt[..i + 1].join('/')
+	}
+	mut s := app.path_splt[0]
+	s += '/tree/$app.branch/'
+	s += app.path_splt[1..i + 1].join('/')
+	return s
 }

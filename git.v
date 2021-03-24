@@ -4,6 +4,7 @@ module main
 
 import vweb
 import strings
+import encoding.base64
 
 enum GitService {
 	receive
@@ -19,38 +20,71 @@ fn (s GitService) to_str() string {
 	}
 }
 
-// /vlang/info/refs?service=git-upload-pack
-fn (mut app App) git_info() vweb.Result {
+fn (mut app App) git_auth() bool {
+	user, ok := app.get_user()
+	if !ok {
+		return false
+	}
+	return true
+	// if user.id == 0 || !app.repo_belongs_to(user) 
+}
+
+fn (mut app App) get_user() (User, bool) {
+	auth_head := app.get_header('Authorization')
+	if auth_head.len == 0 {
+		app.add_header('WWW-Authenticate', 'Basic realm="."')
+		app.set_status(401, 'Unauthorized')
+		app.send_response_to_client(vweb.mime_types['.txt'], '')
+	}
+	auths := auth_head.split_by_whitespace()
+	if auths.len != 2 || auths[0] != 'Basic' {
+		return User{}, true
+	}
+	name, pwd := basic_auth_decode(auths[1])
+	user := app.find_user_by_email(name) or {
+		return User{}, false
+	}
+	if !check_password(pwd, user.username, user.password) {
+		return User{}, false
+	}
+	return user, true
+}
+
+// /:user/:repo/info/refs?service=git-upload-pack
+['/:user/:repo/info/refs']
+fn (mut app App) git_info(user_str string, repo string) vweb.Result {
+	if !app.user_can_access_repo(user_str, repo) {
+		return app.not_found()
+	}
+
 	app.info('/info/refs')
 	app.info(app.req.method.str())
-	// Get service type from the git request.
-	// Receive (git push) or upload	(git pull)
-	url := app.req.url
-	service := if url.contains('?service=git-upload-pack') {
+	
+	service := if app.query['service'] == 'git-upload-pack' {
 		GitService.upload
-	} else if url.contains('?service=git-receive-pack') {
+	} else if app.query['service'] == 'git-receive-pack' {
 		GitService.receive
 	} else {
 		GitService.unknown
 	}
+
 	if service == .unknown {
-		return app.not_found() // TODO
-		//return app.info('git: unknown info/refs service: $url')
-	}
-	// Do auth here, we can communicate with the client only in inforefs
-	if false && !app.repo.is_public {
-		// Private repos are always closed
-		// if !auth() {
 		return app.not_found()
-		// }
+	}
+
+	// Do auth here, we can communicate with the client only in inforefs
+	if !app.repo.is_public {
+		// Private repos are always closed
+		if !app.git_auth() {
+			return app.not_found()
+		}
 	} else {
 		// public repo push
 		if service == .receive {
-			user := '' // get_user(c)
+			user, ok := app.get_user()
 			app.info('info/refs user="$user"')
-			if user == '' {
-				// app.vweb.write_header(http.status_unauthorized)
-				return app.not_found()
+			if user.id == 0 {
+				return app.server_error(401)
 			}
 		}
 	}
@@ -78,4 +112,11 @@ fn packet_write(str string) string {
 		s = strings.repeat(`0`, 4 - s.len % 4) + s
 	}
 	return s + str
+}
+
+fn basic_auth_decode(encoded string) (string, string) {
+	s := string(base64.decode(encoded))
+	tmp := s.split(':')
+	auth := [tmp[0], tmp[1..].join(':')]
+	return auth[0], auth[1]
 }
