@@ -83,9 +83,7 @@ pub fn (mut app App) init_once() {
 	app.file_log.set_full_logpath('./logs/log_${date_s}.log')
 	//app.info('init_once()')
 	version := os.read_file('static/assets/version') or { 'unknown' }
-	result := os.exec('git rev-parse --short HEAD') or { os.Result{
-		output: version
-	} }
+	result := os.execute('git rev-parse --short HEAD')
 	if !result.output.contains('fatal') {
 		app.version = result.output.trim_space()
 	}
@@ -189,7 +187,7 @@ pub fn (mut app App) create_new_test_repo() {
 	_ := os.ls('.') or {
 		return
 	}
-	cur_dir := os.base_dir(os.executable())
+	cur_dir := os.base_dir(os.executeutable())
 	git_dir := os.join_path(cur_dir, 'test_repo')
 	app.add_user('vlang', '', ['vlang@vlang.io'], true)
 	app.repo = Repo{
