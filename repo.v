@@ -354,12 +354,7 @@ fn (r &Repo) git(cmd_ string) string {
 	if !cmd.starts_with('init') {
 		cmd = '-C $r.git_dir $cmd'
 	}
-	x := os.exec('git $cmd') or {
-		// if !q.ContainsString(args, "master:README.md") {
-		println('git error $cmd out=x.output')
-		return ''
-		// }
-	}
+	x := os.execute('git $cmd')
 	res := x.output.trim_space()
 	if res.len > max_git_res_size {
 		println('Huge git() output: $res.len KB $cmd')
@@ -493,7 +488,7 @@ fn (mut app App) slow_fetch_files_info(branch string, path string) {
 }
 
 fn (r Repo) git_advertise(a string) string {
-	cmd := os.exec('git $a --stateless-rpc --advertise-refs $r.git_dir') or { return '' }
+	cmd := os.execute('git $a --stateless-rpc --advertise-refs $r.git_dir')
 	if cmd.exit_code != 0 {
 		// eprintln("advertise error", err)
 		// eprintln("\n\ngit advertise output: $cmd.output\n\n")
@@ -531,13 +526,24 @@ fn (mut r Repo) clone() {
 	// defer r.Update()
 	println('starting git clone... $r.clone_url git_dir=$r.git_dir')
 	// "git clone --bare "
-	os.exec('git clone "$r.clone_url" $r.git_dir') or {
-		r.status = .clone_failed
-		println('git clone failed:')
-		return
-	}
+	os.execute('git clone "$r.clone_url" $r.git_dir')
 	r.git('config receive.denyCurrentBranch ignore')
 	r.git('config core.bare false')
 	r.git('checkout master')
 	r.status = .clone_done
+}
+
+fn (mut r Repo) git_smart(a string, input string) string {
+	mut process := os.new_process('git')
+	process.set_args([a, '--stateless-rpc', r.git_dir])
+	process.stdin_write(input)
+	mut res := ''
+	for {
+		out := process.stdout_read()
+		if out == '' {
+			break
+		}
+		res += out
+	}
+	return res
 }
