@@ -45,13 +45,13 @@ mut:
 }
 
 fn main() {
-	vweb.run<App>(http_port+1)
+	vweb.run<App>(http_port + 1)
 }
 
 pub fn (mut app App) info(msg string) { // vweb.Result {
 	app.file_log.info(msg)
 	app.cli_log.info(msg)
-	//return app.text('ok')
+	// return app.text('ok')
 }
 
 pub fn (mut app App) warn(msg string) vweb.Result {
@@ -79,11 +79,14 @@ pub fn (mut app App) init_once() {
 	date := time.now()
 	date_s := '$date.ymmdd()'
 	app.file_log.set_full_logpath('./logs/log_${date_s}.log')
-	//app.info('init_once()')
+	// app.info('init_once()')
 	version := os.read_file('static/assets/version') or { 'unknown' }
-	result := os.exec('git rev-parse --short HEAD') or { os.Result{
-		output: version
-	} }
+	mut result := os.execute('git rev-parse --short HEAD')
+	if result.exit_code != 0 {
+		result = os.Result{
+			output: version
+		}
+	}
 	if !result.output.contains('fatal') {
 		app.version = result.output.trim_space()
 	}
@@ -221,8 +224,7 @@ fn (mut app App) repo_belongs_to(user string, repo string) bool {
 	return app.logged_in && app.exists_user_repo(user, repo) && app.repo.user_id == app.user.id
 }
 
-[post]
-['/:user/:repo/settings']
+['/:user/:repo/settings'; post]
 pub fn (mut app App) update_repo_settings(user string, repo string) vweb.Result {
 	if !app.repo_belongs_to(user, repo) {
 		return app.r_repo()
@@ -235,8 +237,7 @@ pub fn (mut app App) update_repo_settings(user string, repo string) vweb.Result 
 	return app.r_repo()
 }
 
-[post]
-['/:user/:repo/delete_repo']
+['/:user/:repo/delete_repo'; post]
 pub fn (mut app App) repo_delete(user string, repo string) vweb.Result {
 	if !app.repo_belongs_to(user, repo) {
 		return app.r_repo()
@@ -250,8 +251,7 @@ pub fn (mut app App) repo_delete(user string, repo string) vweb.Result {
 	return app.r_home()
 }
 
-[post]
-['/:user/:repo/move_repo']
+['/:user/:repo/move_repo'; post]
 pub fn (mut app App) repo_move(user string, repo string) vweb.Result {
 	if !app.repo_belongs_to(user, repo) {
 		return app.r_repo()
@@ -425,8 +425,7 @@ pub fn (mut app App) new() vweb.Result {
 	return $vweb.html()
 }
 
-[post]
-['/new']
+['/new'; post]
 pub fn (mut app App) new_repo() vweb.Result {
 	if !app.logged_in {
 		return app.redirect('/login')
@@ -754,8 +753,7 @@ pub fn (mut app App) new_issue(user string, repo string) vweb.Result {
 	return $vweb.html()
 }
 
-[post]
-['/:user/:repo/issues/new']
+['/:user/:repo/issues/new'; post]
 pub fn (mut app App) add_issue(user string, repo string) vweb.Result {
 	if !app.exists_user_repo(user, repo) {
 		return app.not_found()
@@ -781,8 +779,7 @@ pub fn (mut app App) add_issue(user string, repo string) vweb.Result {
 	return app.redirect('/$user/$repo/issues')
 }
 
-[post]
-['/:user/:repo/comment']
+['/:user/:repo/comment'; post]
 pub fn (mut app App) add_comment(user string, repo string) vweb.Result {
 	if !app.exists_user_repo(user, repo) {
 		return app.not_found()

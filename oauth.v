@@ -54,7 +54,7 @@ pub fn (mut app App) oauth() vweb.Result {
 		app.info(err.msg)
 		return app.r_home()
 	}
-	request.add_header('Authorization', 'token $token')
+	request.add_header(.authorization, 'token $token')
 	user_js := request.do() or {
 		app.info(err.msg)
 		return app.r_home()
