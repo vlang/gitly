@@ -16,7 +16,7 @@ enum SecurityLogKind {
 }
 
 struct SecurityLog {
-	id         int [primary; sql: serial]
+	id         int    [primary; sql: serial]
 	user_id    int
 	kind_id    int
 	ip         string
@@ -24,7 +24,7 @@ struct SecurityLog {
 	arg2       string
 	created_at int
 mut:
-	kind       SecurityLogKind [skip]
+	kind SecurityLogKind [skip]
 }
 
 fn (mut app App) security_log(log SecurityLog) {

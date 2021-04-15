@@ -8,7 +8,7 @@ import os
 import time
 
 struct User {
-	id              int [primary; sql: serial]
+	id              int    [primary; sql: serial]
 	name            string
 	username        string [unique]
 	github_username string
@@ -31,7 +31,7 @@ mut:
 }
 
 struct SshKey {
-	id         int [primary; sql: serial]
+	id         int    [primary; sql: serial]
 	user       int
 	title      string
 	sshkey     string
@@ -39,7 +39,7 @@ struct SshKey {
 }
 
 struct Email {
-	id    int [primary; sql: serial]
+	id    int    [primary; sql: serial]
 	user  int
 	email string [unique]
 }

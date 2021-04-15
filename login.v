@@ -17,8 +17,7 @@ pub fn (mut app App) login() vweb.Result {
 	return $vweb.html()
 }
 
-[post]
-['/login']
+['/login'; post]
 pub fn (mut app App) handle_login() vweb.Result {
 	if app.settings.only_gh_login {
 		return app.r_home()
@@ -107,8 +106,7 @@ pub fn (mut app App) register() vweb.Result {
 	return $vweb.html()
 }
 
-[post]
-['/register_post']
+['/register_post'; post]
 pub fn (mut app App) handle_register() vweb.Result {
 	no_users := app.nr_all_users() == 0
 	if app.settings.only_gh_login && !no_users {

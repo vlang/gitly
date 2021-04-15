@@ -9,7 +9,7 @@ import sync
 import vweb
 
 struct Repo {
-	id                 int [primary; sql: serial]
+	id                 int       [primary; sql: serial]
 	git_dir            string
 	name               string
 	user_id            int
@@ -494,8 +494,8 @@ fn (mut app App) slow_fetch_files_info(branch string, path string) {
 fn (r Repo) git_advertise(a string) string {
 	cmd := os.execute('git $a --stateless-rpc --advertise-refs $r.git_dir')
 	if cmd.exit_code != 0 {
-		eprintln("advertise error")
-		eprintln("\n\ngit advertise output: $cmd.output\n\n")
+		eprintln('advertise error')
+		eprintln('\n\ngit advertise output: $cmd.output\n\n')
 	}
 	return cmd.output
 }

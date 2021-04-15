@@ -6,7 +6,7 @@ import time
 
 struct Comment {
 mut:
-	id          int [primary; sql: serial]
+	id          int    [primary; sql: serial]
 	author_id   int
 	issue_id    int
 	created_at  int

@@ -8,7 +8,7 @@ struct Tag {
 	id      int [primary; sql: serial]
 	repo_id int [unique: 'tag']
 mut:
-	name    string [unique: 'tag']// tag name
+	name    string [unique: 'tag'] // tag name
 	hash    string // hash of latest commit on tag
 	user_id int    // id of user that created the tag
 	date    int    // time of latest commit on tag
@@ -28,9 +28,11 @@ fn (mut app App) init_tags(mut r Repo) {
 		if args.len < 2 {
 			continue
 		}
-		user := app.find_user_by_email(args[0]) or { User{
-			id: 0
-		} }
+		user := app.find_user_by_email(args[0]) or {
+			User{
+				id: 0
+			}
+		}
 		tag.user_id = user.id
 		date := time.parse_rfc2822(args[1]) or {
 			eprintln('Error: $err')
