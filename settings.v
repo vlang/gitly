@@ -3,7 +3,7 @@
 module main
 
 struct GitlySettings {
-	id int
+	id int [primary; sql: serial]
 mut:
 	oauth_client_id     string
 	oauth_client_secret string

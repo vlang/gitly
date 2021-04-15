@@ -7,179 +7,61 @@ fn (mut app App) create_table(name string, fields []string) {
 }
 
 fn (mut app App) create_tables() {
-	app.create_table('Repo', [
-		'id integer primary key',
-		"git_dir text default ''",
-		"name text default ''",
-		"description text default ''",
-		'user_id int default 0',
-		"user_name text default ''",
-		'primary_branch text default ""',
-		'is_public int default 0',
-		'nr_views int default 0',
-		'nr_commits int default 0',
-		'nr_open_issues int default 0',
-		'nr_tags int default 0',
-		'nr_releases int default 0',
-		'nr_open_prs int default 0',
-		'webhook_secret text default ""',
-		'nr_branches int default 0',
-		'nr_contributors int default 0',
-		"created_at int default (strftime('%s', 'now'))",
-	])
+	sql app.db {
+		create table Repo
+	}
 	// unix time default now
-	app.create_table('File', [
-		'id integer primary key',
-		"name text default ''",
-		'repo_id int default 0',
-		"parent_path text default ''",
-		"branch text default ''",
-		'is_dir int default 0',
-		"last_hash text default ''",
-		"last_msg text default ''",
-		'last_time int default 0',
-		'size int default 0',
-		'nr_contributors int default 0',
-		'nr_views int default 0',
-		'UNIQUE(parent_path, name, repo_id, branch) ON CONFLICT REPLACE',
-	])
+	sql app.db {
+		create table File
+	} // missing ON CONFLIC REPLACE
 	//"created_at int default (strftime('%s', 'now'))"
-	app.create_table('Issue', [
-		'id integer primary key',
-		'author_id int default 0',
-		'is_pr int default 0',
-		'repo_id int default 0',
-		"title text default ''",
-		"text text default ''",
-		'created_at integer default 0',
-		'nr_comments int default 0',
-	])
-	//		"created_at int default (strftime('%s', 'now'))"
-	app.create_table('Commit', [
-		'id integer primary key',
-		'author_id int default 0',
-		"author text default ''",
-		"hash text default ''",
-		'repo_id int default 0',
-		"message text default ''",
-		"created_at int default (strftime('%s', 'now'))",
-		'UNIQUE(hash, repo_id)',
-	])
+	sql app.db {
+		create table Issue
+	}
+	//"created_at int default (strftime('%s', 'now'))"
+	sql app.db {
+		create table Commit
+	}
 	// author text default '' is to to avoid joins
-	app.create_table('LangStat', [
-		'id integer primary key',
-		'repo_id int default 0',
-		'name text default ""',
-		'nr_lines int default 0',
-		'pct int default 0',
-		'color text default ""',
-		'UNIQUE(repo_id, name) ON CONFLICT REPLACE',
-	])
-	app.create_table('User', [
-		'id integer primary key',
-		'name text default ""',
-		'username text default ""',
-		'password text default ""',
-		'avatar text default ""',
-		'nr_posts integer default 0',
-		'last_post_time integer default 0',
-		'nr_namechanges integer default 0',
-		'last_namechange_time integer default 0',
-		'is_github int default 0',
-		'is_blocked int default 0',
-		'is_registered int default 0',
-		'is_admin int default 0',
-		'login_attempts int default 0',
-		'github_username text default ""',
-		'UNIQUE(username)',
-	])
-	app.create_table('Email', [
-		'id integer primary key',
-		'user integer default 0',
-		'email text default ""',
-		'UNIQUE(email)',
-	])
-	app.create_table('Contributor', [
-		'id integer primary key',
-		'user integer default 0',
-		'repo integer default 0',
-		'UNIQUE(user, repo)',
-	])
-	app.create_table('Tag', [
-		'id integer primary key',
-		'name text default ""',
-		'hash text default ""',
-		'user_id integer default 0',
-		'repo_id integer default 0',
-		'date integer default 0',
-		'UNIQUE(name, repo_id)',
-	])
-	app.create_table('Release', [
-		'id integer primary key',
-		'tag_id integer not null',
-		'repo_id integer not null',
-		'notes text default ""',
-		'UNIQUE(tag_id, repo_id)',
-	])
-	app.create_table('SshKey', [
-		'id integer primary key',
-		'user integer default 0',
-		'title text default ""',
-		'sshkey text default ""',
-		'is_deleted integer default 0',
-	])
-	app.create_table('Comment', [
-		'id integer primary key',
-		'author_id integer default 0',
-		'issue_id integer default 0',
-		'created_at integer default 0',
-		'text text default ""',
-	])
-	app.create_table('Branch', [
-		'id integer primary key',
-		'repo_id integer default 0',
-		'name text default ""',
-		'author text default ""',
-		'hash text default ""',
-		'date integer default 0',
-		'UNIQUE(repo_id, name)',
-	])
-	app.create_table('Visit', [
-		'id integer primary key',
-		'repo_id integer default 0',
-		"url text default ''",
-		"referer text default ''",
-		'created_at integer default 0',
-	])
-	app.create_table('GitlySettings', [
-		'id integer primary key',
-		'oauth_client_id text default ""',
-		'oauth_client_secret text default ""',
-		'only_gh_login int default 1',
-		'repo_storage_path text default "./repos"',
-		'hostname text default "gitly.org"',
-	])
-	app.create_table('Token', [
-		'id integer primary key',
-		'user_id integer default 0',
-		"value text defaut ''",
-		'ip text default ""',
-	])
-	app.create_table('Token2', [
-		'id integer primary key',
-		'user_id integer default 0',
-		"value text defaut ''",
-		'ip text default ""',
-	])
-	app.create_table('SecurityLog', [
-		'id integer primary key',
-		'user_id integer default 0',
-		'kind int default 0',
-		"ip text default ''",
-		"arg1 text default ''",
-		"arg2 text default ''",
-		"created_at int default (strftime('%s', 'now'))",
-	])
+	sql app.db {
+		create table LangStat
+	}
+	sql app.db {
+		create table User
+	}
+	sql app.db {
+		create table Email
+	}
+	sql app.db {
+		create table Contributor
+	}
+	sql app.db {
+		create table Tag
+	}
+	sql app.db {
+		create table Release
+	}
+	sql app.db {
+		create table SshKey
+	}
+	sql app.db {
+		create table Comment
+	}
+	sql app.db {
+		create table Branch
+	}
+	sql app.db {
+		create table Visit
+	}
+	sql app.db {
+		create table GitlySettings
+	}
+	sql app.db {
+		create table Token
+	}
+	sql app.db {
+		create table SecurityLog
+	}
 }
 
 fn (mut app App) update_repo_in_db(repo &Repo) {

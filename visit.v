@@ -5,7 +5,7 @@ module main
 import time
 
 struct Visit {
-	id         int
+	id         int    [primary; sql: serial]
 	repo_id    int
 	url        string
 	referer    string

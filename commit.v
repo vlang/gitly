@@ -6,12 +6,12 @@ import time
 
 struct Commit {
 mut:
-	id         int
+	id         int    [primary; sql: serial]
 	author_id  int
 	author     string
-	hash       string
+	hash       string [unique: 'commit']
 	created_at int
-	repo_id    int
+	repo_id    int    [unique: 'commit']
 	message    string
 }
 
