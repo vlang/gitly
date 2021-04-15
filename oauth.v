@@ -77,7 +77,7 @@ pub fn (mut app App) oauth() vweb.Result {
 	if !user.is_github {
 		// Register a new user via github
 		app.security_log(user_id: user.id, kind: .registered_via_github, arg1: user_js.text)
-		app.add_user(gh_user.username, '', [gh_user.email], true)
+		app.add_user(gh_user.username, '', [gh_user.email], true, false)
 		user = app.find_user_by_github_username(gh_user.username) or { return app.r_home() }
 		app.update_user_avatar(gh_user.avatar, user.id)
 	}

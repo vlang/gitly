@@ -146,7 +146,7 @@ pub fn (mut app App) handle_register() vweb.Result {
 		app.error('Username or Email cannot be emtpy')
 		return app.register()
 	}
-	if !app.add_user(username, password, [email], false) {
+	if !app.add_user(username, password, [email], false, no_users) {
 		app.error('Failed to register')
 		return app.register()
 	}
