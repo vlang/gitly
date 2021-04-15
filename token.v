@@ -3,7 +3,7 @@
 module main
 
 struct Token {
-	id      int
+	id      int [primary; sql: serial]
 	user_id int
 	value   string
 	ip      string

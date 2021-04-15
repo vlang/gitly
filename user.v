@@ -8,9 +8,9 @@ import os
 import time
 
 struct User {
-	id              int
+	id              int [primary; sql: serial]
 	name            string
-	username        string
+	username        string [unique]
 	github_username string
 	password        string
 	is_github       bool
@@ -31,7 +31,7 @@ mut:
 }
 
 struct SshKey {
-	id         int
+	id         int [primary; sql: serial]
 	user       int
 	title      string
 	sshkey     string
@@ -39,15 +39,15 @@ struct SshKey {
 }
 
 struct Email {
-	id    int
+	id    int [primary; sql: serial]
 	user  int
-	email string
+	email string [unique]
 }
 
 struct Contributor {
-	id   int
-	user int
-	repo int
+	id   int [primary; sql: serial]
+	user int [unique: 'contributor']
+	repo int [unique: 'contributor']
 }
 
 struct OAuth_Request {

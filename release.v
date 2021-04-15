@@ -3,10 +3,10 @@ module main
 import time
 
 struct Release {
-	id      int
-	repo_id int
+	id      int [primary; sql: serial]
+	repo_id int [unique: 'release']
 mut:
-	tag_id   int
+	tag_id   int [unique: 'release']
 	notes    string
 	tag_name string    [skip]
 	tag_hash string    [skip]

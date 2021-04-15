@@ -7,9 +7,9 @@ import time
 
 struct Branch {
 mut:
-	id      int
-	repo_id int
-	name    string // branch name
+	id      int [primary; sql: serial]
+	repo_id int [unique: 'branch']
+	name    string [unique: 'branch']// branch name
 	author  string // author of latest commit on branch
 	hash    string // hash of latest commit on branch
 	date    int    // time of latest commit on branch

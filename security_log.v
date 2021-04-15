@@ -16,18 +16,21 @@ enum SecurityLogKind {
 }
 
 struct SecurityLog {
-	id         int
+	id         int [primary; sql: serial]
 	user_id    int
-	kind       SecurityLogKind
+	kind_id    int
 	ip         string
 	arg1       string
 	arg2       string
 	created_at int
+mut:
+	kind       SecurityLogKind [skip]
 }
 
 fn (mut app App) security_log(log SecurityLog) {
 	log2 := SecurityLog{
 		...log
+		kind_id: int(log.kind)
 		ip: app.ip()
 	}
 	sql app.db {
@@ -36,9 +39,13 @@ fn (mut app App) security_log(log SecurityLog) {
 }
 
 fn (app &App) find_security_logs(user_id int) []SecurityLog {
-	return sql app.db {
+	mut logs := sql app.db {
 		select from SecurityLog where user_id == user_id order by id desc
 	}
+	for i, log in logs {
+		logs[i].kind = SecurityLogKind(log.kind_id)
+	}
+	return logs
 }
 
 ['/settings/security']
