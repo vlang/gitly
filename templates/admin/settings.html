@@ -15,6 +15,10 @@
             <input name='oauth_client_secret' type='text' placeholder='2XL8M65OVQQVV8BXZGOYHV9FX2QG9WJ7IFYGPG2J'>
         </div>
         <div>
+            <label>Hostname</label>
+            <input name='hostname' type='text' value='@app.settings.hostname'>
+        </div>
+        <div>
             <label>Only GitHub login</label>
             <input name='only_gh_login' type='checkbox'
             @if app.settings.only_gh_login

@@ -41,6 +41,8 @@ mut:
 	db            sqlite.DB
 	logged_in     bool
 	user          User
+	path_splt     []string
+	branch        string
 	// form_error string
 }
 
@@ -319,8 +321,10 @@ pub fn (mut app App) tree(user string, repo string, branch string, path string) 
 	if app.path.contains('/favicon.svg') {
 		return vweb.not_found()
 	}
+	app.path_splt = '$repo/$path'.split('/')
 	app.is_tree = true
 	app.show_menu = true
+	app.branch = branch
 	// t := time.ticks()
 	app.inc_repo_views(app.repo.id)
 	mut up := '/'
@@ -703,6 +707,8 @@ pub fn (mut app App) blob(user string, repo string, branch string, path string) 
 		return app.not_found()
 	}
 	app.path = path
+	app.path_splt = '$repo/$path'.split('/')
+	app.path_splt = app.path_splt[..app.path_splt.len-1]
 	if !app.contains_repo_branch(branch, app.repo.id) && branch != app.repo.primary_branch {
 		app.info('Branch $branch not found')
 		return app.not_found()
@@ -814,4 +820,14 @@ pub fn (mut app App) running_since() string {
 	hours := int(math.floor(minutes / 60)) % 24
 	days := int(math.floor(hours / 24))
 	return '$days days $hours hours $minutes minutes and $seconds seconds'
+}
+
+pub fn (mut app App) make_path(i int) string {
+	if i == 0 {
+		return app.path_splt[..i + 1].join('/')
+	}
+	mut s := app.path_splt[0]
+	s += '/tree/$app.branch/'
+	s += app.path_splt[1..i + 1].join('/')
+	return s
 }

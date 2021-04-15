@@ -9,4 +9,5 @@ mut:
 	oauth_client_secret string
 	only_gh_login       bool   = true
 	repo_storage_path   string = './repos'
+	hostname            string = 'gitly.org'
 }
