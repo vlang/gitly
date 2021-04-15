@@ -6,12 +6,12 @@ import time
 import os
 
 struct File {
-	id              int
-	repo_id         int
-	name            string
-	parent_path     string
+	id              int    [primary; sql: serial]
+	repo_id         int    [unique: 'file']
+	name            string [unique: 'file']
+	parent_path     string [unique: 'file']
 	is_dir          bool
-	branch          string
+	branch          string [unique: 'file']
 	nr_contributors int
 	last_hash       string
 	size            int

@@ -8,9 +8,9 @@ import os
 import time
 
 struct User {
-	id              int
+	id              int    [primary; sql: serial]
 	name            string
-	username        string
+	username        string [unique]
 	github_username string
 	password        string
 	is_github       bool
@@ -31,7 +31,7 @@ mut:
 }
 
 struct SshKey {
-	id         int
+	id         int    [primary; sql: serial]
 	user       int
 	title      string
 	sshkey     string
@@ -39,15 +39,15 @@ struct SshKey {
 }
 
 struct Email {
-	id    int
+	id    int    [primary; sql: serial]
 	user  int
-	email string
+	email string [unique]
 }
 
 struct Contributor {
-	id   int
-	user int
-	repo int
+	id   int [primary; sql: serial]
+	user int [unique: 'contributor']
+	repo int [unique: 'contributor']
 }
 
 struct OAuth_Request {
@@ -68,7 +68,7 @@ fn check_password(password string, username string, hashed string) bool {
 	return make_password(password, username) == hashed
 }
 
-pub fn (mut app App) add_user(username string, password string, emails []string, github bool) bool {
+pub fn (mut app App) add_user(username string, password string, emails []string, github bool, is_admin bool) bool {
 	mut user := app.find_user_by_username(username) or { User{} }
 	if user.id != 0 && user.is_registered {
 		app.info('User $username already exists')
@@ -82,6 +82,7 @@ pub fn (mut app App) add_user(username string, password string, emails []string,
 			is_registered: true
 			is_github: github
 			github_username: username
+			is_admin: is_admin
 		}
 		app.insert_user(user)
 		mut u := app.find_user_by_username(user.username) or {

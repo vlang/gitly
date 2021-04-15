@@ -97,12 +97,10 @@ pub fn (mut app App) user_pullrequests(user string) vweb.Result {}
 */
 ['/:user/settings']
 pub fn (mut app App) user_settings(user string) vweb.Result {
-
 	return $vweb.html()
 }
 
-[post]
-['/:user/settings']
+['/:user/settings'; post]
 pub fn (mut app App) update_user_settings(user string) vweb.Result {
 	if !app.logged_in || user != app.user.username {
 		return app.r_home()

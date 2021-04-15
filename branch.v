@@ -7,9 +7,9 @@ import time
 
 struct Branch {
 mut:
-	id      int
-	repo_id int
-	name    string // branch name
+	id      int    [primary; sql: serial]
+	repo_id int    [unique: 'branch']
+	name    string [unique: 'branch'] // branch name
 	author  string // author of latest commit on branch
 	hash    string // hash of latest commit on branch
 	date    int    // time of latest commit on branch
@@ -32,9 +32,11 @@ fn (mut app App) fetch_branches(r Repo) {
 			branch_data := r.git('log -1 --pretty="%aE$log_field_separator%cD" $branch.hash')
 			args := branch_data.split(log_field_separator)
 			email := args[0]
-			u := app.find_user_by_email(email) or { User{
-				username: email
-			} }
+			u := app.find_user_by_email(email) or {
+				User{
+					username: email
+				}
+			}
 			branch.author = u.username
 			date := time.parse_rfc2822(args[1]) or {
 				app.info('Error: $err')
@@ -64,9 +66,11 @@ fn (mut app App) update_branches(r &Repo) {
 			branch_data := r.git('log -1 --pretty="%aE$log_field_separator%cD" $branch.hash')
 			args := branch_data.split(log_field_separator)
 			email := args[0]
-			u := app.find_user_by_email(email) or { User{
-				username: email
-			} }
+			u := app.find_user_by_email(email) or {
+				User{
+					username: email
+				}
+			}
 			branch.author = u.username
 			date := time.parse_rfc2822(args[1]) or {
 				app.info('Error: $err')

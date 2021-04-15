@@ -9,7 +9,7 @@ import sync
 import vweb
 
 struct Repo {
-	id                 int
+	id                 int       [primary; sql: serial]
 	git_dir            string
 	name               string
 	user_id            int
@@ -354,11 +354,10 @@ fn (r &Repo) git(cmd_ string) string {
 	if !cmd.starts_with('init') {
 		cmd = '-C $r.git_dir $cmd'
 	}
-	x := os.exec('git $cmd') or {
-		// if !q.ContainsString(args, "master:README.md") {
+	x := os.execute('git $cmd')
+	if x.exit_code != 0 {
 		println('git error $cmd out=x.output')
 		return ''
-		// }
 	}
 	res := x.output.trim_space()
 	if res.len > max_git_res_size {
@@ -493,10 +492,10 @@ fn (mut app App) slow_fetch_files_info(branch string, path string) {
 }
 
 fn (r Repo) git_advertise(a string) string {
-	cmd := os.exec('git $a --stateless-rpc --advertise-refs $r.git_dir') or { return '' }
+	cmd := os.execute('git $a --stateless-rpc --advertise-refs $r.git_dir')
 	if cmd.exit_code != 0 {
-		// eprintln("advertise error", err)
-		// eprintln("\n\ngit advertise output: $cmd.output\n\n")
+		eprintln('advertise error')
+		eprintln('\n\ngit advertise output: $cmd.output\n\n')
 	}
 	return cmd.output
 }
@@ -531,7 +530,8 @@ fn (mut r Repo) clone() {
 	// defer r.Update()
 	println('starting git clone... $r.clone_url git_dir=$r.git_dir')
 	// "git clone --bare "
-	os.exec('git clone "$r.clone_url" $r.git_dir') or {
+	clone := os.execute('git clone "$r.clone_url" $r.git_dir')
+	if clone.exit_code != 0 {
 		r.status = .clone_failed
 		println('git clone failed:')
 		return
