@@ -67,7 +67,7 @@ pub fn (mut app App) error(msg string) {
 	//app.form_error = msg
 }
 */
-pub fn (mut app App) init_once() {
+pub fn (mut app App) init_server() {
 	app.started_at = time.now().unix
 	if !os.is_dir('logs') {
 		os.mkdir('logs') or { panic('cannot create folder logs') }
@@ -143,7 +143,7 @@ pub fn (mut app App) init_once() {
 	}
 }
 
-pub fn (mut app App) init() {
+pub fn (mut app App) before_request() {
 	url := app.req.url
 	app.show_menu = false
 	app.page_gen_time = ''
@@ -326,10 +326,11 @@ pub fn (mut app App) tree(user string, repo string, branch string, path string) 
 	mut up := '/'
 	can_up := path != ''
 	if can_up {
-		up = app.req.url.all_before_last('/')
-	}
-	if !up.ends_with('/') {
-		up += '/'
+		if path.split('/').len == 1 {
+			up = '../..'
+		} else {
+			up = app.req.url.all_before_last('/')
+		}
 	}
 	println(up)
 	println('path=$app.path')

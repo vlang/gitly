@@ -17,8 +17,7 @@ pub fn (mut app App) admin_settings() vweb.Result {
 	return $vweb.html()
 }
 
-[post]
-['/admin/settings']
+['/admin/settings'; post]
 pub fn (mut app App) update_admin_settings() vweb.Result {
 	if !app.is_admin() {
 		return app.r_home()
@@ -52,8 +51,7 @@ pub fn (mut app App) admin_userlist() vweb.Result {
 	return $vweb.html()
 }
 
-[post]
-['/admin/edituser/:user']
+['/admin/edituser/:user'; post]
 pub fn (mut app App) admin_edituser(user string) vweb.Result {
 	if !app.is_admin() {
 		return app.r_home()

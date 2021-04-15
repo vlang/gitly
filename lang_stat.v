@@ -20,9 +20,9 @@ const (
 )
 
 struct LangStat {
-	id       int
-	repo_id  int
-	name     string
+	id       int    [primary; sql: serial]
+	repo_id  int    [unique: 'langstat']
+	name     string [unique: 'langstat']
 	nr_lines int
 	pct      int // out of 1000
 	color    string
