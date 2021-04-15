@@ -326,10 +326,11 @@ pub fn (mut app App) tree(user string, repo string, branch string, path string) 
 	mut up := '/'
 	can_up := path != ''
 	if can_up {
-		up = app.req.url.all_before_last('/')
-	}
-	if !up.ends_with('/') {
-		up += '/'
+		if path.split('/').len == 1 {
+			up = '../..'
+		} else {
+			up = app.req.url.all_before_last('/')
+		}
 	}
 	println(up)
 	println('path=$app.path')
