@@ -492,7 +492,7 @@ fn (mut app App) slow_fetch_files_info(branch string, path string) {
 }
 
 fn (r Repo) git_advertise(a string) string {
-	cmd := os.execute('git $a --stateless-rpc --advertise-refs $r.git_dir')
+  cmd := os.execute('git $a --stateless-rpc --advertise-refs $r.git_dir')
 	if cmd.exit_code != 0 {
 		eprintln('advertise error')
 		eprintln('\n\ngit advertise output: $cmd.output\n\n')
