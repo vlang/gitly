@@ -26,6 +26,8 @@ const (
 
 struct App {
 	vweb.Context
+pub mut:
+	db sqlite.DB
 mut:
 	started_at    u64
 	path          string // current path being viewed
@@ -38,7 +40,6 @@ mut:
 	settings      GitlySettings
 	file_log      log.Log
 	cli_log       log.Log
-	db            sqlite.DB
 	logged_in     bool
 	user          User
 	path_splt     []string
@@ -47,7 +48,13 @@ mut:
 }
 
 fn main() {
-	vweb.run<App>(http_port + 1)
+	vweb.run(&App{
+		db: sqlite.connect('gitly.sqlite') or {
+			println('failed to connect to db')
+			panic(err)
+		}
+	started_at: time.now().unix
+	}, http_port + 1)
 }
 
 pub fn (mut app App) info(msg string) { // vweb.Result {
@@ -70,12 +77,9 @@ pub fn (mut app App) error(msg string) {
 }
 */
 pub fn (mut app App) init_server() {
-	app.started_at = time.now().unix
 	if !os.is_dir('logs') {
 		os.mkdir('logs') or { panic('cannot create folder logs') }
 	}
-	app.file_log = log.Log{}
-	app.cli_log = log.Log{}
 	app.file_log.set_level(.info)
 	app.cli_log.set_level(.info)
 	date := time.now()
