@@ -11,7 +11,7 @@ import math
 pub fn (mut app App) login() vweb.Result {
 	csrf := rand.string(30)
 	app.set_cookie(name: 'csrf', value: csrf)
-	if app.logged_in() {
+	if app.is_logged_in() {
 		return app.not_found()
 	}
 	return $vweb.html()
@@ -61,7 +61,7 @@ pub fn (mut app App) auth_user(user User, ip string) {
 	// app.set_cookie_with_expire_date('token', token, expires)
 }
 
-pub fn (mut app App) logged_in() bool {
+pub fn (mut app App) is_logged_in() bool {
 	id := app.get_cookie('id') or { return false }
 	token := app.get_cookie('token') or { return false }
 	ip := app.client_ip(id) or { return false }

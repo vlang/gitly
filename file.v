@@ -54,7 +54,7 @@ fn (mut app App) insert_file(file File) {
 }
 
 fn (mut app App) find_repo_files(repo_id2 int, branch string, parent_path string) []File {
-	app.info('find files by repo(repo_id=$repo_id2, parent_path="$parent_path")')
+	// println('find files by repo(repo_id=$repo_id2, parent_path="$parent_path")')
 	mut p_path := parent_path
 	if p_path == '' {
 		p_path = '.'

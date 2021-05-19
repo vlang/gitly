@@ -120,16 +120,15 @@ fn (mut app App) update_repo() {
 }
 
 // update_repo updated the repo in the db
-fn (mut app App) update_repo_data(repo Repo) {
-	mut r := repo
+fn (mut app App) update_repo_data(mut r Repo) {
 	last_commit := app.find_repo_last_commit(r.id)
 	r.git('fetch --all')
 	r.git('pull --all')
 	mut wg := sync.new_waitgroup()
 	wg.add(1)
-	r_p := &r
-	go r_p.analyse_lang(mut wg, app)
-	data := r.git('--no-pager log ${last_commit.hash}.. --abbrev-commit --abbrev=7 --pretty="%h$log_field_separator%aE$log_field_separator%cD$log_field_separator%s$log_field_separator%aN"')
+	go r.analyse_lang(mut wg, app)
+	// data := r.git('--no-pager log ${last_commit.hash}.. --abbrev-commit --abbrev=7 --pretty="%h$log_field_separator%aE$log_field_separator%cD$log_field_separator%s$log_field_separator%aN"')
+	data := r.git('--no-pager log --abbrev-commit --abbrev=7 --pretty="%h$log_field_separator%aE$log_field_separator%cD$log_field_separator%s$log_field_separator%aN"')
 	mut tmp_commit := Commit{}
 	app.db.exec('BEGIN TRANSACTION')
 	for line in data.split_into_lines() {
@@ -356,7 +355,11 @@ fn (r &Repo) git(cmd_ string) string {
 	}
 	x := os.execute('git $cmd')
 	if x.exit_code != 0 {
-		println('git error $cmd out=x.output')
+		if r.name == '' {
+			print_backtrace()
+		}
+		println(r)
+		println('git error $cmd out=$x.output')
 		return ''
 	}
 	res := x.output.trim_space()
@@ -479,9 +482,11 @@ fn (r Repo) html_path_to(path string, branch string) vweb.RawHtml {
 // this is slow, so it's run in the background thread
 fn (mut app App) slow_fetch_files_info(branch string, path string) {
 	files := app.find_repo_files(app.repo.id, branch, path)
+	// println('SLOW fetch files info() nr_files=$files.len')
 	// t := time.ticks()
 	// for file in files {
 	for i in 0 .. files.len {
+		// println('file ${files[i].name}')
 		if files[i].last_msg != '' {
 			app.warn('skipping ${files[i].name}')
 			continue
@@ -492,7 +497,7 @@ fn (mut app App) slow_fetch_files_info(branch string, path string) {
 }
 
 fn (r Repo) git_advertise(a string) string {
-  cmd := os.execute('git $a --stateless-rpc --advertise-refs $r.git_dir')
+	cmd := os.execute('git $a --stateless-rpc --advertise-refs $r.git_dir')
 	if cmd.exit_code != 0 {
 		eprintln('advertise error')
 		eprintln('\n\ngit advertise output: $cmd.output\n\n')
@@ -524,6 +529,7 @@ fn (mut app App) fetch_file_info(r &Repo, file &File) {
 }
 
 fn (mut r Repo) clone() {
+	println('r.clone() url="$r.clone_url"')
 	if !r.clone_url.starts_with('https://') || r.clone_url.contains(' ') {
 		return
 	}

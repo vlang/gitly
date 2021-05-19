@@ -18,7 +18,7 @@ const (
 	posts_per_day      = 5
 	max_username_len   = 32
 	max_login_attempts = 5
-	max_user_repos     = 5
+	max_user_repos     = 10
 	max_repo_name_len  = 20
 	max_namechanges    = 3
 	namechange_period  = time.hour * 24
@@ -47,59 +47,43 @@ mut:
 	// form_error string
 }
 
+// fn C.sqlite3_threadsafe() int
+fn C.sqlite3_config(int)
+
 fn main() {
-	vweb.run(&App{
+	C.sqlite3_config(3) // thread safe sqlite
+	vweb.run(new_app(), http_port)
+}
+
+fn new_app() &App {
+	mut app := &App{
 		db: sqlite.connect('gitly.sqlite') or {
 			println('failed to connect to db')
 			panic(err)
 		}
-	started_at: time.now().unix
-	}, http_port + 1)
-}
+		started_at: time.now().unix
+	}
+	app.create_tables()
 
-pub fn (mut app App) info(msg string) { // vweb.Result {
-	app.file_log.info(msg)
-	app.cli_log.info(msg)
-	// return app.text('ok')
-}
+	///////////////
 
-pub fn (mut app App) warn(msg string) vweb.Result {
-	app.file_log.warn(msg)
-	app.cli_log.warn(msg)
-	return app.text('ok')
-}
-
-/*
-pub fn (mut app App) error(msg string) {
-	app.file_log.error(msg)
-	app.cli_log.error(msg)
-	//app.form_error = msg
-}
-*/
-pub fn (mut app App) init_server() {
 	if !os.is_dir('logs') {
 		os.mkdir('logs') or { panic('cannot create folder logs') }
 	}
 	app.file_log.set_level(.info)
 	app.cli_log.set_level(.info)
-	date := time.now()
-	date_s := '$date.ymmdd()'
-	app.file_log.set_full_logpath('./logs/log_${date_s}.log')
+	now := time.now()
+	app.file_log.set_full_logpath('./logs/log_${now.ymmdd()}.log')
 	// app.info('init_once()')
-	version := os.read_file('static/assets/version') or { 'unknown' }
-	mut result := os.execute('git rev-parse --short HEAD')
-	if result.exit_code != 0 {
-		result = os.Result{
-			output: version
-		}
-	}
-	if !result.output.contains('fatal') {
-		app.version = result.output.trim_space()
+	mut version := os.read_file('static/assets/version') or { 'unknown' }
+	result := os.execute('git rev-parse --short HEAD')
+	if result.exit_code == 0 && !result.output.contains('fatal') {
+		version = result.output.trim_space()
 	}
 	if version != app.version {
 		os.write_file('static/assets/version', app.version) or { panic(err) }
 	}
-	app.path = ''
+	app.version = version
 	app.serve_static('/gitly.css', 'static/css/gitly.css', 'text/css')
 	app.serve_static('/jquery.js', 'static/js/jquery.js', 'text/javascript')
 	app.serve_static('/favicon.svg', 'static/assets/favicon.svg', 'image/svg+xml')
@@ -147,18 +131,39 @@ pub fn (mut app App) init_server() {
 	if '-cmdapi' in os.args {
 		go app.command_fetcher()
 	}
+
+	/////////////
+	return app
+}
+
+pub fn (mut app App) info(msg string) { // vweb.Result {
+	app.file_log.info(msg)
+	app.cli_log.info(msg)
+	// return app.text('ok')
+}
+
+pub fn (mut app App) warn(msg string) { // vweb.Result {
+	app.file_log.warn(msg)
+	app.cli_log.warn(msg)
+	println(msg)
+	// return app.text('ok2')
+}
+
+/*
+pub fn (mut app App) error(msg string) {
+	app.file_log.error(msg)
+	app.cli_log.error(msg)
+	//app.form_error = msg
+}
+*/
+pub fn (mut app App) init_server() {
 }
 
 pub fn (mut app App) before_request() {
 	url := app.req.url
-	app.show_menu = false
-	app.page_gen_time = ''
-	app.info('\n\ninit() url=$url')
-	app.path = ''
+	println('\n\nbefore_request() url=$url')
 	// app.info('path=$app.path')
-	app.logged_in = app.logged_in()
-	app.repo = Repo{}
-	app.user = User{}
+	app.logged_in = app.is_logged_in()
 	if app.logged_in {
 		app.user = app.get_user_from_cookies() or {
 			app.logged_in = false
@@ -311,6 +316,7 @@ pub fn (mut app App) tree2(user string, repo string) vweb.Result {
 // pub fn (mut app App) tree(path string) {
 ['/:user/:repo/tree/:branch/:path...']
 pub fn (mut app App) tree(user string, repo string, branch string, path string) vweb.Result {
+	// println('tree')
 	if !app.exists_user_repo(user, repo) {
 		return app.not_found()
 	}
@@ -340,7 +346,7 @@ pub fn (mut app App) tree(user string, repo string, branch string, path string) 
 			up = app.req.url.all_before_last('/')
 		}
 	}
-	println(up)
+	// println(up)
 	println('path=$app.path')
 	if app.path.starts_with('/') {
 		app.path = app.path[1..]
@@ -353,6 +359,10 @@ pub fn (mut app App) tree(user string, repo string, branch string, path string) 
 		t := time.ticks()
 		files = app.cache_repo_files(mut app.repo, branch, app.path)
 		println('caching files took ${time.ticks() - t}ms')
+		go app.slow_fetch_files_info(branch, app.path)
+	}
+	if files.any(it.last_msg == '') {
+		// If any of the files has a missing `last_msg`, we need to refetch it.
 		go app.slow_fetch_files_info(branch, app.path)
 	}
 	mut readme := vweb.RawHtml('')
@@ -421,7 +431,9 @@ pub fn (mut app App) update(user string, repo string) vweb.Result {
 	}
 	*/
 	if app.user.is_admin {
-		go app.update_repo_data(app.repo)
+		// QTODO go
+		app.update_repo_data(mut app.repo)
+		app.slow_fetch_files_info('master', '.')
 	}
 	return app.r_repo()
 }
@@ -452,13 +464,17 @@ pub fn (mut app App) new_repo() vweb.Result {
 		app.error('A repository with the name "$name" already exists')
 		return app.new()
 	}
+	mut clone_url := app.form['clone_url']
+	if !clone_url.starts_with('https://') {
+		clone_url = 'https://' + clone_url
+	}
 	app.repo = Repo{
 		name: name
 		git_dir: os.join_path(app.settings.repo_storage_path, app.user.username, name)
 		user_id: app.user.id
 		primary_branch: 'master'
 		user_name: app.user.username
-		clone_url: app.form['clone_url']
+		clone_url: clone_url
 	}
 	if app.repo.clone_url == '' {
 		os.mkdir(app.repo.git_dir) or { panic(err) }
@@ -471,12 +487,15 @@ pub fn (mut app App) new_repo() vweb.Result {
 		app.info('Repo was not inserted')
 		return app.redirect('/new')
 	}
-	println('start go')
+	// println('start go')
+	/*
 	if app.repo.clone_url != '' {
+		println('cloning $app.repo.clone_url')
 		app.repo.clone()
 	}
+	*/
 	go app.update_repo()
-	println('end go')
+	// println('end go')
 	return app.redirect('/$app.user.username/repos')
 }
 
@@ -712,7 +731,7 @@ pub fn (mut app App) blob(user string, repo string, branch string, path string) 
 	}
 	app.path = path
 	app.path_splt = '$repo/$path'.split('/')
-	app.path_splt = app.path_splt[..app.path_splt.len-1]
+	app.path_splt = app.path_splt[..app.path_splt.len - 1]
 	if !app.contains_repo_branch(branch, app.repo.id) && branch != app.repo.primary_branch {
 		app.info('Branch $branch not found')
 		return app.not_found()
