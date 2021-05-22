@@ -4,7 +4,7 @@ module hl
 
 // import markdown
 const (
-	tab = '        '
+	tab = '    ' //        '
 )
 
 pub fn highlight_text(st string, ext string, commit bool) (string, int, int) {
@@ -17,7 +17,7 @@ pub fn highlight_text(st string, ext string, commit bool) (string, int, int) {
 	}
 	lang := extension_to_lang(ext) or { Lang{} }
 	text := '$st '
-	mut res := []byte{}
+	mut res := []byte{cap: text.len}
 	mut lines := 0
 	mut sloc := 0
 	mut ss := byte(` `)

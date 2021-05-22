@@ -84,14 +84,17 @@ fn new_app() &App {
 		os.write_file('static/assets/version', app.version) or { panic(err) }
 	}
 	app.version = version
-	app.serve_static('/gitly.css', 'static/css/gitly.css', 'text/css')
-	app.serve_static('/jquery.js', 'static/js/jquery.js', 'text/javascript')
-	app.serve_static('/favicon.svg', 'static/assets/favicon.svg', 'image/svg+xml')
+	app.serve_static('/gitly.css', 'static/css/gitly.css') //, 'text/css')
+	app.serve_static('/jquery.js', 'static/js/jquery.js') //, 'text/javascript')
+	app.serve_static('/favicon.svg', 'static/assets/favicon.svg') //, 'image/svg+xml')
+	app.serve_static('/robots.txt', 'static/robots.txt') //, 'image/svg+xml')
+	/*
 	app.db = sqlite.connect('gitly.sqlite') or {
 		println('failed to connect to db')
 		panic(err)
 	}
 	app.create_tables()
+	*/
 	/*
 	app.oauth_client_id = os.getenv('GITLY_OAUTH_CLIENT_ID')
 	app.oauth_client_secret = os.getenv('GITLY_OAUTH_SECRET')
