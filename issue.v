@@ -5,7 +5,7 @@ module main
 import time
 
 struct Issue {
-	id int
+	id int [primary; sql: serial]
 mut:
 	author_id     int
 	repo_id       int

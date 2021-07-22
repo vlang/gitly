@@ -71,7 +71,7 @@
 				.links {
 					<a href="/@app.user.username/settings" class="link">Settings</a>
 				@if app.user.is_admin
-					<a href='/admin' class="link">Admin Panel</a>	
+					<a href='/admin' class="link">Admin Panel</a>
 				@end
 				}
 				.links {
@@ -97,8 +97,12 @@
 	<!--
 		<a href='/@app.repo.name'>@app.repo.name</a>
 		-->
-		<a href='/@app.repo.user_name/@app.repo.name'>@app.repo.name</a>
-		@app.html_path
+		<!--a href='/@app.repo.user_name/@app.repo.name'>@app.repo.name</a>
+		@app.html_path-->
+		@for i, p in app.path_splt
+			<a href="/@app.repo.user_name/@{app.make_path(i)}">@p</a>
+			/
+		@end
 	}
 @end
 
@@ -135,7 +139,7 @@
 		</a>
 		@if app.repo.user_id == app.user.id
 		<a class='menu' href="/@app.repo.user_name/@app.repo.name/settings">
-			Settings
+			Settings.
 		</a>
     @end
 

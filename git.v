@@ -81,7 +81,8 @@ fn (mut app App) git_info(user_str string, repo string) vweb.Result {
 	}
 
 	if service == .unknown {
-		return app.not_found()
+		return app.not_found() // TODO
+		// return app.info('git: unknown info/refs service: $url')
 	}
 
 	// Do auth here, we can communicate with the client only in inforefs

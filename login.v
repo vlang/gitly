@@ -11,14 +11,13 @@ import math
 pub fn (mut app App) login() vweb.Result {
 	csrf := rand.string(30)
 	app.set_cookie(name: 'csrf', value: csrf)
-	if app.logged_in() {
+	if app.is_logged_in() {
 		return app.not_found()
 	}
 	return $vweb.html()
 }
 
-[post]
-['/login']
+['/login'; post]
 pub fn (mut app App) handle_login() vweb.Result {
 	if app.settings.only_gh_login {
 		return app.r_home()
@@ -62,7 +61,7 @@ pub fn (mut app App) auth_user(user User, ip string) {
 	// app.set_cookie_with_expire_date('token', token, expires)
 }
 
-pub fn (mut app App) logged_in() bool {
+pub fn (mut app App) is_logged_in() bool {
 	id := app.get_cookie('id') or { return false }
 	token := app.get_cookie('token') or { return false }
 	ip := app.client_ip(id) or { return false }
@@ -107,8 +106,7 @@ pub fn (mut app App) register() vweb.Result {
 	return $vweb.html()
 }
 
-[post]
-['/register_post']
+['/register_post'; post]
 pub fn (mut app App) handle_register() vweb.Result {
 	no_users := app.nr_all_users() == 0
 	if app.settings.only_gh_login && !no_users {
@@ -148,13 +146,16 @@ pub fn (mut app App) handle_register() vweb.Result {
 		app.error('Username or Email cannot be emtpy')
 		return app.register()
 	}
-	if !app.add_user(username, password, [email], false) {
+	if !app.add_user(username, password, [email], false, no_users) {
 		app.error('Failed to register')
 		return app.register()
 	}
 	user := app.find_user_by_username(username) or {
 		app.error('User already exists')
 		return app.register()
+	}
+	if no_users {
+		app.user_set_admin(user.id)
 	}
 	println('register: logging in')
 	ip := app.client_ip(user.id.str()) or {
