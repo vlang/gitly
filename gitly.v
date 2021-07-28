@@ -62,6 +62,9 @@ fn new_app() &App {
 			panic(err)
 		}
 		started_at: time.now().unix
+		Context: vweb.Context{
+			conn: 0
+		}
 	}
 	app.create_tables()
 
