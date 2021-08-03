@@ -52,6 +52,9 @@ fn C.sqlite3_config(int)
 
 fn main() {
 	C.sqlite3_config(3) // thread safe sqlite
+	if os.args.contains('ci_run') {
+		return
+	}
 	vweb.run(new_app(), http_port)
 }
 
