@@ -29,7 +29,7 @@ struct App {
 pub mut:
 	db sqlite.DB
 mut:
-	started_at    u64
+	started_at    i64
 	path          string // current path being viewed
 	repo          Repo
 	version       string
