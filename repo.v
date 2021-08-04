@@ -121,7 +121,7 @@ fn (mut app App) update_repo() {
 
 // update_repo updated the repo in the db
 fn (mut app App) update_repo_data(mut r Repo) {
-	last_commit := app.find_repo_last_commit(r.id)
+	//	last_commit := app.find_repo_last_commit(r.id)
 	r.git('fetch --all')
 	r.git('pull --all')
 	mut wg := sync.new_waitgroup()
