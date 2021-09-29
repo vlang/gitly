@@ -4,14 +4,13 @@ import time
 
 fn main() {
 	println('testing first gitly run...')
-	// os.execute('pkill -9 gitly')
+	os.execute('pkill -9 gitly')
 	if os.exists('gitly.sqlite') {
-		// os.rm('gitly.sqlite') ?
+		os.rm('gitly.sqlite') ?
 	}
 	os.execute('v .')
-	// go run_gitly()
+	go run_gitly()
 	time.sleep(1 * time.second)
-	println('done')
 	if x := http.get('http://127.0.0.1:8080') {
 		// println('OKKK')
 		// println(x.text)
@@ -61,8 +60,7 @@ fn main() {
 	}
 	//
 	assert x.text.contains('<h3> bob </h3>')
-
-	time.sleep(20 * time.second)
+	time.sleep(3 * time.second)
 }
 
 fn run_gitly() {
