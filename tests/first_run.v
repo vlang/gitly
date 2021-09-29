@@ -64,7 +64,14 @@ fn main() {
 	//
 	assert x.text.contains('<h3> bob </h3>')
 	// Try loggin in with user id and token
-	x = http.get('http://127.0.0.1:8080/bob') or {
+	x = http.fetch(
+		method: .get
+		cookies: {
+			'token': token
+			'id':    '1'
+		}
+		url: 'http://127.0.0.1:8080/bob'
+	) or {
 		println('failed to log in as bob')
 		println(err)
 		exit(1)
