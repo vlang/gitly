@@ -37,12 +37,15 @@ fn main() {
 	assert x.header.contains(.set_cookie)
 	mut has_id := false
 	mut has_token := false
+	mut token := ''
 	for val in x.header.values(.set_cookie) {
 		if val.contains('id=1') {
 			has_id = true
 		}
 		if val.contains('token=') && val.contains('-') {
 			has_token = true
+			token = val.find_between('token=', ';')
+			println('token=$token')
 		}
 	}
 	assert has_id
@@ -60,6 +63,15 @@ fn main() {
 	}
 	//
 	assert x.text.contains('<h3> bob </h3>')
+	// Try loggin in with user id and token
+	x = http.get('http://127.0.0.1:8080/bob') or {
+		println('failed to log in as bob')
+		println(err)
+		exit(1)
+	}
+	// println(x.text)
+	assert x.text.contains('<span>Signed in as</span>')
+	assert x.text.contains("<a href='/bob'>bob</a>")
 	time.sleep(3 * time.second)
 }
 
