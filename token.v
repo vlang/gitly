@@ -26,8 +26,9 @@ fn (mut app App) update_user_token(user_id int, token string, ip string) string 
 }
 
 fn (mut app App) find_user_token(user_id int, ip string) string {
+	// TODO fix ip check
 	tok := sql app.db {
-		select from Token where user_id == user_id && ip == ip limit 1
+		select from Token where user_id == user_id limit 1 //&& ip == ip limit 1
 	}
 	return tok.value
 }

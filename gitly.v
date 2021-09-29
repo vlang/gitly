@@ -170,6 +170,7 @@ pub fn (mut app App) before_request() {
 	println('\n\nbefore_request() url=$url')
 	// app.info('path=$app.path')
 	app.logged_in = app.is_logged_in()
+	println('logged_in=$app.logged_in')
 	if app.logged_in {
 		app.user = app.get_user_from_cookies() or {
 			app.logged_in = false

@@ -9,7 +9,7 @@ import time
 
 struct User {
 	id              int    [primary; sql: serial]
-	name            string
+	full_name       string
 	username        string [unique]
 	github_username string
 	password        string
@@ -89,7 +89,7 @@ pub fn (mut app App) add_user(username string, password string, emails []string,
 			app.info('User was not inserted')
 			return false
 		}
-		if u.password != user.password || u.name != user.name {
+		if u.password != user.password || u.username != user.username {
 			app.info('User was not inserted')
 			return false
 		}
@@ -102,13 +102,17 @@ pub fn (mut app App) add_user(username string, password string, emails []string,
 		}
 		u.emails = app.find_user_emails(u.id)
 	} else {
-		name := user.username
+		// Update existing user
+		user_name := user.username
 		if !github {
+			/*
 			sql app.db {
-				update User set username = username, password = password, name = name, is_registered = true
-				where id == user.id
+				update User set username = user_name, password = password, full_name = full_name,
+				is_registered = true where id == user.id
 			}
+			*/
 			app.create_user_dir(username)
+
 			return true
 		}
 		if user.is_registered {
@@ -117,10 +121,12 @@ pub fn (mut app App) add_user(username string, password string, emails []string,
 			}
 			return true
 		}
+		/*
 		sql app.db {
-			update User set username = username, name = name, is_registered = true, is_github = true
-			where id == user.id
+			update User set username = user_name, full_name = full_name, is_registered = true,
+			is_github = true where id == user.id
 		}
+		*/
 	}
 	app.create_user_dir(username)
 	return true
