@@ -54,6 +54,7 @@ jobs:
           cd gitly
           v .
       - name: Run gitly
+        run: |
           v -o x tests/first_run.v
           ./x
 #      - name: Cross compilation
