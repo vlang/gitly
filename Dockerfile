@@ -14,7 +14,8 @@ ENV PATH ${PATH}:/opt/vlang
 
 RUN mkdir -p ${V_HOME}
 
-RUN apt-get install -y \
+RUN apt-get update \
+ && apt-get install -y \
   git make upx gcc \
   musl-dev \
   libssl-dev libsqlite3-dev \
@@ -44,3 +45,4 @@ COPY --from=builder /opt/gitly/gitly .
 EXPOSE 8080
 
 CMD ${GITLY_HOME}/gitly
+
