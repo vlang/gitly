@@ -33,7 +33,7 @@ COPY . .
 RUN sassc ${GITLY_HOME}/static/css/gitly.scss > ${GITLY_HOME}/static/css/gitly.css \
  && v .
 
-FROM alpine:3.12
+FROM scratch
 
 ENV GITLY_HOME /opt/gitly
 
