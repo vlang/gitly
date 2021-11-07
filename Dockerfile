@@ -1,4 +1,4 @@
-FROM alpine:3.12 as builder
+FROM debian:11 as builder
 
 LABEL maintainer="shiipou <shiishii@nocturlab.fr>"
 
@@ -14,10 +14,10 @@ ENV PATH ${PATH}:/opt/vlang
 
 RUN mkdir -p ${V_HOME}
 
-RUN apk --no-cache add \
+RUN apt-get install -y \
   git make upx gcc \
   musl-dev \
-  openssl-dev sqlite-dev \
+  libssl-dev libsqlite3-dev \
   sassc
 
 RUN git clone https://github.com/vlang/v ${V_HOME} \
