@@ -1,4 +1,4 @@
-FROM alpine:3.12
+FROM alpine:3.12 as builder
 
 LABEL maintainer="shiipou <shiishii@nocturlab.fr>"
 
@@ -32,6 +32,14 @@ WORKDIR ${GITLY_HOME}
 COPY . .
 RUN sassc ${GITLY_HOME}/static/css/gitly.scss > ${GITLY_HOME}/static/css/gitly.css \
  && v .
+
+FROM alpine:3.12
+
+ENV GITLY_HOME /opt/gitly
+
+WORKDIR ${GITLY_HOME}
+
+COPY --from=builder /opt/gitly/gitly .
 
 EXPOSE 8080
 
