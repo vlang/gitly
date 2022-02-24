@@ -188,11 +188,11 @@ pub fn (mut app App) handle_register() vweb.Result {
 
 fn gen_uuid_v4ish() string {
 	// UUIDv4 format: 4-2-2-2-6 bytes per section
-	a := rand.intn(math.max_i32 / 2).hex()
-	b := rand.intn(math.max_i16).hex()
-	c := rand.intn(math.max_i16).hex()
-	d := rand.intn(math.max_i16).hex()
-	e := rand.intn(math.max_i32 / 2).hex()
-	f := rand.intn(math.max_i16).hex()
+	a := rand.intn(math.max_i32 / 2) or { 0 }.hex()
+	b := rand.intn(math.max_i16) or { 0 }.hex()
+	c := rand.intn(math.max_i16) or { 0 }.hex()
+	d := rand.intn(math.max_i16) or { 0 }.hex()
+	e := rand.intn(math.max_i32 / 2) or { 0 }.hex()
+	f := rand.intn(math.max_i16) or { 0 }.hex()
 	return '${a:08}-${b:04}-${c:04}-${d:04}-${e:08}${f:04}'.replace(' ', '0')
 }
