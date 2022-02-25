@@ -30,6 +30,7 @@ pub fn (mut app App) handle_login() vweb.Result {
 		return app.redirect('/login')
 	}
 	user := app.find_user_by_username(username) or { return app.redirect('/login') }
+
 	// println('got user')
 	// println(user)
 	if user.is_blocked {
@@ -44,6 +45,7 @@ pub fn (mut app App) handle_login() vweb.Result {
 		}
 		app.error('Wrong username/password')
 		return app.login()
+
 		// return app.redirect('/login')
 	}
 	if !user.is_registered {
@@ -57,13 +59,16 @@ pub fn (mut app App) handle_login() vweb.Result {
 
 pub fn (mut app App) auth_user(user User, ip string) {
 	_ := time.utc().add_days(expire_length)
+
 	// token := if user.token == '' { app.add_token(user.id) } else { user.token }
 	token := app.add_token(user.id, ip)
 	app.update_user_login_attempts(user.id, 0)
+
 	// println('auth_user() cookie: setting token=$token id=$user.id')
 	expire_date := time.now().add_days(200)
 	app.set_cookie(name: 'id', value: user.id.str(), expires: expire_date)
 	app.set_cookie(name: 'token', value: token, expires: expire_date)
+
 	// app.set_cookie_with_expire_date('id', user.id.str(), expires)
 	// app.set_cookie_with_expire_date('token', token, expires)
 }
@@ -71,13 +76,16 @@ pub fn (mut app App) auth_user(user User, ip string) {
 pub fn (mut app App) is_logged_in() bool {
 	id := app.get_cookie('id') or { return false }
 	token := app.get_cookie('token') or { return false }
+
 	// println('is_logged_in() id:$id token:$token')
 	ip := app.client_ip(id) or {
 		println('no ip')
 		return false
 	}
+
 	// println('ip=$ip')
 	t := app.find_user_token(id.int(), ip)
+
 	// println('t=$t')
 	blocked := app.check_user_blocked(id.int())
 	if blocked {
@@ -179,6 +187,7 @@ pub fn (mut app App) handle_register() vweb.Result {
 	app.auth_user(user, ip)
 	app.security_log(user_id: user.id, kind: .registered)
 	app.settings.only_gh_login = true
+
 	// println('user_agent=$app.req.user_agent')
 	if app.form['no_redirect'] == '1' {
 		return app.text('ok')
@@ -188,11 +197,23 @@ pub fn (mut app App) handle_register() vweb.Result {
 
 fn gen_uuid_v4ish() string {
 	// UUIDv4 format: 4-2-2-2-6 bytes per section
-	a := rand.intn(math.max_i32 / 2).hex()
-	b := rand.intn(math.max_i16).hex()
-	c := rand.intn(math.max_i16).hex()
-	d := rand.intn(math.max_i16).hex()
-	e := rand.intn(math.max_i32 / 2).hex()
-	f := rand.intn(math.max_i16).hex()
+	num_a := rand.intn(math.max_i32 / 2) or { 0 }
+	a := num_a.hex()
+
+	num_b := rand.intn(math.max_i16) or { 0 }
+	b := num_b.hex()
+
+	num_c := rand.intn(math.max_i16) or { 0 }
+	c := num_c.hex()
+
+	num_d := rand.intn(math.max_i16) or { 0 }
+	d := num_d.hex()
+
+	num_e := rand.intn(math.max_i32 / 2) or { 0 }
+	e := num_e.hex()
+
+	num_f := rand.intn(math.max_i16) or { 0 }
+	f := num_f.hex()
+
 	return '${a:08}-${b:04}-${c:04}-${d:04}-${e:08}${f:04}'.replace(' ', '0')
 }
