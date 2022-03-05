@@ -103,7 +103,7 @@ pub fn (mut app App) add_user(username string, password string, emails []string,
 		u.emails = app.find_user_emails(u.id)
 	} else {
 		// Update existing user
-		user_name := user.username
+		// user_name := user.username
 		if !github {
 			/*
 			sql app.db {
