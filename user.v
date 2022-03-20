@@ -148,6 +148,12 @@ pub fn (mut app App) update_user_avatar(data string, id int) {
 }
 
 pub fn (mut app App) create_empty_user(username string, email string) int {
+	us := app.find_user_by_username(username) or { User{} }
+
+	if us.username != '' {
+		return us.id
+	}
+
 	mut user := User{
 		username: username
 		is_registered: false
@@ -192,8 +198,10 @@ pub fn (mut app App) insert_sshkey(sshkey SshKey) {
 
 pub fn (mut app App) insert_contributor(contributor Contributor) {
 	// app.info('Inserting contributor: $contributor.user')
-	sql app.db {
-		insert contributor into Contributor
+	if !app.contains_contributor(contributor) {
+		sql app.db {
+			insert contributor into Contributor
+		}
 	}
 }
 
@@ -324,6 +332,13 @@ pub fn (mut app App) nr_repo_contributor(id int) int {
 	return sql app.db {
 		select count from Contributor where repo == id
 	}
+}
+
+pub fn (mut app App) contains_contributor(contributor Contributor) bool {
+	con := sql app.db {
+		select from Contributor where repo == contributor.repo && user == contributor.user
+	}
+	return con.len > 0
 }
 
 pub fn (mut app App) inc_user_post(mut user User) {
