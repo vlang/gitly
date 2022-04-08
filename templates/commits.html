@@ -1,12 +1,12 @@
 @include 'header.html'
 
-@for day, commits in d_commits
+@for day, commits2 in d_commits
 	.commit-day {
 		.commit-day-title {
 			Commits @msg @day
 		}
 		.clog-block {
-			@for commit in commits
+			@for commit in commits2
 				.clog {
 					.clog-msg {
 						<a href='/@app.repo.user_name/@app.repo.name/commit/@commit.hash'>@commit.message</a>
