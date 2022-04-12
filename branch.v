@@ -25,7 +25,7 @@ fn (mut app App) fetch_branches(r Repo) {
 			branch.repo_id = r.id
 			branch.name = temp_branch.after('origin/')
 			hash_data := os.read_lines('$r.git_dir/.git/refs/heads/$branch.name') or {
-				app.info(err.msg)
+				app.info(err.msg())
 				return
 			}
 			branch.hash = hash_data[0].substr(0, 7)
