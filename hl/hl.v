@@ -17,7 +17,7 @@ pub fn highlight_text(st string, ext string, commit bool) (string, int, int) {
 	}
 	lang := extension_to_lang(ext) or { Lang{} }
 	text := '$st '
-	mut res := []byte{cap: text.len}
+	mut res := []u8{cap: text.len}
 	mut lines := 0
 	mut sloc := 0
 	mut ss := byte(` `)
@@ -101,7 +101,7 @@ pub fn highlight_text(st string, ext string, commit bool) (string, int, int) {
 				c = runes[pos]
 			}
 			delta := pos - word_start
-			mut data := []byte{}
+			mut data := []u8{}
 			for i in 0 .. delta {
 				data << runes[word_start + i]
 			}
@@ -132,8 +132,8 @@ pub fn highlight_text(st string, ext string, commit bool) (string, int, int) {
 	return res.bytestr(), lines, sloc
 }
 
-fn write(c byte) []byte {
-	mut tmp := []byte{}
+fn write(c byte) []u8 {
+	mut tmp := []u8{}
 	if c == '<'.bytes()[0] {
 		tmp << '&lt;'.bytes()
 	} else if c == '>'.bytes()[0] {
@@ -161,7 +161,7 @@ fn is_string_token(c byte, lang Lang) bool {
 	return false
 }
 
-fn is_line_comment(s []byte, pos int, lc string) bool {
+fn is_line_comment(s []u8, pos int, lc string) bool {
 	for i in 0 .. lc.len {
 		if s[pos + i] != lc.bytes()[i] {
 			return false
