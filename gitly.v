@@ -471,6 +471,10 @@ pub fn (mut app App) new_repo() vweb.Result {
 		app.error('A repository with the name "$name" already exists')
 		return app.new()
 	}
+	if name.contains(' ') {
+		app.error('Repo name cannot contain spaces')
+		return app.new()
+	}
 	mut clone_url := app.form['clone_url']
 	if !clone_url.starts_with('https://') {
 		clone_url = 'https://' + clone_url
