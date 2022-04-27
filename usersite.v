@@ -103,7 +103,7 @@ pub fn (mut app App) user_settings(user string) vweb.Result {
 ['/:user/settings'; post]
 pub fn (mut app App) update_user_settings(user string) vweb.Result {
 	if !app.logged_in || user != app.user.username {
-		return app.r_home()
+		return app.redirect_to_index()
 	}
 	name := if 'name' in app.form { app.form['name'] } else { '' }
 	if name == '' {

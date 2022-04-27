@@ -66,9 +66,10 @@ fn new_app() &App {
 		}
 		started_at: time.now().unix
 	}
-	app.create_tables()
 
-	///////////////
+	set_rand_crypto_safe_seed()
+
+	app.create_tables()
 
 	if !os.is_dir('logs') {
 		os.mkdir('logs') or { panic('cannot create folder logs') }
@@ -183,9 +184,12 @@ pub fn (mut app App) before_request() {
 	app.add_visit()
 }
 
-// Redirect to the home page
-pub fn (mut app App) r_home() vweb.Result {
+pub fn (mut app App) redirect_to_index() vweb.Result {
 	return app.redirect('/')
+}
+
+pub fn (mut app App) redirect_to_login() vweb.Result {
+	return app.redirect('/login')
 }
 
 // Redirect to the current repo main site
@@ -265,7 +269,7 @@ pub fn (mut app App) repo_delete(user string, repo string) vweb.Result {
 		app.error('Verification failed')
 		return app.repo_settings(user, repo)
 	}
-	return app.r_home()
+	return app.redirect_to_index()
 }
 
 ['/:user/:repo/move_repo'; post]
@@ -293,7 +297,7 @@ pub fn (mut app App) repo_move(user string, repo string) vweb.Result {
 		app.error('Verification failed')
 		return app.repo_settings(user, repo)
 	}
-	return app.r_home()
+	return app.redirect_to_index()
 }
 
 ['/:user/:repo']
@@ -430,7 +434,7 @@ pub fn (mut app App) update(user string, repo string) vweb.Result {
 	/*
 	secret := if 'X-Hub-Signature' in app.req.headers { app.req.headers['X-Hub-Signature'][5..] } else { '' }
 	if secret == '' {
-		return app.r_home()
+		return app.redirect_to_index()
 	}
 	if secret == app.repo.webhook_secret && app.repo.webhook_secret != '' {
 		go app.update_repo_data(&app.repo)
@@ -447,7 +451,7 @@ pub fn (mut app App) update(user string, repo string) vweb.Result {
 ['/new']
 pub fn (mut app App) new() vweb.Result {
 	if !app.logged_in {
-		return app.redirect('/login')
+		return app.redirect_to_login()
 	}
 	return $vweb.html()
 }
@@ -455,7 +459,7 @@ pub fn (mut app App) new() vweb.Result {
 ['/new'; post]
 pub fn (mut app App) new_repo() vweb.Result {
 	if !app.logged_in {
-		return app.redirect('/login')
+		return app.redirect_to_login()
 	}
 	if app.nr_user_repos(app.user.id) >= max_user_repos {
 		app.error('You have reached the limit for the number of repositories')
@@ -799,7 +803,7 @@ pub fn (mut app App) add_issue(user string, repo string) vweb.Result {
 		return app.not_found()
 	}
 	if !app.logged_in || (app.logged_in && app.user.nr_posts >= posts_per_day) {
-		return app.r_home()
+		return app.redirect_to_index()
 	}
 	title := app.form['title'] // TODO use fn args
 	text := app.form['text']
