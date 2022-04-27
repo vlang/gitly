@@ -11,28 +11,18 @@ struct Token {
 	ip      string
 }
 
-fn (mut app App) update_user_token(user_id int, token string, ip string) string {
-	tok := app.find_user_token(user_id, ip)
-	if tok == '' {
-		new_token := Token{
-			user_id: user_id
-			value: token
-			ip: ip
-		}
-		sql app.db {
-			insert new_token into Token
-		}
-		return token
+fn (mut app App) has_user_token(user_id int, value string) bool {
+	tokens := sql app.db {
+		select from Token where user_id == user_id
 	}
-	return tok
-}
 
-fn (mut app App) find_user_token(user_id int, ip string) string {
-	// TODO fix ip check
-	tok := sql app.db {
-		select from Token where user_id == user_id limit 1 //&& ip == ip limit 1
+	for _, token in tokens {
+		if token.value == value {
+			return true
+		}
 	}
-	return tok.value
+
+	return false
 }
 
 fn (mut app App) clear_sessions(user_id int) {
@@ -44,7 +34,15 @@ fn (mut app App) clear_sessions(user_id int) {
 fn (mut app App) add_token(user_id int, ip string) string {
 	mut uuid := rand.uuid_v4()
 
-	token := app.update_user_token(user_id, uuid, ip)
+	new_token := Token{
+		user_id: user_id
+		value: uuid
+		ip: ip
+	}
 
-	return token
+	sql app.db {
+		insert new_token into Token
+	}
+
+	return uuid
 }

@@ -9,11 +9,11 @@ import rand
 pub fn (mut app App) login() vweb.Result {
 	csrf := rand.string(30)
 	app.set_cookie(name: 'csrf', value: csrf)
-	nr_users := app.nr_all_users()
-	println('nr_users=$nr_users')
+
 	if app.is_logged_in() {
 		return app.not_found()
 	}
+
 	return $vweb.html()
 }
 
@@ -21,81 +21,86 @@ pub fn (mut app App) login() vweb.Result {
 pub fn (mut app App) handle_login() vweb.Result {
 	username := app.form['username']
 	password := app.form['password']
+
 	if username == '' || password == '' {
-		return app.redirect('/login')
+		return app.redirect_to_login()
 	}
-	user := app.find_user_by_username(username) or { return app.redirect('/login') }
-	// println('got user')
-	// println(user)
+
+	user := app.find_user_by_username(username) or { return app.redirect_to_login() }
+
 	if user.is_blocked {
-		return app.redirect('/login')
+		return app.redirect_to_login()
 	}
-	if !check_password(password, username, user.password) {
-		// println('bad password')
+
+	if !compare_password_with_hash(password, user.salt, user.password) {
 		app.inc_user_login_attempts(user.id)
 		if user.login_attempts == max_login_attempts {
 			app.warn('User $user.username got blocked')
 			app.block_user(user.id)
 		}
 		app.error('Wrong username/password')
+
 		return app.login()
-		// return app.redirect('/login')
 	}
+
 	if !user.is_registered {
-		return app.redirect('/login')
+		return app.redirect_to_login()
 	}
-	ip := app.client_ip(user.id.str()) or { return app.r_home() }
-	app.auth_user(user, ip)
+
+	client_ip := app.ip()
+
+	app.auth_user(user, client_ip)
 	app.security_log(user_id: user.id, kind: .logged_in)
-	return app.r_home()
+
+	return app.redirect_to_index()
 }
 
 pub fn (mut app App) auth_user(user User, ip string) {
-	_ := time.utc().add_days(expire_length)
-	// token := if user.token == '' { app.add_token(user.id) } else { user.token }
 	token := app.add_token(user.id, ip)
+
 	app.update_user_login_attempts(user.id, 0)
-	// println('auth_user() cookie: setting token=$token id=$user.id')
+
 	expire_date := time.now().add_days(200)
+
 	app.set_cookie(name: 'id', value: user.id.str(), expires: expire_date)
 	app.set_cookie(name: 'token', value: token, expires: expire_date)
-	// app.set_cookie_with_expire_date('id', user.id.str(), expires)
-	// app.set_cookie_with_expire_date('token', token, expires)
 }
 
 pub fn (mut app App) is_logged_in() bool {
 	id := app.get_cookie('id') or { return false }
 	token := app.get_cookie('token') or { return false }
-	// println('is_logged_in() id:$id token:$token')
-	ip := app.client_ip(id) or {
-		println('no ip')
-		return false
-	}
-	// println('ip=$ip')
-	t := app.find_user_token(id.int(), ip)
-	// println('t=$t')
+
+	has_user_token := app.has_user_token(id.int(), token)
+
 	blocked := app.check_user_blocked(id.int())
 	if blocked {
 		app.logout()
 		return false
 	}
-	return id != '' && token != '' && t != '' && t == token
+
+	return has_user_token
 }
 
 pub fn (mut app App) logout() vweb.Result {
 	app.set_cookie(name: 'id', value: '')
 	app.set_cookie(name: 'token', value: '')
-	return app.r_home()
+
+	return app.redirect_to_index()
 }
 
 pub fn (mut app App) get_user_from_cookies() ?User {
 	id := app.get_cookie('id') or { return none }
 	token := app.get_cookie('token') or { return none }
 	mut user := app.find_user_by_id(id.int()) or { return none }
-	ip := app.client_ip(id) or { return none }
-	if token != app.find_user_token(user.id, ip) {
+
+	app.has_user_token(user.id, token)
+
+	has_user_token := app.has_user_token(user.id, token)
+
+	if !has_user_token {
 		return none
 	}
+
 	user.b_avatar = user.avatar != ''
 	if !user.b_avatar {
 		user.avatar = user.username[..1]
@@ -142,13 +147,16 @@ pub fn (mut app App) handle_register() vweb.Result {
 		app.error('Password cannot be empty')
 		return app.register()
 	}
-	password := make_password(app.form['password'], username)
+
+	salt := generate_salt()
+	password := hash_password_with_salt(app.form['password'], salt)
+
 	email := app.form['email']
 	if username == '' || email == '' {
 		app.error('Username or Email cannot be emtpy')
 		return app.register()
 	}
-	if !app.add_user(username, password, [email], false, no_users) {
+	if !app.add_user(username, password, salt, [email], false, no_users) {
 		app.error('Failed to register')
 		return app.register()
 	}
@@ -160,14 +168,12 @@ pub fn (mut app App) handle_register() vweb.Result {
 		app.user_set_admin(user.id)
 	}
 	println('register ok, logging new user in')
-	ip := app.client_ip(user.id.str()) or {
-		println('failed to get ip')
-		app.error('Failed to register')
-		return app.register()
-	}
-	app.auth_user(user, ip)
+
+	client_ip := app.ip()
+
+	app.auth_user(user, client_ip)
 	app.security_log(user_id: user.id, kind: .registered)
-	// println('user_agent=$app.req.user_agent')
+
 	if app.form['no_redirect'] == '1' {
 		return app.text('ok')
 	}
