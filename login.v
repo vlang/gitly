@@ -20,10 +20,6 @@ pub fn (mut app App) login() vweb.Result {
 
 ['/login'; post]
 pub fn (mut app App) handle_login() vweb.Result {
-	nr_users := app.nr_all_users()
-	if app.settings.only_gh_login && nr_users != 1 {
-		return app.r_home()
-	}
 	username := app.form['username']
 	password := app.form['password']
 	if username == '' || password == '' {
@@ -111,10 +107,6 @@ pub fn (mut app App) get_user_from_cookies() ?User {
 ['/register']
 pub fn (mut app App) register() vweb.Result {
 	no_users := app.nr_all_users() == 0
-	if app.settings.only_gh_login && !no_users {
-		println('only gh')
-		return app.r_home()
-	}
 	app.path = ''
 	return $vweb.html()
 }
@@ -122,9 +114,7 @@ pub fn (mut app App) register() vweb.Result {
 ['/register_post'; post]
 pub fn (mut app App) handle_register() vweb.Result {
 	no_users := app.nr_all_users() == 0
-	if app.settings.only_gh_login && !no_users {
-		return app.r_home()
-	}
+
 	username := app.form['username']
 	if username in ['login', 'register', 'new', 'new_post', 'oauth'] {
 		app.error('Username `$username` is not available')
@@ -178,7 +168,6 @@ pub fn (mut app App) handle_register() vweb.Result {
 	}
 	app.auth_user(user, ip)
 	app.security_log(user_id: user.id, kind: .registered)
-	app.settings.only_gh_login = true
 	// println('user_agent=$app.req.user_agent')
 	if app.form['no_redirect'] == '1' {
 		return app.text('ok')

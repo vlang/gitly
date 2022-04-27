@@ -115,7 +115,6 @@ fn new_app() &App {
 	}
 	// Create the first admin user if the db is empty
 	app.find_user_by_id(1) or {
-		app.settings.only_gh_login = false // allow admin to register
 		/*
 		println('Creating admin...')
 		user := User{

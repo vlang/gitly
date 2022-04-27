@@ -1,8 +1,7 @@
 @include 'header.html'
 
-@if !app.settings.only_gh_login || nr_users == 1
 <h3>
-Sign in
+Login
 </h3>
 
 .form-error {
@@ -14,7 +13,6 @@ Sign in
 	<input type='password' name='password' placeholder='Password' required>
 	<input type='submit' value='Login'>
 </form>
-@end
 
 <a href='https://github.com/login/oauth/authorize?response_type=code&state=@csrf&client_id=@app.settings.oauth_client_id'>Login via GitHub</a>
 
