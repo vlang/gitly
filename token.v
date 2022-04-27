@@ -2,6 +2,8 @@
 // Use of this source code is governed by a GPL license that can be found in the LICENSE file.
 module main
 
+import rand
+
 struct Token {
 	id      int    [primary; sql: serial]
 	user_id int
@@ -40,7 +42,9 @@ fn (mut app App) clear_sessions(user_id int) {
 }
 
 fn (mut app App) add_token(user_id int, ip string) string {
-	mut token := gen_uuid_v4ish()
-	token = app.update_user_token(user_id, token, ip)
+	mut uuid := rand.uuid_v4()
+
+	token := app.update_user_token(user_id, uuid, ip)
+
 	return token
 }
