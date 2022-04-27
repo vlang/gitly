@@ -91,15 +91,14 @@ pub fn (mut app App) logout() vweb.Result {
 pub fn (mut app App) get_user_from_cookies() ?User {
 	id := app.get_cookie('id') or { return none }
 	token := app.get_cookie('token') or { return none }
-	mut user := app.find_user_by_id(id.int()) or { return none }
 
-	app.has_user_token(user.id, token)
-
-	has_user_token := app.has_user_token(user.id, token)
+	has_user_token := app.has_user_token(id.int(), token)
 
 	if !has_user_token {
 		return none
 	}
+
+	mut user := app.find_user_by_id(id.int()) or { return none }
 
 	user.b_avatar = user.avatar != ''
 	if !user.b_avatar {
