@@ -28,13 +28,14 @@ mut:
 }
 
 fn (mut app App) security_log(log SecurityLog) {
-	log2 := SecurityLog{
+	new_log := SecurityLog{
 		...log
 		kind_id: int(log.kind)
 		ip: app.ip()
 	}
+
 	sql app.db {
-		insert log2 into SecurityLog
+		insert new_log into SecurityLog
 	}
 }
 
@@ -42,14 +43,17 @@ fn (app &App) find_security_logs(user_id int) []SecurityLog {
 	mut logs := sql app.db {
 		select from SecurityLog where user_id == user_id order by id desc
 	}
+
 	for i, log in logs {
 		logs[i].kind = SecurityLogKind(log.kind_id)
 	}
+
 	return logs
 }
 
 ['/settings/security']
 fn (mut app App) security() vweb.Result {
 	logs := app.find_security_logs(app.user.id)
+
 	return $vweb.html()
 }

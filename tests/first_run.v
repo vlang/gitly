@@ -21,7 +21,7 @@ fn main() {
 		assert x.text.contains("<input type='submit' value='Register'>")
 		// assert x.text.contains('Gitly is an upcoming open-source development platform that is going to have')
 		// Make sure no one's logged in
-		assert x.text.contains("<a href='/login' class='login-button'>Sign in</a>")
+		assert x.text.contains("<a href='/login' class='login-button'>Log in</a>")
 	} else {
 		println('failed to http.get')
 		println(err)

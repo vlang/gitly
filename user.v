@@ -3,7 +3,6 @@
 module main
 
 import crypto.sha256
-import rand
 import os
 import time
 
@@ -13,6 +12,7 @@ struct User {
 	username        string [unique]
 	github_username string
 	password        string
+	salt            string
 	is_github       bool
 	is_registered   bool
 	is_blocked      bool
@@ -56,29 +56,33 @@ struct OAuth_Request {
 	code          string
 }
 
-fn make_password(password string, username string) string {
-	mut seed := [u32(username[0]), u32(username[1])]
-	rand.seed(seed)
-	salt := rand.i64().str()
-	pw := '$password$salt'
-	return sha256.sum(pw.bytes()).hex().str()
+fn hash_password_with_salt(password string, salt string) string {
+	set_rand_crypto_safe_seed()
+
+	salted_password := '$password$salt'
+
+	return sha256.sum(salted_password.bytes()).hex().str()
 }
 
-fn check_password(password string, username string, hashed string) bool {
-	return make_password(password, username) == hashed
+fn compare_password_with_hash(password string, salt string, hashed string) bool {
+	return hash_password_with_salt(password, salt) == hashed
 }
 
-pub fn (mut app App) add_user(username string, password string, emails []string, github bool, is_admin bool) bool {
+pub fn (mut app App) add_user(username string, password string, salt string, emails []string, github bool, is_admin bool) bool {
 	mut user := app.find_user_by_username(username) or { User{} }
+
 	if user.id != 0 && user.is_registered {
 		app.info('User $username already exists')
 		return false
 	}
+
 	user = app.find_user_by_email(emails[0]) or { User{} }
+
 	if user.id == 0 {
 		user = User{
 			username: username
 			password: password
+			salt: salt
 			is_registered: true
 			is_github: github
 			github_username: username
@@ -129,6 +133,7 @@ pub fn (mut app App) add_user(username string, password string, emails []string,
 		*/
 	}
 	app.create_user_dir(username)
+
 	return true
 }
 
@@ -385,11 +390,6 @@ pub fn (mut app App) unblock_user(user_id int) {
 pub fn (mut app App) check_user_blocked(user_id int) bool {
 	user := app.find_user_by_id(user_id) or { return false }
 	return user.is_blocked
-}
-
-pub fn (mut app App) client_ip(username string) ?string {
-	ip := app.conn.peer_ip() or { return none }
-	return make_password(ip, '${username}token')
 }
 
 fn (mut app App) change_username(user_id int, username string) {

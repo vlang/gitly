@@ -19,6 +19,7 @@ fn (mut app App) add_visit() {
 		referer: app.req.referer()
 		created_at: int(time.now().unix)
 	}
+
 	sql app.db {
 		insert visit into Visit
 	}
