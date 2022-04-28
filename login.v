@@ -132,8 +132,8 @@ pub fn (mut app App) handle_register() vweb.Result {
 		app.error('Username cannot begin or end with a hyphen')
 		return app.register()
 	}
-	for char in user_chars {
-		if !char.is_letter() && !char.is_digit() && char != `-` {
+	for ch in user_chars {
+		if !ch.is_letter() && !ch.is_digit() && ch != `-` {
 			app.error('Username cannot contain special characters')
 			return app.register()
 		}
