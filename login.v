@@ -62,48 +62,44 @@ pub fn (mut app App) auth_user(user User, ip string) {
 
 	expire_date := time.now().add_days(200)
 
-	app.set_cookie(name: 'id', value: user.id.str(), expires: expire_date)
 	app.set_cookie(name: 'token', value: token, expires: expire_date)
 }
 
 pub fn (mut app App) is_logged_in() bool {
-	id := app.get_cookie('id') or { return false }
-	token := app.get_cookie('token') or { return false }
+	token_cookie := app.get_cookie('token') or { return false }
 
-	has_user_token := app.has_user_token(id.int(), token)
+	token := app.get_token(token_cookie) or { return false }
 
-	blocked := app.check_user_blocked(id.int())
-	if blocked {
+	is_user_blocked := app.check_user_blocked(token.user_id)
+
+	if is_user_blocked {
 		app.logout()
+
 		return false
 	}
 
-	return has_user_token
+	return true
 }
 
 pub fn (mut app App) logout() vweb.Result {
-	app.set_cookie(name: 'id', value: '')
 	app.set_cookie(name: 'token', value: '')
 
 	return app.redirect_to_index()
 }
 
 pub fn (mut app App) get_user_from_cookies() ?User {
-	id := app.get_cookie('id') or { return none }
-	token := app.get_cookie('token') or { return none }
+	token_cookie := app.get_cookie('token') or { return none }
 
-	has_user_token := app.has_user_token(id.int(), token)
+	token := app.get_token(token_cookie) or { return none }
 
-	if !has_user_token {
-		return none
-	}
-
-	mut user := app.find_user_by_id(id.int()) or { return none }
+	mut user := app.find_user_by_id(token.user_id) or { return none }
 
 	user.b_avatar = user.avatar != ''
+
 	if !user.b_avatar {
 		user.avatar = user.username[..1]
 	}
+
 	return user
 }
 

@@ -35,20 +35,15 @@ fn main() {
 	}
 	// check all cookies that must be present
 	assert x.header.contains(.set_cookie)
-	mut has_id := false
 	mut has_token := false
 	mut token := ''
 	for val in x.header.values(.set_cookie) {
-		if val.contains('id=1') {
-			has_id = true
-		}
 		if val.contains('token=') && val.contains('-') {
 			has_token = true
 			token = val.find_between('token=', ';')
 			println('token=$token')
 		}
 	}
-	assert has_id
 	assert has_token
 	println(x.header.values(.set_cookie))
 	// assert x.header
