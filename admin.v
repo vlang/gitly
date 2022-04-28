@@ -83,7 +83,7 @@ pub fn (mut app App) admin_edituser(user string) vweb.Result {
 	}
 
 	if clear_session {
-		app.clear_sessions(user.int())
+		app.delete_tokens(user.int())
 	}
 
 	return app.redirect('/admin')
