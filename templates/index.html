@@ -1,10 +1,26 @@
 @include 'header.html'
 
 <style>
+body {
+ min-width: 300px;
+}
+
 .block {
 	margin: auto;
 	max-width: 700px;
-	padding-top: 25px;
+	padding: 20px 10px 0 10px;
+}
+
+.list {
+	margin-left: 20px;
+}
+
+.gitly-screenshot {
+	width: 100%;
+}
+
+.table-features {
+	width: 100%;
 }
 
 table, td {
@@ -21,7 +37,7 @@ td {
 	<div class="block">
 		<h1>Gitly is an upcoming open-source development platform that is going to have</h1>
 
-		<ul>
+		<ul class="list">
 			<li>Source code hosting</li>
 			<li>Project management</li>
 			<li>CI & CD</li>
@@ -31,7 +47,7 @@ td {
 	<div class="block">
 		<h1>Main features:</h1>
 
-		<ul>
+		<ul class="list">
 			<li>Light and fast</li>
 			<li>Minimal amount of RAM usage (works great on the cheapest $3.5 AWS Lightsail instance)</li>
 			<li>Easy to deploy (a single <1 MB binary that includes compiled templates)</li>
@@ -44,9 +60,9 @@ td {
 	</div>
 
 	<div class="block">
-		<table>
+		<table class="table-features">
 			<tr>
-				<td>
+				<td></td>
 				<td>GitHub</td>
 				<td>GitLab</td>
 				<td>Gitly</td>
@@ -65,72 +81,69 @@ td {
 			</tr>
 			<tr>
 				<td>Minimum RAM</td>
-				<td>32 GB <a target=_blank href='https://docs.github.com/en/enterprise-server/admin/installation/setting-up-a-github-enterprise-server-instance/installing-github-enterprise-server-on-aws#minimum-requirements'>[0]</a>
-				<td>4 GB <a target=_blank href='https://docs.gitlab.com/ee/install/requirements.html#memory'>[1]</a>
+				<td>32 GB <a target="_blank" href="https://docs.github.com/en/enterprise-server/admin/installation/setting-up-a-github-enterprise-server-instance/installing-github-enterprise-server-on-aws#minimum-requirements">[0]</a></td>
+				<td>4 GB <a target="_blank" href="https://docs.gitlab.com/ee/install/requirements.html#memory">[1]</a></td>
 				<td>128 MB</td>
 			</tr>
 			<tr>
-				<td>Cheapest server
-				<td>$160
-				<td>$20
-				<td>$3.50
-				<a target=_blank href='https://aws.amazon.com/lightsail/pricing/'>[2]</a>
+				<td>Cheapest server</td>
+				<td>$160</td>
+				<td>$20</td>
+				<td>$3.50<a target="_blank" href="https://aws.amazon.com/lightsail/pricing/">[2]</a></td>
 			</tr>
 			<tr>
-				<td>Works without JS
-				<td>Partially
-				<td>No
-				<td>Yes
+				<td>Works without JS</td>
+				<td>Partially</td>
+				<td>No</td>
+				<td>Yes</td>
 			</tr>
 			<tr>
-				<td>Detailed language stats
-				<td>No
-				<td>No
-				<td>Yes
+				<td>Detailed language stats</td>
+				<td>No</td>
+				<td>No</td>
+				<td>Yes</td>
 			</tr>
 			<tr>
-				<td>Installation size
-				<td>?
-				<td>3.9 GB
-				<a target=_blank href='https://gist.github.com/medvednikov/a90fba85e5e2703a7a6270f1adc50dad'>[3]</a>
-				<td><1 MB
+				<td>Installation size</td>
+				<td>?</td>
+				<td>3.9 GB				<a target="_blank" href="https://gist.github.com/medvednikov/a90fba85e5e2703a7a6270f1adc50dad">[3]</a>
+				</td>
+				<td><1 MB</td>
 			</tr>
 			<tr>
-				<td>CI features
-				<td>
-				<td>
-				<td>
+				<td>CI features</td>
+				<td></td>
+				<td></td>
+				<td></td>
 			<tr>
-				<td># CPU cores
-				<td>2
-				<td>1
-				<td>4 - 8
+				<td># CPU cores</td>
+				<td>2</td>
+				<td>1</td>
+				<td>4 - 8</td>
 			</tr>
 			<tr>
-				<td>FreeBSD
-				<td>No
-				<td>No
-				<td>Yes
+				<td>FreeBSD</td>
+				<td>No</td>
+				<td>No</td>
+				<td>Yes</td>
 			</tr>
 			<tr>
-				<td>macOS
-				<td>Yes
-				<td>No
-				<td>Yes
+				<td>macOS</td>
+				<td>Yes</td>
+				<td>No</td>
+				<td>Yes</td>
 			</tr>
 			<tr>
-				<td>Built-in dependency cache
-				<td>No
-				<td>No
-				<td>Yes
+				<td>Built-in dependency cache</td>
+				<td>No</td>
+				<td>No</td>
+				<td>Yes</td>
 			</tr>
 			<tr>
-				<td>CI minutes in a basic package
-				<td>3000
-				<a target=_blank href='https://docs.github.com/en/github/setting-up-and-managing-billing-and-payments-on-github/about-billing-for-github-actions'>[4]</a>
-				<td>2000
-				<a target=_blank href='https://about.gitlab.com/pricing/'>[5]</a>
-				<td>43200
+				<td>CI minutes in a basic package</td>
+				<td>3000<a target="_blank" href="https://docs.github.com/en/github/setting-up-and-managing-billing-and-payments-on-github/about-billing-for-github-actions">[4]</a></td>
+				<td>2000<a target="_blank" href="https://about.gitlab.com/pricing/">[5]</a></td>
+				<td>43200</td>
 			</tr>
 		</table>
 	</div>
@@ -138,10 +151,10 @@ td {
 	<div class="block">
 		Check out Gitly in action by browsing the V language repo:
 
-		<a href='/medvednikov/v'>gitly.org/vlang/v</a>
+		<a href="/medvednikov/v">gitly.org/vlang/v</a>
 
-		<a href='/medvednikov/v'>
-			<img width=600 src='https://user-images.githubusercontent.com/687996/85933714-b195fe80-b8da-11ea-9ddd-09cadc2103e4.png'>
+		<a href="/medvednikov/v">
+			<img class="gitly-screenshot" src="https://user-images.githubusercontent.com/687996/85933714-b195fe80-b8da-11ea-9ddd-09cadc2103e4.png">
 		</a>
 	</div>
 </article>
