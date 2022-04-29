@@ -1,4 +1,4 @@
-module hl
+module highlight
 
 fn init_go() Lang {
 	return Lang{

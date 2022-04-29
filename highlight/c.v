@@ -1,4 +1,4 @@
-module hl
+module highlight
 
 fn init_c() Lang {
 	return Lang{

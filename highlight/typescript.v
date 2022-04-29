@@ -1,4 +1,4 @@
-module hl
+module highlight
 
 fn init_ts() Lang {
 	return Lang{

@@ -1,4 +1,4 @@
-module hl
+module highlight
 
 fn init_cpp() Lang {
 	return Lang{

@@ -1,6 +1,6 @@
 // Copyright (c) 2019-2021 Alexander Medvednikov. All rights reserved.
 // Use of this source code is governed by a GPL license that can be found in the LICENSE file.
-module hl
+module highlight
 
 // import markdown
 const (
@@ -66,7 +66,7 @@ pub fn highlight_text(st string, ext string, commit bool) (string, int, int) {
 			continue
 		}
 		if c == `\t` {
-			res << hl.tab.bytes()
+			res << highlight.tab.bytes()
 			continue
 		}
 		if in_comment {

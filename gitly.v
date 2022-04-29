@@ -6,7 +6,7 @@ import vweb
 import time
 import os
 import log
-import hl
+import highlight
 import crypto.sha1
 import sqlite
 import math
@@ -603,7 +603,7 @@ pub fn (mut app App) commit(user string, repo string, hash string) vweb.Result {
 	for change in changes {
 		all_adds += change.additions
 		all_dels += change.deletions
-		src, _, _ := hl.highlight_text(change.message, change.file, true)
+		src, _, _ := highlight.highlight_text(change.message, change.file, true)
 		sources[change.file] = vweb.RawHtml(src)
 	}
 	return $vweb.html()
@@ -768,7 +768,7 @@ pub fn (mut app App) blob(user string, repo string, branch string, path string) 
 	// mut source := (plain_text.str())
 	if os.file_size(blob_path) < 1000000 {
 		if !raw {
-			src, _, _ := hl.highlight_text(plain_text, blob_path, false)
+			src, _, _ := highlight.highlight_text(plain_text, blob_path, false)
 			source = vweb.RawHtml(src)
 		}
 	}

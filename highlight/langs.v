@@ -1,6 +1,6 @@
 // Copyright (c) 2019-2021 Alexander Medvednikov. All rights reserved.
 // Use of this source code is governed by a GPL license that can be found in the LICENSE file.
-module hl
+module highlight
 
 const (
 	lang_path = 'langs'
@@ -28,7 +28,7 @@ fn is_source(ext string) bool {
 
 pub fn extension_to_lang(ext string) ?Lang {
 	ending := ext.split('.').last()
-	for lang in hl.langs {
+	for lang in highlight.langs {
 		if ending in lang.lang_extensions {
 			return lang
 		}

@@ -4,7 +4,7 @@ module main
 
 import time
 import os
-import hl
+import highlight
 import sync
 import vweb
 
@@ -176,9 +176,9 @@ fn (r &Repo) analyse_lang(mut wg sync.WaitGroup, app &App) {
 	files := r.get_all_files(r.git_dir)
 	mut all_size := 0
 	mut lang_stats := map[string]int{}
-	mut langs := map[string]hl.Lang{}
+	mut langs := map[string]highlight.Lang{}
 	for file in files {
-		lang := hl.extension_to_lang(file.split('.').last()) or { continue }
+		lang := highlight.extension_to_lang(file.split('.').last()) or { continue }
 		f_text := os.read_file(file) or { '' }
 		lines := f_text.split_into_lines()
 		size := calc_lines_of_code(lines, lang)
@@ -227,7 +227,7 @@ fn (r &Repo) analyse_lang(mut wg sync.WaitGroup, app &App) {
 	wg.done()
 }
 
-fn calc_lines_of_code(lines []string, lang hl.Lang) int {
+fn calc_lines_of_code(lines []string, lang highlight.Lang) int {
 	mut size := 0
 	lcomment := lang.line_comments
 	mut mlcomment_start := ''
