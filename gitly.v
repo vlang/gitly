@@ -26,13 +26,13 @@ const (
 
 struct App {
 	vweb.Context
+	started_at i64 [vweb_global]
 pub mut:
 	db sqlite.DB
 mut:
-	started_at    i64
+	version       string        [vweb_global]
 	path          string // current path being viewed
 	repo          Repo
-	version       string
 	html_path     vweb.RawHtml
 	page_gen_time string
 	is_tree       bool
@@ -42,7 +42,7 @@ mut:
 	cli_log       log.Log
 	logged_in     bool
 	user          User
-	path_splt     []string
+	path_split    []string
 	branch        string
 	// form_error string
 }
@@ -87,7 +87,9 @@ fn new_app() &App {
 	if version != app.version {
 		os.write_file('static/assets/version', app.version) or { panic(err) }
 	}
+
 	app.version = version
+
 	app.serve_static('/gitly.css', 'static/css/gitly.css') //, 'text/css')
 	app.serve_static('/jquery.js', 'static/js/jquery.js') //, 'text/javascript')
 	app.serve_static('/favicon.svg', 'static/assets/favicon.svg') //, 'image/svg+xml')
@@ -339,7 +341,7 @@ pub fn (mut app App) tree(user string, repo string, branch string, path string) 
 	if app.path.contains('/favicon.svg') {
 		return vweb.not_found()
 	}
-	app.path_splt = '$repo/$path'.split('/')
+	app.path_split = '$repo/$path'.split('/')
 	app.is_tree = true
 	app.show_menu = true
 	app.branch = branch
@@ -421,6 +423,7 @@ pub fn (mut app App) index() vweb.Result {
 	if app.nr_all_users() == 0 {
 		return app.redirect('/register')
 	}
+
 	return $vweb.html()
 }
 
@@ -742,8 +745,8 @@ pub fn (mut app App) blob(user string, repo string, branch string, path string) 
 		return app.not_found()
 	}
 	app.path = path
-	app.path_splt = '$repo/$path'.split('/')
-	app.path_splt = app.path_splt[..app.path_splt.len - 1]
+	app.path_split = '$repo/$path'.split('/')
+	app.path_split = app.path_split[..app.path_split.len - 1]
 	if !app.contains_repo_branch(branch, app.repo.id) && branch != app.repo.primary_branch {
 		app.info('Branch $branch not found')
 		return app.not_found()
@@ -849,20 +852,24 @@ fn (mut app App) rename_user_dir(old_name string, new_name string) {
 }
 
 pub fn (mut app App) running_since() string {
-	dur := time.now().unix - app.started_at
-	seconds := dur % 60
-	minutes := int(math.floor(dur / 60)) % 60
-	hours := int(math.floor(minutes / 60)) % 24
-	days := int(math.floor(hours / 24))
+	duration := time.now().unix - app.started_at
+
+	seconds_in_hour := 60 * 60
+
+	days := int(math.floor(duration / (seconds_in_hour * 24)))
+	hours := int(math.floor(duration / seconds_in_hour % 24))
+	minutes := int(math.floor(duration / 60)) % 60
+	seconds := duration % 60
+
 	return '$days days $hours hours $minutes minutes and $seconds seconds'
 }
 
 pub fn (mut app App) make_path(i int) string {
 	if i == 0 {
-		return app.path_splt[..i + 1].join('/')
+		return app.path_split[..i + 1].join('/')
 	}
-	mut s := app.path_splt[0]
+	mut s := app.path_split[0]
 	s += '/tree/$app.branch/'
-	s += app.path_splt[1..i + 1].join('/')
+	s += app.path_split[1..i + 1].join('/')
 	return s
 }
