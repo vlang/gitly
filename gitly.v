@@ -90,10 +90,8 @@ fn new_app() &App {
 
 	app.version = version
 
-	app.serve_static('/gitly.css', 'static/css/gitly.css') //, 'text/css')
-	app.serve_static('/jquery.js', 'static/js/jquery.js') //, 'text/javascript')
-	app.serve_static('/favicon.svg', 'static/assets/favicon.svg') //, 'image/svg+xml')
-	app.serve_static('/robots.txt', 'static/robots.txt') //, 'image/svg+xml')
+	app.handle_static('static', true)
+
 	/*
 	app.db = sqlite.connect('gitly.sqlite') or {
 		println('failed to connect to db')

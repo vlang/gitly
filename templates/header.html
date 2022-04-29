@@ -5,7 +5,7 @@
 	<title>Gitly</title>
 	<meta name="description" content="Open-source development platform written in V">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<link rel='icon' type='image/svg+xml' href='/favicon.svg' sizes='any'>
+	<link rel='icon' type='image/svg+xml' href='/assets/favicon.svg' sizes='any'>
 	<script>
 		var repoName = '@app.repo.name'; //V_TEMPLATE
 		var branch = '@app.repo.primary_branch' //V_TEMPLATE
@@ -19,11 +19,11 @@
 	</script>
 
 	@if app.is_tree
-	@js '/jquery.js'
+		@js '/js/jquery.js'
 	@end
 
 	@css '//fonts.googleapis.com/css?family=Roboto:400,300,100,200,500,700'
-	@css '/gitly.css?3'
+	@css '/css/gitly.css'
 </head>
 <body>
 
