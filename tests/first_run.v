@@ -15,19 +15,19 @@ fn main() {
 
 	time.sleep(1 * time.second)
 
-	if index_page_result := http.get('http://127.0.0.1:8080') {
-		assert index_page_result.text.contains('<html>')
-		assert index_page_result.text.contains('</html>')
-		assert index_page_result.text.contains("Welcome to Gitly! Looks like you've just set it up, you'll need to register")
-		assert index_page_result.text.contains("<input type='submit' value='Register'>")
-
-		// Make sure no one's logged in
-		assert index_page_result.text.contains("<a href='/login' class='login-button'>Log in</a>")
-	} else {
+	index_page_result := http.get('http://127.0.0.1:8080') or {
 		println(err)
 
 		exit(1)
 	}
+
+	assert index_page_result.text.contains('<html>')
+	assert index_page_result.text.contains('</html>')
+	assert index_page_result.text.contains("Welcome to Gitly! Looks like you've just set it up, you'll need to register")
+	assert index_page_result.text.contains("<input type='submit' value='Register'>")
+
+	// Make sure no one's logged in
+	assert index_page_result.text.contains("<a href='/login' class='login-button'>Log in</a>")
 
 	// Register the first user (admin)
 	mut register_result := http.post('http://127.0.0.1:8080/register_post', 'username=bob&password=1234zxcv&email=bob@example.com&no_redirect=1') or {
@@ -66,6 +66,7 @@ fn main() {
 		url: 'http://127.0.0.1:8080/bob'
 	) or {
 		println(err)
+
 		exit(1)
 	}
 
