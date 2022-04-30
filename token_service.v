@@ -4,13 +4,6 @@ module main
 
 import rand
 
-struct Token {
-	id      int    [primary; sql: serial]
-	user_id int
-	value   string
-	ip      string
-}
-
 fn (mut app App) add_token(user_id int, ip string) string {
 	mut uuid := rand.uuid_v4()
 

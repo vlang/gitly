@@ -2,71 +2,8 @@
 // Use of this source code is governed by a GPL license that can be found in the LICENSE file.
 module main
 
-import crypto.sha256
 import os
 import time
-
-struct User {
-	id              int    [primary; sql: serial]
-	full_name       string
-	username        string [unique]
-	github_username string
-	password        string
-	salt            string
-	is_github       bool
-	is_registered   bool
-	is_blocked      bool
-	is_admin        bool
-	oauth_state     string [skip]
-mut:
-	// for github oauth XSRF protection
-	nr_namechanges       int
-	last_namechange_time int
-	nr_posts             int
-	last_post_time       int
-	avatar               string
-	b_avatar             bool    [skip]
-	emails               []Email [skip]
-	login_attempts       int
-}
-
-struct SshKey {
-	id         int    [primary; sql: serial]
-	user       int
-	title      string
-	sshkey     string
-	is_deleted bool
-}
-
-struct Email {
-	id    int    [primary; sql: serial]
-	user  int
-	email string [unique]
-}
-
-struct Contributor {
-	id   int [primary; sql: serial]
-	user int [unique: 'contributor']
-	repo int [unique: 'contributor']
-}
-
-struct OAuth_Request {
-	client_id     string
-	client_secret string
-	code          string
-}
-
-fn hash_password_with_salt(password string, salt string) string {
-	set_rand_crypto_safe_seed()
-
-	salted_password := '$password$salt'
-
-	return sha256.sum(salted_password.bytes()).hex().str()
-}
-
-fn compare_password_with_hash(password string, salt string, hashed string) bool {
-	return hash_password_with_salt(password, salt) == hashed
-}
 
 pub fn (mut app App) add_user(username string, password string, salt string, emails []string, github bool, is_admin bool) bool {
 	mut user := app.find_user_by_username(username) or { User{} }
@@ -216,18 +153,6 @@ pub fn (mut app App) remove_ssh_key(title string, user_id int) {
 	}
 }
 
-pub fn (mut app App) user_set_admin(id int) {
-	sql app.db {
-		update User set is_admin = true where id == id
-	}
-}
-
-pub fn (mut app App) user_unset_admin(id int) {
-	sql app.db {
-		update User set is_admin = false where id == id
-	}
-}
-
 pub fn (mut app App) find_user_sshkeys(id int) []SshKey {
 	return sql app.db {
 		select from SshKey where user == id
@@ -313,21 +238,24 @@ pub fn (mut app App) find_repo_registered_contributor(id int) []User {
 	return users
 }
 
-pub fn (mut app App) find_registered_user() []User {
+pub fn (mut app App) get_all_registered_users() []User {
 	mut users := sql app.db {
 		select from User where is_registered == true
 	}
+
 	for i, user in users {
 		users[i].b_avatar = user.avatar != ''
+
 		if !users[i].b_avatar {
 			users[i].avatar = user.username.bytes()[0].str()
 		}
 		users[i].emails = app.find_user_emails(user.id)
 	}
+
 	return users
 }
 
-pub fn (mut app App) nr_all_users() int {
+pub fn (mut app App) get_users_count() int {
 	return sql app.db {
 		select count from User
 	}
@@ -372,18 +300,6 @@ pub fn (mut app App) inc_user_login_attempts(user_id int) {
 pub fn (mut app App) update_user_login_attempts(user_id int, attempts int) {
 	sql app.db {
 		update User set login_attempts = attempts where id == user_id
-	}
-}
-
-pub fn (mut app App) block_user(user_id int) {
-	sql app.db {
-		update User set is_blocked = true where id == user_id
-	}
-}
-
-pub fn (mut app App) unblock_user(user_id int) {
-	sql app.db {
-		update User set is_blocked = false where id == user_id
 	}
 }
 

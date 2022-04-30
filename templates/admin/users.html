@@ -13,9 +13,9 @@ function onClick(id) {
 <br>
 
 .clog-block {
-	@for user in userlist
+	@for user in users
 		.clog {
-			<form action='/admin/edituser/@user.id' method='post' class='data'>
+			<form action='/admin/users/@user.id' method='post' class='data'>
 				.data-user {
 					.avatar {
 						@if user.b_avatar

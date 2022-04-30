@@ -105,14 +105,16 @@ pub fn (mut app App) get_user_from_cookies() ?User {
 
 ['/register']
 pub fn (mut app App) register() vweb.Result {
-	no_users := app.nr_all_users() == 0
-	app.path = ''
+	no_users := app.get_users_count() == 0
+
+	app.current_path = ''
+
 	return $vweb.html()
 }
 
 ['/register_post'; post]
 pub fn (mut app App) handle_register() vweb.Result {
-	no_users := app.nr_all_users() == 0
+	no_users := app.get_users_count() == 0
 
 	username := app.form['username']
 	if username in ['login', 'register', 'new', 'new_post', 'oauth'] {
@@ -159,10 +161,10 @@ pub fn (mut app App) handle_register() vweb.Result {
 		app.error('User already exists')
 		return app.register()
 	}
+
 	if no_users {
-		app.user_set_admin(user.id)
+		app.add_admin(user.id)
 	}
-	println('register ok, logging new user in')
 
 	client_ip := app.ip()
 

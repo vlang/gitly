@@ -2,10 +2,6 @@
 // Use of this source code is governed by a GPL license that can be found in the LICENSE file.
 module main
 
-fn (mut app App) create_table(name string, fields []string) {
-	app.db.exec('create table if not exists `$name` (' + fields.join(',') + ')')
-}
-
 fn (mut app App) create_tables() {
 	sql app.db {
 		create table Repo
@@ -139,7 +135,7 @@ fn (mut app App) exists_user_repo(user string, name string) bool {
 		return false
 	}
 	app.repo.lang_stats = app.find_repo_lang_stats(app.repo.id)
-	app.html_path = app.repo.html_path_to(app.path, app.repo.primary_branch)
+	app.html_path = app.repo.html_path_to(app.current_path, app.repo.primary_branch)
 	return true
 }
 

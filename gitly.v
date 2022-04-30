@@ -31,7 +31,7 @@ pub mut:
 	db sqlite.DB
 mut:
 	version       string        [vweb_global]
-	path          string // current path being viewed
+	current_path  string
 	repo          Repo
 	html_path     vweb.RawHtml
 	page_gen_time string
@@ -74,16 +74,20 @@ fn new_app() &App {
 	if !os.is_dir('logs') {
 		os.mkdir('logs') or { panic('cannot create folder logs') }
 	}
+
 	app.file_log.set_level(.info)
 	app.cli_log.set_level(.info)
+
 	now := time.now()
 	app.file_log.set_full_logpath('./logs/log_${now.ymmdd()}.log')
-	// app.info('init_once()')
+
 	mut version := os.read_file('static/assets/version') or { 'unknown' }
-	result := os.execute('git rev-parse --short HEAD')
-	if result.exit_code == 0 && !result.output.contains('fatal') {
-		version = result.output.trim_space()
+	git_result := os.execute('git rev-parse --short HEAD')
+
+	if git_result.exit_code == 0 && !git_result.output.contains('fatal') {
+		version = git_result.output.trim_space()
 	}
+
 	if version != app.version {
 		os.write_file('static/assets/version', app.version) or { panic(err) }
 	}
@@ -92,76 +96,37 @@ fn new_app() &App {
 
 	app.handle_static('static', true)
 
-	/*
-	app.db = sqlite.connect('gitly.sqlite') or {
-		println('failed to connect to db')
-		panic(err)
-	}
-	app.create_tables()
-	*/
-	/*
-	app.oauth_client_id = os.getenv('GITLY_OAUTH_CLIENT_ID')
-	app.oauth_client_secret = os.getenv('GITLY_OAUTH_SECRET')
-	if app.oauth_client_id == '' {
-		app.get_oauth_tokens_from_db()
-	}
-	*/
 	app.load_settings()
+
 	if !os.exists(app.settings.repo_storage_path) {
 		os.mkdir(app.settings.repo_storage_path) or {
 			app.info('Failed to create $app.settings.repo_storage_path')
 			app.info('Error: $err')
+
 			exit(1)
 		}
 	}
+
 	// Create the first admin user if the db is empty
-	app.find_user_by_id(1) or {
-		/*
-		println('Creating admin...')
-		user := User{
-			name: 'admin'
-			username: 'admin'
-			password: 'admin'
-		}
-		app.insert_user(user)
-		new_user := app.find_user_by_id(1) or {
-			println('Failed to create an admin user')
-			exit(1)
-		}
-		println('new user=')
-		println(new_user)
-		app.auth_user(new_user)
-		*/
-	}
-	// go app.create_new_test_repo() // if it doesn't exist
+	app.find_user_by_id(1) or {}
+
 	if '-cmdapi' in os.args {
 		go app.command_fetcher()
 	}
 
-	/////////////
 	return app
 }
 
-pub fn (mut app App) info(msg string) { // vweb.Result {
+pub fn (mut app App) info(msg string) {
 	app.file_log.info(msg)
 	app.cli_log.info(msg)
-	// return app.text('ok')
 }
 
-pub fn (mut app App) warn(msg string) { // vweb.Result {
+pub fn (mut app App) warn(msg string) {
 	app.file_log.warn(msg)
 	app.cli_log.warn(msg)
-	println(msg)
-	// return app.text('ok2')
 }
 
-/*
-pub fn (mut app App) error(msg string) {
-	app.file_log.error(msg)
-	app.cli_log.error(msg)
-	//app.form_error = msg
-}
-*/
 pub fn (mut app App) init_server() {
 }
 
@@ -173,6 +138,7 @@ pub fn (mut app App) before_request() {
 			app.logged_in = false
 			User{}
 		}
+
 		app.user.b_avatar = app.user.avatar == ''
 		if !app.user.b_avatar {
 			app.user.avatar = app.user.username[..1]
@@ -190,49 +156,14 @@ pub fn (mut app App) redirect_to_login() vweb.Result {
 	return app.redirect('/login')
 }
 
-// Redirect to the current repo main site
-pub fn (mut app App) r_repo() vweb.Result {
+pub fn (mut app App) redirect_to_current_repository() vweb.Result {
 	return app.redirect('/$app.user.username/$app.repo.name')
 }
 
-/*
-pub fn (mut app App) create_new_test_repo() {
-	if x := app.find_repo_by_name(1, 'v') {
-		app.info('test repo already exists')
-		app.repo = x
-		app.repo.lang_stats = app.find_repo_lang_stats(app.repo.id)
-		// init branches list for existing repo
-		app.update_repo_data(app.repo)
-		return
-	}
-	_ := os.ls('.') or {
-		return
-	}
-	cur_dir := os.base_dir(os.executable())
-	git_dir := os.join_path(cur_dir, 'test_repo')
-	app.add_user('vlang', '', ['vlang@vlang.io'], true)
-	app.repo = Repo{
-		name: 'v'
-		user_name: 'vlang'
-		git_dir: git_dir
-		lang_stats: test_lang_stats
-		user_id: 1
-		description: 'The V programming language'
-		nr_contributors: 0
-		nr_open_issues: 0
-		nr_open_prs: 0
-		nr_commits: 0
-		id: 1
-	}
-	app.info('inserting test repo')
-	app.init_tags(app.repo)
-	app.update_repo()
-}
-*/
 ['/:user/:repo/settings']
 pub fn (mut app App) repo_settings(user string, repo string) vweb.Result {
 	if !app.repo_belongs_to(user, repo) {
-		return app.r_repo()
+		return app.redirect_to_current_repository()
 	}
 	app.show_menu = true
 	return $vweb.html()
@@ -246,20 +177,20 @@ fn (mut app App) repo_belongs_to(user string, repo string) bool {
 ['/:user/:repo/settings'; post]
 pub fn (mut app App) update_repo_settings(user string, repo string) vweb.Result {
 	if !app.repo_belongs_to(user, repo) {
-		return app.r_repo()
+		return app.redirect_to_current_repository()
 	}
 	if 'webhook_secret' in app.form && app.form['webhook_secret'] != app.repo.webhook_secret
 		&& app.form['webhook_secret'] != '' {
 		webhook := sha1.hexhash(app.form['webhook_secret'])
 		app.update_repo_webhook(app.repo.id, webhook)
 	}
-	return app.r_repo()
+	return app.redirect_to_current_repository()
 }
 
 ['/:user/:repo/delete_repo'; post]
 pub fn (mut app App) repo_delete(user string, repo string) vweb.Result {
 	if !app.repo_belongs_to(user, repo) {
-		return app.r_repo()
+		return app.redirect_to_current_repository()
 	}
 	if 'verify' in app.form && app.form['verify'] == '$user/$repo' {
 		go app.delete_repo(app.repo.id, app.repo.git_dir, app.repo.name)
@@ -273,7 +204,7 @@ pub fn (mut app App) repo_delete(user string, repo string) vweb.Result {
 ['/:user/:repo/move_repo'; post]
 pub fn (mut app App) repo_move(user string, repo string) vweb.Result {
 	if !app.repo_belongs_to(user, repo) {
-		return app.r_repo()
+		return app.redirect_to_current_repository()
 	}
 	if 'verify' in app.form && 'dest' in app.form && app.form['verify'] == '$user/$repo' {
 		uname := app.form['dest']
@@ -335,8 +266,8 @@ pub fn (mut app App) tree(user string, repo string, branch string, path string) 
 		}
 	}
 	println('\n\n\ntree() user="$user" repo="' + repo + '"')
-	app.path = '/$path'
-	if app.path.contains('/favicon.svg') {
+	app.current_path = '/$path'
+	if app.current_path.contains('/favicon.svg') {
 		return vweb.not_found()
 	}
 	app.path_split = '$repo/$path'.split('/')
@@ -355,23 +286,23 @@ pub fn (mut app App) tree(user string, repo string, branch string, path string) 
 		}
 	}
 	// println(up)
-	println('path=$app.path')
-	if app.path.starts_with('/') {
-		app.path = app.path[1..]
+	println('path=$app.current_path')
+	if app.current_path.starts_with('/') {
+		app.current_path = app.current_path[1..]
 	}
-	mut files := app.find_repo_files(app.repo.id, branch, app.path)
+	mut files := app.find_repo_files(app.repo.id, branch, app.current_path)
 	app.info('tree() nr files found: $files.len in branch $branch')
 	if files.len == 0 {
 		// No files in the db, fetch them from git and cache in db
 		app.info('caching files, repo_id=$app.repo.id')
 		t := time.ticks()
-		files = app.cache_repo_files(mut app.repo, branch, app.path)
+		files = app.cache_repo_files(mut app.repo, branch, app.current_path)
 		println('caching files took ${time.ticks() - t}ms')
-		go app.slow_fetch_files_info(branch, app.path)
+		go app.slow_fetch_files_info(branch, app.current_path)
 	}
 	if files.any(it.last_msg == '') {
 		// If any of the files has a missing `last_msg`, we need to refetch it.
-		go app.slow_fetch_files_info(branch, app.path)
+		go app.slow_fetch_files_info(branch, app.current_path)
 	}
 	mut readme := vweb.RawHtml('')
 	/*
@@ -417,8 +348,10 @@ pub fn (mut app App) tree(user string, repo string, branch string, path string) 
 
 pub fn (mut app App) index() vweb.Result {
 	app.show_menu = false
+
+	no_users := app.get_users_count() == 0
 	// println(' all_users =$app.nr_all_users()')
-	if app.nr_all_users() == 0 {
+	if no_users {
 		return app.redirect('/register')
 	}
 
@@ -430,21 +363,12 @@ pub fn (mut app App) update(user string, repo string) vweb.Result {
 	if !app.exists_user_repo(user, repo) {
 		return app.not_found()
 	}
-	/*
-	secret := if 'X-Hub-Signature' in app.req.headers { app.req.headers['X-Hub-Signature'][5..] } else { '' }
-	if secret == '' {
-		return app.redirect_to_index()
-	}
-	if secret == app.repo.webhook_secret && app.repo.webhook_secret != '' {
-		go app.update_repo_data(&app.repo)
-	}
-	*/
+
 	if app.user.is_admin {
-		// QTODO go
 		app.update_repo_data(mut app.repo)
 		app.slow_fetch_files_info('master', '.')
 	}
-	return app.r_repo()
+	return app.redirect_to_current_repository()
 }
 
 ['/new']
@@ -452,6 +376,7 @@ pub fn (mut app App) new() vweb.Result {
 	if !app.logged_in {
 		return app.redirect_to_login()
 	}
+
 	return $vweb.html()
 }
 
@@ -670,7 +595,7 @@ pub fn (mut app App) pull(user string, repo string, id_str string) vweb.Result {
 	if !app.exists_user_repo(user, repo) {
 		return app.not_found()
 	}
-	_ := app.path.split('/')
+	_ := app.current_path.split('/')
 	id := 0
 	pr0 := app.find_pr_by_id(id) or { return app.not_found() }
 	pr := pr0
@@ -742,7 +667,7 @@ pub fn (mut app App) blob(user string, repo string, branch string, path string) 
 	if !app.exists_user_repo(user, repo) {
 		return app.not_found()
 	}
-	app.path = path
+	app.current_path = path
 	app.path_split = '$repo/$path'.split('/')
 	app.path_split = app.path_split[..app.path_split.len - 1]
 	if !app.contains_repo_branch(branch, app.repo.id) && branch != app.repo.primary_branch {
@@ -750,11 +675,11 @@ pub fn (mut app App) blob(user string, repo string, branch string, path string) 
 		return app.not_found()
 	}
 	mut raw := false
-	if app.path.ends_with('/raw') {
-		app.path = app.path.substr(0, app.path.len - 4)
+	if app.current_path.ends_with('/raw') {
+		app.current_path = app.current_path.substr(0, app.current_path.len - 4)
 		raw = true
 	}
-	mut blob_path := os.join_path(app.repo.git_dir, app.path)
+	mut blob_path := os.join_path(app.repo.git_dir, app.current_path)
 	// mut plain_text := ''
 	// println(blob_path)
 	/*
@@ -762,7 +687,7 @@ pub fn (mut app App) blob(user string, repo string, branch string, path string) 
 		//plain_text = os.read_file(path) or { 'Error' }
 	} else {
 	*/
-	plain_text := app.repo.git('--no-pager show $branch:$app.path')
+	plain_text := app.repo.git('--no-pager show $branch:$app.current_path')
 	// }
 	mut source := vweb.RawHtml(plain_text.str())
 	// mut source := (plain_text.str())
