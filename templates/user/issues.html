@@ -35,6 +35,17 @@
 	@end
 }
 
+@if issues.len > 0
+	@for issue in issues
+		<a href="/#" class="userrepo">
+			<h3>@issue.title</h3>
+			<p>@issue.author_name</p>
+		</a>
+	@end
+@else
+	<h2>No issues</h2>
+@end
+
 <div class="buttons">
 	<br>
 @if first
