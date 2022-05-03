@@ -7,8 +7,10 @@ import os
 pub fn (mut app App) command_fetcher() {
 	for {
 		line := os.get_line()
+
 		if line.starts_with('!') {
 			args := line[1..].split(' ')
+
 			if args.len > 0 {
 				match args[0] {
 					'updaterepo' {
