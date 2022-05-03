@@ -3,7 +3,7 @@ module main
 import vweb
 
 ['/:user/:repo/comments'; post]
-pub fn (mut app App) add_comment(user string, repo string) vweb.Result {
+pub fn (mut app App) handle_add_comment(user string, repo string) vweb.Result {
 	if !app.exists_user_repo(user, repo) {
 		return app.not_found()
 	}
