@@ -10,12 +10,12 @@
 		<input type="submit" value="Update repo">
 	</form>
 
-	<form action="/@app.user.username/@app.repo.name/delete_repo" method="post">
+	<form action="/@app.user.username/@app.repo.name" method="delete">
 		<input type="text" name="verify" placeholder="Type your repo path username/reponame" required>
 		<input type="submit" value="Delete repo">
 	</form>
 
-	<form action="/@app.user.username/@app.repo.name/move_repo" method="post">
+	<form action="/@app.user.username/@app.repo.name/move" method="post">
 		<input type="text" name="dest" placeholder="Destination username" required>
 		<input type="text" name="verify" placeholder="Type your repo path username/reponame" required>
 		<input type="submit" value="Move repo">
