@@ -30,7 +30,7 @@ fn main() {
 	assert index_page_result.text.contains("<a href='/login' class='login-button'>Log in</a>")
 
 	// Register the first user (admin)
-	mut register_result := http.post('http://127.0.0.1:8080/register_post', 'username=bob&password=1234zxcv&email=bob@example.com&no_redirect=1') or {
+	mut register_result := http.post('http://127.0.0.1:8080/register', 'username=bob&password=1234zxcv&email=bob@example.com&no_redirect=1') or {
 		println(err)
 
 		exit(1)
