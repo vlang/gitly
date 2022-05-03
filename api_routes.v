@@ -6,23 +6,23 @@ import vweb
 import json
 
 ['/api/:user/:repo/issues']
-pub fn (mut app App) api_issues(user string, repo string) vweb.Result {
+pub fn (mut app App) handle_api_issues(user string, repo string) vweb.Result {
 	if !app.exists_user_repo(user, repo) {
 		return app.json('{}')
 	}
 
-	issues := app.find_repo_issues(app.repo.id)
+	issues := app.get_all_repo_issues(app.repo.id)
 
 	return app.json(json.encode(issues))
 }
 
 ['/api/:user/:repo/commits']
-pub fn (mut app App) api_commits(user string, repo string) vweb.Result {
+pub fn (mut app App) handle_api_commits(user string, repo string) vweb.Result {
 	if !app.exists_user_repo(user, repo) {
 		return app.json('{}')
 	}
 
-	commits := app.find_repo_commits(app.repo.id)
+	commits := app.get_last_repo_commits(app.repo.id)
 
 	return app.json(json.encode(commits))
 }

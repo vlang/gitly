@@ -4,11 +4,11 @@ module main
 
 import time
 
-fn (mut app App) add_visit() {
+fn (mut app App) add_visit(repo_id int, url string, referer string) {
 	visit := Visit{
-		repo_id: app.repo.id
-		url: app.req.url
-		referer: app.req.referer()
+		repo_id: repo_id
+		url: url
+		referer: referer
 		created_at: int(time.now().unix)
 	}
 
