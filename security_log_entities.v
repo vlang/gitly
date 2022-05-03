@@ -1,13 +1,13 @@
 module main
 
 enum SecurityLogKind {
-	registered // 0
+	registered
 	logged_in
-	registered_via_github // 2
+	registered_via_github
 	logged_in_via_github
-	wrong_password // 4
+	wrong_password
 	wrong_oauth_state
-	empty_oauth_code // 6
+	empty_oauth_code
 	empty_oauth_email
 }
 
