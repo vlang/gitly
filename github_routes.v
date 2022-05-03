@@ -7,12 +7,12 @@ import json
 import net.http
 
 ['/oauth']
-pub fn (mut app App) oauth() vweb.Result {
+pub fn (mut app App) handle_oauth() vweb.Result {
 	code := app.query['code']
 	state := app.query['state']
 
 	if code == '' {
-		app.security_log(user_id: app.user.id, kind: .empty_oauth_code)
+		app.add_security_log(user_id: app.user.id, kind: .empty_oauth_code)
 		app.info('Code is empty')
 
 		return app.redirect_to_index()
@@ -20,7 +20,7 @@ pub fn (mut app App) oauth() vweb.Result {
 
 	csrf := app.get_cookie('csrf') or { return app.redirect_to_index() }
 	if csrf != state || csrf == '' {
-		app.security_log(
+		app.add_security_log(
 			user_id: app.user.id
 			kind: .wrong_oauth_state
 			arg1: 'csrf=$csrf'
@@ -67,7 +67,11 @@ pub fn (mut app App) oauth() vweb.Result {
 	github_user := json.decode(GitHubUser, user_response.text) or { return app.redirect_to_index() }
 
 	if github_user.email.trim_space().len == 0 {
-		app.security_log(user_id: app.user.id, kind: .empty_oauth_email, arg1: user_response.text)
+		app.add_security_log(
+			user_id: app.user.id
+			kind: .empty_oauth_email
+			arg1: user_response.text
+		)
 		app.info('Email is empty')
 	}
 
@@ -75,7 +79,11 @@ pub fn (mut app App) oauth() vweb.Result {
 
 	if !user.is_github {
 		// Register a new user via github
-		app.security_log(user_id: user.id, kind: .registered_via_github, arg1: user_response.text)
+		app.add_security_log(
+			user_id: user.id
+			kind: .registered_via_github
+			arg1: user_response.text
+		)
 
 		app.add_user(github_user.username, '', '', [github_user.email], true, false)
 
@@ -87,7 +95,7 @@ pub fn (mut app App) oauth() vweb.Result {
 	}
 
 	app.auth_user(user, app.ip())
-	app.security_log(user_id: user.id, kind: .logged_in_via_github, arg1: user_response.text)
+	app.add_security_log(user_id: user.id, kind: .logged_in_via_github, arg1: user_response.text)
 
 	return app.redirect_to_index()
 }

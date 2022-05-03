@@ -4,39 +4,15 @@ module main
 
 import time
 
-struct Issue {
-	id int [primary; sql: serial]
-mut:
-	author_id     int
-	repo_id       int
-	is_pr         bool
-	assigned      []int       [skip]
-	labels        []int       [skip]
-	nr_comments   int
-	title         string
-	text          string
-	created_at    int
-	status        IssueStatus [skip]
-	linked_issues []int       [skip]
-	author_name   string      [skip]
-	repo_author   string      [skip]
-	repo_name     string      [skip]
-}
+fn (mut app App) add_issue(repo_id int, author_id int, title string, text string) {
+	issue := Issue{
+		title: title
+		text: text
+		repo_id: repo_id
+		author_id: author_id
+		created_at: int(time.now().unix)
+	}
 
-enum IssueStatus {
-	open = 0
-	closed = 1
-}
-
-struct Label {
-	id    int
-	name  string
-	color string
-}
-
-fn (mut app App) insert_issue(issue Issue) {
-	app.info('inserting issue:')
-	app.info(issue.title)
 	sql app.db {
 		insert issue into Issue
 	}
@@ -69,10 +45,11 @@ fn (mut app App) find_repo_issues_as_page(repo_id int, page int) []Issue {
 	}
 }
 
-fn (mut app App) find_repo_issues(repo_id int) []Issue {
+fn (mut app App) get_all_repo_issues(repo_id int) []Issue {
 	issues := sql app.db {
 		select from Issue where repo_id == repo_id && is_pr == false
 	}
+
 	return issues
 }
 
@@ -95,7 +72,7 @@ fn (mut app App) delete_repo_issues(repo_id int) {
 	}
 }
 
-fn (mut app App) inc_issue_comments(id int) {
+fn (mut app App) increment_issue_comments(id int) {
 	sql app.db {
 		update Issue set nr_comments = nr_comments + 1 where id == id
 	}

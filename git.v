@@ -35,21 +35,16 @@ fn (mut app App) git_info() vweb.Result {
 	}
 	if service == .unknown {
 		return app.not_found() // TODO
-		// return app.info('git: unknown info/refs service: $url')
 	}
 	// Do auth here, we can communicate with the client only in inforefs
 	if false && !app.repo.is_public {
 		// Private repos are always closed
-		// if !auth() {
 		return app.not_found()
-		// }
 	} else {
-		// public repo push
 		if service == .receive {
 			user := '' // get_user(c)
 			app.info('info/refs user="$user"')
 			if user == '' {
-				// app.vweb.write_header(http.status_unauthorized)
 				return app.not_found()
 			}
 		}
@@ -68,11 +63,10 @@ fn (mut app App) git_info() vweb.Result {
 }
 
 fn packet_flush() string {
-	return '0000' // .bytes()
+	return '0000'
 }
 
 fn packet_write(str string) string {
-	// s := strconv.format_int(i64(str.len+4), 16)
 	mut s := (str.len + 4).hex()
 	if s.len % 4 != 0 {
 		s = strings.repeat(`0`, 4 - s.len % 4) + s

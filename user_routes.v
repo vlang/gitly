@@ -1,9 +1,8 @@
-// Copyright (c) 2020-2021 Alexander Medvednikov. All rights reserved.
-// Use of this source code is governed by a GPL license that can be found in the LICENSE file.
 module main
 
-import vweb
 import time
+import os
+import vweb
 import rand
 
 pub fn (mut app App) login() vweb.Result {
@@ -33,7 +32,8 @@ pub fn (mut app App) handle_login() vweb.Result {
 	}
 
 	if !compare_password_with_hash(password, user.salt, user.password) {
-		app.inc_user_login_attempts(user.id)
+		app.increment_user_login_attempts(user.id)
+
 		if user.login_attempts == max_login_attempts {
 			app.warn('User $user.username got blocked')
 			app.block_user(user.id)
@@ -47,63 +47,79 @@ pub fn (mut app App) handle_login() vweb.Result {
 		return app.redirect_to_login()
 	}
 
-	client_ip := app.ip()
-
-	app.auth_user(user, client_ip)
-	app.security_log(user_id: user.id, kind: .logged_in)
+	app.auth_user(user, app.ip())
+	app.add_security_log(user_id: user.id, kind: .logged_in)
 
 	return app.redirect_to_index()
 }
 
-pub fn (mut app App) auth_user(user User, ip string) {
-	token := app.add_token(user.id, ip)
-
-	app.update_user_login_attempts(user.id, 0)
-
-	expire_date := time.now().add_days(200)
-
-	app.set_cookie(name: 'token', value: token, expires: expire_date)
-}
-
-pub fn (mut app App) is_logged_in() bool {
-	token_cookie := app.get_cookie('token') or { return false }
-
-	token := app.get_token(token_cookie) or { return false }
-
-	is_user_blocked := app.check_user_blocked(token.user_id)
-
-	if is_user_blocked {
-		app.logout()
-
-		return false
-	}
-
-	return true
-}
-
-pub fn (mut app App) logout() vweb.Result {
+['/logout']
+pub fn (mut app App) handle_logout() vweb.Result {
 	app.set_cookie(name: 'token', value: '')
 
 	return app.redirect_to_index()
 }
 
-pub fn (mut app App) get_user_from_cookies() ?User {
-	token_cookie := app.get_cookie('token') or { return none }
+['/:username']
+pub fn (mut app App) user(username string) vweb.Result {
+	app.show_menu = false
+	exists, user := app.check_username(username)
 
-	token := app.get_token(token_cookie) or { return none }
-
-	mut user := app.find_user_by_id(token.user_id) or { return none }
-
-	user.b_avatar = user.avatar != ''
-
-	if !user.b_avatar {
-		user.avatar = user.username[..1]
+	if !exists {
+		return app.not_found()
 	}
 
-	return user
+	return $vweb.html()
 }
 
-['/register']
+['/:user/settings']
+pub fn (mut app App) user_settings(user string) vweb.Result {
+	return $vweb.html()
+}
+
+['/:user/settings'; post]
+pub fn (mut app App) handle_update_user_settings(user string) vweb.Result {
+	if !app.logged_in || user != app.user.username {
+		return app.redirect_to_index()
+	}
+	name := if 'name' in app.form { app.form['name'] } else { '' }
+	if name == '' {
+		app.error('New name is empty')
+		return app.user_settings(user)
+	}
+	if name == user {
+		return app.user_settings(user)
+	}
+	if app.user.nr_namechanges > max_namechanges {
+		app.error('You can not change your username, limit reached')
+
+		return app.user_settings(user)
+	}
+	if app.user.last_namechange_time == 0
+		|| app.user.last_namechange_time + namechange_period <= time.now().unix {
+		u := app.find_user_by_username(name) or { User{} }
+		if u.id != 0 {
+			app.error('Name already exists')
+			return app.user_settings(user)
+		}
+
+		app.change_username(app.user.id, name)
+		app.incement_namechanges(app.user.id)
+		app.rename_user_directory(user, name)
+
+		return app.redirect('/$name')
+	}
+	app.error('You need to wait until you can change the name again')
+
+	return app.user_settings(user)
+}
+
+fn (mut app App) rename_user_directory(old_name string, new_name string) {
+	os.mv('$app.settings.repo_storage_path/$old_name', '$app.settings.repo_storage_path/$new_name') or {
+		panic(err)
+	}
+}
+
 pub fn (mut app App) register() vweb.Result {
 	no_users := app.get_users_count() == 0
 
@@ -112,7 +128,7 @@ pub fn (mut app App) register() vweb.Result {
 	return $vweb.html()
 }
 
-['/register_post'; post]
+['/register'; post]
 pub fn (mut app App) handle_register() vweb.Result {
 	no_users := app.get_users_count() == 0
 
@@ -169,7 +185,7 @@ pub fn (mut app App) handle_register() vweb.Result {
 	client_ip := app.ip()
 
 	app.auth_user(user, client_ip)
-	app.security_log(user_id: user.id, kind: .registered)
+	app.add_security_log(user_id: user.id, kind: .registered)
 
 	if app.form['no_redirect'] == '1' {
 		return app.text('ok')

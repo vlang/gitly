@@ -2,48 +2,17 @@
 // Use of this source code is governed by a GPL license that can be found in the LICENSE file.
 module main
 
-import time
-import os
-import highlight
 import sync
 import vweb
-
-struct Repo {
-	id                 int       [primary; sql: serial]
-	git_dir            string
-	name               string
-	user_id            int
-	user_name          string
-	clone_url          string    [skip]
-	primary_branch     string
-	description        string
-	is_public          bool
-	users_contributed  []string  [skip]
-	users_authorized   []string  [skip]
-	nr_topics          int       [skip]
-	nr_views           int
-	latest_update_hash string    [skip]
-	latest_activity    time.Time [skip]
-mut:
-	webhook_secret  string
-	nr_tags         int
-	nr_open_issues  int
-	nr_open_prs     int
-	nr_releases     int
-	nr_branches     int
-	lang_stats      []LangStat        [skip]
-	created_at      int // time.Time
-	nr_contributors int
-	nr_commits      int
-	labels          []Label           [skip]
-	status          RepoStatus        [skip]
-	msg_cache       map[string]string [skip]
-}
+import os
+import time
+import highlight
 
 // log_field_separator is declared as constant in case we need to change it later
 const (
 	max_git_res_size    = 1000
 	log_field_separator = '\x7F'
+	ignored_folder      = ['thirdparty']
 )
 
 enum RepoStatus {
@@ -53,6 +22,181 @@ enum RepoStatus {
 	clone_done
 }
 
+fn (mut app App) update_repo_in_db(repo &Repo) {
+	id := repo.id
+	desc := repo.description
+	nr_views := repo.nr_views
+	webhook_secret := repo.webhook_secret
+	nr_tags := repo.nr_tags
+	is_public := if repo.is_public { 1 } else { 0 }
+	nr_open_issues := repo.nr_open_issues
+	nr_open_prs := repo.nr_open_prs
+	nr_branches := repo.nr_branches
+	nr_releases := repo.nr_releases
+	nr_contributors := repo.nr_contributors
+	nr_commits := repo.nr_commits
+	sql app.db {
+		update Repo set description = desc, nr_views = nr_views, is_public = is_public, webhook_secret = webhook_secret,
+		nr_tags = nr_tags, nr_open_issues = nr_open_issues, nr_open_prs = nr_open_prs,
+		nr_releases = nr_releases, nr_contributors = nr_contributors, nr_commits = nr_commits,
+		nr_branches = nr_branches where id == id
+	}
+}
+
+fn (mut app App) find_repo_by_name(user int, name string) ?Repo {
+	x := sql app.db {
+		select from Repo where name == name && user_id == user limit 1
+	}
+	if x.id == 0 {
+		return none
+	}
+	return x
+}
+
+fn (mut app App) nr_user_repos(user_id int) int {
+	return sql app.db {
+		select count from Repo where user_id == user_id
+	}
+}
+
+fn (mut app App) find_user_repos(user_id int) []Repo {
+	return sql app.db {
+		select from Repo where user_id == user_id
+	}
+}
+
+fn (mut app App) nr_user_public_repos(user_id int) int {
+	return sql app.db {
+		select count from Repo where user_id == user_id && is_public == true
+	}
+}
+
+fn (mut app App) find_user_public_repos(user_id int) []Repo {
+	return sql app.db {
+		select from Repo where user_id == user_id && is_public == true
+	}
+}
+
+fn (mut app App) find_repo_by_id(repo_id int) Repo {
+	return sql app.db {
+		select from Repo where id == repo_id
+	}
+}
+
+fn (mut app App) exists_user_repo(username string, name string) bool {
+	if username.len == 0 || name.len == 0 {
+		app.info('User or repo was not found')
+
+		return false
+	}
+
+	user := app.find_user_by_username(username) or {
+		app.info('User was not found')
+
+		return false
+	}
+
+	app.repo = app.find_repo_by_name(user.id, name) or {
+		app.info('Repo was not found')
+
+		return false
+	}
+
+	app.repo.lang_stats = app.find_repo_lang_stats(app.repo.id)
+	app.html_path = app.repo.html_path_to(app.current_path, app.repo.primary_branch)
+
+	return true
+}
+
+fn (mut app App) retrieve_repo(id int) Repo {
+	return app.repo
+}
+
+fn (mut app App) increment_repo_views(repo_id int) {
+	sql app.db {
+		update Repo set nr_views = nr_views + 1 where id == repo_id
+	}
+}
+
+fn (mut app App) increment_file_views(file_id int) {
+	sql app.db {
+		update File set nr_views = nr_views + 1 where id == file_id
+	}
+}
+
+fn (mut app App) increment_repo_issues(repo_id int) {
+	sql app.db {
+		update Repo set nr_open_issues = nr_open_issues + 1 where id == repo_id
+	}
+	app.repo.nr_open_issues++
+}
+
+fn (mut app App) update_repo_nr_commits(repo_id int, nr_commits int) {
+	sql app.db {
+		update Repo set nr_commits = nr_commits where id == repo_id
+	}
+	app.repo.nr_commits = nr_commits
+}
+
+fn (mut app App) update_repo_webhook(repo_id int, webhook string) {
+	sql app.db {
+		update Repo set webhook_secret = webhook where id == repo_id
+	}
+}
+
+fn (mut app App) update_repo_nr_contributor(repo_id int, nr_contributors int) {
+	sql app.db {
+		update Repo set nr_contributors = nr_contributors where id == repo_id
+	}
+	app.repo.nr_contributors = nr_contributors
+}
+
+fn (mut app App) add_repo(repo Repo) {
+	sql app.db {
+		insert repo into Repo
+	}
+}
+
+fn (mut app App) delete_repo(id int, path string, name string) {
+	sql app.db {
+		delete from Repo where id == id
+	}
+	app.info('Removed repo entry ($id, $name)')
+
+	sql app.db {
+		delete from Commit where repo_id == id
+	}
+
+	app.info('Removed repo commits ($id, $name)')
+	app.delete_repo_issues(id)
+	app.info('Removed repo issues ($id, $name)')
+
+	app.delete_repo_branches(id)
+	app.info('Removed repo branches ($id, $name)')
+
+	app.delete_repo_releases(id)
+	app.info('Removed repo releases ($id, $name)')
+
+	app.delete_repo_files(id)
+	app.info('Removed repo files ($id, $name)')
+
+	app.delete_repo_folder(path)
+	app.info('Removed repo folder ($id, $name)')
+}
+
+fn (mut app App) move_repo_to_user(repo_id int, user_id int, user_name string) {
+	sql app.db {
+		update Repo set user_id = user_id, user_name = user_name where id == repo_id
+	}
+}
+
+fn (mut app App) user_has_repo(user_id int, repo_name string) bool {
+	count := sql app.db {
+		select count from Repo where user_id == user_id && name == repo_name
+	}
+	return count >= 0
+}
+
 fn (mut app App) update_repo() {
 	mut r := app.repo
 	mut wg := sync.new_waitgroup()
@@ -60,114 +204,109 @@ fn (mut app App) update_repo() {
 	r_p := &r
 	go r_p.analyse_lang(mut wg, app)
 	data := r.git('--no-pager log --abbrev-commit --abbrev=7 --pretty="%h$log_field_separator%aE$log_field_separator%cD$log_field_separator%s$log_field_separator%aN"')
-	mut tmp_commit := Commit{}
 	app.db.exec('BEGIN TRANSACTION')
 	for line in data.split_into_lines() {
 		args := line.split(log_field_separator)
 		if args.len > 3 {
-			tmp_commit.repo_id = r.id
-			tmp_commit.hash = args[0]
-			tmp_commit.author = args[4]
-			t := time.parse_rfc2822(args[2]) or {
+			repo_id := r.id
+			commit_hash := args[0]
+			commit_message := args[3]
+			commit_author := args[4]
+			mut commit_author_id := 0
+
+			commit_date := time.parse_rfc2822(args[2]) or {
 				app.info('Error: $err')
 				return
 			}
-			tmp_commit.created_at = int(t.unix)
-			tmp_commit.message = args[3]
+
 			user := app.find_user_by_email(args[1]) or { User{} }
 			if user.username != '' {
-				app.insert_contributor(Contributor{
-					user: user.id
-					repo: r.id
-				})
-				tmp_commit.author_id = user.id
+				app.add_contributor(user.id, r.id)
+
+				commit_author_id = user.id
 			} else {
-				empty_user := app.create_empty_user(tmp_commit.author, args[1])
-				app.insert_contributor(Contributor{
-					repo: r.id
-					user: empty_user
-				})
+				empty_user := app.create_empty_user(commit_author, args[1])
+
+				app.add_contributor(empty_user, r.id)
 			}
-			app.insert_commit(tmp_commit)
+
+			app.add_commit(repo_id, commit_hash, commit_author, commit_author_id, commit_message,
+				int(commit_date.unix))
 		}
 	}
 	app.info(r.nr_contributors.str())
 	app.fetch_branches(r)
 	r.nr_commits = app.nr_repo_commits(r.id)
 	r.nr_contributors = app.nr_repo_contributor(r.id)
-	r.nr_branches = app.nr_repo_branches(r.id)
+	r.nr_branches = app.get_count_repo_branches(r.id)
 	app.update_repo_nr_commits(r.id, r.nr_commits)
 	app.update_repo_nr_contributor(r.id, r.nr_contributors)
+
 	// TODO: TEMPORARY - UNTIL WE GET PERSISTENT RELEASE INFO
-	for tag in app.find_repo_tags(r.id) {
-		release := &Release{
-			tag_id: tag.id
-			repo_id: r.id
-			notes: 'Some notes about this release...'
-		}
-		app.insert_release(release)
+	for tag in app.get_all_repo_tags(r.id) {
+		app.add_release(tag.id, r.id)
+
 		r.nr_releases++
 	}
 	wg.wait()
-	/*
-	sql app.db {
-		insert repo into Repo
-	}
-	*/
+
 	app.update_repo_in_db(r)
 	app.db.exec('END TRANSACTION')
 	app.info('Repo updated')
 }
 
-// update_repo updated the repo in the db
 fn (mut app App) update_repo_data(mut r Repo) {
-	//	last_commit := app.find_repo_last_commit(r.id)
 	r.git('fetch --all')
 	r.git('pull --all')
 	mut wg := sync.new_waitgroup()
 	wg.add(1)
 	go r.analyse_lang(mut wg, app)
-	// data := r.git('--no-pager log ${last_commit.hash}.. --abbrev-commit --abbrev=7 --pretty="%h$log_field_separator%aE$log_field_separator%cD$log_field_separator%s$log_field_separator%aN"')
 	data := r.git('--no-pager log --abbrev-commit --abbrev=7 --pretty="%h$log_field_separator%aE$log_field_separator%cD$log_field_separator%s$log_field_separator%aN"')
-	mut tmp_commit := Commit{}
+
 	app.db.exec('BEGIN TRANSACTION')
+
 	for line in data.split_into_lines() {
 		args := line.split(log_field_separator)
 		if args.len > 3 {
-			tmp_commit.repo_id = r.id
-			tmp_commit.hash = args[0]
-			tmp_commit.author = args[4]
-			t := time.parse_rfc2822(args[2]) or {
+			repo_id := r.id
+			commit_hash := args[0]
+			commit_message := args[3]
+			commit_author := args[4]
+			mut commit_author_id := 0
+
+			commit_date := time.parse_rfc2822(args[2]) or {
 				app.info('Error: $err')
 				return
 			}
-			tmp_commit.created_at = int(t.unix)
-			tmp_commit.message = args[3]
+
 			user := app.find_user_by_email(args[1]) or { User{} }
+
 			if user.username != '' {
-				app.insert_contributor(Contributor{
-					user: user.id
-					repo: r.id
-				})
-				tmp_commit.author_id = user.id
+				app.add_contributor(user.id, r.id)
+
+				commit_author_id = user.id
 			} else {
-				empty_user := app.create_empty_user(tmp_commit.author, args[1])
-				app.insert_contributor(Contributor{
-					repo: r.id
-					user: empty_user
-				})
+				empty_user := app.create_empty_user(commit_author, args[1])
+
+				app.add_contributor(empty_user, r.id)
 			}
-			app.insert_commit(tmp_commit)
+
+			app.add_commit(repo_id, commit_hash, commit_author, commit_author_id, commit_message,
+				int(commit_date.unix))
 		}
 	}
+
 	r.nr_commits = app.nr_repo_commits(r.id)
 	r.nr_contributors = app.nr_repo_contributor(r.id)
-	r.nr_branches = app.nr_repo_branches(r.id)
+	r.nr_branches = app.get_count_repo_branches(r.id)
+
 	app.update_repo_nr_commits(r.id, r.nr_commits)
 	app.update_repo_nr_contributor(r.id, r.nr_contributors)
 	app.update_branches(r)
 	app.update_repo_in_db(r)
+
 	wg.wait()
+
 	app.db.exec('END TRANSACTION')
 	app.info('Repo updated')
 }
@@ -345,11 +484,7 @@ fn (r &Repo) git(cmd_ string) string {
 	if cmd.contains('&') || cmd.contains(';') {
 		return ''
 	}
-	/*
-	if op == "checkout" || op == "merge" || op == "diff" || op == "reset" {
-			gitdir += "/.."
-		}
-	*/
+
 	if !cmd.starts_with('init') {
 		cmd = '-C $r.git_dir $cmd'
 	}
@@ -371,16 +506,14 @@ fn (r &Repo) git(cmd_ string) string {
 
 fn (r &Repo) parse_ls(ls string, branch string) ?File {
 	words := ls.fields()
-	// println(words)
 	if words.len < 4 {
 		return none
 	}
 	typ := words[1]
 	mut parent_path := os.dir(words[3])
 	hash := r.git('log -n 1 --format="%h" ${words[3]}')
-	println(hash)
-	name := words[3].after('/') // os.basename(words[3])
-	// println('parse ls name=$name path=$path')
+
+	name := words[3].after('/')
 	if name == '' {
 		return none
 	}
@@ -390,6 +523,7 @@ fn (r &Repo) parse_ls(ls string, branch string) ?File {
 	if name.contains('"\\') {
 		// Unqoute octal UTF-8 strings
 	}
+
 	return File{
 		name: name
 		parent_path: parent_path
@@ -415,23 +549,17 @@ fn (mut app App) cache_repo_files(mut r Repo, branch string, path string) []File
 		defer {
 			r.status = .done
 		}
-		// res = r.git('ls-tree --full-tree --full-name -rt $branch')
-		// defer r.UpdateAllFilesSizeAndLines()
 	} else {
 		mut p := path
 		if path != '' {
 			p += '/'
 		}
-		// t := time.ticks()
-		// println('ls-tree --full-name $branch $p')
 		res = r.git('ls-tree --full-name $branch $p')
-		// println('ls tree res:')
-		// println(res)
-		// println('ls-tree ms=${time.ticks() - t}')
 	}
 	lines := res.split('\n')
 	mut dirs := []File{} // dirs first
 	mut files := []File{}
+
 	app.db.exec('BEGIN TRANSACTION')
 	for line in lines {
 		file := r.parse_ls(line, branch) or {
@@ -440,14 +568,15 @@ fn (mut app App) cache_repo_files(mut r Repo, branch string, path string) []File
 		}
 		if file.is_dir {
 			dirs << file
-			app.insert_file(file)
+
+			app.add_file(file)
 		} else {
 			files << file
 		}
 	}
 	dirs << files
 	for file in files {
-		app.insert_file(file)
+		app.add_file(file)
 	}
 	app.db.exec('END TRANSACTION')
 	return dirs
@@ -468,7 +597,6 @@ fn (r Repo) html_path_to(path string, branch string) vweb.RawHtml {
 			if val != '' {
 				growp += '/' + val
 			}
-			// res += '<a href="/$r.name/tree/$branch/$growp/">$val</a> / '
 			res += '<a href="/tree$growp/">$val</a> / '
 		}
 	}
@@ -482,18 +610,13 @@ fn (r Repo) html_path_to(path string, branch string) vweb.RawHtml {
 // this is slow, so it's run in the background thread
 fn (mut app App) slow_fetch_files_info(branch string, path string) {
 	files := app.find_repo_files(app.repo.id, branch, path)
-	// println('SLOW fetch files info() nr_files=$files.len')
-	// t := time.ticks()
-	// for file in files {
 	for i in 0 .. files.len {
-		// println('file ${files[i].name}')
 		if files[i].last_msg != '' {
 			app.warn('skipping ${files[i].name}')
 			continue
 		}
 		app.fetch_file_info(app.repo, files[i])
 	}
-	// println('slow fetch file info= ${time.ticks()-t}ms')
 }
 
 fn (r Repo) git_advertise(a string) string {
@@ -513,15 +636,12 @@ fn first_line(s string) string {
 fn (mut app App) fetch_file_info(r &Repo, file &File) {
 	logs := r.git('log -n1 --format=%B___%at___%H___%an $file.branch -- $file.full_path()')
 	vals := logs.split('___')
-	// println("fetch_file_info() vals=")
-	// println(vals)
 	if vals.len < 3 {
 		return
 	}
 	last_msg := first_line(vals[0])
 	last_time := vals[1].int() // last_hash
-	_ := vals[2] // last_author
-	_ := vals[3]
+
 	file_id := file.id
 	sql app.db {
 		update File set last_msg = last_msg, last_time = last_time where id == file_id
@@ -530,20 +650,23 @@ fn (mut app App) fetch_file_info(r &Repo, file &File) {
 
 fn (mut r Repo) clone() {
 	println('r.clone() url="$r.clone_url"')
+
 	if !r.clone_url.starts_with('https://') || r.clone_url.contains(' ') {
 		return
 	}
-	// defer r.Update()
+
 	println('starting git clone... $r.clone_url git_dir=$r.git_dir')
-	// "git clone --bare "
+
 	clone := os.execute('git clone "$r.clone_url" $r.git_dir')
 	if clone.exit_code != 0 {
 		r.status = .clone_failed
 		println('git clone failed:')
 		return
 	}
+
 	r.git('config receive.denyCurrentBranch ignore')
 	r.git('config core.bare false')
 	r.git('checkout master')
+
 	r.status = .clone_done
 }

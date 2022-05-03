@@ -33,13 +33,13 @@ struct SshKey {
 }
 
 struct Email {
-	id    int    [primary; sql: serial]
-	user  int
-	email string [unique]
+	id      int    [primary; sql: serial]
+	user_id int
+	email   string [unique]
 }
 
 struct Contributor {
-	id   int [primary; sql: serial]
-	user int [unique: 'contributor']
-	repo int [unique: 'contributor']
+	id      int [primary; sql: serial]
+	user_id int [unique: 'contributor']
+	repo_id int [unique: 'contributor']
 }

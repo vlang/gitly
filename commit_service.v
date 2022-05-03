@@ -4,48 +4,30 @@ module main
 
 import time
 
-struct Commit {
-mut:
-	id         int    [primary; sql: serial]
-	author_id  int
-	author     string
-	hash       string [unique: 'commit']
-	created_at int
-	repo_id    int    [unique: 'commit']
-	message    string
-}
-
-struct Change {
-mut:
-	file      string
-	additions int
-	deletions int
-	diff      string
-	message   string
-}
-
 fn (commit Commit) relative() string {
 	return time.unix(commit.created_at).relative()
 }
 
 fn (commit Commit) get_changes(repo Repo) []Change {
-	changes_s := repo.git('show $commit.hash')
-	mut tmp_change := Change{}
+	git_changes := repo.git('show $commit.hash')
+
+	mut change := Change{}
 	mut changes := []Change{}
 	mut started := false
-	for line in changes_s.split_into_lines() {
+	for line in git_changes.split_into_lines() {
 		args := line.split(' ')
 		if args.len <= 0 {
 			continue
 		}
+
 		match args[0] {
 			'diff' {
 				started = true
-				if tmp_change.file.len > 0 {
-					changes << tmp_change
-					tmp_change = Change{}
+				if change.file.len > 0 {
+					changes << change
+					change = Change{}
 				}
-				tmp_change.file = args[2][2..]
+				change.file = args[2][2..]
 			}
 			'index' {
 				continue
@@ -57,32 +39,43 @@ fn (commit Commit) get_changes(repo Repo) []Change {
 				continue
 			}
 			'@@' {
-				tmp_change.diff = line
+				change.diff = line
 			}
 			else {
 				if started {
 					if line.bytes()[0] == `+` {
-						tmp_change.additions++
+						change.additions++
 					}
 					if line.bytes()[0] == `-` {
-						tmp_change.deletions++
+						change.deletions++
 					}
-					tmp_change.message += '$line\n'
+					change.message += '$line\n'
 				}
 			}
 		}
 	}
-	changes << tmp_change
+
+	changes << change
+
 	return changes
 }
 
-fn (mut app App) insert_commit(commit Commit) {
+fn (mut app App) add_commit(repo_id int, hash string, author string, author_id int, message string, date int) {
+	commit := Commit{
+		author_id: author_id
+		author: author
+		hash: hash
+		created_at: date
+		repo_id: repo_id
+		message: message
+	}
+
 	sql app.db {
 		insert commit into Commit
 	}
 }
 
-fn (mut app App) find_repo_commits(repo_id int) []Commit {
+fn (mut app App) get_last_repo_commits(repo_id int) []Commit {
 	return sql app.db {
 		select from Commit where repo_id == repo_id limit 10
 	}
@@ -114,17 +107,5 @@ fn (mut app App) find_repo_commit_by_hash(repo_id int, hash string) Commit {
 fn (mut app App) find_repo_last_commit(repo_id int) Commit {
 	return sql app.db {
 		select from Commit where repo_id == repo_id order by created_at desc limit 1
-	}
-}
-
-fn (mut app App) find_repo_first_commit(repo_id int) Commit {
-	return sql app.db {
-		select from Commit where repo_id == repo_id order by created_at limit 1
-	}
-}
-
-fn (mut app App) find_repo_commits_by_author(repo_id int, author string) []Commit {
-	return sql app.db {
-		select from Commit where repo_id == repo_id && author == author limit 10
 	}
 }
