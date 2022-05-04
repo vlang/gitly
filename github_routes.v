@@ -85,7 +85,7 @@ pub fn (mut app App) handle_oauth() vweb.Result {
 			arg1: user_response.text
 		)
 
-		app.add_user(github_user.username, '', '', [github_user.email], true, false)
+		app.register_user(github_user.username, '', '', [github_user.email], true, false)
 
 		user = app.find_user_by_github_username(github_user.username) or {
 			return app.redirect_to_index()

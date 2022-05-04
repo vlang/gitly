@@ -38,6 +38,7 @@ pub fn (mut app App) handle_login() vweb.Result {
 			app.warn('User $user.username got blocked')
 			app.block_user(user.id)
 		}
+
 		app.error('Wrong username/password')
 
 		return app.login()
@@ -82,19 +83,24 @@ pub fn (mut app App) handle_update_user_settings(user string) vweb.Result {
 	if !app.logged_in || user != app.user.username {
 		return app.redirect_to_index()
 	}
+
 	name := if 'name' in app.form { app.form['name'] } else { '' }
+
 	if name == '' {
 		app.error('New name is empty')
 		return app.user_settings(user)
 	}
+
 	if name == user {
 		return app.user_settings(user)
 	}
-	if app.user.nr_namechanges > max_namechanges {
+
+	if app.user.namechanges_count > max_namechanges {
 		app.error('You can not change your username, limit reached')
 
 		return app.user_settings(user)
 	}
+
 	if app.user.last_namechange_time == 0
 		|| app.user.last_namechange_time + namechange_period <= time.now().unix {
 		u := app.find_user_by_username(name) or { User{} }
@@ -133,23 +139,29 @@ pub fn (mut app App) handle_register() vweb.Result {
 	no_users := app.get_users_count() == 0
 
 	username := app.form['username']
+
 	if username in ['login', 'register', 'new', 'new_post', 'oauth'] {
 		app.error('Username `$username` is not available')
 		return app.register()
 	}
+
 	user_chars := username.bytes()
+
 	if user_chars.len > max_username_len {
 		app.error('Username is too long (max. $max_username_len)')
 		return app.register()
 	}
+
 	if username.contains('--') {
 		app.error('Username cannot contain two hyphens')
 		return app.register()
 	}
+
 	if user_chars[0] == `-` || user_chars.last() == `-` {
 		app.error('Username cannot begin or end with a hyphen')
 		return app.register()
 	}
+
 	for ch in user_chars {
 		if !ch.is_letter() && !ch.is_digit() && ch != `-` {
 			app.error('Username cannot contain special characters')
@@ -165,14 +177,17 @@ pub fn (mut app App) handle_register() vweb.Result {
 	password := hash_password_with_salt(app.form['password'], salt)
 
 	email := app.form['email']
+
 	if username == '' || email == '' {
 		app.error('Username or Email cannot be emtpy')
 		return app.register()
 	}
-	if !app.add_user(username, password, salt, [email], false, no_users) {
+
+	if !app.register_user(username, password, salt, [email], false, no_users) {
 		app.error('Failed to register')
 		return app.register()
 	}
+
 	user := app.find_user_by_username(username) or {
 		app.error('User already exists')
 		return app.register()
@@ -190,5 +205,6 @@ pub fn (mut app App) handle_register() vweb.Result {
 	if app.form['no_redirect'] == '1' {
 		return app.text('ok')
 	}
+
 	return app.redirect('/' + username)
 }

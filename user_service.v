@@ -28,7 +28,7 @@ fn compare_password_with_hash(password string, salt string, hashed string) bool 
 	return hash_password_with_salt(password, salt) == hashed
 }
 
-pub fn (mut app App) add_user(username string, password string, salt string, emails []string, github bool, is_admin bool) bool {
+pub fn (mut app App) register_user(username string, password string, salt string, emails []string, github bool, is_admin bool) bool {
 	mut user := app.find_user_by_username(username) or { User{} }
 
 	if user.id != 0 && user.is_registered {
@@ -48,18 +48,23 @@ pub fn (mut app App) add_user(username string, password string, salt string, ema
 			github_username: username
 			is_admin: is_admin
 		}
-		app.insert_user(user)
+
+		app.add_user(user)
+
 		mut u := app.find_user_by_username(user.username) or {
 			app.info('User was not inserted')
 			return false
 		}
+
 		if u.password != user.password || u.username != user.username {
 			app.info('User was not inserted')
 			return false
 		}
+
 		for email in emails {
 			app.add_email(u.id, email)
 		}
+
 		u.emails = app.find_user_emails(u.id)
 	} else {
 		// Update existing user
@@ -68,6 +73,7 @@ pub fn (mut app App) add_user(username string, password string, salt string, ema
 
 			return true
 		}
+
 		if user.is_registered {
 			sql app.db {
 				update User set is_github = true where id == user.id
@@ -82,6 +88,7 @@ pub fn (mut app App) add_user(username string, password string, salt string, ema
 
 fn (mut app App) create_user_dir(username string) {
 	user_path := '$app.settings.repo_storage_path/$username'
+
 	os.mkdir(user_path) or {
 		app.info('Failed to create $user_path')
 		app.info('Error: $err')
@@ -106,11 +113,14 @@ pub fn (mut app App) create_empty_user(username string, email string) int {
 		username: username
 		is_registered: false
 	}
-	app.insert_user(user)
+
+	app.add_user(user)
+
 	u := app.find_user_by_username(user.username) or {
 		app.info('User was not inserted')
 		return -1
 	}
+
 	if user.username != u.username {
 		app.info('User was not inserted')
 		return -1
@@ -121,7 +131,7 @@ pub fn (mut app App) create_empty_user(username string, email string) int {
 	return u.id
 }
 
-pub fn (mut app App) insert_user(user User) {
+pub fn (mut app App) add_user(user User) {
 	sql app.db {
 		insert user into User
 	}
@@ -155,6 +165,7 @@ pub fn (mut app App) find_username_by_id(id int) string {
 	user := sql app.db {
 		select from User where id == id limit 1
 	}
+
 	return user.username
 }
 
@@ -162,12 +173,16 @@ pub fn (mut app App) find_user_by_username(username string) ?User {
 	users := sql app.db {
 		select from User where username == username
 	}
+
 	if users.len == 0 {
 		return error('User not found')
 	}
+
 	mut u := users[0]
+
 	emails := app.find_user_emails(u.id)
 	u.emails = emails
+
 	return u
 }
 
@@ -175,11 +190,14 @@ pub fn (mut app App) find_user_by_id(id2 int) ?User {
 	mut user := sql app.db {
 		select from User where id == id2
 	}
+
 	if user.id == 0 {
 		return none
 	}
+
 	emails := app.find_user_emails(user.id)
 	user.emails = emails
+
 	return user
 }
 
@@ -187,11 +205,14 @@ pub fn (mut app App) find_user_by_github_username(name string) ?User {
 	mut user := sql app.db {
 		select from User where github_username == name limit 1
 	}
+
 	if user.id == 0 {
 		return none
 	}
+
 	emails := app.find_user_emails(user.id)
 	user.emails = emails
+
 	return user
 }
 
@@ -254,7 +275,7 @@ pub fn (mut app App) get_users_count() int {
 	}
 }
 
-pub fn (mut app App) nr_repo_contributor(id int) int {
+pub fn (mut app App) get_count_repo_contributors(id int) int {
 	return sql app.db {
 		select count from Contributor where repo_id == id
 	}
@@ -269,19 +290,22 @@ pub fn (mut app App) contains_contributor(user_id int, repo_id int) bool {
 }
 
 pub fn (mut app App) increment_user_post(mut user User) {
-	user.nr_posts++
+	user.posts_count++
+
 	u := *user
 	id := u.id
 	now := int(time.now().unix)
 	lastplus := int(time.unix(u.last_post_time).add_days(1).unix)
+
 	if now >= lastplus {
 		user.last_post_time = now
 		sql app.db {
-			update User set nr_posts = 0, last_post_time = now where id == id
+			update User set posts_count = 0, last_post_time = now where id == id
 		}
 	}
+
 	sql app.db {
-		update User set nr_posts = nr_posts + 1 where id == id
+		update User set posts_count = posts_count + 1 where id == id
 	}
 }
 
@@ -299,6 +323,7 @@ pub fn (mut app App) update_user_login_attempts(user_id int, attempts int) {
 
 pub fn (mut app App) check_user_blocked(user_id int) bool {
 	user := app.find_user_by_id(user_id) or { return false }
+
 	return user.is_blocked
 }
 
@@ -306,6 +331,7 @@ fn (mut app App) change_username(user_id int, username string) {
 	sql app.db {
 		update User set username = username where id == user_id
 	}
+
 	sql app.db {
 		update Repo set user_name = username where user_id == user_id
 	}
@@ -315,7 +341,8 @@ fn (mut app App) incement_namechanges(user_id int) {
 	now := int(time.now().unix)
 
 	sql app.db {
-		update User set nr_namechanges = nr_namechanges + 1, last_namechange_time = now where id == user_id
+		update User set namechanges_count = namechanges_count + 1, last_namechange_time = now
+		where id == user_id
 	}
 }
 

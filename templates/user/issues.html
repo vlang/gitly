@@ -22,12 +22,12 @@
 				#@issue.id opened @issue.relative_time()
 				by @issue.author_name
 			}
-			@if issue.nr_comments > 0
+			@if issue.comments_count > 0
 			.comments {
-				@if issue.nr_comments == 1
-					@issue.nr_comments comment
+				@if issue.comments_count == 1
+					@issue.comments_count comment
 				@else
-					@issue.nr_comments comments
+					@issue.comments_count comments
 				@end
 			}
 			@end

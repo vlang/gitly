@@ -14,9 +14,9 @@ struct User {
 	oauth_state     string [skip]
 mut:
 	// for github oauth XSRF protection
-	nr_namechanges       int
+	namechanges_count    int
 	last_namechange_time int
-	nr_posts             int
+	posts_count          int
 	last_post_time       int
 	avatar               string
 	b_avatar             bool    [skip]
