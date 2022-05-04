@@ -74,7 +74,7 @@ fn (mut app App) delete_repo_issues(repo_id int) {
 
 fn (mut app App) increment_issue_comments(id int) {
 	sql app.db {
-		update Issue set nr_comments = nr_comments + 1 where id == id
+		update Issue set comments_count = comments_count + 1 where id == id
 	}
 }
 

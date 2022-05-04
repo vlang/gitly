@@ -3,20 +3,20 @@ module main
 struct Issue {
 	id int [primary; sql: serial]
 mut:
-	author_id     int
-	repo_id       int
-	is_pr         bool
-	assigned      []int       [skip]
-	labels        []int       [skip]
-	nr_comments   int
-	title         string
-	text          string
-	created_at    int
-	status        IssueStatus [skip]
-	linked_issues []int       [skip]
-	author_name   string      [skip]
-	repo_author   string      [skip]
-	repo_name     string      [skip]
+	author_id      int
+	repo_id        int
+	is_pr          bool
+	assigned       []int       [skip]
+	labels         []int       [skip]
+	comments_count int
+	title          string
+	text           string
+	created_at     int
+	status         IssueStatus [skip]
+	linked_issues  []int       [skip]
+	author_name    string      [skip]
+	repo_author    string      [skip]
+	repo_name      string      [skip]
 }
 
 enum IssueStatus {
