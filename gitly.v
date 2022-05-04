@@ -28,6 +28,7 @@ pub mut:
 	db sqlite.DB
 mut:
 	version       string        [vweb_global]
+	logger        log.Log       [vweb_global]
 	settings      GitlySettings
 	current_path  string
 	repo          Repo
@@ -35,8 +36,6 @@ mut:
 	page_gen_time string
 	is_tree       bool
 	show_menu     bool
-	file_log      log.Log
-	cli_log       log.Log
 	logged_in     bool
 	user          User
 	path_split    []string
@@ -67,11 +66,7 @@ fn new_app() &App {
 
 	create_log_directory_if_not_exists('logs')
 
-	app.file_log.set_level(.info)
-	app.cli_log.set_level(.info)
-
-	now := time.now()
-	app.file_log.set_full_logpath('./logs/log_${now.ymmdd()}.log')
+	app.setup_logger()
 
 	mut version := os.read_file('static/assets/version') or { 'unknown' }
 	git_result := os.execute('git rev-parse --short HEAD')
@@ -102,14 +97,29 @@ fn new_app() &App {
 	return app
 }
 
-pub fn (mut app App) info(msg string) {
-	app.file_log.info(msg)
-	app.cli_log.info(msg)
+fn (mut app App) setup_logger() {
+	app.logger.set_level(.debug)
+
+	app.logger.set_full_logpath('./logs/log_${time.now().ymmdd()}.log')
+	app.logger.log_to_console_too()
 }
 
 pub fn (mut app App) warn(msg string) {
-	app.file_log.warn(msg)
-	app.cli_log.warn(msg)
+	app.logger.warn(msg)
+
+	app.logger.flush()
+}
+
+pub fn (mut app App) info(msg string) {
+	app.logger.info(msg)
+
+	app.logger.flush()
+}
+
+pub fn (mut app App) debug(msg string) {
+	app.logger.debug(msg)
+
+	app.logger.flush()
 }
 
 pub fn (mut app App) init_server() {
