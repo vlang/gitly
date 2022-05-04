@@ -90,7 +90,7 @@ fn (mut app App) update_branches(r &Repo) {
 		}
 	}
 
-	_ := r.git('checkout master')
+	r.git('checkout master')
 }
 
 fn (mut app App) create_branch(repo_id int, name string, author string, hash string, date int) {
