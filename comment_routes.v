@@ -3,13 +3,10 @@ module main
 import vweb
 
 ['/:user/:repo/comments'; post]
-pub fn (mut app App) handle_add_comment(user string, repo string) vweb.Result {
+pub fn (mut app App) handle_add_comment(user string, repo string, text string, issue_id string) vweb.Result {
 	if !app.exists_user_repo(user, repo) {
 		return app.not_found()
 	}
-
-	text := app.form['text']
-	issue_id := app.form['issue_id']
 
 	if text == '' || issue_id == '' || !app.logged_in {
 		return app.redirect('/$user/$repo/issue/$issue_id')

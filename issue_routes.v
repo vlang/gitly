@@ -23,7 +23,7 @@ pub fn (mut app App) handle_get_user_issues(username string) vweb.Result {
 }
 
 ['/:user/:repo/issues'; post]
-pub fn (mut app App) handle_add_repo_issue(user string, repo string) vweb.Result {
+pub fn (mut app App) handle_add_repo_issue(user string, repo string, title string, text string) vweb.Result {
 	if !app.exists_user_repo(user, repo) {
 		return app.not_found()
 	}
@@ -31,9 +31,6 @@ pub fn (mut app App) handle_add_repo_issue(user string, repo string) vweb.Result
 	if !app.logged_in || (app.logged_in && app.user.posts_count >= posts_per_day) {
 		return app.redirect_to_index()
 	}
-
-	title := app.form['title'] // TODO use fn args
-	text := app.form['text']
 
 	if title == '' || text == '' {
 		return app.redirect('/$user/$repo/new_issue')
