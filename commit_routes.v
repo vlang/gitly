@@ -18,15 +18,17 @@ pub fn (mut app App) commits(username string, repo string, page int) vweb.Result
 	app.show_menu = true
 
 	mut commits := app.find_repo_commits_as_page(app.repo.id, page)
+
+	// TODO: move to render logic
 	mut b_author := false
 	mut last := false
 	mut first := false
 
-	if app.repo.nr_commits > commits_per_page {
+	if app.repo.commits_count > commits_per_page {
 		offset := page * commits_per_page
-		delta := app.repo.nr_commits - offset
+		delta := app.repo.commits_count - offset
 		if delta > 0 {
-			if delta == app.repo.nr_commits && page == 0 {
+			if delta == app.repo.commits_count && page == 0 {
 				first = true
 			} else {
 				last = true
@@ -80,6 +82,7 @@ pub fn (mut app App) commit(username string, repo string, hash string) vweb.Resu
 
 	commit := app.find_repo_commit_by_hash(app.repo.id, hash)
 	changes := commit.get_changes(app.repo)
+
 	mut all_adds := 0
 	mut all_dels := 0
 	mut sources := map[string]vweb.RawHtml{}

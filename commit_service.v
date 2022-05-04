@@ -83,12 +83,13 @@ fn (mut app App) get_last_repo_commits(repo_id int) []Commit {
 
 fn (mut app App) find_repo_commits_as_page(repo_id int, page int) []Commit {
 	offs := page * commits_per_page
+
 	return sql app.db {
 		select from Commit where repo_id == repo_id order by created_at desc limit 35 offset offs
 	}
 }
 
-fn (mut app App) nr_repo_commits(repo_id int) int {
+fn (mut app App) get_count_repo_commits(repo_id int) int {
 	return sql app.db {
 		select count from Commit where repo_id == repo_id
 	}
