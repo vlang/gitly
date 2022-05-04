@@ -7,36 +7,31 @@ const (
 		LangStat{
 			name: 'V'
 			pct: 989
-			nr_lines: 96657
+			lines_count: 96657
 			color: '#5d87bd'
 		},
 		LangStat{
 			name: 'JavaScript'
-			nr_lines: 1131
+			lines_count: 1131
 			color: '#f1e05a'
 			pct: 11
 		},
 	]
 )
 
-struct LangStat {
-	id       int    [primary; sql: serial]
-	repo_id  int    [unique: 'langstat']
-	name     string [unique: 'langstat']
-	nr_lines int
-	pct      int // out of 1000
-	color    string
-}
-
 pub fn (l &LangStat) pct_html() vweb.RawHtml {
 	x := f64(l.pct) / 10.0
-	sloc := if l.nr_lines < 1000 { l.nr_lines.str() } else { (l.nr_lines / 1000).str() + 'k' }
+	sloc := if l.lines_count < 1000 {
+		l.lines_count.str()
+	} else {
+		(l.lines_count / 1000).str() + 'k'
+	}
+
 	return '<span>$x%</span> <span class=lang-stat-loc>$sloc loc</span>'
 }
 
 pub fn (mut app App) find_repo_lang_stats(repo_id int) []LangStat {
-	lang_stats := sql app.db {
+	return sql app.db {
 		select from LangStat where repo_id == repo_id order by pct desc
 	}
-	return lang_stats
 }
