@@ -42,23 +42,23 @@
 			<p>@issue.author_name</p>
 		</a>
 	@end
+
+	<div class="buttons">
+		<br>
+		@if first
+			<a href="/@app.user.username/issues/@last_site" class="button disabled">Prev</a>
+		@else
+			<a href="/@app.user.username/issues/@last_site" class="button">Prev</a>/
+		@end
+
+		@if last
+			<a href="/@app.user.username/issues/@next_site" class="button disabled">Next</a>
+		@else
+			<a href="/@app.user.username/issues/@next_site" class="button">Next</a>
+		@end
+	</div>
 @else
 	<h2>No issues</h2>
 @end
-
-<div class="buttons">
-	<br>
-@if first
-	<a href="/@app.user.username/issues/@last_site" class="button disabled">Prev</a>
-@else
-	<a href="/@app.user.username/issues/@last_site" class="button">Prev</a>/
-@end
-
-@if last
-	<a href="/@app.user.username/issues/@next_site" class="button disabled">Next</a>
-@else
-	<a href="/@app.user.username/issues/@next_site" class="button">Next</a>
-@end
-</div>
 
 @include '../footer.html'
