@@ -39,14 +39,13 @@ fn (mut app App) repo_belongs_to(user string, repo string) bool {
 }
 
 ['/:user/:repo/settings'; post]
-pub fn (mut app App) handle_update_repo_settings(user string, repo string) vweb.Result {
+pub fn (mut app App) handle_update_repo_settings(user string, repo string, webhook_secret string) vweb.Result {
 	if !app.repo_belongs_to(user, repo) {
 		return app.redirect_to_current_repository()
 	}
 
-	if 'webhook_secret' in app.form && app.form['webhook_secret'] != app.repo.webhook_secret
-		&& app.form['webhook_secret'] != '' {
-		webhook := sha1.hexhash(app.form['webhook_secret'])
+	if webhook_secret != '' && webhook_secret != app.repo.webhook_secret {
+		webhook := sha1.hexhash(webhook_secret)
 		app.update_repo_webhook(app.repo.id, webhook)
 	}
 
@@ -59,7 +58,7 @@ pub fn (mut app App) handle_repo_delete(user string, repo string) vweb.Result {
 		return app.redirect_to_current_repository()
 	}
 
-	if 'verify' in app.form && app.form['verify'] == '$user/$repo' {
+	if app.form['verify'] == '$user/$repo' {
 		go app.delete_repo(app.repo.id, app.repo.git_dir, app.repo.name)
 	} else {
 		app.error('Verification failed')
@@ -70,15 +69,14 @@ pub fn (mut app App) handle_repo_delete(user string, repo string) vweb.Result {
 }
 
 ['/:user/:repo/move'; post]
-pub fn (mut app App) handle_repo_move(user string, repo string) vweb.Result {
+pub fn (mut app App) handle_repo_move(user string, repo string, dest string, verify string) vweb.Result {
 	if !app.repo_belongs_to(user, repo) {
 		return app.redirect_to_current_repository()
 	}
 
-	if 'verify' in app.form && 'dest' in app.form && app.form['verify'] == '$user/$repo' {
-		uname := app.form['dest']
-		dest_user := app.find_user_by_username(uname) or {
-			app.error('Unknown user $uname')
+	if dest != '' && verify == '$user/$repo' {
+		dest_user := app.find_user_by_username(dest) or {
+			app.error('Unknown user $dest')
 			return app.repo_settings(user, repo)
 		}
 
@@ -150,7 +148,9 @@ pub fn (mut app App) new() vweb.Result {
 }
 
 ['/new'; post]
-pub fn (mut app App) handle_new_repo() vweb.Result {
+pub fn (mut app App) handle_new_repo(name string, clone_url string) vweb.Result {
+	mut valid_clone_url := clone_url
+
 	if !app.logged_in {
 		return app.redirect_to_login()
 	}
@@ -161,7 +161,6 @@ pub fn (mut app App) handle_new_repo() vweb.Result {
 		return app.new()
 	}
 
-	name := app.form['name']
 	if name.len > max_repo_name_len {
 		app.error('Repository name is too long (should be fewer than $max_repo_name_len characters)')
 		return app.new()
@@ -177,9 +176,8 @@ pub fn (mut app App) handle_new_repo() vweb.Result {
 		return app.new()
 	}
 
-	mut clone_url := app.form['clone_url']
 	if !clone_url.starts_with('https://') {
-		clone_url = 'https://' + clone_url
+		valid_clone_url = 'https://' + clone_url
 	}
 
 	app.repo = Repo{
@@ -188,7 +186,7 @@ pub fn (mut app App) handle_new_repo() vweb.Result {
 		user_id: app.user.id
 		primary_branch: 'master'
 		user_name: app.user.username
-		clone_url: clone_url
+		clone_url: valid_clone_url
 	}
 
 	if app.repo.clone_url == '' {

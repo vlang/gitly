@@ -17,10 +17,7 @@ pub fn (mut app App) login() vweb.Result {
 }
 
 ['/login'; post]
-pub fn (mut app App) handle_login() vweb.Result {
-	username := app.form['username']
-	password := app.form['password']
-
+pub fn (mut app App) handle_login(username string, password string) vweb.Result {
 	if username == '' || password == '' {
 		return app.redirect_to_login()
 	}
@@ -79,15 +76,14 @@ pub fn (mut app App) user_settings(user string) vweb.Result {
 }
 
 ['/:user/settings'; post]
-pub fn (mut app App) handle_update_user_settings(user string) vweb.Result {
+pub fn (mut app App) handle_update_user_settings(user string, name string) vweb.Result {
 	if !app.logged_in || user != app.user.username {
 		return app.redirect_to_index()
 	}
 
-	name := if 'name' in app.form { app.form['name'] } else { '' }
-
 	if name == '' {
 		app.error('New name is empty')
+
 		return app.user_settings(user)
 	}
 
@@ -135,10 +131,8 @@ pub fn (mut app App) register() vweb.Result {
 }
 
 ['/register'; post]
-pub fn (mut app App) handle_register() vweb.Result {
+pub fn (mut app App) handle_register(username string, email string, password string, no_redirect string) vweb.Result {
 	no_users := app.get_users_count() == 0
-
-	username := app.form['username']
 
 	if username in ['login', 'register', 'new', 'new_post', 'oauth'] {
 		app.error('Username `$username` is not available')
@@ -168,22 +162,21 @@ pub fn (mut app App) handle_register() vweb.Result {
 			return app.register()
 		}
 	}
-	if app.form['password'] == '' {
+	if password == '' {
 		app.error('Password cannot be empty')
+
 		return app.register()
 	}
 
 	salt := generate_salt()
-	password := hash_password_with_salt(app.form['password'], salt)
-
-	email := app.form['email']
+	hashed_password := hash_password_with_salt(password, salt)
 
 	if username == '' || email == '' {
 		app.error('Username or Email cannot be emtpy')
 		return app.register()
 	}
 
-	if !app.register_user(username, password, salt, [email], false, no_users) {
+	if !app.register_user(username, hashed_password, salt, [email], false, no_users) {
 		app.error('Failed to register')
 		return app.register()
 	}
@@ -202,7 +195,7 @@ pub fn (mut app App) handle_register() vweb.Result {
 	app.auth_user(user, client_ip)
 	app.add_security_log(user_id: user.id, kind: .registered)
 
-	if app.form['no_redirect'] == '1' {
+	if no_redirect == '1' {
 		return app.text('ok')
 	}
 
