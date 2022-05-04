@@ -8,13 +8,15 @@ Login
 	@app.form_error
 }
 
-<form method='post' action='login'>
+<form method='post' action='/login'>
 	<input type='text' name='username' placeholder='Username' required autofocus>
 	<input type='password' name='password' placeholder='Password' required>
 	<input type='submit' value='Login'>
 </form>
 
-<a href='https://github.com/login/oauth/authorize?response_type=code&state=@csrf&client_id=@app.settings.oauth_client_id'>Login via GitHub</a>
+@if app.settings.oauth_client_id != ''
+	<a href='https://github.com/login/oauth/authorize?response_type=code&state=@csrf&client_id=@app.settings.oauth_client_id'>Login via GitHub</a>
+@end
 
 @include 'footer.html'
 

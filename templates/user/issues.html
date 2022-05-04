@@ -22,12 +22,12 @@
 				#@issue.id opened @issue.relative_time()
 				by @issue.author_name
 			}
-			@if issue.nr_comments > 0
+			@if issue.comments_count > 0
 			.comments {
-				@if issue.nr_comments == 1
-					@issue.nr_comments comment
+				@if issue.comments_count == 1
+					@issue.comments_count comment
 				@else
-					@issue.nr_comments comments
+					@issue.comments_count comments
 				@end
 			}
 			@end
@@ -35,19 +35,30 @@
 	@end
 }
 
-<div class="buttons">
-	<br>
-@if first
-	<a href="/@app.user.username/issues/@last_site" class="button disabled">Prev</a>
-@else
-	<a href="/@app.user.username/issues/@last_site" class="button">Prev</a>/
-@end
+@if issues.len > 0
+	@for issue in issues
+		<a href="/#" class="userrepo">
+			<h3>@issue.title</h3>
+			<p>@issue.author_name</p>
+		</a>
+	@end
 
-@if last
-	<a href="/@app.user.username/issues/@next_site" class="button disabled">Next</a>
+	<div class="buttons">
+		<br>
+		@if first
+			<a href="/@app.user.username/issues/@last_site" class="button disabled">Prev</a>
+		@else
+			<a href="/@app.user.username/issues/@last_site" class="button">Prev</a>/
+		@end
+
+		@if last
+			<a href="/@app.user.username/issues/@next_site" class="button disabled">Next</a>
+		@else
+			<a href="/@app.user.username/issues/@next_site" class="button">Next</a>
+		@end
+	</div>
 @else
-	<a href="/@app.user.username/issues/@next_site" class="button">Next</a>
+	<h2>No issues</h2>
 @end
-</div>
 
 @include '../footer.html'
