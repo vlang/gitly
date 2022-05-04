@@ -25,21 +25,21 @@ enum RepoStatus {
 fn (mut app App) update_repo_in_db(repo &Repo) {
 	id := repo.id
 	desc := repo.description
-	nr_views := repo.nr_views
+	views_count := repo.views_count
 	webhook_secret := repo.webhook_secret
-	nr_tags := repo.nr_tags
+	tags_count := repo.tags_count
 	is_public := if repo.is_public { 1 } else { 0 }
-	nr_open_issues := repo.nr_open_issues
-	nr_open_prs := repo.nr_open_prs
-	nr_branches := repo.nr_branches
-	nr_releases := repo.nr_releases
-	nr_contributors := repo.nr_contributors
-	nr_commits := repo.nr_commits
+	open_issues_count := repo.open_issues_count
+	open_prs_count := repo.open_prs_count
+	branches_count := repo.branches_count
+	releases_count := repo.releases_count
+	contributors_count := repo.contributors_count
+	commits_count := repo.commits_count
 	sql app.db {
-		update Repo set description = desc, nr_views = nr_views, is_public = is_public, webhook_secret = webhook_secret,
-		nr_tags = nr_tags, nr_open_issues = nr_open_issues, nr_open_prs = nr_open_prs,
-		nr_releases = nr_releases, nr_contributors = nr_contributors, nr_commits = nr_commits,
-		nr_branches = nr_branches where id == id
+		update Repo set description = desc, views_count = views_count, is_public = is_public,
+		webhook_secret = webhook_secret, tags_count = tags_count, open_issues_count = open_issues_count,
+		open_prs_count = open_prs_count, releases_count = releases_count, contributors_count = contributors_count,
+		commits_count = commits_count, branches_count = branches_count where id == id
 	}
 }
 
@@ -53,7 +53,7 @@ fn (mut app App) find_repo_by_name(user int, name string) ?Repo {
 	return x
 }
 
-fn (mut app App) nr_user_repos(user_id int) int {
+fn (mut app App) get_count_user_repos(user_id int) int {
 	return sql app.db {
 		select count from Repo where user_id == user_id
 	}
@@ -65,7 +65,7 @@ fn (mut app App) find_user_repos(user_id int) []Repo {
 	}
 }
 
-fn (mut app App) nr_user_public_repos(user_id int) int {
+fn (mut app App) get_count_user_public_repos(user_id int) int {
 	return sql app.db {
 		select count from Repo where user_id == user_id && is_public == true
 	}
@@ -114,28 +114,30 @@ fn (mut app App) retrieve_repo(id int) Repo {
 
 fn (mut app App) increment_repo_views(repo_id int) {
 	sql app.db {
-		update Repo set nr_views = nr_views + 1 where id == repo_id
+		update Repo set views_count = views_count + 1 where id == repo_id
 	}
 }
 
 fn (mut app App) increment_file_views(file_id int) {
 	sql app.db {
-		update File set nr_views = nr_views + 1 where id == file_id
+		update File set views_count = views_count + 1 where id == file_id
 	}
 }
 
 fn (mut app App) increment_repo_issues(repo_id int) {
 	sql app.db {
-		update Repo set nr_open_issues = nr_open_issues + 1 where id == repo_id
+		update Repo set open_issues_count = open_issues_count + 1 where id == repo_id
 	}
-	app.repo.nr_open_issues++
+
+	app.repo.open_issues_count++
 }
 
-fn (mut app App) update_repo_nr_commits(repo_id int, nr_commits int) {
+fn (mut app App) update_repo_commits_count(repo_id int, commits_count int) {
 	sql app.db {
-		update Repo set nr_commits = nr_commits where id == repo_id
+		update Repo set commits_count = commits_count where id == repo_id
 	}
-	app.repo.nr_commits = nr_commits
+
+	app.repo.commits_count = commits_count
 }
 
 fn (mut app App) update_repo_webhook(repo_id int, webhook string) {
@@ -144,11 +146,11 @@ fn (mut app App) update_repo_webhook(repo_id int, webhook string) {
 	}
 }
 
-fn (mut app App) update_repo_nr_contributor(repo_id int, nr_contributors int) {
+fn (mut app App) update_repo_contributors_count(repo_id int, contributors_count int) {
 	sql app.db {
-		update Repo set nr_contributors = nr_contributors where id == repo_id
+		update Repo set contributors_count = contributors_count where id == repo_id
 	}
-	app.repo.nr_contributors = nr_contributors
+	app.repo.contributors_count = contributors_count
 }
 
 fn (mut app App) add_repo(repo Repo) {
@@ -234,19 +236,21 @@ fn (mut app App) update_repo() {
 				int(commit_date.unix))
 		}
 	}
-	app.info(r.nr_contributors.str())
+	app.info(r.contributors_count.str())
 	app.fetch_branches(r)
-	r.nr_commits = app.nr_repo_commits(r.id)
-	r.nr_contributors = app.nr_repo_contributor(r.id)
-	r.nr_branches = app.get_count_repo_branches(r.id)
-	app.update_repo_nr_commits(r.id, r.nr_commits)
-	app.update_repo_nr_contributor(r.id, r.nr_contributors)
+
+	r.commits_count = app.get_count_repo_commits(r.id)
+	r.contributors_count = app.get_count_repo_contributors(r.id)
+	r.branches_count = app.get_count_repo_branches(r.id)
+
+	app.update_repo_commits_count(r.id, r.commits_count)
+	app.update_repo_contributors_count(r.id, r.contributors_count)
 
 	// TODO: TEMPORARY - UNTIL WE GET PERSISTENT RELEASE INFO
 	for tag in app.get_all_repo_tags(r.id) {
 		app.add_release(tag.id, r.id)
 
-		r.nr_releases++
+		r.releases_count++
 	}
 	wg.wait()
 
@@ -296,12 +300,12 @@ fn (mut app App) update_repo_data(mut r Repo) {
 		}
 	}
 
-	r.nr_commits = app.nr_repo_commits(r.id)
-	r.nr_contributors = app.nr_repo_contributor(r.id)
-	r.nr_branches = app.get_count_repo_branches(r.id)
+	r.commits_count = app.get_count_repo_commits(r.id)
+	r.contributors_count = app.get_count_repo_contributors(r.id)
+	r.branches_count = app.get_count_repo_branches(r.id)
 
-	app.update_repo_nr_commits(r.id, r.nr_commits)
-	app.update_repo_nr_contributor(r.id, r.nr_contributors)
+	app.update_repo_commits_count(r.id, r.commits_count)
+	app.update_repo_contributors_count(r.id, r.contributors_count)
 	app.update_branches(r)
 	app.update_repo_in_db(r)
 
@@ -346,7 +350,7 @@ fn (r &Repo) analyse_lang(mut wg sync.WaitGroup, app &App) {
 			name: lang_data.name
 			pct: pct
 			color: lang_data.color
-			nr_lines: amount
+			lines_count: amount
 		}
 	}
 	tmp_a.sort()
@@ -423,59 +427,73 @@ fn (r &Repo) get_all_files(path string) []string {
 	return returnval
 }
 
-fn (r &Repo) nr_commits_fmt() vweb.RawHtml {
-	nr := r.nr_commits
+fn (r &Repo) format_commits_count() vweb.RawHtml {
+	nr := r.commits_count
+
 	if nr == 1 {
 		return '<b>1</b> commit'
 	}
+
 	return '<b>$nr</b> commits'
 }
 
-fn (r &Repo) nr_branches_fmt() vweb.RawHtml {
-	nr := r.nr_branches
+fn (r &Repo) format_branches_count() vweb.RawHtml {
+	nr := r.branches_count
+
 	if nr == 1 {
 		return '<b>1</b> branch'
 	}
+
 	return '<b>$nr</b> branches'
 }
 
-fn (r &Repo) nr_open_prs_fmt() vweb.RawHtml {
-	nr := r.nr_open_prs
+fn (r &Repo) format_open_prs_count() vweb.RawHtml {
+	nr := r.open_prs_count
+
 	if nr == 1 {
 		return '<b>1</b> pull request'
 	}
+
 	return '<b>$nr</b> pull requests'
 }
 
-fn (r &Repo) nr_open_issues_fmt() vweb.RawHtml {
-	nr := r.nr_open_issues
+fn (r &Repo) format_open_issues_count() vweb.RawHtml {
+	nr := r.open_issues_count
+
 	if nr == 1 {
 		return '<b>1</b> issue'
 	}
+
 	return '<b>$nr</b> issues'
 }
 
-fn (r &Repo) nr_contributors_fmt() vweb.RawHtml {
-	nr := r.nr_contributors
+fn (r &Repo) format_contributors_count() vweb.RawHtml {
+	nr := r.contributors_count
+
 	if nr == 1 {
 		return '<b>1</b> contributor'
 	}
+
 	return '<b>$nr</b> contributors'
 }
 
-fn (r &Repo) nr_topics_fmt() vweb.RawHtml {
-	nr := r.nr_topics
+fn (r &Repo) format_topics_count() vweb.RawHtml {
+	nr := r.topics_count
+
 	if nr == 1 {
 		return '<b>1</b> discussion'
 	}
+
 	return '<b>$nr</b> discussions'
 }
 
-fn (r &Repo) nr_releases_fmt() vweb.RawHtml {
-	nr := r.nr_releases
+fn (r &Repo) format_releases_count() vweb.RawHtml {
+	nr := r.releases_count
+
 	if nr == 1 {
 		return '<b>1</b> release'
 	}
+
 	return '<b>$nr</b> releases'
 }
 
