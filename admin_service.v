@@ -35,21 +35,9 @@ pub fn (mut app App) remove_admin(user_id int) {
 }
 
 pub fn (mut app App) update_gitly_settings(oauth_client_id string, oauth_client_secret string, hostname string, repo_storage_path string) {
-	if oauth_client_id != '' {
-		app.settings.oauth_client_id = oauth_client_id
-	}
+	app.update_settings(oauth_client_id, oauth_client_secret, hostname, repo_storage_path)
 
-	if oauth_client_secret != '' {
-		app.settings.oauth_client_secret = oauth_client_secret
-	}
-
-	if hostname != '' {
-		app.settings.hostname = hostname
-	}
-
-	app.settings.repo_storage_path = repo_storage_path
-
-	app.update_settings()
+	app.load_settings()
 }
 
 fn (mut app App) is_admin() bool {

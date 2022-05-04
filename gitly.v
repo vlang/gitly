@@ -28,13 +28,13 @@ pub mut:
 	db sqlite.DB
 mut:
 	version       string        [vweb_global]
+	settings      GitlySettings
 	current_path  string
 	repo          Repo
 	html_path     vweb.RawHtml
 	page_gen_time string
 	is_tree       bool
 	show_menu     bool
-	settings      GitlySettings
 	file_log      log.Log
 	cli_log       log.Log
 	logged_in     bool
@@ -117,6 +117,8 @@ pub fn (mut app App) init_server() {
 
 pub fn (mut app App) before_request() {
 	app.logged_in = app.is_logged_in()
+
+	app.load_settings()
 
 	if app.logged_in {
 		app.user = app.get_user_from_cookies() or {
