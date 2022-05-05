@@ -25,10 +25,27 @@ jobs:
         run: |
           make
           sudo ./v symlink
+
       - name: Compile gitly
         run: |
           cd gitly
           v .
+
+      - name: Compile gitly with -autofree
+        run: |
+          cd gitly
+          v -autofree .
+
+      - name: Compile gitly with -prod
+        run: |
+          cd gitly
+          v -prod .
+
+      - name: Run gitly
+        run: |
+          cd gitly
+          v run tests/first_run.v
+
   macos:
     runs-on: macos-latest
     steps:
@@ -49,16 +66,27 @@ jobs:
         run: |
           make
           ./v symlink
+
       - name: Compile gitly
         run: |
           cd gitly
           v .
+
+      - name: Compile gitly with -autofree
+        run: |
+          cd gitly
+          v -autofree .
+
+      - name: Compile gitly with -prod
+        run: |
+          cd gitly
           v -prod .
+
       - name: Run gitly
         run: |
           cd gitly
-          v -o x tests/first_run.v
-          ./x
+          v run tests/first_run.v
+
 #      - name: Cross compilation
 #        run: |
 #          cd gitly
@@ -118,6 +146,7 @@ jobs:
       - name: Build V
         run: |
           ./make.bat -gcc
+
       - name: Compile gitly
         run: |
           .\v.exe gitly
@@ -147,12 +176,18 @@ jobs:
           echo $VFLAGS
           make
           sudo ./v symlink
-      - name: Compile gitly
-        run: |
-          cd gitly
-          v .
 
       - name: Compile gitly with -autofree
         run: |
           cd gitly
           v -autofree .
+
+      - name: Compile gitly
+        run: |
+          cd gitly
+          v .
+
+      - name: Run gitly
+        run: |
+          cd gitly
+          v run tests/first_run.v
