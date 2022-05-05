@@ -151,3 +151,8 @@ jobs:
         run: |
           cd gitly
           v .
+
+      - name: Compile gitly with -autofree
+        run: |
+          cd gitly
+          v -autofree .
