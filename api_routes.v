@@ -12,8 +12,9 @@ pub fn (mut app App) handle_api_issues(user string, repo string) vweb.Result {
 	}
 
 	issues := app.get_all_repo_issues(app.repo.id)
-
-	return app.json(json.encode(issues))
+	js := json.encode(issues)
+	// return app.json(json.encode(issues)) // TODO bring this back once the autofree bug is fixed
+	return app.json(js)
 }
 
 ['/api/:user/:repo/commits']
@@ -23,6 +24,7 @@ pub fn (mut app App) handle_api_commits(user string, repo string) vweb.Result {
 	}
 
 	commits := app.get_last_repo_commits(app.repo.id)
-
-	return app.json(json.encode(commits))
+	js := json.encode(commits)
+	// return app.json(json.encode(commits)) // TODO bring this back once the autofree bug is fixed
+	return app.json(js)
 }
