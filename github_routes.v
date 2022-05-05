@@ -37,7 +37,8 @@ pub fn (mut app App) handle_oauth() vweb.Result {
 		state: csrf
 	}
 
-	access_response := http.post_json('https://github.com/login/oauth/access_token', json.encode(oauth_request)) or {
+	js := json.encode(oauth_request)
+	access_response := http.post_json('https://github.com/login/oauth/access_token', js) or {
 		app.info(err.msg())
 
 		return app.redirect_to_index()
