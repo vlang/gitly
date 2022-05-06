@@ -72,14 +72,25 @@ pub fn (mut app App) user(username string) vweb.Result {
 
 ['/:user/settings']
 pub fn (mut app App) user_settings(user string) vweb.Result {
+	is_users_settings := user == app.user.username
+
+	if !app.logged_in || !is_users_settings {
+		return app.redirect_to_index()
+	}
+
 	return $vweb.html()
 }
 
 ['/:user/settings'; post]
-pub fn (mut app App) handle_update_user_settings(user string, name string) vweb.Result {
-	if !app.logged_in || user != app.user.username {
+pub fn (mut app App) handle_update_user_settings(user string) vweb.Result {
+	is_users_settings := user == app.user.username
+
+	if !app.logged_in || !is_users_settings {
 		return app.redirect_to_index()
 	}
+
+	// TODO: uneven parameters count (2) in `handle_update_user_settings`, compared to the vweb route `['/:user/settings', 'post']` (1)
+	name := app.form['name']
 
 	if name == '' {
 		app.error('New name is empty')
