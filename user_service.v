@@ -261,8 +261,9 @@ pub fn (mut app App) get_all_registered_users() []User {
 		users[i].b_avatar = user.avatar != ''
 
 		if !users[i].b_avatar {
-			users[i].avatar = user.username.bytes()[0].str()
+			users[i].avatar = user.username[..1]
 		}
+
 		users[i].emails = app.find_user_emails(user.id)
 	}
 
