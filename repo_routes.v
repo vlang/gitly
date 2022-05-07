@@ -5,6 +5,7 @@ import crypto.sha1
 import os
 import highlight
 import time
+import validation
 
 ['/:username/repos']
 pub fn (mut app App) user_repos(username string) vweb.Result {
@@ -172,7 +173,15 @@ pub fn (mut app App) handle_new_repo(name string, clone_url string) vweb.Result 
 	}
 
 	if name.contains(' ') {
-		app.error('Repo name cannot contain spaces')
+		app.error('Repository name cannot contain spaces')
+		return app.new()
+	}
+
+	is_repository_name_valid := validation.is_repository_name_valid(name)
+
+	if !is_repository_name_valid {
+		app.error('Repository name is not valid')
+
 		return app.new()
 	}
 

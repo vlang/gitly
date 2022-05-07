@@ -4,6 +4,7 @@ import time
 import os
 import vweb
 import rand
+import validation
 
 pub fn (mut app App) login() vweb.Result {
 	csrf := rand.string(30)
@@ -81,7 +82,9 @@ pub fn (mut app App) handle_update_user_settings(user string, name string) vweb.
 		return app.redirect_to_index()
 	}
 
-	if name == '' {
+	is_username_empty := validation.is_string_empty(name)
+
+	if is_username_empty {
 		app.error('New name is empty')
 
 		return app.user_settings(user)
@@ -93,6 +96,14 @@ pub fn (mut app App) handle_update_user_settings(user string, name string) vweb.
 
 	if app.user.namechanges_count > max_namechanges {
 		app.error('You can not change your username, limit reached')
+
+		return app.user_settings(user)
+	}
+
+	is_username_valid := validation.is_username_valid(name)
+
+	if !is_username_valid {
+		app.error('New username is not valid')
 
 		return app.user_settings(user)
 	}
@@ -162,6 +173,15 @@ pub fn (mut app App) handle_register(username string, email string, password str
 			return app.register()
 		}
 	}
+
+	is_username_valid := validation.is_username_valid(username)
+
+	if !is_username_valid {
+		app.error('Username is not valid')
+
+		return app.register()
+	}
+
 	if password == '' {
 		app.error('Password cannot be empty')
 
