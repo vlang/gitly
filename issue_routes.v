@@ -109,9 +109,7 @@ pub fn (mut app App) issue(user string, repo string, id string) vweb.Result {
 
 	app.show_menu = true
 
-	issue_id := id.int()
-
-	mut issue := app.find_issue_by_id(issue_id) or { return app.not_found() }
+	mut issue := app.find_issue_by_id(id.int()) or { return app.not_found() }
 
 	issue.author_name = app.find_username_by_id(issue.author_id)
 	comments := app.get_all_issue_comments(issue.id)
