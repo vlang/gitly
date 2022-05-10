@@ -1,6 +1,14 @@
 @include 'header.html'
 
-<h3> Issues </h3>
+<h3>Issues</h3>
+
+<div>
+	@if app.logged_in
+		<a href='/@app.repo.user_name/@app.repo.name/issues/new'>New issue</a>
+	@end
+</div>
+
+</br>
 
 .commit-day {
 }
@@ -27,13 +35,6 @@
 		}
 	@end
 }
-
-<div>
-<br>
-@if app.logged_in
-<a href='/@app.repo.user_name/@app.repo.name/issues/new'>New issue</a>
-@end
-</div>
 
 <div class="buttons">
 	<br>

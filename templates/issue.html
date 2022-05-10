@@ -5,25 +5,32 @@
 	margin-left: 20px;
 	margin-top: 20px;
 }
+
+.form .input-comment {
+	margin-top: 20px;
+	width: 100%;
+}
 </style>
 
 <h1>@issue.title#@issue.id</h1>
 <i>by @issue.author_name</i>
 <p>@issue.text</p>
 
-
 @for comment in comments
+	.comment {
+		<i>@comment.author_name commented @comment.relative()</i>
+		<p>@comment.text</p>
+	}
+@end
 
-.comment {
-	<i>@comment.author_name commented @comment.relative()</i>
-	<p>@comment.text</p>
+.form-error {
+	@app.form_error
 }
 
-@end
 @if app.logged_in
-<form method='post' action='/@app.repo.user_name/@app.repo.name/comments'>
-	<textarea type='text' name='text' placeholder='Write the command...' required></textarea>
-	<input type='number' class='new_comment' name='issue_id' value='@issue.id' style='visibility: hidden; position: absolute;'>
+	<form method='post' class='form vertical-form' action='/@app.repo.user_name/@app.repo.name/comments'>
+		<textarea type='text' class='input-comment' name='text' placeholder='Leave a comment' required></textarea>
+			<input type='hidden' name='issue_id' value='@issue.id'>
 	<input type='submit' name='submit' value='Comment'>
-</form>
+	</form>
 @end
