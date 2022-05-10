@@ -13,10 +13,10 @@ const (
 	http_port          = 8080
 	expire_length      = 200
 	posts_per_day      = 5
-	max_username_len   = 32
+	max_username_len   = 40
 	max_login_attempts = 5
 	max_user_repos     = 10
-	max_repo_name_len  = 20
+	max_repo_name_len  = 100
 	max_namechanges    = 3
 	namechange_period  = time.hour * 24
 )
