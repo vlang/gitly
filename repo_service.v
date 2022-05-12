@@ -7,6 +7,7 @@ import vweb
 import os
 import time
 import highlight
+import validation
 
 // log_field_separator is declared as constant in case we need to change it later
 const (
@@ -85,31 +86,17 @@ fn (mut app App) find_repo_by_id(repo_id int) Repo {
 
 fn (mut app App) exists_user_repo(username string, name string) bool {
 	if username.len == 0 || name.len == 0 {
-		app.info('User or repo was not found')
-
 		return false
 	}
 
-	user := app.find_user_by_username(username) or {
-		app.info('User was not found')
+	user := app.find_user_by_username(username) or { return false }
 
-		return false
-	}
-
-	app.repo = app.find_repo_by_name(user.id, name) or {
-		app.info('Repo was not found')
-
-		return false
-	}
+	app.repo = app.find_repo_by_name(user.id, name) or { return false }
 
 	app.repo.lang_stats = app.find_repo_lang_stats(app.repo.id)
 	app.html_path = app.repo.html_path_to(app.current_path, app.repo.primary_branch)
 
 	return true
-}
-
-fn (mut app App) retrieve_repo(id int) Repo {
-	return app.repo
 }
 
 fn (mut app App) increment_repo_views(repo_id int) {
@@ -204,7 +191,9 @@ fn (mut app App) update_repo() {
 	mut wg := sync.new_waitgroup()
 	wg.add(1)
 	r_p := &r
+
 	go r_p.analyse_lang(mut wg, app)
+
 	data := r.git('--no-pager log --abbrev-commit --abbrev=7 --pretty="%h$log_field_separator%aE$log_field_separator%cD$log_field_separator%s$log_field_separator%aN"')
 	app.db.exec('BEGIN TRANSACTION')
 	for line in data.split_into_lines() {
@@ -236,6 +225,7 @@ fn (mut app App) update_repo() {
 				int(commit_date.unix))
 		}
 	}
+
 	app.info(r.contributors_count.str())
 	app.fetch_branches(r)
 
@@ -345,7 +335,6 @@ fn (r &Repo) analyse_lang(mut wg sync.WaitGroup, app &App) {
 		}
 		lang_data := langs[lang]
 		d_lang_stats << LangStat{
-			id: 0
 			repo_id: r.id
 			name: lang_data.name
 			pct: pct
@@ -497,33 +486,32 @@ fn (r &Repo) format_releases_count() vweb.RawHtml {
 	return '<b>$nr</b> releases'
 }
 
-fn (r &Repo) git(cmd_ string) string {
-	mut cmd := cmd_
-	if cmd.contains('&') || cmd.contains(';') {
+fn (r &Repo) git(command string) string {
+	if command.contains('&') || command.contains(';') {
 		return ''
 	}
 
-	if !cmd.starts_with('init') {
-		cmd = '-C $r.git_dir $cmd'
-	}
-	x := os.execute('git $cmd')
-	if x.exit_code != 0 {
-		if r.name == '' {
-			print_backtrace()
-		}
-		println(r)
-		println('git error $cmd out=$x.output')
+	command_with_path := '-C $r.git_dir $command'
+
+	command_result := os.execute('git $command_with_path')
+	command_exit_code := command_result.exit_code
+	if command_exit_code != 0 {
+		println('git error $command_with_path with $command_exit_code exit code out=$command_result.output')
+
 		return ''
 	}
-	res := x.output.trim_space()
-	if res.len > max_git_res_size {
-		println('Huge git() output: $res.len KB $cmd')
+
+	command_output := command_result.output.trim_space()
+	if command_output.len > max_git_res_size {
+		println('Huge git() output: $command_output.len KB $command_with_path')
 	}
-	return res
+
+	return command_output
 }
 
 fn (r &Repo) parse_ls(ls string, branch string) ?File {
 	words := ls.fields()
+
 	if words.len < 4 {
 		return none
 	}
@@ -554,13 +542,11 @@ fn (r &Repo) parse_ls(ls string, branch string) ?File {
 
 // Fetches all files via `git ls-tree` and saves them in db
 fn (mut app App) cache_repo_files(mut r Repo, branch string, path string) []File {
-	app.info('Repo.cache_files($r.name branch=$branch path=$path)')
-	app.info('path.len=$path.len')
 	if r.status == .caching {
-		app.info('repo `$r.name` is being cached already')
+		app.info('`$r.name` is being cached already')
 		return []
 	}
-	// ls-tree --name-only trunk
+
 	mut res := ''
 	if path == '.' {
 		r.status = .caching
@@ -580,6 +566,12 @@ fn (mut app App) cache_repo_files(mut r Repo, branch string, path string) []File
 
 	app.db.exec('BEGIN TRANSACTION')
 	for line in lines {
+		is_line_empty := validation.is_string_empty(line)
+
+		if is_line_empty {
+			continue
+		}
+
 		file := r.parse_ls(line, branch) or {
 			app.warn('failed to parse $line')
 			continue
@@ -666,25 +658,24 @@ fn (mut app App) fetch_file_info(r &Repo, file &File) {
 	}
 }
 
-fn (mut r Repo) clone() {
-	println('r.clone() url="$r.clone_url"')
-
-	if !r.clone_url.starts_with('https://') || r.clone_url.contains(' ') {
-		return
+fn (mut app App) update_repository_primary_branch(repository_id int, branch string) {
+	sql app.db {
+		update Repo set primary_branch = branch where id == repository_id
 	}
+}
 
-	println('starting git clone... $r.clone_url git_dir=$r.git_dir')
+fn (mut r Repo) clone() {
+	clone_result := os.execute('git clone "$r.clone_url" $r.git_dir')
+	close_exit_code := clone_result.exit_code
 
-	clone := os.execute('git clone "$r.clone_url" $r.git_dir')
-	if clone.exit_code != 0 {
+	if close_exit_code != 0 {
 		r.status = .clone_failed
-		println('git clone failed:')
+		println('git clone failed with exit code $close_exit_code')
 		return
 	}
 
 	r.git('config receive.denyCurrentBranch ignore')
 	r.git('config core.bare false')
-	r.git('checkout master')
 
 	r.status = .clone_done
 }
