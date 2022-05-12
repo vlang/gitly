@@ -1,6 +1,7 @@
 module main
 
 import vweb
+import validation
 
 ['/:user/:repo/issues/new']
 pub fn (mut app App) new_issue(user string, repo string) vweb.Result {
@@ -23,17 +24,24 @@ pub fn (mut app App) handle_get_user_issues(username string) vweb.Result {
 }
 
 ['/:user/:repo/issues'; post]
-pub fn (mut app App) handle_add_repo_issue(user string, repo string, title string, text string) vweb.Result {
+pub fn (mut app App) handle_add_repo_issue(user string, repo string) vweb.Result {
 	if !app.exists_user_repo(user, repo) {
 		return app.not_found()
 	}
 
+	// TODO: use captcha instead of user restrictions
 	if !app.logged_in || (app.logged_in && app.user.posts_count >= posts_per_day) {
 		return app.redirect_to_index()
 	}
 
-	if title == '' || text == '' {
-		return app.redirect('/$user/$repo/new_issue')
+	title := app.form['title']
+	text := app.form['text']
+
+	is_title_empty := validation.is_string_empty(title)
+	is_text_empty := validation.is_string_empty(text)
+
+	if is_title_empty || is_text_empty {
+		return app.redirect('/$user/$repo/issues/new')
 	}
 
 	app.increment_user_post(mut app.user)
@@ -94,21 +102,15 @@ pub fn (mut app App) issues(user string, repo string, page int) vweb.Result {
 }
 
 ['/:user/:repo/issue/:id']
-pub fn (mut app App) issue(user string, repo string, id_str string) vweb.Result {
+pub fn (mut app App) issue(user string, repo string, id string) vweb.Result {
 	if !app.exists_user_repo(user, repo) {
 		return app.not_found()
 	}
 
 	app.show_menu = true
 
-	mut id := 1
-	if id_str != '' {
-		id = id_str.int()
-	}
+	mut issue := app.find_issue_by_id(id.int()) or { return app.not_found() }
 
-	issue0 := app.find_issue_by_id(id) or { return app.not_found() }
-
-	mut issue := issue0 // TODO bug with optionals (.data)
 	issue.author_name = app.find_username_by_id(issue.author_id)
 	comments := app.get_all_issue_comments(issue.id)
 

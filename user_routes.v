@@ -89,7 +89,7 @@ pub fn (mut app App) handle_update_user_settings(user string) vweb.Result {
 	if !app.logged_in || !is_users_settings {
 		return app.redirect_to_index()
 	}
-  
+
 	// TODO: uneven parameters count (2) in `handle_update_user_settings`, compared to the vweb route `['/:user/settings', 'post']` (1)
 	name := app.form['name']
 
