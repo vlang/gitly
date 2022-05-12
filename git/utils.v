@@ -20,7 +20,5 @@ fn get_branch_name_from_reference(value string) string {
 	mut re := regex.regex_opt(branch_query) or { panic(err) }
 	re.match_string(value)
 
-	default_branch := re.get_group_by_id(value, 0)
-
-	return default_branch
+	return re.get_group_by_id(value, 0)
 }
