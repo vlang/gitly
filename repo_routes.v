@@ -6,6 +6,7 @@ import os
 import highlight
 import time
 import validation
+import git
 
 ['/:username/repos']
 pub fn (mut app App) user_repos(username string) vweb.Result {
@@ -151,6 +152,7 @@ pub fn (mut app App) new() vweb.Result {
 ['/new'; post]
 pub fn (mut app App) handle_new_repo(name string, clone_url string) vweb.Result {
 	mut valid_clone_url := clone_url
+	is_clone_url_empty := validation.is_string_empty(clone_url)
 
 	if !app.logged_in {
 		return app.redirect_to_login()
@@ -185,22 +187,28 @@ pub fn (mut app App) handle_new_repo(name string, clone_url string) vweb.Result 
 		return app.new()
 	}
 
-	if !clone_url.starts_with('https://') {
+	has_clone_url_https_prefix := clone_url.starts_with('https://')
+
+	if !is_clone_url_empty && !has_clone_url_https_prefix {
 		valid_clone_url = 'https://' + clone_url
 	}
 
+	repository_path := os.join_path(app.settings.repo_storage_path, app.user.username,
+		name)
+
 	app.repo = Repo{
 		name: name
-		git_dir: os.join_path(app.settings.repo_storage_path, app.user.username, name)
+		git_dir: repository_path
 		user_id: app.user.id
 		primary_branch: 'master'
 		user_name: app.user.username
 		clone_url: valid_clone_url
 	}
 
-	if app.repo.clone_url == '' {
+	if is_clone_url_empty {
 		os.mkdir(app.repo.git_dir) or { panic(err) }
-		app.repo.git('init')
+
+		app.repo.git('init --bare')
 	} else {
 		app.repo.clone()
 	}
@@ -209,38 +217,54 @@ pub fn (mut app App) handle_new_repo(name string, clone_url string) vweb.Result 
 
 	app.repo = app.find_repo_by_name(app.user.id, app.repo.name) or {
 		app.info('Repo was not inserted')
+
 		return app.redirect('/new')
 	}
 
-	go app.update_repo()
+	repository_id := app.repo.id
+
+	primary_branch := git.get_repository_primary_branch(repository_path)
+	app.update_repository_primary_branch(repository_id, primary_branch)
+
+	app.repo = app.find_repo_by_id(repository_id)
+
+	app.repo.git('checkout $primary_branch')
+
+	// Update only cloned repositories
+	if !is_clone_url_empty {
+		go app.update_repo()
+	}
 
 	return app.redirect('/$app.user.username/repos')
 }
 
 ['/:user/:repo/tree/:branch/:path...']
-pub fn (mut app App) tree(user string, repo string, branch string, path string) vweb.Result {
-	if !app.exists_user_repo(user, repo) {
+pub fn (mut app App) tree(username string, repo string, branch string, path string) vweb.Result {
+	if !app.exists_user_repo(username, repo) {
 		return app.not_found()
 	}
 
-	_, u := app.check_username(user)
+	_, user := app.check_username(username)
 	if !app.repo.is_public {
-		if u.id != app.user.id {
+		if user.id != app.user.id {
 			return app.not_found()
 		}
 	}
+
+	repo_id := app.repo.id
+	log_prefix := '$username/$repo'
 
 	app.current_path = '/$path'
 	if app.current_path.contains('/favicon.svg') {
 		return vweb.not_found()
 	}
 
-	app.path_split = '$repo/$path'.split('/')
+	app.path_split = [repo, path]
 	app.is_tree = true
 	app.show_menu = true
 	app.branch = branch
 
-	app.increment_repo_views(app.repo.id)
+	app.increment_repo_views(repo_id)
 	mut up := '/'
 	can_up := path != ''
 	if can_up {
@@ -255,14 +279,15 @@ pub fn (mut app App) tree(user string, repo string, branch string, path string) 
 		app.current_path = app.current_path[1..]
 	}
 
-	mut files := app.find_repo_files(app.repo.id, branch, app.current_path)
-	app.info('tree() nr files found: $files.len in branch $branch')
+	mut files := app.find_repo_files(repo_id, branch, app.current_path)
+
+	app.info('$log_prefix: $files.len files found in branch $branch')
+
 	if files.len == 0 {
 		// No files in the db, fetch them from git and cache in db
-		app.info('caching files, repo_id=$app.repo.id')
-		t := time.ticks()
+		app.info('$log_prefix: caching files in repo with $repo_id')
+
 		files = app.cache_repo_files(mut app.repo, branch, app.current_path)
-		println('caching files took ${time.ticks() - t}ms')
 		go app.slow_fetch_files_info(branch, app.current_path)
 	}
 
@@ -297,6 +322,9 @@ pub fn (mut app App) tree(user string, repo string, branch string, path string) 
 	} else {
 		app.page_gen_time = '${diff}ms'
 	}
+
+	has_commits := app.repo.commits_count > 0
+
 	return $vweb.html()
 }
 
