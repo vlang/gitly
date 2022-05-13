@@ -279,19 +279,19 @@ pub fn (mut app App) tree(username string, repo string, branch string, path stri
 		app.current_path = app.current_path[1..]
 	}
 
-	mut files := app.find_repo_files(repo_id, branch, app.current_path)
+	mut items := app.find_repository_items(repo_id, branch, app.current_path)
 
-	app.info('$log_prefix: $files.len files found in branch $branch')
+	app.info('$log_prefix: $items.len items found in branch $branch')
 
-	if files.len == 0 {
+	if items.len == 0 {
 		// No files in the db, fetch them from git and cache in db
-		app.info('$log_prefix: caching files in repo with $repo_id')
+		app.info('$log_prefix: caching items in repository with $repo_id')
 
-		files = app.cache_repo_files(mut app.repo, branch, app.current_path)
+		items = app.cache_repo_files(mut app.repo, branch, app.current_path)
 		go app.slow_fetch_files_info(branch, app.current_path)
 	}
 
-	if files.any(it.last_msg == '') {
+	if items.any(it.last_msg == '') {
 		// If any of the files has a missing `last_msg`, we need to refetch it.
 		go app.slow_fetch_files_info(branch, app.current_path)
 	}
@@ -322,6 +322,13 @@ pub fn (mut app App) tree(username string, repo string, branch string, path stri
 	} else {
 		app.page_gen_time = '${diff}ms'
 	}
+
+	dirs := items.filter(it.is_dir)
+	files := items.filter(!it.is_dir)
+
+	items = []
+	items << dirs
+	items << files
 
 	has_commits := app.repo.commits_count > 0
 
