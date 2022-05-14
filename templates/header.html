@@ -7,15 +7,15 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel='icon' type='image/svg+xml' href='/assets/favicon.svg' sizes='any'>
 	<script>
-		var repoName = '@app.repo.name'; //V_TEMPLATE
-		var branch = '@app.repo.primary_branch' //V_TEMPLATE
-		var path = '@app.current_path' //V_TEMPLATE
+		var repoName = '@app.repo.name';
+		var branch = '@app.repo.primary_branch';
+		var path = '@app.current_path';
 		//var isTopFiles = {{.IsTopFiles}}
 
-		var fetchurl = '/@app.repo.name/tree-data?branch=@app.repo.primary_branch&path=@app.current_path';//V_TEMPLATE
+	var fetchurl = '/@app.repo.name/tree-data?branch=@app.repo.primary_branch&path=@app.current_path';
 
-		var sshUrl = 'ssh://git&#64;gitly.org/@app.repo.user_name/@app.repo.name'; //V_TEMPLATE
-		var httpsUrl = 'https://@app.repo.user_name&#64;gitly.org/@app.repo.name'; //V_TEMPLATE
+		var sshUrl = 'ssh://git&#64;gitly.org/@app.repo.user_name/@app.repo.name';
+		var httpsUrl = 'https://@app.repo.user_name&#64;gitly.org/@app.repo.name';
 	</script>
 
 	@if app.is_tree
