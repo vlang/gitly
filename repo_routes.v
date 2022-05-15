@@ -377,9 +377,14 @@ pub fn (mut app App) blob(user string, repo string, branch string, path string) 
 		return app.not_found()
 	}
 
+	mut path_parts := path.split('/')
+	path_parts.pop()
+
 	app.current_path = path
-	app.path_split = '$repo/$path'.split('/')
-	app.path_split = app.path_split[..app.path_split.len - 1]
+	app.path_split = [repo]
+	app.path_split << path_parts
+
+	app.branch = branch
 
 	if !app.contains_repo_branch(app.repo.id, branch) && branch != app.repo.primary_branch {
 		app.info('Branch $branch not found')
