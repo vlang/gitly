@@ -92,11 +92,6 @@
 <!-- don't show the path on the index page -->
 @if app.current_path != ''
 	.tree-path {
-	<!--
-		<a href='/@app.repo.name'>@app.repo.name</a>
-		-->
-		<!--a href='/@app.repo.user_name/@app.repo.name'>@app.repo.name</a>
-		@app.html_path-->
 		@for i, p in app.path_split
 			<a href="/@app.repo.user_name/@{app.make_path(i)}">@p</a>
 			/

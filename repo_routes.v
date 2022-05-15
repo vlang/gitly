@@ -259,7 +259,11 @@ pub fn (mut app App) tree(username string, repo string, branch string, path stri
 		return vweb.not_found()
 	}
 
-	app.path_split = [repo, path]
+	path_parts := path.split('/')
+
+	app.path_split = [repo]
+	app.path_split << path_parts
+
 	app.is_tree = true
 	app.show_menu = true
 	app.branch = branch
