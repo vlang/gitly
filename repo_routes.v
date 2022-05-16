@@ -126,6 +126,15 @@ pub fn (mut app App) handle_tree(user string, repo string) vweb.Result {
 	return app.tree(user, repo, app.repo.primary_branch, '')
 }
 
+['/:user/:repo/tree/:branch']
+pub fn (mut app App) handle_branch_tree(user string, repo string, branch string) vweb.Result {
+	if !app.exists_user_repo(user, repo) {
+		return app.not_found()
+	}
+
+	return app.tree(user, repo, branch, '')
+}
+
 ['/:user/:repo/update']
 pub fn (mut app App) handle_repo_update(user string, repo string) vweb.Result {
 	if !app.exists_user_repo(user, repo) {
