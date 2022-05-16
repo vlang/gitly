@@ -14,7 +14,7 @@ pub fn (mut app App) command_fetcher() {
 			if args.len > 0 {
 				match args[0] {
 					'updaterepo' {
-						app.update_repo()
+						app.update_repository()
 					}
 					'adduser' {
 						if args.len > 4 {

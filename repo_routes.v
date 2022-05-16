@@ -228,11 +228,9 @@ pub fn (mut app App) handle_new_repo(name string, clone_url string) vweb.Result 
 
 	app.repo = app.find_repo_by_id(repository_id)
 
-	app.repo.git('checkout $primary_branch')
-
 	// Update only cloned repositories
 	if !is_clone_url_empty {
-		go app.update_repo()
+		go app.update_repository()
 	}
 
 	return app.redirect('/$app.user.username/repos')
