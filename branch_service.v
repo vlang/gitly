@@ -7,7 +7,7 @@ fn (mut app App) fetch_branches(r Repo) {
 	branches_output := r.git('branch -av')
 
 	for branch_output in branches_output.split_into_lines() {
-		branch_name, last_commit_hash := git.parse_git_branch_with_last_hash(branch_output)
+		branch_name, last_commit_hash := git.parse_git_branch_output(branch_output)
 
 		branch_data := r.git('log $branch_name -1 --pretty="%aE$log_field_separator%cD" $last_commit_hash')
 
@@ -35,7 +35,7 @@ fn (mut app App) update_branches(r &Repo) {
 	branches_output := r.git('branch -av')
 
 	for branch_output in branches_output.split_into_lines() {
-		branch_name, last_commit_hash := git.parse_git_branch_with_last_hash(branch_output)
+		branch_name, last_commit_hash := git.parse_git_branch_output(branch_output)
 
 		branch_data := r.git('log $branch_name -1 --pretty="%aE$log_field_separator%cD" $last_commit_hash')
 
