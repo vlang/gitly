@@ -619,7 +619,7 @@ fn (r Repo) html_path_to(path string, branch string) vweb.RawHtml {
 // fetches last message and last time for each file
 // this is slow, so it's run in the background thread
 fn (mut app App) slow_fetch_files_info(branch string, path string) {
-	files := app.find_repo_files(app.repo.id, branch, path)
+	files := app.find_repository_items(app.repo.id, branch, path)
 	for i in 0 .. files.len {
 		if files[i].last_msg != '' {
 			app.warn('skipping ${files[i].name}')

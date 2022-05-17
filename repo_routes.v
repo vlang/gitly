@@ -126,6 +126,15 @@ pub fn (mut app App) handle_tree(user string, repo string) vweb.Result {
 	return app.tree(user, repo, app.repo.primary_branch, '')
 }
 
+['/:user/:repo/tree/:branch']
+pub fn (mut app App) handle_branch_tree(user string, repo string, branch string) vweb.Result {
+	if !app.exists_user_repo(user, repo) {
+		return app.not_found()
+	}
+
+	return app.tree(user, repo, branch, '')
+}
+
 ['/:user/:repo/update']
 pub fn (mut app App) handle_repo_update(user string, repo string) vweb.Result {
 	if !app.exists_user_repo(user, repo) {
@@ -257,7 +266,11 @@ pub fn (mut app App) tree(username string, repo string, branch string, path stri
 		return vweb.not_found()
 	}
 
-	app.path_split = [repo, path]
+	path_parts := path.split('/')
+
+	app.path_split = [repo]
+	app.path_split << path_parts
+
 	app.is_tree = true
 	app.show_menu = true
 	app.branch = branch
@@ -277,19 +290,19 @@ pub fn (mut app App) tree(username string, repo string, branch string, path stri
 		app.current_path = app.current_path[1..]
 	}
 
-	mut files := app.find_repo_files(repo_id, branch, app.current_path)
+	mut items := app.find_repository_items(repo_id, branch, app.current_path)
 
-	app.info('$log_prefix: $files.len files found in branch $branch')
+	app.info('$log_prefix: $items.len items found in branch $branch')
 
-	if files.len == 0 {
+	if items.len == 0 {
 		// No files in the db, fetch them from git and cache in db
-		app.info('$log_prefix: caching files in repo with $repo_id')
+		app.info('$log_prefix: caching items in repository with $repo_id')
 
-		files = app.cache_repo_files(mut app.repo, branch, app.current_path)
+		items = app.cache_repo_files(mut app.repo, branch, app.current_path)
 		go app.slow_fetch_files_info(branch, app.current_path)
 	}
 
-	if files.any(it.last_msg == '') {
+	if items.any(it.last_msg == '') {
 		// If any of the files has a missing `last_msg`, we need to refetch it.
 		go app.slow_fetch_files_info(branch, app.current_path)
 	}
@@ -320,6 +333,13 @@ pub fn (mut app App) tree(username string, repo string, branch string, path stri
 	} else {
 		app.page_gen_time = '${diff}ms'
 	}
+
+	dirs := items.filter(it.is_dir)
+	files := items.filter(!it.is_dir)
+
+	items = []
+	items << dirs
+	items << files
 
 	has_commits := app.repo.commits_count > 0
 
@@ -364,9 +384,14 @@ pub fn (mut app App) blob(user string, repo string, branch string, path string) 
 		return app.not_found()
 	}
 
+	mut path_parts := path.split('/')
+	path_parts.pop()
+
 	app.current_path = path
-	app.path_split = '$repo/$path'.split('/')
-	app.path_split = app.path_split[..app.path_split.len - 1]
+	app.path_split = [repo]
+	app.path_split << path_parts
+
+	app.branch = branch
 
 	if !app.contains_repo_branch(app.repo.id, branch) && branch != app.repo.primary_branch {
 		app.info('Branch $branch not found')

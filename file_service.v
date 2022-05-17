@@ -35,15 +35,15 @@ fn (mut app App) add_file(file File) {
 	}
 }
 
-fn (mut app App) find_repo_files(repo_id2 int, branch string, parent_path string) []File {
-	mut p_path := parent_path
-	if p_path == '' {
-		p_path = '.'
+fn (mut app App) find_repository_items(repo_id int, branch string, parent_path string) []File {
+	valid_parent_path := if parent_path == '' { '.' } else { parent_path }
+
+	items := sql app.db {
+		select from File where repo_id == repo_id && parent_path == valid_parent_path
+		&& branch == branch
 	}
-	mut files := sql app.db {
-		select from File where repo_id == repo_id2 && parent_path == p_path && branch == branch
-	}
-	return files
+
+	return items
 }
 
 fn (mut app App) find_repo_file_by_path(repo_id int, branch string, path string) ?File {
