@@ -1,96 +1,68 @@
 module main
 
-import os
 import time
+import git
 
 fn (mut app App) fetch_branches(r Repo) {
-	all_branches := r.git('branch -a')
+	branches_output := r.git('branch -av')
 
-	for remote_branch in all_branches.split_into_lines() {
-		if remote_branch.contains('remotes/') && !remote_branch.contains('HEAD') {
-			temp_branch := remote_branch.trim_space().after('remotes/')
+	for branch_output in branches_output.split_into_lines() {
+		branch_name, last_commit_hash := git.parse_git_branch_output(branch_output)
 
-			r.git('checkout -t $temp_branch')
+		branch_data := r.git('log $branch_name -1 --pretty="%aE$log_field_separator%cD" $last_commit_hash')
 
-			branch_name := temp_branch.after('origin/')
+		log_parts := branch_data.split(log_field_separator)
+		author_email := log_parts[0]
+		committed_at := log_parts[1]
 
-			hash_data := os.read_lines('$r.git_dir/.git/refs/heads/$branch_name') or {
-				app.info(err.msg())
-				return
+		user := app.find_user_by_email(author_email) or {
+			User{
+				username: author_email
 			}
-
-			last_commit_hash := hash_data[0].substr(0, 7)
-
-			branch_data := r.git('log -1 --pretty="%aE$log_field_separator%cD" $last_commit_hash')
-
-			args := branch_data.split(log_field_separator)
-			email := args[0]
-
-			user := app.find_user_by_email(email) or {
-				User{
-					username: email
-				}
-			}
-
-			date := time.parse_rfc2822(args[1]) or {
-				app.info('Error: $err')
-
-				return
-			}
-
-			app.create_branch(r.id, branch_name, user.username, last_commit_hash, int(date.unix))
 		}
-	}
 
-	r.git('checkout $r.primary_branch')
+		committed_at_date := time.parse_rfc2822(committed_at) or {
+			app.info('Error: $err')
+
+			return
+		}
+
+		app.create_branch(r.id, branch_name, user.username, last_commit_hash, int(committed_at_date.unix))
+	}
 }
 
 fn (mut app App) update_branches(r &Repo) {
-	all_branches := r.git('branch -a')
+	branches_output := r.git('branch -av')
 
-	for remote_branch in all_branches.split_into_lines() {
-		if remote_branch.contains('remotes/') && !remote_branch.contains('HEAD') {
-			temp_branch := remote_branch.trim_space().after('remotes/')
+	for branch_output in branches_output.split_into_lines() {
+		branch_name, last_commit_hash := git.parse_git_branch_output(branch_output)
 
-			r.git('checkout -t $temp_branch')
+		branch_data := r.git('log $branch_name -1 --pretty="%aE$log_field_separator%cD" $last_commit_hash')
 
-			branch_name := temp_branch.after('origin/')
+		log_parts := branch_data.split(log_field_separator)
+		author_email := log_parts[0]
+		committed_at := log_parts[1]
 
-			hash_data := os.read_lines('$r.git_dir/.git/refs/heads/$branch_name') or {
-				app.info('Error: $err')
-				return
-			}
-
-			last_commit_hash := hash_data[0].substr(0, 7)
-			branch_data := r.git('log -1 --pretty="%aE$log_field_separator%cD" $last_commit_hash')
-
-			args := branch_data.split(log_field_separator)
-			email := args[0]
-
-			user := app.find_user_by_email(email) or {
-				User{
-					username: email
-				}
-			}
-
-			date := time.parse_rfc2822(args[1]) or {
-				app.info('Error: $err')
-
-				return
-			}
-
-			if !app.contains_repo_branch(r.id, branch_name) {
-				app.create_branch(r.id, branch_name, user.username, last_commit_hash,
-					int(date.unix))
-			} else {
-				branch := app.find_repo_branch_by_name(r.id, branch_name)
-
-				app.update_branch(branch.id, user.username, last_commit_hash, int(date.unix))
+		user := app.find_user_by_email(author_email) or {
+			User{
+				username: author_email
 			}
 		}
-	}
 
-	r.git('checkout $r.primary_branch')
+		committed_at_date := time.parse_rfc2822(committed_at) or {
+			app.info('Error: $err')
+
+			return
+		}
+
+		if !app.contains_repo_branch(r.id, branch_name) {
+			app.create_branch(r.id, branch_name, user.username, last_commit_hash, int(committed_at_date.unix))
+		} else {
+			branch := app.find_repo_branch_by_name(r.id, branch_name)
+
+			app.update_branch(branch.id, user.username, last_commit_hash, int(committed_at_date.unix))
+		}
+	}
 }
 
 fn (mut app App) create_branch(repo_id int, name string, author string, hash string, date int) {

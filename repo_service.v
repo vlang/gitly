@@ -186,7 +186,7 @@ fn (mut app App) user_has_repo(user_id int, repo_name string) bool {
 	return count >= 0
 }
 
-fn (mut app App) update_repo() {
+fn (mut app App) update_repository() {
 	mut r := app.repo
 	mut wg := sync.new_waitgroup()
 	wg.add(1)
@@ -246,7 +246,7 @@ fn (mut app App) update_repo() {
 
 	app.update_repo_in_db(r)
 	app.db.exec('END TRANSACTION')
-	app.info('Repo updated')
+	app.info('Repository updated')
 }
 
 fn (mut app App) update_repo_data(mut r Repo) {
@@ -517,7 +517,7 @@ fn (r &Repo) parse_ls(ls string, branch string) ?File {
 	}
 	typ := words[1]
 	mut parent_path := os.dir(words[3])
-	hash := r.git('log -n 1 --format="%h" ${words[3]}')
+	hash := r.git('log $branch -n 1 --format="%h" -- ${words[3]}')
 
 	name := words[3].after('/')
 	if name == '' {
@@ -665,7 +665,7 @@ fn (mut app App) update_repository_primary_branch(repository_id int, branch stri
 }
 
 fn (mut r Repo) clone() {
-	clone_result := os.execute('git clone "$r.clone_url" $r.git_dir')
+	clone_result := os.execute('git clone --bare "$r.clone_url" $r.git_dir')
 	close_exit_code := clone_result.exit_code
 
 	if close_exit_code != 0 {
