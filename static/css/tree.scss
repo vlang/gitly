@@ -6,6 +6,19 @@
 		display: block;
 	}
 }
+
+.repository-clone {
+	border: 1px solid $gray;
+	border-radius: $medium-radius;
+	margin-bottom: 10px;
+	padding: 5px;
+	margin-top: 10px;
+
+	input {
+		min-width: 200px;
+	}
+}
+
 .repo-stats {
 	border: 1px solid $gray;
 	border-radius: $medium-radius;

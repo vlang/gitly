@@ -12,7 +12,7 @@
 		var path = '@app.current_path';
 		//var isTopFiles = {{.IsTopFiles}}
 
-	var fetchurl = '/@app.repo.name/tree-data?branch=@app.repo.primary_branch&path=@app.current_path';
+		var fetchurl = '/@app.repo.name/tree-data?branch=@app.repo.primary_branch&path=@app.current_path';
 
 		var sshUrl = 'ssh://git&#64;gitly.org/@app.repo.user_name/@app.repo.name';
 		var httpsUrl = 'https://@app.repo.user_name&#64;gitly.org/@app.repo.name';
@@ -130,6 +130,9 @@
 				Update
 			</a>
 		@end
+	</div>
+	<div class='repository-clone'>
+		Clone with HTTPS: <input type='text' value='@app.generate_clone_url()' readonly/>
 	</div>
 @end
 
