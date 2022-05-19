@@ -20,7 +20,7 @@ fn main() {
 
 	ilog('Remove old gitly DB')
 	if os.exists('gitly.sqlite') {
-		os.rm('gitly.sqlite') ?
+		os.rm('gitly.sqlite')?
 	}
 
 	ilog('Compile gitly')

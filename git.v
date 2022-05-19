@@ -11,65 +11,74 @@ enum GitService {
 	unknown
 }
 
-fn (s GitService) to_str() string {
-	return match s {
+fn (g GitService) str() string {
+	return match g {
 		.receive { 'receive-pack' }
 		.upload { 'upload-pack' }
 		else { 'unknown' }
 	}
 }
 
-// /vlang/info/refs?service=git-upload-pack
-fn (mut app App) git_info() vweb.Result {
-	app.info('/info/refs')
-	app.info(app.req.method.str())
+['/:username/:repository/info/refs']
+fn (mut app App) handle_git_info(username string, git_repository_name string) vweb.Result {
+	repository_name := git_repository_name.trim_string_right('.git')
+	url := app.req.url
+
+	user := app.find_user_by_username(username) or { return app.not_found() }
+	repository := app.find_repo_by_name(user.id, repository_name) or { return app.not_found() }
+
 	// Get service type from the git request.
 	// Receive (git push) or upload	(git pull)
-	url := app.req.url
-	service := if url.contains('?service=git-upload-pack') {
+	service := if url.contains('service=git-upload-pack') {
 		GitService.upload
-	} else if url.contains('?service=git-receive-pack') {
+	} else if url.contains('service=git-receive-pack') {
 		GitService.receive
 	} else {
 		GitService.unknown
 	}
+
 	if service == .unknown {
-		return app.not_found() // TODO
-	}
-	// Do auth here, we can communicate with the client only in inforefs
-	if false && !app.repo.is_public {
-		// Private repos are always closed
 		return app.not_found()
-	} else {
-		if service == .receive {
-			user := '' // get_user(c)
-			app.info('info/refs user="$user"')
-			if user == '' {
-				return app.not_found()
-			}
-		}
 	}
+
 	app.set_content_type('application/x-git-$service-advertisement')
-	// hdrNocache(c.Writer)
+	// TODO: Add no cache headers
 	app.add_header('Cache-Control', 'no-cache')
-	mut sb := strings.new_builder(100)
-	sb.write_string(packet_write('# service=git-$service\n'))
-	sb.write_string(packet_flush())
-	refs := app.repo.git_advertise(service.to_str())
-	app.info('refs = ')
-	app.info(refs)
-	sb.write_string(refs)
-	return app.ok(sb.str())
+
+	service_name := service.str()
+
+	mut git_response := strings.new_builder(100)
+	git_response.write_string(packet_write('# service=git-$service_name\n'))
+	git_response.write_string(packet_flush())
+
+	refs := repository.git_advertise(service_name)
+
+	git_response.write_string(refs)
+
+	return app.ok(git_response.str())
+}
+
+['/:user/:repo/git-upload-pack'; post]
+fn (mut app App) handle_git_upload_pack(username string, git_repository_name string) vweb.Result {
+	repository_name := git_repository_name.trim_string_right('.git')
+
+	user := app.find_user_by_username(username) or { return app.not_found() }
+	repository := app.find_repo_by_name(user.id, repository_name) or { return app.not_found() }
+
+	body := app.req.data
+	git_response := repository.git_smart('upload-pack', body)
+
+	app.set_content_type('application/x-git-upload-pack-result')
+
+	return app.ok(git_response)
 }
 
 fn packet_flush() string {
 	return '0000'
 }
 
-fn packet_write(str string) string {
-	mut s := (str.len + 4).hex()
-	if s.len % 4 != 0 {
-		s = strings.repeat(`0`, 4 - s.len % 4) + s
-	}
-	return s + str
+fn packet_write(value string) string {
+	packet_length := (value.len + 4).hex()
+
+	return strings.repeat(`0`, 4 - packet_length.len) + packet_length + value
 }

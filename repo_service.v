@@ -6,6 +6,7 @@ import sync
 import vweb
 import os
 import time
+import git
 import highlight
 import validation
 
@@ -629,13 +630,51 @@ fn (mut app App) slow_fetch_files_info(branch string, path string) {
 	}
 }
 
-fn (r Repo) git_advertise(a string) string {
-	cmd := os.execute('git $a --stateless-rpc --advertise-refs $r.git_dir')
-	if cmd.exit_code != 0 {
-		eprintln('advertise error')
-		eprintln('\n\ngit advertise output: $cmd.output\n\n')
+fn (r Repo) git_advertise(service string) string {
+	git_result := os.execute('git $service --stateless-rpc --advertise-refs $r.git_dir')
+	git_output := git_result.output
+
+	if git_result.exit_code != 0 {
+		eprintln('git $service error: $git_output')
 	}
-	return cmd.output
+
+	return git_output
+}
+
+fn (r Repo) git_smart(service string, input string) string {
+	git_path := git.get_git_executable_path() or { 'git' }
+	real_repository_path := os.real_path(r.git_dir)
+
+	mut process := os.new_process(git_path)
+	process.set_args([service, '--stateless-rpc', real_repository_path])
+
+	process.set_redirect_stdio()
+	process.run()
+	process.stdin_write(input)
+	process.stdin_write('\n')
+
+	process.wait()
+
+	output := process.stdout_slurp()
+	errors := process.stderr_slurp()
+
+	process.close()
+
+	if errors.len > 0 {
+		eprintln('git $service error: $errors')
+
+		return ''
+	}
+
+	return output
+}
+
+fn (mut app App) generate_clone_url() string {
+	hostname := app.settings.hostname
+	username := app.repo.user_name
+	repository_name := app.repo.name
+
+	return 'https://$hostname/$username/${repository_name}.git'
 }
 
 fn first_line(s string) string {
