@@ -3,59 +3,25 @@
 module main
 
 import vweb
-import strings
-
-enum GitService {
-	receive
-	upload
-	unknown
-}
-
-fn (g GitService) str() string {
-	return match g {
-		.receive { 'receive-pack' }
-		.upload { 'upload-pack' }
-		else { 'unknown' }
-	}
-}
 
 ['/:username/:repository/info/refs']
 fn (mut app App) handle_git_info(username string, git_repository_name string) vweb.Result {
 	repository_name := git_repository_name.trim_string_right('.git')
-	url := app.req.url
-
 	user := app.find_user_by_username(username) or { return app.not_found() }
 	repository := app.find_repo_by_name(user.id, repository_name) or { return app.not_found() }
-
-	// Get service type from the git request.
-	// Receive (git push) or upload	(git pull)
-	service := if url.contains('service=git-upload-pack') {
-		GitService.upload
-	} else if url.contains('service=git-receive-pack') {
-		GitService.receive
-	} else {
-		GitService.unknown
-	}
+	service := extract_service_from_url(app.req.url)
 
 	if service == .unknown {
 		return app.not_found()
 	}
 
+	refs := repository.git_advertise(service.str())
+	response := build_git_service_response(service, refs)
+
 	app.set_content_type('application/x-git-$service-advertisement')
-	// TODO: Add no cache headers
-	app.add_header('Cache-Control', 'no-cache')
+	app.set_no_cache_headers()
 
-	service_name := service.str()
-
-	mut git_response := strings.new_builder(100)
-	git_response.write_string(packet_write('# service=git-$service_name\n'))
-	git_response.write_string(packet_flush())
-
-	refs := repository.git_advertise(service_name)
-
-	git_response.write_string(refs)
-
-	return app.ok(git_response.str())
+	return app.ok(response)
 }
 
 ['/:user/:repo/git-upload-pack'; post]
@@ -73,12 +39,8 @@ fn (mut app App) handle_git_upload_pack(username string, git_repository_name str
 	return app.ok(git_response)
 }
 
-fn packet_flush() string {
-	return '0000'
-}
-
-fn packet_write(value string) string {
-	packet_length := (value.len + 4).hex()
-
-	return strings.repeat(`0`, 4 - packet_length.len) + packet_length + value
+fn (mut app App) set_no_cache_headers() {
+	app.add_header('Expires', 'Fri, 01 Jan 1980 00:00:00 GMT')
+	app.add_header('Pragma', 'no-cache')
+	app.add_header('Cache-Control', 'no-cache, max-age=0, must-revalidate')
 }
