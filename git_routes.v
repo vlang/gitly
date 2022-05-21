@@ -31,10 +31,22 @@ fn (mut app App) handle_git_upload_pack(username string, git_repository_name str
 	user := app.find_user_by_username(username) or { return app.not_found() }
 	repository := app.find_repo_by_name(user.id, repository_name) or { return app.not_found() }
 
-	body := app.req.data
-	git_response := repository.git_smart('upload-pack', body)
+	git_response := repository.git_smart('upload-pack', app.req.data)
 
 	app.set_content_type('application/x-git-upload-pack-result')
+
+	return app.ok(git_response)
+}
+
+['/:user/:repo/git-receive-pack'; post]
+fn (mut app App) handle_git_receive_pack(username string, git_repository_name string) vweb.Result {
+	repository_name := git_repository_name.trim_string_right('.git')
+	user := app.find_user_by_username(username) or { return app.not_found() }
+	repository := app.find_repo_by_name(user.id, repository_name) or { return app.not_found() }
+
+	git_response := repository.git_smart('receive-pack', app.req.data)
+
+	app.set_content_type('application/x-git-receive-pack-result')
 
 	return app.ok(git_response)
 }
