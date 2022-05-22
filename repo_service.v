@@ -188,15 +188,15 @@ fn (mut app App) user_has_repo(user_id int, repo_name string) bool {
 }
 
 fn (mut app App) update_repository() {
-	mut r := app.repo
+	mut r := &app.repo
 	mut wg := sync.new_waitgroup()
 	wg.add(1)
-	r_p := &r
 
-	go r_p.analyse_lang(mut wg, app)
+	go r.analyse_lang(mut wg, app)
 
 	data := r.git('--no-pager log --abbrev-commit --abbrev=7 --pretty="%h$log_field_separator%aE$log_field_separator%cD$log_field_separator%s$log_field_separator%aN"')
 	app.db.exec('BEGIN TRANSACTION')
+
 	for line in data.split_into_lines() {
 		args := line.split(log_field_separator)
 		if args.len > 3 {
@@ -712,9 +712,6 @@ fn (mut r Repo) clone() {
 		println('git clone failed with exit code $close_exit_code')
 		return
 	}
-
-	r.git('config receive.denyCurrentBranch ignore')
-	r.git('config core.bare false')
 
 	r.status = .clone_done
 }
