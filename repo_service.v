@@ -188,11 +188,11 @@ fn (mut app App) user_has_repo(user_id int, repo_name string) bool {
 }
 
 fn (mut app App) update_repository() {
-	mut r := &app.repo
+	mut r := app.repo
 	mut wg := sync.new_waitgroup()
 	wg.add(1)
 
-	go r.analyse_lang(mut wg, app)
+	r.analyse_lang(mut wg, app)
 
 	data := r.git('--no-pager log --abbrev-commit --abbrev=7 --pretty="%h$log_field_separator%aE$log_field_separator%cD$log_field_separator%s$log_field_separator%aN"')
 	app.db.exec('BEGIN TRANSACTION')
@@ -255,7 +255,9 @@ fn (mut app App) update_repo_data(mut r Repo) {
 	r.git('pull --all')
 	mut wg := sync.new_waitgroup()
 	wg.add(1)
-	go r.analyse_lang(mut wg, app)
+
+	r.analyse_lang(mut wg, app)
+
 	data := r.git('--no-pager log --abbrev-commit --abbrev=7 --pretty="%h$log_field_separator%aE$log_field_separator%cD$log_field_separator%s$log_field_separator%aN"')
 
 	app.db.exec('BEGIN TRANSACTION')
@@ -621,11 +623,13 @@ fn (r Repo) html_path_to(path string, branch string) vweb.RawHtml {
 // this is slow, so it's run in the background thread
 fn (mut app App) slow_fetch_files_info(branch string, path string) {
 	files := app.find_repository_items(app.repo.id, branch, path)
+
 	for i in 0 .. files.len {
 		if files[i].last_msg != '' {
 			app.warn('skipping ${files[i].name}')
 			continue
 		}
+
 		app.fetch_file_info(app.repo, files[i])
 	}
 }
