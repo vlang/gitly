@@ -3,10 +3,11 @@
 module main
 
 import vweb
+import git
 
 ['/:username/:repository/info/refs']
 fn (mut app App) handle_git_info(username string, git_repository_name string) vweb.Result {
-	repository_name := git_repository_name.trim_string_right('.git')
+	repository_name := git.remove_git_extension_if_exists(git_repository_name)
 	user := app.find_user_by_username(username) or { return app.not_found() }
 	repository := app.find_repo_by_name(user.id, repository_name) or { return app.not_found() }
 	service := extract_service_from_url(app.req.url)
@@ -15,44 +16,146 @@ fn (mut app App) handle_git_info(username string, git_repository_name string) vw
 		return app.not_found()
 	}
 
+	is_receive_service := service == .receive
+	is_private_repository := !repository.is_public
+
+	if is_receive_service || is_private_repository {
+		app.check_git_http_access(username, repository_name) or { return app.ok('') }
+	}
+
 	refs := repository.git_advertise(service.str())
-	response := build_git_service_response(service, refs)
+	git_response := build_git_service_response(service, refs)
 
 	app.set_content_type('application/x-git-$service-advertisement')
 	app.set_no_cache_headers()
 
-	return app.ok(response)
+	return app.ok(git_response)
 }
 
-['/:user/:repo/git-upload-pack'; post]
+['/:user/:repository/git-upload-pack'; post]
 fn (mut app App) handle_git_upload_pack(username string, git_repository_name string) vweb.Result {
-	repository_name := git_repository_name.trim_string_right('.git')
-
+	repository_name := git.remove_git_extension_if_exists(git_repository_name)
 	user := app.find_user_by_username(username) or { return app.not_found() }
 	repository := app.find_repo_by_name(user.id, repository_name) or { return app.not_found() }
+	is_private_repository := !repository.is_public
+
+	if is_private_repository {
+		app.check_git_http_access(username, repository_name) or { return app.ok('') }
+	}
 
 	git_response := repository.git_smart('upload-pack', app.req.data)
 
-	app.set_content_type('application/x-git-upload-pack-result')
+	app.set_git_content_type_headers(.upload)
 
 	return app.ok(git_response)
 }
 
-['/:user/:repo/git-receive-pack'; post]
+['/:user/:repository/git-receive-pack'; post]
 fn (mut app App) handle_git_receive_pack(username string, git_repository_name string) vweb.Result {
-	repository_name := git_repository_name.trim_string_right('.git')
+	repository_name := git.remove_git_extension_if_exists(git_repository_name)
 	user := app.find_user_by_username(username) or { return app.not_found() }
 	repository := app.find_repo_by_name(user.id, repository_name) or { return app.not_found() }
 
+	app.check_git_http_access(username, repository_name) or { return app.ok('') }
+
 	git_response := repository.git_smart('receive-pack', app.req.data)
 
-	app.set_content_type('application/x-git-receive-pack-result')
+	app.set_git_content_type_headers(.receive)
 
 	return app.ok(git_response)
+}
+
+fn (mut app App) check_git_http_access(repository_owner string, repository_name string) ?bool {
+	has_valid_auth_header := app.check_basic_authorization_header()
+
+	if !has_valid_auth_header {
+		app.set_authenticate_headers()
+		app.send_unauthorized()
+	}
+
+	has_user_valid_credentials := app.check_user_credentials()
+
+	if has_user_valid_credentials {
+		username, _ := app.extract_user_credentials() or {
+			app.send_unauthorized()
+			return none
+		}
+
+		has_user_access := repository_owner == username
+
+		if has_user_access {
+			return true
+		} else {
+			app.send_not_found()
+			return none
+		}
+	}
+
+	app.send_unauthorized()
+	return none
+}
+
+fn (mut app App) check_basic_authorization_header() bool {
+	auth_header := app.get_header('Authorization')
+	has_auth_header := auth_header.len > 0
+
+	if !has_auth_header {
+		return false
+	}
+
+	auth_header_parts := auth_header.fields()
+	auth_type := auth_header_parts[0]
+	is_basic_auth_type := auth_type == 'Basic'
+
+	if auth_header_parts.len == 2 || is_basic_auth_type {
+		return true
+	}
+
+	return false
+}
+
+fn (mut app App) extract_user_credentials() ?(string, string) {
+	auth_header := app.get_header('Authorization')
+	auth_header_parts := auth_header.fields()
+
+	if auth_header_parts.len < 2 {
+		return none
+	}
+
+	return decode_basic_auth(auth_header_parts[1])
+}
+
+fn (mut app App) check_user_credentials() bool {
+	username, password := app.extract_user_credentials() or { return false }
+	user := app.find_user_by_username(username) or { return false }
+
+	return compare_password_with_hash(password, user.salt, user.password)
 }
 
 fn (mut app App) set_no_cache_headers() {
 	app.add_header('Expires', 'Fri, 01 Jan 1980 00:00:00 GMT')
 	app.add_header('Pragma', 'no-cache')
 	app.add_header('Cache-Control', 'no-cache, max-age=0, must-revalidate')
+}
+
+fn (mut app App) set_authenticate_headers() {
+	app.add_header('WWW-Authenticate', 'Basic realm="."')
+}
+
+fn (mut app App) set_git_content_type_headers(service GitService) {
+	if service == .upload {
+		app.set_content_type('application/x-git-upload-pack-result')
+	} else if service == .receive {
+		app.set_content_type('application/x-git-receive-pack-result')
+	}
+}
+
+fn (mut app App) send_unauthorized() {
+	app.set_status(401, 'Unauthorized')
+	app.send_response_to_client(vweb.mime_types['.txt'], '')
+}
+
+fn (mut app App) send_not_found() {
+	app.set_status(404, 'Not Found')
+	app.send_response_to_client(vweb.mime_types['.txt'], '')
 }

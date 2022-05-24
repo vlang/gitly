@@ -17,8 +17,6 @@ pub fn (mut app App) set_user_admin_status(user_id int, status bool) {
 }
 
 fn hash_password_with_salt(password string, salt string) string {
-	set_rand_crypto_safe_seed()
-
 	salted_password := '$password$salt'
 
 	return sha256.sum(salted_password.bytes()).hex().str()
