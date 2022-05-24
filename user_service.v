@@ -101,32 +101,27 @@ pub fn (mut app App) update_user_avatar(data string, id int) {
 }
 
 pub fn (mut app App) create_empty_user(username string, email string) int {
-	us := app.find_user_by_username(username) or { User{} }
+	user := app.find_user_by_username(username) or { User{} }
 
-	if us.username != '' {
-		return us.id
+	if user.id > 0 {
+		return user.id
 	}
 
-	mut user := User{
+	mut new_user := User{
 		username: username
 		is_registered: false
 	}
 
-	app.add_user(user)
+	app.add_user(new_user)
 
-	u := app.find_user_by_username(user.username) or {
+	inserted_user := app.find_user_by_username(new_user.username) or {
 		app.info('User was not inserted')
 		return -1
 	}
 
-	if user.username != u.username {
-		app.info('User was not inserted')
-		return -1
-	}
+	app.add_email(inserted_user.id, email)
 
-	app.add_email(u.id, email)
-
-	return u.id
+	return inserted_user.id
 }
 
 pub fn (mut app App) add_user(user User) {
@@ -167,9 +162,9 @@ pub fn (mut app App) find_username_by_id(id int) string {
 	return user.username
 }
 
-pub fn (mut app App) find_user_by_username(username string) ?User {
+pub fn (mut app App) find_user_by_username(value string) ?User {
 	users := sql app.db {
-		select from User where username == username
+		select from User where username == value
 	}
 
 	if users.len == 0 {
@@ -214,9 +209,9 @@ pub fn (mut app App) find_user_by_github_username(name string) ?User {
 	return user
 }
 
-pub fn (mut app App) find_user_by_email(email string) ?User {
+pub fn (mut app App) find_user_by_email(value string) ?User {
 	emails := sql app.db {
-		select from Email where email == email
+		select from Email where email == value
 	}
 
 	if emails.len != 1 {
