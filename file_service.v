@@ -46,21 +46,25 @@ fn (mut app App) find_repository_items(repo_id int, branch string, parent_path s
 	return items
 }
 
-fn (mut app App) find_repo_file_by_path(repo_id int, branch string, path string) ?File {
-	parent_path := os.dir(path)
-	name := path.after('/')
-	app.info('find file parent_path=$parent_path name=$name')
-	mut p_path := parent_path
-	if p_path == '' {
-		p_path = '.'
+fn (mut app App) find_repo_file_by_path(repo_id int, item_branch string, path string) ?File {
+	mut valid_parent_path := os.dir(path)
+	item_name := path.after('/')
+
+	if valid_parent_path == '' || valid_parent_path == '/' {
+		valid_parent_path = '.'
 	}
+
+	app.info('find file repo_id=$repo_id parent_path = $valid_parent_path branch=$item_branch name=$item_branch')
+
 	file := sql app.db {
-		select from File where repo_id == repo_id && parent_path == p_path && branch == branch
-		&& name == name limit 1
+		select from File where repo_id == repo_id && parent_path == valid_parent_path
+		&& branch == item_branch && name == item_name limit 1
 	}
+
 	if file.name == '' {
 		return none
 	}
+
 	return file
 }
 
