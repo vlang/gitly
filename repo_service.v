@@ -510,73 +510,79 @@ fn (r &Repo) git(command string) string {
 	return command_output
 }
 
-fn (r &Repo) parse_ls(ls string, branch string) ?File {
-	words := ls.fields()
-
-	if words.len < 4 {
+fn (r &Repo) parse_ls(ls_line string, branch string) ?File {
+	ls_line_parts := ls_line.fields()
+	if ls_line_parts.len < 4 {
 		return none
 	}
-	typ := words[1]
-	mut parent_path := os.dir(words[3])
-	hash := r.git('log $branch -n 1 --format="%h" -- ${words[3]}')
 
-	name := words[3].after('/')
-	if name == '' {
+	item_type := ls_line_parts[1]
+	item_path := ls_line_parts[3]
+	item_hash := r.git('log $branch -n 1 --format="%h" -- $item_path')
+
+	item_name := item_path.after('/')
+	if item_name == '' {
 		return none
 	}
-	if parent_path == name {
+
+	mut parent_path := os.dir(item_path)
+	if parent_path == item_name {
 		parent_path = ''
 	}
-	if name.contains('"\\') {
+
+	if item_name.contains('"\\') {
 		// Unqoute octal UTF-8 strings
 	}
 
 	return File{
-		name: name
+		name: item_name
 		parent_path: parent_path
 		repo_id: r.id
-		last_hash: hash
+		last_hash: item_hash
 		branch: branch
-		is_dir: typ == 'tree'
+		is_dir: item_type == 'tree'
 	}
 }
 
 // Fetches all files via `git ls-tree` and saves them in db
-fn (mut app App) cache_repo_files(mut r Repo, branch string, path string) []File {
+fn (mut app App) cache_repository_items(mut r Repo, branch string, path string) []File {
 	if r.status == .caching {
 		app.info('`$r.name` is being cached already')
 		return []
 	}
 
-	mut res := ''
+	mut repository_ls := ''
 	if path == '.' {
 		r.status = .caching
+
 		defer {
 			r.status = .done
 		}
 	} else {
-		mut p := path
-		if path != '' {
-			p += '/'
-		}
-		res = r.git('ls-tree --full-name $branch $p')
+		directory_path := if path == '' { path } else { '$path/' }
+		repository_ls = r.git('ls-tree --full-name $branch $directory_path')
 	}
-	lines := res.split('\n')
+
+	// mode type name path
+	item_info_lines := repository_ls.split('\n')
+
 	mut dirs := []File{} // dirs first
 	mut files := []File{}
 
 	app.db.exec('BEGIN TRANSACTION')
-	for line in lines {
-		is_line_empty := validation.is_string_empty(line)
 
-		if is_line_empty {
+	for item_info in item_info_lines {
+		is_item_info_empty := validation.is_string_empty(item_info)
+
+		if is_item_info_empty {
 			continue
 		}
 
-		file := r.parse_ls(line, branch) or {
-			app.warn('failed to parse $line')
+		file := r.parse_ls(item_info, branch) or {
+			app.warn('failed to parse $item_info')
 			continue
 		}
+
 		if file.is_dir {
 			dirs << file
 
@@ -585,11 +591,14 @@ fn (mut app App) cache_repo_files(mut r Repo, branch string, path string) []File
 			files << file
 		}
 	}
+
 	dirs << files
 	for file in files {
 		app.add_file(file)
 	}
+
 	app.db.exec('END TRANSACTION')
+
 	return dirs
 }
 
@@ -621,11 +630,13 @@ fn (r Repo) html_path_to(path string, branch string) vweb.RawHtml {
 // this is slow, so it's run in the background thread
 fn (mut app App) slow_fetch_files_info(branch string, path string) {
 	files := app.find_repository_items(app.repo.id, branch, path)
+
 	for i in 0 .. files.len {
 		if files[i].last_msg != '' {
 			app.warn('skipping ${files[i].name}')
 			continue
 		}
+
 		app.fetch_file_info(app.repo, files[i])
 	}
 }

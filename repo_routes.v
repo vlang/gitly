@@ -298,7 +298,7 @@ pub fn (mut app App) tree(username string, repo string, branch string, path stri
 		// No files in the db, fetch them from git and cache in db
 		app.info('$log_prefix: caching items in repository with $repo_id')
 
-		items = app.cache_repo_files(mut app.repo, branch, app.current_path)
+		items = app.cache_repository_items(mut app.repo, branch, app.current_path)
 		go app.slow_fetch_files_info(branch, app.current_path)
 	}
 
