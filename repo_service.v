@@ -2,7 +2,6 @@
 // Use of this source code is governed by a GPL license that can be found in the LICENSE file.
 module main
 
-import sync
 import vweb
 import os
 import time
@@ -189,10 +188,8 @@ fn (mut app App) user_has_repo(user_id int, repo_name string) bool {
 
 fn (mut app App) update_repository() {
 	mut r := app.repo
-	mut wg := sync.new_waitgroup()
-	wg.add(1)
 
-	r.analyse_lang(mut wg, app)
+	r.analyse_lang(app)
 
 	data := r.git('--no-pager log --abbrev-commit --abbrev=7 --pretty="%h$log_field_separator%aE$log_field_separator%cD$log_field_separator%s$log_field_separator%aN"')
 	app.db.exec('BEGIN TRANSACTION')
@@ -243,7 +240,6 @@ fn (mut app App) update_repository() {
 
 		r.releases_count++
 	}
-	wg.wait()
 
 	app.update_repo_in_db(r)
 	app.db.exec('END TRANSACTION')
@@ -253,10 +249,8 @@ fn (mut app App) update_repository() {
 fn (mut app App) update_repo_data(mut r Repo) {
 	r.git('fetch --all')
 	r.git('pull --all')
-	mut wg := sync.new_waitgroup()
-	wg.add(1)
 
-	r.analyse_lang(mut wg, app)
+	r.analyse_lang(app)
 
 	data := r.git('--no-pager log --abbrev-commit --abbrev=7 --pretty="%h$log_field_separator%aE$log_field_separator%cD$log_field_separator%s$log_field_separator%aN"')
 
@@ -302,13 +296,11 @@ fn (mut app App) update_repo_data(mut r Repo) {
 	app.update_branches(r)
 	app.update_repo_in_db(r)
 
-	wg.wait()
-
 	app.db.exec('END TRANSACTION')
 	app.info('Repo updated')
 }
 
-fn (r &Repo) analyse_lang(mut wg sync.WaitGroup, app &App) {
+fn (r &Repo) analyse_lang(app &App) {
 	files := r.get_all_files(r.git_dir)
 	mut all_size := 0
 	mut lang_stats := map[string]int{}
@@ -359,7 +351,6 @@ fn (r &Repo) analyse_lang(mut wg sync.WaitGroup, app &App) {
 			insert lang_stat into LangStat
 		}
 	}
-	wg.done()
 }
 
 fn calc_lines_of_code(lines []string, lang highlight.Lang) int {
