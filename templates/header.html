@@ -88,7 +88,9 @@
 	.tree-path {
 		@for i, p in app.path_split
 			<a href="/@app.repo.user_name/@{app.make_path(i)}">@p</a>
-			/
+			@if i < app.path_split.len - 1
+				/
+			@end
 		@end
 	}
 @end
