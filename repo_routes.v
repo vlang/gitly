@@ -239,7 +239,7 @@ pub fn (mut app App) handle_new_repo(name string, clone_url string) vweb.Result 
 
 	// Update only cloned repositories
 	if !is_clone_url_empty {
-		go app.update_repository()
+		app.update_repository()
 	}
 
 	return app.redirect('/$app.user.username/repos')
@@ -299,12 +299,12 @@ pub fn (mut app App) tree(username string, repo string, branch string, path stri
 		app.info('$log_prefix: caching items in repository with $repo_id')
 
 		items = app.cache_repo_files(mut app.repo, branch, app.current_path)
-		go app.slow_fetch_files_info(branch, app.current_path)
+		app.slow_fetch_files_info(branch, app.current_path)
 	}
 
 	if items.any(it.last_msg == '') {
 		// If any of the files has a missing `last_msg`, we need to refetch it.
-		go app.slow_fetch_files_info(branch, app.current_path)
+		app.slow_fetch_files_info(branch, app.current_path)
 	}
 
 	mut readme := vweb.RawHtml('')
@@ -333,6 +333,9 @@ pub fn (mut app App) tree(username string, repo string, branch string, path stri
 	} else {
 		app.page_gen_time = '${diff}ms'
 	}
+
+	// Update items after fetching info
+	items = app.find_repository_items(repo_id, branch, app.current_path)
 
 	dirs := items.filter(it.is_dir)
 	files := items.filter(!it.is_dir)
