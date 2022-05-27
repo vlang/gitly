@@ -13,9 +13,6 @@ pub fn (mut app App) command_fetcher() {
 
 			if args.len > 0 {
 				match args[0] {
-					'updaterepo' {
-						app.update_repository()
-					}
 					'adduser' {
 						if args.len > 4 {
 							app.register_user(args[1], args[2], args[3], args[4..], false,

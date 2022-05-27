@@ -68,9 +68,15 @@ fn (mut app App) find_repo_file_by_path(repo_id int, item_branch string, path st
 	return file
 }
 
-fn (mut app App) delete_repo_files(repo_id int) {
+fn (mut app App) delete_repository_files(repository_id int) {
 	sql app.db {
-		delete from File where repo_id == repo_id
+		delete from File where repo_id == repository_id
+	}
+}
+
+fn (mut app App) delete_repository_files_in_branch(repository_id int, branch_name string) {
+	sql app.db {
+		delete from File where repo_id == repository_id && branch == branch_name
 	}
 }
 

@@ -52,13 +52,22 @@ fn (mut app App) handle_git_upload_pack(username string, git_repository_name str
 
 ['/:user/:repository/git-receive-pack'; post]
 fn (mut app App) handle_git_receive_pack(username string, git_repository_name string) vweb.Result {
+	body := app.req.data
 	repository_name := git.remove_git_extension_if_exists(git_repository_name)
 	user := app.find_user_by_username(username) or { return app.not_found() }
 	repository := app.find_repo_by_name(user.id, repository_name) or { return app.not_found() }
 
 	app.check_git_http_access(username, repository_name) or { return app.ok('') }
 
-	git_response := repository.git_smart('receive-pack', app.req.data)
+	git_response := repository.git_smart('receive-pack', body)
+
+	branch_name := git.parse_branch_name_from_receive_upload(body) or {
+		app.send_internal_error('Receive upload parsing error')
+
+		return app.ok('')
+	}
+
+	app.update_repository_after_push(repository.id, branch_name)
 
 	app.set_git_content_type_headers(.receive)
 
@@ -150,12 +159,21 @@ fn (mut app App) set_git_content_type_headers(service GitService) {
 	}
 }
 
+fn (mut app App) send_internal_error(custom_message string) {
+	message := if custom_message == '' { 'Internal Server error' } else { custom_message }
+
+	app.send_custom_error(500, message)
+}
+
 fn (mut app App) send_unauthorized() {
-	app.set_status(401, 'Unauthorized')
-	app.send_response_to_client(vweb.mime_types['.txt'], '')
+	app.send_custom_error(401, 'Unauthorized')
 }
 
 fn (mut app App) send_not_found() {
-	app.set_status(404, 'Not Found')
+	app.send_custom_error(404, 'Not Found')
+}
+
+fn (mut app App) send_custom_error(code int, text string) {
+	app.set_status(code, text)
 	app.send_response_to_client(vweb.mime_types['.txt'], '')
 }

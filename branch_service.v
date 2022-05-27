@@ -27,7 +27,8 @@ fn (mut app App) fetch_branches(r Repo) {
 			return
 		}
 
-		app.create_branch(r.id, branch_name, user.username, last_commit_hash, int(committed_at_date.unix))
+		app.create_branch_or_update(r.id, branch_name, user.username, last_commit_hash,
+			int(committed_at_date.unix))
 	}
 }
 
@@ -56,7 +57,8 @@ fn (mut app App) update_branches(r &Repo) {
 		}
 
 		if !app.contains_repo_branch(r.id, branch_name) {
-			app.create_branch(r.id, branch_name, user.username, last_commit_hash, int(committed_at_date.unix))
+			app.create_branch_or_update(r.id, branch_name, user.username, last_commit_hash,
+				int(committed_at_date.unix))
 		} else {
 			branch := app.find_repo_branch_by_name(r.id, branch_name)
 
@@ -65,17 +67,27 @@ fn (mut app App) update_branches(r &Repo) {
 	}
 }
 
-fn (mut app App) create_branch(repo_id int, name string, author string, hash string, date int) {
-	branch := Branch{
-		repo_id: repo_id
-		name: name
+fn (mut app App) create_branch_or_update(repository_id int, branch_name string, author string, hash string, date int) {
+	branch := sql app.db {
+		select from Branch where repo_id == repository_id && name == branch_name limit 1
+	}
+
+	if branch.id != 0 {
+		app.update_branch(branch.id, author, hash, date)
+
+		return
+	}
+
+	new_branch := Branch{
+		repo_id: repository_id
+		name: branch_name
 		author: author
 		hash: hash
 		date: date
 	}
 
 	sql app.db {
-		insert branch into Branch
+		insert new_branch into Branch
 	}
 }
 
