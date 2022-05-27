@@ -82,7 +82,7 @@ pub fn (mut app App) handle_repo_move(user string, repo string, dest string, ver
 			return app.repo_settings(user, repo)
 		}
 
-		if app.user_has_repo(dest_user.id, app.repo.name) {
+		if app.user_has_repository(dest_user.id, app.repo.name) {
 			app.error('User already owns repo $app.repo.name')
 			return app.repo_settings(user, repo)
 		}

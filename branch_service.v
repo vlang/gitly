@@ -3,67 +3,36 @@ module main
 import time
 import git
 
-fn (mut app App) fetch_branches(r Repo) {
-	branches_output := r.git('branch -av')
+fn (mut app App) fetch_branch(repository Repo, branch_name string) {
+	last_commit_hash := repository.get_last_branch_commit_hash(branch_name)
 
-	for branch_output in branches_output.split_into_lines() {
-		branch_name, last_commit_hash := git.parse_git_branch_output(branch_output)
+	branch_data := repository.git('log $branch_name -1 --pretty="%aE$log_field_separator%cD" $last_commit_hash')
+	log_parts := branch_data.split(log_field_separator)
 
-		branch_data := r.git('log $branch_name -1 --pretty="%aE$log_field_separator%cD" $last_commit_hash')
+	author_email := log_parts[0]
+	committed_at := time.parse_rfc2822(log_parts[1]) or {
+		app.info('Error: $err')
 
-		log_parts := branch_data.split(log_field_separator)
-		author_email := log_parts[0]
-		committed_at := log_parts[1]
-
-		user := app.find_user_by_email(author_email) or {
-			User{
-				username: author_email
-			}
-		}
-
-		committed_at_date := time.parse_rfc2822(committed_at) or {
-			app.info('Error: $err')
-
-			return
-		}
-
-		app.create_branch_or_update(r.id, branch_name, user.username, last_commit_hash,
-			int(committed_at_date.unix))
+		return
 	}
+
+	user := app.find_user_by_email(author_email) or {
+		User{
+			username: author_email
+		}
+	}
+
+	app.create_branch_or_update(repository.id, branch_name, user.username, last_commit_hash,
+		int(committed_at.unix))
 }
 
-fn (mut app App) update_branches(r &Repo) {
-	branches_output := r.git('branch -av')
+fn (mut app App) fetch_branches(repository Repo) {
+	branches_output := repository.git('branch -a')
 
 	for branch_output in branches_output.split_into_lines() {
-		branch_name, last_commit_hash := git.parse_git_branch_output(branch_output)
+		branch_name := git.parse_git_branch_output(branch_output)
 
-		branch_data := r.git('log $branch_name -1 --pretty="%aE$log_field_separator%cD" $last_commit_hash')
-
-		log_parts := branch_data.split(log_field_separator)
-		author_email := log_parts[0]
-		committed_at := log_parts[1]
-
-		user := app.find_user_by_email(author_email) or {
-			User{
-				username: author_email
-			}
-		}
-
-		committed_at_date := time.parse_rfc2822(committed_at) or {
-			app.info('Error: $err')
-
-			return
-		}
-
-		if !app.contains_repo_branch(r.id, branch_name) {
-			app.create_branch_or_update(r.id, branch_name, user.username, last_commit_hash,
-				int(committed_at_date.unix))
-		} else {
-			branch := app.find_repo_branch_by_name(r.id, branch_name)
-
-			app.update_branch(branch.id, user.username, last_commit_hash, int(committed_at_date.unix))
-		}
+		app.fetch_branch(repository, branch_name)
 	}
 }
 

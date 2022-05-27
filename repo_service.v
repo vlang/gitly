@@ -180,7 +180,7 @@ fn (mut app App) move_repo_to_user(repo_id int, user_id int, user_name string) {
 	}
 }
 
-fn (mut app App) user_has_repo(user_id int, repo_name string) bool {
+fn (mut app App) user_has_repository(user_id int, repo_name string) bool {
 	count := sql app.db {
 		select count from Repo where user_id == user_id && name == repo_name
 	}
@@ -293,7 +293,7 @@ fn (mut app App) update_repository_data(mut r Repo) {
 
 	app.update_repo_commits_count(r.id, r.commits_count)
 	app.update_repo_contributors_count(r.id, r.contributors_count)
-	app.update_branches(r)
+	app.fetch_branches(r)
 	app.save_repository(r)
 
 	app.db.exec('END TRANSACTION')
@@ -652,6 +652,17 @@ fn (mut app App) slow_fetch_files_info(branch string, path string) {
 
 		app.fetch_file_info(app.repo, files[i])
 	}
+}
+
+fn (r Repo) get_last_branch_commit_hash(branch_name string) string {
+	git_result := os.execute('git -C $r.git_dir log -n 1 $branch_name --pretty=format:"%h"')
+	git_output := git_result.output
+
+	if git_result.exit_code != 0 {
+		eprintln('git log error: $git_output')
+	}
+
+	return git_output
 }
 
 fn (r Repo) git_advertise(service string) string {
