@@ -67,7 +67,7 @@ fn (mut app App) handle_git_receive_pack(username string, git_repository_name st
 		return app.ok('')
 	}
 
-	app.update_repository_after_push(repository.id, branch_name)
+	app.update_repo_after_push(repository.id, branch_name)
 
 	app.set_git_content_type_headers(.receive)
 

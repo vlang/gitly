@@ -301,15 +301,15 @@ fn (mut app App) update_repository_data(mut r Repo) {
 }
 
 // TODO: tags and other stuff
-fn (mut app App) update_repository_after_push(repository_id int, branch_name string) {
-	mut repository := app.find_repo_by_id(repository_id)
+fn (mut app App) update_repo_after_push(repo_id int, branch_name string) {
+	mut repo := app.find_repo_by_id(repo_id)
 
-	if repository.id == 0 {
+	if repo.id == 0 {
 		return
 	}
 
-	app.update_repository(mut repository)
-	app.delete_repository_files_in_branch(repository_id, branch_name)
+	app.update_repository(mut repo)
+	app.delete_repository_files_in_branch(repo_id, branch_name)
 }
 
 fn (r &Repo) analyse_lang(app &App) {
