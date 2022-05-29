@@ -636,6 +636,16 @@ fn (r Repo) git_advertise(service string) string {
 	return git_output
 }
 
+fn (r Repo) get_commit_patch(commit_hash string) ?string {
+	patch := r.git('format-patch --stdout -1 $commit_hash')
+
+	if patch == '' {
+		return none
+	}
+
+	return patch
+}
+
 fn (r Repo) git_smart(service string, input string) string {
 	git_path := git.get_git_executable_path() or { 'git' }
 	real_repository_path := os.real_path(r.git_dir)
