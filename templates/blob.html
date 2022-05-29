@@ -1,12 +1,11 @@
 @include 'header.html'
 
-@if raw
-	@source
-@else
+<div class="blob-options-block">
+	<a href="@raw_url" target="_blank">Raw file</a>
+</div>
 
 <pre>
 	@source
 </pre>
-@end
 
 @include 'footer.html'
