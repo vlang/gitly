@@ -480,6 +480,7 @@ fn (r &Repo) format_releases_count() vweb.RawHtml {
 	return '<b>$nr</b> releases'
 }
 
+// TODO: return ?string
 fn (r &Repo) git(command string) string {
 	if command.contains('&') || command.contains(';') {
 		return ''
@@ -495,12 +496,7 @@ fn (r &Repo) git(command string) string {
 		return ''
 	}
 
-	command_output := command_result.output.trim_space()
-	if command_output.len > max_git_res_size {
-		println('Huge git() output: $command_output.len KB $command_with_path')
-	}
-
-	return command_output
+	return command_result.output.trim_space()
 }
 
 fn (r &Repo) parse_ls(ls string, branch string) ?File {
