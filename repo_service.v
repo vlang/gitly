@@ -23,19 +23,20 @@ enum RepoStatus {
 	clone_done
 }
 
-fn (mut app App) update_repo_in_db(repo &Repo) {
-	id := repo.id
-	desc := repo.description
-	views_count := repo.views_count
-	webhook_secret := repo.webhook_secret
-	tags_count := repo.tags_count
-	is_public := if repo.is_public { 1 } else { 0 }
-	open_issues_count := repo.open_issues_count
-	open_prs_count := repo.open_prs_count
-	branches_count := repo.branches_count
-	releases_count := repo.releases_count
-	contributors_count := repo.contributors_count
-	commits_count := repo.commits_count
+fn (mut app App) save_repository(repository Repo) {
+	id := repository.id
+	desc := repository.description
+	views_count := repository.views_count
+	webhook_secret := repository.webhook_secret
+	tags_count := repository.tags_count
+	is_public := if repository.is_public { 1 } else { 0 }
+	open_issues_count := repository.open_issues_count
+	open_prs_count := repository.open_prs_count
+	branches_count := repository.branches_count
+	releases_count := repository.releases_count
+	contributors_count := repository.contributors_count
+	commits_count := repository.commits_count
+
 	sql app.db {
 		update Repo set description = desc, views_count = views_count, is_public = is_public,
 		webhook_secret = webhook_secret, tags_count = tags_count, open_issues_count = open_issues_count,
@@ -146,7 +147,7 @@ fn (mut app App) add_repo(repo Repo) {
 	}
 }
 
-fn (mut app App) delete_repo(id int, path string, name string) {
+fn (mut app App) delete_repository(id int, path string, name string) {
 	sql app.db {
 		delete from Repo where id == id
 	}
@@ -166,7 +167,7 @@ fn (mut app App) delete_repo(id int, path string, name string) {
 	app.delete_repo_releases(id)
 	app.info('Removed repo releases ($id, $name)')
 
-	app.delete_repo_files(id)
+	app.delete_repository_files(id)
 	app.info('Removed repo files ($id, $name)')
 
 	app.delete_repo_folder(path)
@@ -186,18 +187,17 @@ fn (mut app App) user_has_repo(user_id int, repo_name string) bool {
 	return count >= 0
 }
 
-fn (mut app App) update_repository() {
-	mut r := app.repo
+fn (mut app App) update_repository(mut repository Repo) {
+	repository_id := repository.id
 
-	r.analyse_lang(app)
+	repository.analyse_lang(app)
 
-	data := r.git('--no-pager log --abbrev-commit --abbrev=7 --pretty="%h$log_field_separator%aE$log_field_separator%cD$log_field_separator%s$log_field_separator%aN"')
+	data := repository.git('--no-pager log --abbrev-commit --abbrev=7 --pretty="%h$log_field_separator%aE$log_field_separator%cD$log_field_separator%s$log_field_separator%aN"')
 	app.db.exec('BEGIN TRANSACTION')
 
 	for line in data.split_into_lines() {
 		args := line.split(log_field_separator)
 		if args.len > 3 {
-			repo_id := r.id
 			commit_hash := args[0]
 			commit_message := args[3]
 			commit_author := args[4]
@@ -210,43 +210,43 @@ fn (mut app App) update_repository() {
 
 			user := app.find_user_by_email(args[1]) or { User{} }
 			if user.username != '' {
-				app.add_contributor(user.id, r.id)
+				app.add_contributor(user.id, repository_id)
 
 				commit_author_id = user.id
 			} else {
 				empty_user := app.create_empty_user(commit_author, args[1])
 
-				app.add_contributor(empty_user, r.id)
+				app.add_contributor(empty_user, repository_id)
 			}
 
-			app.add_commit(repo_id, commit_hash, commit_author, commit_author_id, commit_message,
-				int(commit_date.unix))
+			app.add_commit_if_not_exist(repository_id, commit_hash, commit_author, commit_author_id,
+				commit_message, int(commit_date.unix))
 		}
 	}
 
-	app.info(r.contributors_count.str())
-	app.fetch_branches(r)
+	app.info(repository.contributors_count.str())
+	app.fetch_branches(repository)
 
-	r.commits_count = app.get_count_repo_commits(r.id)
-	r.contributors_count = app.get_count_repo_contributors(r.id)
-	r.branches_count = app.get_count_repo_branches(r.id)
+	repository.commits_count = app.get_count_repo_commits(repository_id)
+	repository.contributors_count = app.get_count_repo_contributors(repository_id)
+	repository.branches_count = app.get_count_repo_branches(repository_id)
 
-	app.update_repo_commits_count(r.id, r.commits_count)
-	app.update_repo_contributors_count(r.id, r.contributors_count)
+	app.update_repo_commits_count(repository_id, repository.commits_count)
+	app.update_repo_contributors_count(repository_id, repository.contributors_count)
 
 	// TODO: TEMPORARY - UNTIL WE GET PERSISTENT RELEASE INFO
-	for tag in app.get_all_repo_tags(r.id) {
-		app.add_release(tag.id, r.id)
+	for tag in app.get_all_repo_tags(repository_id) {
+		app.add_release(tag.id, repository_id)
 
-		r.releases_count++
+		repository.releases_count++
 	}
 
-	app.update_repo_in_db(r)
+	app.save_repository(repository)
 	app.db.exec('END TRANSACTION')
 	app.info('Repository updated')
 }
 
-fn (mut app App) update_repo_data(mut r Repo) {
+fn (mut app App) update_repository_data(mut r Repo) {
 	r.git('fetch --all')
 	r.git('pull --all')
 
@@ -282,8 +282,8 @@ fn (mut app App) update_repo_data(mut r Repo) {
 				app.add_contributor(empty_user, r.id)
 			}
 
-			app.add_commit(repo_id, commit_hash, commit_author, commit_author_id, commit_message,
-				int(commit_date.unix))
+			app.add_commit_if_not_exist(repo_id, commit_hash, commit_author, commit_author_id,
+				commit_message, int(commit_date.unix))
 		}
 	}
 
@@ -293,18 +293,32 @@ fn (mut app App) update_repo_data(mut r Repo) {
 
 	app.update_repo_commits_count(r.id, r.commits_count)
 	app.update_repo_contributors_count(r.id, r.contributors_count)
-	app.update_branches(r)
-	app.update_repo_in_db(r)
+	app.fetch_branches(r)
+	app.save_repository(r)
 
 	app.db.exec('END TRANSACTION')
 	app.info('Repo updated')
 }
 
+// TODO: tags and other stuff
+fn (mut app App) update_repo_after_push(repo_id int, branch_name string) {
+	mut repo := app.find_repo_by_id(repo_id)
+
+	if repo.id == 0 {
+		return
+	}
+
+	app.update_repository(mut repo)
+	app.delete_repository_files_in_branch(repo_id, branch_name)
+}
+
 fn (r &Repo) analyse_lang(app &App) {
 	files := r.get_all_files(r.git_dir)
+
 	mut all_size := 0
 	mut lang_stats := map[string]int{}
 	mut langs := map[string]highlight.Lang{}
+
 	for file in files {
 		lang := highlight.extension_to_lang(file.split('.').last()) or { continue }
 		f_text := os.read_file(file) or { '' }
@@ -319,8 +333,10 @@ fn (r &Repo) analyse_lang(app &App) {
 		lang_stats[lang.name] = lang_stats[lang.name] + size
 		all_size += size
 	}
+
 	mut d_lang_stats := []LangStat{}
 	mut tmp_a := []int{}
+
 	for lang, amount in lang_stats {
 		mut tmp := f32(amount) / f32(all_size)
 		tmp *= 1000
@@ -337,15 +353,19 @@ fn (r &Repo) analyse_lang(app &App) {
 			lines_count: amount
 		}
 	}
+
 	tmp_a.sort()
 	tmp_a = tmp_a.reverse()
+
 	mut tmp_stats := []LangStat{}
+
 	for pct in tmp_a {
 		all_with_ptc := r.lang_stats.filter(it.pct == pct)
 		for lang in all_with_ptc {
 			tmp_stats << lang
 		}
 	}
+
 	for lang_stat in d_lang_stats {
 		sql app.db {
 			insert lang_stat into LangStat
@@ -503,73 +523,79 @@ fn (r &Repo) git(command string) string {
 	return command_output
 }
 
-fn (r &Repo) parse_ls(ls string, branch string) ?File {
-	words := ls.fields()
-
-	if words.len < 4 {
+fn (r &Repo) parse_ls(ls_line string, branch string) ?File {
+	ls_line_parts := ls_line.fields()
+	if ls_line_parts.len < 4 {
 		return none
 	}
-	typ := words[1]
-	mut parent_path := os.dir(words[3])
-	hash := r.git('log $branch -n 1 --format="%h" -- ${words[3]}')
 
-	name := words[3].after('/')
-	if name == '' {
+	item_type := ls_line_parts[1]
+	item_path := ls_line_parts[3]
+	item_hash := r.git('log $branch -n 1 --format="%h" -- $item_path')
+
+	item_name := item_path.after('/')
+	if item_name == '' {
 		return none
 	}
-	if parent_path == name {
+
+	mut parent_path := os.dir(item_path)
+	if parent_path == item_name {
 		parent_path = ''
 	}
-	if name.contains('"\\') {
+
+	if item_name.contains('"\\') {
 		// Unqoute octal UTF-8 strings
 	}
 
 	return File{
-		name: name
+		name: item_name
 		parent_path: parent_path
 		repo_id: r.id
-		last_hash: hash
+		last_hash: item_hash
 		branch: branch
-		is_dir: typ == 'tree'
+		is_dir: item_type == 'tree'
 	}
 }
 
 // Fetches all files via `git ls-tree` and saves them in db
-fn (mut app App) cache_repo_files(mut r Repo, branch string, path string) []File {
+fn (mut app App) cache_repository_items(mut r Repo, branch string, path string) []File {
 	if r.status == .caching {
 		app.info('`$r.name` is being cached already')
 		return []
 	}
 
-	mut res := ''
+	mut repository_ls := ''
 	if path == '.' {
 		r.status = .caching
+
 		defer {
 			r.status = .done
 		}
 	} else {
-		mut p := path
-		if path != '' {
-			p += '/'
-		}
-		res = r.git('ls-tree --full-name $branch $p')
+		directory_path := if path == '' { path } else { '$path/' }
+		repository_ls = r.git('ls-tree --full-name $branch $directory_path')
 	}
-	lines := res.split('\n')
+
+	// mode type name path
+	item_info_lines := repository_ls.split('\n')
+
 	mut dirs := []File{} // dirs first
 	mut files := []File{}
 
 	app.db.exec('BEGIN TRANSACTION')
-	for line in lines {
-		is_line_empty := validation.is_string_empty(line)
 
-		if is_line_empty {
+	for item_info in item_info_lines {
+		is_item_info_empty := validation.is_string_empty(item_info)
+
+		if is_item_info_empty {
 			continue
 		}
 
-		file := r.parse_ls(line, branch) or {
-			app.warn('failed to parse $line')
+		file := r.parse_ls(item_info, branch) or {
+			app.warn('failed to parse $item_info')
 			continue
 		}
+
 		if file.is_dir {
 			dirs << file
 
@@ -578,11 +604,14 @@ fn (mut app App) cache_repo_files(mut r Repo, branch string, path string) []File
 			files << file
 		}
 	}
+
 	dirs << files
 	for file in files {
 		app.add_file(file)
 	}
+
 	app.db.exec('END TRANSACTION')
+
 	return dirs
 }
 
@@ -623,6 +652,17 @@ fn (mut app App) slow_fetch_files_info(branch string, path string) {
 
 		app.fetch_file_info(app.repo, files[i])
 	}
+}
+
+fn (r Repo) get_last_branch_commit_hash(branch_name string) string {
+	git_result := os.execute('git -C $r.git_dir log -n 1 $branch_name --pretty=format:"%h"')
+	git_output := git_result.output
+
+	if git_result.exit_code != 0 {
+		eprintln('git log error: $git_output')
+	}
+
+	return git_output
 }
 
 fn (r Repo) git_advertise(service string) string {

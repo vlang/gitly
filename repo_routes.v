@@ -61,7 +61,7 @@ pub fn (mut app App) handle_repo_delete(user string, repo string) vweb.Result {
 	}
 
 	if app.form['verify'] == '$user/$repo' {
-		go app.delete_repo(app.repo.id, app.repo.git_dir, app.repo.name)
+		go app.delete_repository(app.repo.id, app.repo.git_dir, app.repo.name)
 	} else {
 		app.error('Verification failed')
 		return app.repo_settings(user, repo)
@@ -142,7 +142,7 @@ pub fn (mut app App) handle_repo_update(user string, repo string) vweb.Result {
 	}
 
 	if app.user.is_admin {
-		app.update_repo_data(mut app.repo)
+		app.update_repository_data(mut app.repo)
 		app.slow_fetch_files_info('master', '.')
 	}
 
@@ -239,15 +239,15 @@ pub fn (mut app App) handle_new_repo(name string, clone_url string) vweb.Result 
 
 	// Update only cloned repositories
 	if !is_clone_url_empty {
-		app.update_repository()
+		app.update_repository(mut app.repo)
 	}
 
 	return app.redirect('/$app.user.username/repos')
 }
 
-['/:user/:repo/tree/:branch/:path...']
-pub fn (mut app App) tree(username string, repo string, branch string, path string) vweb.Result {
-	if !app.exists_user_repo(username, repo) {
+['/:user/:repository/tree/:branch/:path...']
+pub fn (mut app App) tree(username string, repository_name string, branch string, path string) vweb.Result {
+	if !app.exists_user_repo(username, repository_name) {
 		return app.not_found()
 	}
 
@@ -259,7 +259,7 @@ pub fn (mut app App) tree(username string, repo string, branch string, path stri
 	}
 
 	repo_id := app.repo.id
-	log_prefix := '$username/$repo'
+	log_prefix := '$username/$repository_name'
 
 	app.current_path = '/$path'
 	if app.current_path.contains('/favicon.svg') {
@@ -268,7 +268,7 @@ pub fn (mut app App) tree(username string, repo string, branch string, path stri
 
 	path_parts := path.split('/')
 
-	app.path_split = [repo]
+	app.path_split = [repository_name]
 	app.path_split << path_parts
 
 	app.is_tree = true
@@ -298,7 +298,7 @@ pub fn (mut app App) tree(username string, repo string, branch string, path stri
 		// No files in the db, fetch them from git and cache in db
 		app.info('$log_prefix: caching items in repository with $repo_id')
 
-		items = app.cache_repo_files(mut app.repo, branch, app.current_path)
+		items = app.cache_repository_items(mut app.repo, branch, app.current_path)
 		app.slow_fetch_files_info(branch, app.current_path)
 	}
 
