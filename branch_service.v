@@ -3,10 +3,10 @@ module main
 import time
 import git
 
-fn (mut app App) fetch_branch(repository Repo, branch_name string) {
-	last_commit_hash := repository.get_last_branch_commit_hash(branch_name)
+fn (mut app App) fetch_branch(repo Repo, branch_name string) {
+	last_commit_hash := repo.get_last_branch_commit_hash(branch_name)
 
-	branch_data := repository.git('log $branch_name -1 --pretty="%aE$log_field_separator%cD" $last_commit_hash')
+	branch_data := repo.git('log $branch_name -1 --pretty="%aE$log_field_separator%cD" $last_commit_hash')
 	log_parts := branch_data.split(log_field_separator)
 
 	author_email := log_parts[0]
@@ -22,17 +22,17 @@ fn (mut app App) fetch_branch(repository Repo, branch_name string) {
 		}
 	}
 
-	app.create_branch_or_update(repository.id, branch_name, user.username, last_commit_hash,
+	app.create_branch_or_update(repo.id, branch_name, user.username, last_commit_hash,
 		int(committed_at.unix))
 }
 
-fn (mut app App) fetch_branches(repository Repo) {
-	branches_output := repository.git('branch -a')
+fn (mut app App) fetch_branches(repo Repo) {
+	branches_output := repo.git('branch -a')
 
 	for branch_output in branches_output.split_into_lines() {
 		branch_name := git.parse_git_branch_output(branch_output)
 
-		app.fetch_branch(repository, branch_name)
+		app.fetch_branch(repo, branch_name)
 	}
 }
 

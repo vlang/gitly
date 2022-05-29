@@ -180,7 +180,7 @@ fn (mut app App) move_repo_to_user(repo_id int, user_id int, user_name string) {
 	}
 }
 
-fn (mut app App) user_has_repository(user_id int, repo_name string) bool {
+fn (mut app App) user_has_repo(user_id int, repo_name string) bool {
 	count := sql app.db {
 		select count from Repo where user_id == user_id && name == repo_name
 	}
