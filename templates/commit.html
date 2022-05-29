@@ -51,6 +51,10 @@ span.deletions {
 	Deletions: @all_dels
 }
 
+<span>
+	<a href="@patch_url">View patch</a>
+</span>
+
 @for file, src in sources
 	<div id="@file">
 		<a href="/@app.repo.user_name/@app.repo.name/blob/@file">@file</a>
