@@ -382,8 +382,8 @@ pub fn (mut app App) contributors(user string, repo string) vweb.Result {
 }
 
 ['/:user/:repo/blob/:branch/:path...']
-pub fn (mut app App) blob(username string, repository_name string, branch string, path string) vweb.Result {
-	if !app.exists_user_repo(username, repository_name) {
+pub fn (mut app App) blob(username string, repo_name string, branch string, path string) vweb.Result {
+	if !app.exists_user_repo(username, repo_name) {
 		return app.not_found()
 	}
 
@@ -391,7 +391,7 @@ pub fn (mut app App) blob(username string, repository_name string, branch string
 	path_parts.pop()
 
 	app.current_path = path
-	app.path_split = [repository_name]
+	app.path_split = [repo_name]
 	app.path_split << path_parts
 
 	app.branch = branch
@@ -401,7 +401,7 @@ pub fn (mut app App) blob(username string, repository_name string, branch string
 		return app.not_found()
 	}
 
-	raw_url := '/$username/$repository_name/raw/$branch/$path'
+	raw_url := '/$username/$repo_name/raw/$branch/$path'
 
 	blob_path := os.join_path(app.repo.git_dir, app.current_path)
 	plain_text := app.repo.git('--no-pager show $branch:$app.current_path')
@@ -412,9 +412,9 @@ pub fn (mut app App) blob(username string, repository_name string, branch string
 }
 
 ['/:user/:repository/raw/:branch/:path...']
-pub fn (mut app App) handle_raw(username string, repository_name string, branch string, path string) vweb.Result {
+pub fn (mut app App) handle_raw(username string, repo_name string, branch string, path string) vweb.Result {
 	user := app.find_user_by_username(username) or { return app.not_found() }
-	repository := app.find_repo_by_name(user.id, repository_name) or { return app.not_found() }
+	repository := app.find_repo_by_name(user.id, repo_name) or { return app.not_found() }
 
 	// TODO: throw error when git returns non-zero status
 	file_source := repository.git('--no-pager show $branch:$path')
