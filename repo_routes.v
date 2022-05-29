@@ -382,8 +382,8 @@ pub fn (mut app App) contributors(user string, repo string) vweb.Result {
 }
 
 ['/:user/:repo/blob/:branch/:path...']
-pub fn (mut app App) blob(user string, repo string, branch string, path string) vweb.Result {
-	if !app.exists_user_repo(user, repo) {
+pub fn (mut app App) blob(username string, repo_name string, branch string, path string) vweb.Result {
+	if !app.exists_user_repo(username, repo_name) {
 		return app.not_found()
 	}
 
@@ -391,7 +391,7 @@ pub fn (mut app App) blob(user string, repo string, branch string, path string) 
 	path_parts.pop()
 
 	app.current_path = path
-	app.path_split = [repo]
+	app.path_split = [repo_name]
 	app.path_split << path_parts
 
 	app.branch = branch
@@ -401,25 +401,23 @@ pub fn (mut app App) blob(user string, repo string, branch string, path string) 
 		return app.not_found()
 	}
 
-	mut raw := false
+	raw_url := '/$username/$repo_name/raw/$branch/$path'
 
-	if app.current_path.ends_with('/raw') {
-		app.current_path = app.current_path.substr(0, app.current_path.len - 4)
-		raw = true
-	}
-
-	mut blob_path := os.join_path(app.repo.git_dir, app.current_path)
-
+	blob_path := os.join_path(app.repo.git_dir, app.current_path)
 	plain_text := app.repo.git('--no-pager show $branch:$app.current_path')
-
-	mut source := vweb.RawHtml(plain_text.str())
-
-	if os.file_size(blob_path) < 1000000 {
-		if !raw {
-			src, _, _ := highlight.highlight_text(plain_text, blob_path, false)
-			source = vweb.RawHtml(src)
-		}
-	}
+	highlighted_source, _, _ := highlight.highlight_text(plain_text, blob_path, false)
+	source := vweb.RawHtml(highlighted_source)
 
 	return $vweb.html()
+}
+
+['/:user/:repository/raw/:branch/:path...']
+pub fn (mut app App) handle_raw(username string, repo_name string, branch string, path string) vweb.Result {
+	user := app.find_user_by_username(username) or { return app.not_found() }
+	repository := app.find_repo_by_name(user.id, repo_name) or { return app.not_found() }
+
+	// TODO: throw error when git returns non-zero status
+	file_source := repository.git('--no-pager show $branch:$path')
+
+	return app.ok(file_source)
 }
