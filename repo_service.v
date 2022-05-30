@@ -764,28 +764,25 @@ fn (mut r Repo) read_file(branch string, path string) string {
 }
 
 fn find_readme_file(items []File) ?File {
-	files := items.filter(it.name.to_lower().starts_with('readme.') && !it.is_dir)
+	files := items.filter(it.name.to_lower().starts_with('readme.') && it.name.split('.').len == 2
+		&& !it.is_dir)
 
 	if files.len == 0 {
 		return none
 	}
 
-	// if there are many readme files
-	for readme in files {
-		file_name := readme.name
-		file_name_parts := file_name.split('.')
+	// firstly search markdown files
+	readme_md_files := files.filter(it.name.to_lower().ends_with('.md'))
 
-		if file_name_parts.len != 2 {
-			continue
-		}
+	if readme_md_files.len > 0 {
+		return readme_md_files.first()
+	}
 
-		file_extension := file_name_parts.last().to_lower()
+	// and then txt files
+	readme_txt_files := files.filter(it.name.to_lower().ends_with('.txt'))
 
-		if file_extension == 'md' {
-			return readme
-		} else if file_extension == 'txt' {
-			return readme
-		}
+	if readme_txt_files.len > 0 {
+		readme_txt_files.first()
 	}
 
 	return none
