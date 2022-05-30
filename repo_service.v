@@ -738,9 +738,9 @@ fn (mut app App) fetch_file_info(r &Repo, file &File) {
 	}
 }
 
-fn (mut app App) update_repository_primary_branch(repository_id int, branch string) {
+fn (mut app App) update_repo_primary_branch(repo_id int, branch string) {
 	sql app.db {
-		update Repo set primary_branch = branch where id == repository_id
+		update Repo set primary_branch = branch where id == repo_id
 	}
 }
 
@@ -755,4 +755,38 @@ fn (mut r Repo) clone() {
 	}
 
 	r.status = .clone_done
+}
+
+fn (mut r Repo) read_file(branch string, path string) string {
+	valid_path := path.trim_string_left('/')
+
+	return r.git('--no-pager show $branch:$valid_path')
+}
+
+fn find_readme_file(items []File) ?File {
+	files := items.filter(it.name.to_lower().starts_with('readme.') && !it.is_dir)
+
+	if files.len == 0 {
+		return none
+	}
+
+	// if there are many readme files
+	for readme in files {
+		file_name := readme.name
+		file_name_parts := file_name.split('.')
+
+		if file_name_parts.len != 2 {
+			continue
+		}
+
+		file_extension := file_name_parts.last().to_lower()
+
+		if file_extension == 'md' {
+			return readme
+		} else if file_extension == 'txt' {
+			return readme
+		}
+	}
+
+	return none
 }

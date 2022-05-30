@@ -233,7 +233,7 @@ pub fn (mut app App) handle_new_repo(name string, clone_url string) vweb.Result 
 	repository_id := app.repo.id
 
 	primary_branch := git.get_repository_primary_branch(repository_path)
-	app.update_repository_primary_branch(repository_id, primary_branch)
+	app.update_repo_primary_branch(repository_id, primary_branch)
 
 	app.repo = app.find_repo_by_id(repository_id)
 
@@ -308,6 +308,16 @@ pub fn (mut app App) tree(username string, repository_name string, branch string
 	}
 
 	mut readme := vweb.RawHtml('')
+	readme_file := find_readme_file(items) or { File{} }
+
+	if readme_file.id != 0 {
+		readme_path := '$path/$readme_file.name'
+		readme_content := app.repo.read_file(branch, readme_path)
+		highlighted_readme, _, _ := highlight.highlight_text(readme_content, readme_path,
+			false)
+
+		readme = vweb.RawHtml(highlighted_readme)
+	}
 
 	// Fetch last commit message for this directory, printed at the top of the tree
 	mut last_commit := Commit{}
@@ -404,7 +414,7 @@ pub fn (mut app App) blob(username string, repo_name string, branch string, path
 	raw_url := '/$username/$repo_name/raw/$branch/$path'
 
 	blob_path := os.join_path(app.repo.git_dir, app.current_path)
-	plain_text := app.repo.git('--no-pager show $branch:$app.current_path')
+	plain_text := app.repo.read_file(branch, app.current_path)
 	highlighted_source, _, _ := highlight.highlight_text(plain_text, blob_path, false)
 	source := vweb.RawHtml(highlighted_source)
 
