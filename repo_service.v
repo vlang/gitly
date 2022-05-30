@@ -782,7 +782,7 @@ fn find_readme_file(items []File) ?File {
 	readme_txt_files := files.filter(it.name.to_lower().ends_with('.txt'))
 
 	if readme_txt_files.len > 0 {
-		readme_txt_files.first()
+		return readme_txt_files.first()
 	}
 
 	return none
