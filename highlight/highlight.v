@@ -2,20 +2,21 @@
 // Use of this source code is governed by a GPL license that can be found in the LICENSE file.
 module highlight
 
-// import markdown
 const (
 	tab = '    ' //        '
 )
 
-pub fn highlight_text(st string, ext string, commit bool) (string, int, int) {
+// returns HTML code, number of lines, number of lines with source code
+pub fn highlight_text(st string, file_path string, commit bool) (string, int, int) {
 	if !commit {
-		if ext.split('.').last().to_lower() == 'md' {
-			// Markdown
-			output := st // markdown.to_html(st)
-			return output, 0, 0
+		file_extension := extract_extension_from_file_path(file_path)
+
+		if file_extension == 'md' {
+			return convert_markdown_to_html(st), 0, 0
 		}
 	}
-	lang := extension_to_lang(ext) or { Lang{} }
+
+	lang := extension_to_lang(file_path) or { Lang{} }
 	text := '$st '
 	mut res := []u8{cap: text.len}
 	mut lines := 0
@@ -181,4 +182,8 @@ fn is_single_line(s string) bool {
 		}
 	}
 	return true
+}
+
+fn extract_extension_from_file_path(path string) string {
+	return path.split('.').last().to_lower()
 }
