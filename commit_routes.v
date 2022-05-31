@@ -75,7 +75,7 @@ pub fn (mut app App) commits(username string, repo string, page int) vweb.Result
 ['/:user/:repo/commit/:hash']
 pub fn (mut app App) commit(username string, repository_name string, hash string) vweb.Result {
 	user := app.find_user_by_username(username) or { return app.not_found() }
-	repository := app.find_repo_by_name(user.id, repository_name) or { return app.not_found() }
+	app.repo = app.find_repo_by_name(user.id, repository_name) or { return app.not_found() }
 
 	app.show_menu = true
 
@@ -83,7 +83,7 @@ pub fn (mut app App) commit(username string, repository_name string, hash string
 
 	if is_patch_request {
 		commit_hash := hash.trim_string_right('.patch')
-		patch := repository.get_commit_patch(commit_hash) or { return app.not_found() }
+		patch := app.repo.get_commit_patch(commit_hash) or { return app.not_found() }
 
 		return app.ok(patch)
 	}
