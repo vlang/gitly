@@ -27,10 +27,9 @@
 	border-right: 1px solid #dfdfdf;
 	border-top: 1px solid #dfdfdf;
 	border-radius: $small-radius;
-	//border-bottom :1px solid #dfdfdf;
-	//margin-top: 20px;
-	margin-bottom: 100px;
+	margin-bottom: 20px;
 }
+
 .file {
     display: flex;
     align-items: center;
@@ -45,14 +44,17 @@
 		background-color: $gray-light;
 	}
 }
+
 .file svg {
 	height: 16px;
 }
+
 .file-ico{
 		margin-right: 6px;
 		height: 16px;
 		width: 16px;
 }
+
 .file-name {
     @include desktop {
         width: 25%;
@@ -71,6 +73,7 @@
 		top:-2px;
 	}
 }
+
 .file-size {
 	@include mobile {
 		display: none;
@@ -78,6 +81,7 @@
 	width: 15%;
 	margin-right: 10px;
 }
+
 .file-msg {
 	@include mobile {
 		display: none;
@@ -94,6 +98,7 @@
 		color: $gray-dark !important;
 	}
 }
+
 .file-time {
 	color: $gray-dark !important;
 	//position: relative;

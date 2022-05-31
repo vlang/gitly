@@ -537,21 +537,7 @@ a.btn:hover {
 .tree-header {
 	margin-top: 20px;
 }
-.files {
-	@include desktop {
-		max-width: $mob-max;
-		min-width: $mob-max;
-	}
-	@include mobile {
-		width: 100%;
-	}
-	margin: 0 auto;
-	border-left: 1px solid #dfdfdf;
-	border-right: 1px solid #dfdfdf;
-	//border-bottom :1px solid #dfdfdf;
-	//margin-top: 20px;
-	margin-bottom: 100px;
-}
+
 .file {
 	padding: 8px;
 	margin: 0;

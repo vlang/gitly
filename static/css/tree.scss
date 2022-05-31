@@ -52,9 +52,45 @@
 		height: 14px;
 	}
 }
+
 .tree-path, .tree-path a, h3 a {
 	display: inline-block;
 	font-size: 20px !important;
 	font-weight: 300;
 	margin: 7px 0 7px 0;
+}
+
+.readme {
+	border: 1px solid #dfdfdf;
+	border-radius: 3px;
+
+	padding: 20px 30px 20px 30px;
+
+	> * {
+		margin: 10px 0;
+	}
+
+	h1 {
+		font-size: 2em;
+	}
+
+	h2 {
+		font-size: 1.75em;
+	}
+
+	h3 {
+		font-size: 1.5em;
+	}
+
+	h4 {
+		font-size: 1.25em;
+	}
+
+	h5 {
+		font-size: 1em;
+	}
+
+	h6 {
+		font-size: 0.75em;
+	}
 }

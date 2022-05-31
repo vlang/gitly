@@ -738,9 +738,9 @@ fn (mut app App) fetch_file_info(r &Repo, file &File) {
 	}
 }
 
-fn (mut app App) update_repository_primary_branch(repository_id int, branch string) {
+fn (mut app App) update_repo_primary_branch(repo_id int, branch string) {
 	sql app.db {
-		update Repo set primary_branch = branch where id == repository_id
+		update Repo set primary_branch = branch where id == repo_id
 	}
 }
 
@@ -755,4 +755,35 @@ fn (mut r Repo) clone() {
 	}
 
 	r.status = .clone_done
+}
+
+fn (mut r Repo) read_file(branch string, path string) string {
+	valid_path := path.trim_string_left('/')
+
+	return r.git('--no-pager show $branch:$valid_path')
+}
+
+fn find_readme_file(items []File) ?File {
+	files := items.filter(it.name.to_lower().starts_with('readme.') && it.name.split('.').len == 2
+		&& !it.is_dir)
+
+	if files.len == 0 {
+		return none
+	}
+
+	// firstly search markdown files
+	readme_md_files := files.filter(it.name.to_lower().ends_with('.md'))
+
+	if readme_md_files.len > 0 {
+		return readme_md_files.first()
+	}
+
+	// and then txt files
+	readme_txt_files := files.filter(it.name.to_lower().ends_with('.txt'))
+
+	if readme_txt_files.len > 0 {
+		return readme_txt_files.first()
+	}
+
+	return none
 }
