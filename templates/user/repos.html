@@ -7,18 +7,23 @@
 	<span>@user.avatar</span>
 @end
 </div>
-<h3> @user.username s repositories</h3>
+<h3> @{user.username}'s repositories</h3>
 
 @if repos.len > 0
 @for repo in repos
-	<a href="/@user.username/@repo.name" class="userrepo">
-		<h3>@repo.name</h3>
-		<p>@repo.description</p>
-	</a>
+	<div class="user-repo-item">
+		<a href="/@user.username/@repo.name">
+			<h3>@repo.name</h3>
+		</a>
+		@if repo.is_public
+			<p>Public</p>
+		@else
+			<p>Private</p>
+		@end
+	</div>
 @end
 @else
 	<h2>No repositories</h2>
 @end
 
 @include '../footer.html'
-
