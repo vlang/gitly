@@ -46,3 +46,13 @@ img.clog-avatar {
 	font-size: 11px;
 	color: $gray-dark;
 }
+
+.commit-info-block {
+	border: 1px solid #dfdfdf;
+	border-radius: 3px;
+	padding: 10px;
+}
+
+.commit-file-diff {
+	margin-top: 10px;
+}
