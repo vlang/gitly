@@ -199,6 +199,7 @@ fn (mut app App) update_repository(mut repository Repo) {
 		args := line.split(log_field_separator)
 		if args.len > 3 {
 			commit_hash := args[0]
+			commit_author_email := args[1]
 			commit_message := args[3]
 			commit_author := args[4]
 			mut commit_author_id := 0
@@ -208,15 +209,12 @@ fn (mut app App) update_repository(mut repository Repo) {
 				return
 			}
 
-			user := app.find_user_by_email(args[1]) or { User{} }
-			if user.username != '' {
+			user := app.find_user_by_email(commit_author_email) or { User{} }
+
+			if user.id > 0 {
 				app.add_contributor(user.id, repository_id)
 
 				commit_author_id = user.id
-			} else {
-				empty_user := app.create_empty_user(commit_author, args[1])
-
-				app.add_contributor(empty_user, repository_id)
 			}
 
 			app.add_commit_if_not_exist(repository_id, commit_hash, commit_author, commit_author_id,
@@ -261,6 +259,7 @@ fn (mut app App) update_repository_data(mut r Repo) {
 		if args.len > 3 {
 			repo_id := r.id
 			commit_hash := args[0]
+			commit_author_email := args[1]
 			commit_message := args[3]
 			commit_author := args[4]
 			mut commit_author_id := 0
@@ -270,16 +269,12 @@ fn (mut app App) update_repository_data(mut r Repo) {
 				return
 			}
 
-			user := app.find_user_by_email(args[1]) or { User{} }
+			user := app.find_user_by_email(commit_author_email) or { User{} }
 
-			if user.username != '' {
+			if user.id > 0 {
 				app.add_contributor(user.id, r.id)
 
 				commit_author_id = user.id
-			} else {
-				empty_user := app.create_empty_user(commit_author, args[1])
-
-				app.add_contributor(empty_user, r.id)
 			}
 
 			app.add_commit_if_not_exist(repo_id, commit_hash, commit_author, commit_author_id,
