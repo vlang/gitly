@@ -162,6 +162,7 @@ pub fn (mut app App) new() vweb.Result {
 pub fn (mut app App) handle_new_repo(name string, clone_url string) vweb.Result {
 	mut valid_clone_url := clone_url
 	is_clone_url_empty := validation.is_string_empty(clone_url)
+	is_public := app.form['is_private'] != 'on'
 
 	if !app.logged_in {
 		return app.redirect_to_login()
@@ -212,6 +213,7 @@ pub fn (mut app App) handle_new_repo(name string, clone_url string) vweb.Result 
 		primary_branch: 'master'
 		user_name: app.user.username
 		clone_url: valid_clone_url
+		is_public: is_public
 	}
 
 	if is_clone_url_empty {
