@@ -1,19 +1,19 @@
 @include 'header.html'
 
-<h3> Contributors </h3>
+<h3>Contributors</h3>
 
-
-.contributors {
-	@for contributor in contributors
-		.contributor {
-			<!--
-			<span>email</span>
-			-->
-			@if contributor.is_registered
-				<a href="/@contributor.username"><span>@contributor.username</span></a>
-			@else
-				<span>@contributor.username</span>
-			@end
-		}
-	@end
-}
+@if contributors.len > 0
+	.contributors-list {
+		@for contributor in contributors
+			.contributors-item {
+				@if contributor.is_registered
+					<a href="/@contributor.username"><span>@contributor.username</span></a>
+				@else
+					<span>@contributor.username</span>
+				@end
+			}
+		@end
+	}
+@else
+	<h2>No registered contributors</h2>
+@end

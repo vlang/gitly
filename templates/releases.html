@@ -2,14 +2,18 @@
 
 <h3>Releases</h3>
 
-.releases {
-    @for r in releases
-        .release {
-            <strong>Release:</strong> @r.tag_name<br/>
-            <strong>Hash:</strong> @r.tag_hash<br/>
-            <strong>Created by:</strong> @r.user<br/>
-            <strong>Notes:</strong> @r.notes<br/>
-        }
-        <br/>
-    @end
-}
+@if releases.len > 0
+	.releases {
+		@for r in releases
+			.release {
+				<strong>Release:</strong> @r.tag_name<br/>
+				<strong>Hash:</strong> @r.tag_hash<br/>
+				<strong>Created by:</strong> @r.user<br/>
+				<strong>Notes:</strong> @r.notes<br/>
+			}
+			<br/>
+		@end
+	}
+@else
+	<h2>No releases</h2>
+@end
