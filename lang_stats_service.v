@@ -35,3 +35,9 @@ pub fn (mut app App) find_repo_lang_stats(repo_id int) []LangStat {
 		select from LangStat where repo_id == repo_id order by pct desc
 	}
 }
+
+fn (app App) remove_repo_lang_stats(repo_id int) {
+	sql app.db {
+		delete from LangStat where repo_id == repo_id
+	}
+}

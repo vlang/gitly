@@ -199,6 +199,7 @@ fn (mut app App) update_repository(mut repository Repo) {
 		args := line.split(log_field_separator)
 		if args.len > 3 {
 			commit_hash := args[0]
+			commit_author_email := args[1]
 			commit_message := args[3]
 			commit_author := args[4]
 			mut commit_author_id := 0
@@ -208,15 +209,12 @@ fn (mut app App) update_repository(mut repository Repo) {
 				return
 			}
 
-			user := app.find_user_by_email(args[1]) or { User{} }
-			if user.username != '' {
+			user := app.find_user_by_email(commit_author_email) or { User{} }
+
+			if user.id > 0 {
 				app.add_contributor(user.id, repository_id)
 
 				commit_author_id = user.id
-			} else {
-				empty_user := app.create_empty_user(commit_author, args[1])
-
-				app.add_contributor(empty_user, repository_id)
 			}
 
 			app.add_commit_if_not_exist(repository_id, commit_hash, commit_author, commit_author_id,
@@ -261,6 +259,7 @@ fn (mut app App) update_repository_data(mut r Repo) {
 		if args.len > 3 {
 			repo_id := r.id
 			commit_hash := args[0]
+			commit_author_email := args[1]
 			commit_message := args[3]
 			commit_author := args[4]
 			mut commit_author_id := 0
@@ -270,16 +269,12 @@ fn (mut app App) update_repository_data(mut r Repo) {
 				return
 			}
 
-			user := app.find_user_by_email(args[1]) or { User{} }
+			user := app.find_user_by_email(commit_author_email) or { User{} }
 
-			if user.username != '' {
+			if user.id > 0 {
 				app.add_contributor(user.id, r.id)
 
 				commit_author_id = user.id
-			} else {
-				empty_user := app.create_empty_user(commit_author, args[1])
-
-				app.add_contributor(empty_user, r.id)
 			}
 
 			app.add_commit_if_not_exist(repo_id, commit_hash, commit_author, commit_author_id,
@@ -313,23 +308,25 @@ fn (mut app App) update_repo_after_push(repo_id int, branch_name string) {
 }
 
 fn (r &Repo) analyse_lang(app &App) {
-	files := r.get_all_files(r.git_dir)
+	file_paths := r.get_all_file_paths()
 
 	mut all_size := 0
 	mut lang_stats := map[string]int{}
 	mut langs := map[string]highlight.Lang{}
 
-	for file in files {
-		lang := highlight.extension_to_lang(file.split('.').last()) or { continue }
-		f_text := os.read_file(file) or { '' }
-		lines := f_text.split_into_lines()
+	for file_path in file_paths {
+		lang := highlight.extension_to_lang(file_path.split('.').last()) or { continue }
+		file_content := r.read_file(r.primary_branch, file_path)
+		lines := file_content.split_into_lines()
 		size := calc_lines_of_code(lines, lang)
+
 		if lang.name !in lang_stats {
 			lang_stats[lang.name] = 0
 		}
 		if lang.name !in langs {
 			langs[lang.name] = lang
 		}
+
 		lang_stats[lang.name] = lang_stats[lang.name] + size
 		all_size += size
 	}
@@ -365,6 +362,8 @@ fn (r &Repo) analyse_lang(app &App) {
 			tmp_stats << lang
 		}
 	}
+
+	app.remove_repo_lang_stats(r.id)
 
 	for lang_stat in d_lang_stats {
 		sql app.db {
@@ -414,20 +413,22 @@ fn calc_lines_of_code(lines []string, lang highlight.Lang) int {
 	return size
 }
 
-fn (r &Repo) get_all_files(path string) []string {
-	files := os.ls(path) or { return [] }
-	mut returnval := []string{}
-	for file in files {
-		if !os.is_dir('$path/$file') {
-			returnval << '$path/$file'
-		} else {
-			if file in ignored_folder {
-				continue
-			}
-			returnval << r.get_all_files('$path/$file')
+fn (r &Repo) get_all_file_paths() []string {
+	ls_output := r.git('ls-tree -r $r.primary_branch --name-only')
+	mut file_paths := []string{}
+
+	for file_path in ls_output.split_into_lines() {
+		path_parts := file_path.split('/')
+		has_ignored_folders := path_parts.any(ignored_folder.contains(it))
+
+		if has_ignored_folders {
+			continue
 		}
+
+		file_paths << file_path
 	}
-	return returnval
+
+	return file_paths
 }
 
 fn (r &Repo) format_commits_count() vweb.RawHtml {
@@ -757,7 +758,7 @@ fn (mut r Repo) clone() {
 	r.status = .clone_done
 }
 
-fn (mut r Repo) read_file(branch string, path string) string {
+fn (r &Repo) read_file(branch string, path string) string {
 	valid_path := path.trim_string_left('/')
 
 	return r.git('--no-pager show $branch:$valid_path')

@@ -100,30 +100,6 @@ pub fn (mut app App) update_user_avatar(data string, id int) {
 	}
 }
 
-pub fn (mut app App) create_empty_user(username string, email string) int {
-	user := app.find_user_by_username(username) or { User{} }
-
-	if user.id > 0 {
-		return user.id
-	}
-
-	mut new_user := User{
-		username: username
-		is_registered: false
-	}
-
-	app.add_user(new_user)
-
-	inserted_user := app.find_user_by_username(new_user.username) or {
-		app.info('User was not inserted')
-		return -1
-	}
-
-	app.add_email(inserted_user.id, email)
-
-	return inserted_user.id
-}
-
 pub fn (mut app App) add_user(user User) {
 	sql app.db {
 		insert user into User

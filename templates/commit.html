@@ -13,18 +13,13 @@ pre > *{
 	padding-left: 5px;
 	float: right;
 }
+
 .hl_table {
 	width: 1000px;
-	border-right-color: rgb(36, 41, 46);
-    border-right-style: solid;
-    border-right-width: 0.5px;
-    border-bottom-color: rgb(36, 41, 46);
-    border-bottom-style: solid;
-    border-bottom-width: 0.5px;
-    border-left-color: rgb(36, 41, 46);
-    border-left-style: solid;
-    border-left-width: 0.5px;
+	border: 1px solid #dfdfdf;
+	border-radius: 3px;
 }
+
 .hl_table b {
 	color: rgb(150, 77, 0);
 }
@@ -43,21 +38,23 @@ pre > *{
 }
 </style>
 
-span.additions {
-	Additions: @all_adds
-}
-
-span.deletions {
-	Deletions: @all_dels
-}
-
-<span>
-	<a href="@patch_url">View patch</a>
-</span>
+<div class="commit-info-block">
+	span.additions {
+		Additions: @all_adds
+	}
+	
+	span.deletions {
+		Deletions: @all_dels
+	}
+	
+	<span>
+		<a href="@patch_url">View patch</a>
+	</span>
+</div>
 
 @for file, src in sources
-	<div id="@file">
-		<a href="/@app.repo.user_name/@app.repo.name/blob/@file">@file</a>
+	<div id="@file" class="commit-file-diff">
+		<!-- <a href="/@app.repo.user_name/@app.repo.name/blob/@file">@file</a> -->
 		<pre>@src</pre>
 	</div>
 @end
