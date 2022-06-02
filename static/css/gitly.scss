@@ -258,4 +258,14 @@ form.vertical-form *:last-child {
 	margin-bottom: 0px;
 }
 
+form {
+	.field {
+		margin-top: 10px;
+	}
+
+	input[type=submit] {
+		margin-top: 10px;
+	}
+}
+
 @import 'files', 'langs', 'tree', 'commits', 'hl_table', 'branches', 'admin', 'blob', 'new', 'contributors', 'issues';

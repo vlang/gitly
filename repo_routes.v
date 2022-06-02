@@ -159,10 +159,10 @@ pub fn (mut app App) new() vweb.Result {
 }
 
 ['/new'; post]
-pub fn (mut app App) handle_new_repo(name string, clone_url string) vweb.Result {
+pub fn (mut app App) handle_new_repo(name string, clone_url string, description string) vweb.Result {
 	mut valid_clone_url := clone_url
 	is_clone_url_empty := validation.is_string_empty(clone_url)
-	is_public := app.form['is_private'] != 'on'
+	is_public := app.form['repo_visibility'] == 'public'
 
 	if !app.logged_in {
 		return app.redirect_to_login()
@@ -208,6 +208,7 @@ pub fn (mut app App) handle_new_repo(name string, clone_url string) vweb.Result 
 
 	app.repo = Repo{
 		name: name
+		description: description
 		git_dir: repository_path
 		user_id: app.user.id
 		primary_branch: 'master'
@@ -416,6 +417,7 @@ pub fn (mut app App) blob(username string, repo_name string, branch string, path
 	raw_url := '/$username/$repo_name/raw/$branch/$path'
 
 	blob_path := os.join_path(app.repo.git_dir, app.current_path)
+	is_markdown := blob_path.to_lower().ends_with('.md')
 	plain_text := app.repo.read_file(branch, app.current_path)
 	highlighted_source, _, _ := highlight.highlight_text(plain_text, blob_path, false)
 	source := vweb.RawHtml(highlighted_source)
