@@ -10,5 +10,6 @@ pub fn convert_markdown_to_html(code string) string {
 
 // temporary solution while markdown module doesn't support sanitizing and escaping HTML tags
 pub fn sanitize_markdown_code(code string) string {
+	// FIXME: > in `sassc static/css/gitly.scss > static/css/gitly.css`
 	return code.replace_each(['<', '&lt;', '>', '&gt;'])
 }
