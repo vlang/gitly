@@ -417,6 +417,7 @@ pub fn (mut app App) blob(username string, repo_name string, branch string, path
 	raw_url := '/$username/$repo_name/raw/$branch/$path'
 
 	blob_path := os.join_path(app.repo.git_dir, app.current_path)
+	is_markdown := blob_path.to_lower().ends_with('.md')
 	plain_text := app.repo.read_file(branch, app.current_path)
 	highlighted_source, _, _ := highlight.highlight_text(plain_text, blob_path, false)
 	source := vweb.RawHtml(highlighted_source)

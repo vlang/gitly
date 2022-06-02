@@ -73,6 +73,7 @@
 
 	h1 {
 		font-size: 2em;
+		border-bottom: 1px solid #dfdfdf;
 	}
 
 	h2 {
@@ -93,5 +94,9 @@
 
 	h6 {
 		font-size: 0.75em;
+	}
+
+	img {
+		max-width: 100%;
 	}
 }
