@@ -52,9 +52,8 @@ pre > *{
 	</span>
 </div>
 
-@for file, src in sources
-	<div id="@file" class="commit-file-diff">
-		<!-- <a href="/@app.repo.user_name/@app.repo.name/blob/@file">@file</a> -->
+@for _, src in sources
+	<div class="commit-file-diff">
 		<pre>@src</pre>
 	</div>
 @end
