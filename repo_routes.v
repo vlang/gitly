@@ -142,7 +142,7 @@ pub fn (mut app App) handle_repo_update(user string, repo string) vweb.Result {
 	}
 
 	if app.user.is_admin {
-		app.update_repository_data(mut app.repo)
+		app.update_repo_data(mut app.repo)
 		app.slow_fetch_files_info('master', '.')
 	}
 
@@ -241,7 +241,7 @@ pub fn (mut app App) handle_new_repo(name string, clone_url string) vweb.Result 
 
 	// Update only cloned repositories
 	if !is_clone_url_empty {
-		app.update_repository(mut app.repo)
+		app.update_repo(mut app.repo)
 	}
 
 	return app.redirect('/$app.user.username/repos')

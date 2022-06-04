@@ -8,6 +8,7 @@ mut:
 	hash       string [unique: 'commit']
 	created_at int
 	repo_id    int    [unique: 'commit']
+	branch_id  int
 	message    string
 }
 

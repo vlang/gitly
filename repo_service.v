@@ -187,77 +187,55 @@ fn (mut app App) user_has_repo(user_id int, repo_name string) bool {
 	return count >= 0
 }
 
-fn (mut app App) update_repository(mut repository Repo) {
-	repository_id := repository.id
+fn (mut app App) update_repo(mut repo Repo) {
+	repo_id := repo.id
+	branches_output := repo.git('branch -a')
 
-	repository.analyse_lang(app)
+	repo.analyse_lang(app)
 
-	data := repository.git('--no-pager log --abbrev-commit --abbrev=7 --pretty="%h$log_field_separator%aE$log_field_separator%cD$log_field_separator%s$log_field_separator%aN"')
 	app.db.exec('BEGIN TRANSACTION')
 
-	for line in data.split_into_lines() {
-		args := line.split(log_field_separator)
-		if args.len > 3 {
-			commit_hash := args[0]
-			commit_author_email := args[1]
-			commit_message := args[3]
-			commit_author := args[4]
-			mut commit_author_id := 0
+	app.info(repo.contributors_count.str())
+	app.fetch_branches(repo)
 
-			commit_date := time.parse_rfc2822(args[2]) or {
-				app.info('Error: $err')
-				return
-			}
+	for branch_output in branches_output.split_into_lines() {
+		branch_name := git.parse_git_branch_output(branch_output)
 
-			user := app.find_user_by_email(commit_author_email) or { User{} }
-
-			if user.id > 0 {
-				app.add_contributor(user.id, repository_id)
-
-				commit_author_id = user.id
-			}
-
-			app.add_commit_if_not_exist(repository_id, commit_hash, commit_author, commit_author_id,
-				commit_message, int(commit_date.unix))
-		}
+		app.update_repo_branch(mut repo, branch_name)
 	}
 
-	app.info(repository.contributors_count.str())
-	app.fetch_branches(repository)
+	repo.commits_count = app.get_count_repo_commits(repo_id)
+	repo.contributors_count = app.get_count_repo_contributors(repo_id)
+	repo.branches_count = app.get_count_repo_branches(repo_id)
 
-	repository.commits_count = app.get_count_repo_commits(repository_id)
-	repository.contributors_count = app.get_count_repo_contributors(repository_id)
-	repository.branches_count = app.get_count_repo_branches(repository_id)
-
-	app.update_repo_commits_count(repository_id, repository.commits_count)
-	app.update_repo_contributors_count(repository_id, repository.contributors_count)
+	app.update_repo_commits_count(repo_id, repo.commits_count)
+	app.update_repo_contributors_count(repo_id, repo.contributors_count)
 
 	// TODO: TEMPORARY - UNTIL WE GET PERSISTENT RELEASE INFO
-	for tag in app.get_all_repo_tags(repository_id) {
-		app.add_release(tag.id, repository_id)
+	for tag in app.get_all_repo_tags(repo_id) {
+		app.add_release(tag.id, repo_id)
 
-		repository.releases_count++
+		repo.releases_count++
 	}
 
-	app.save_repository(repository)
+	app.save_repository(repo)
 	app.db.exec('END TRANSACTION')
 	app.info('Repository updated')
 }
 
-fn (mut app App) update_repository_data(mut r Repo) {
-	r.git('fetch --all')
-	r.git('pull --all')
+fn (mut app App) update_repo_branch(mut repo Repo, branch_name string) {
+	repo_id := repo.id
+	branch := app.find_repo_branch_by_name(repo.id, branch_name)
 
-	r.analyse_lang(app)
+	if branch.id == 0 {
+		return
+	}
 
-	data := r.git('--no-pager log --abbrev-commit --abbrev=7 --pretty="%h$log_field_separator%aE$log_field_separator%cD$log_field_separator%s$log_field_separator%aN"')
-
-	app.db.exec('BEGIN TRANSACTION')
-
+	data := repo.git('--no-pager log $branch_name --abbrev-commit --abbrev=7 --pretty="%h$log_field_separator%aE$log_field_separator%cD$log_field_separator%s$log_field_separator%aN"')
 	for line in data.split_into_lines() {
 		args := line.split(log_field_separator)
+
 		if args.len > 3 {
-			repo_id := r.id
 			commit_hash := args[0]
 			commit_author_email := args[1]
 			commit_message := args[3]
@@ -272,27 +250,83 @@ fn (mut app App) update_repository_data(mut r Repo) {
 			user := app.find_user_by_email(commit_author_email) or { User{} }
 
 			if user.id > 0 {
-				app.add_contributor(user.id, r.id)
+				app.add_contributor(user.id, repo_id)
 
 				commit_author_id = user.id
 			}
 
-			app.add_commit_if_not_exist(repo_id, commit_hash, commit_author, commit_author_id,
-				commit_message, int(commit_date.unix))
+			app.add_commit_if_not_exist(repo_id, branch.id, commit_hash, commit_author,
+				commit_author_id, commit_message, int(commit_date.unix))
 		}
 	}
+}
 
-	r.commits_count = app.get_count_repo_commits(r.id)
-	r.contributors_count = app.get_count_repo_contributors(r.id)
-	r.branches_count = app.get_count_repo_branches(r.id)
+fn (mut app App) update_repo_data(mut repo Repo) {
+	repo.git('fetch --all')
+	repo.git('pull --all')
+	repo.analyse_lang(app)
 
-	app.update_repo_commits_count(r.id, r.commits_count)
-	app.update_repo_contributors_count(r.id, r.contributors_count)
-	app.fetch_branches(r)
-	app.save_repository(r)
+	branches_output := repo.git('branch -a')
+
+	app.db.exec('BEGIN TRANSACTION')
+
+	app.fetch_branches(repo)
+
+	for branch_output in branches_output.split_into_lines() {
+		branch_name := git.parse_git_branch_output(branch_output)
+
+		app.update_repo_branch_data(mut repo, branch_name)
+	}
+
+	repo.commits_count = app.get_count_repo_commits(repo.id)
+	repo.contributors_count = app.get_count_repo_contributors(repo.id)
+	repo.branches_count = app.get_count_repo_branches(repo.id)
+
+	app.update_repo_commits_count(repo.id, repo.commits_count)
+	app.update_repo_contributors_count(repo.id, repo.contributors_count)
+	app.save_repository(repo)
 
 	app.db.exec('END TRANSACTION')
 	app.info('Repo updated')
+}
+
+fn (mut app App) update_repo_branch_data(mut repo Repo, branch_name string) {
+	repo_id := repo.id
+	branch := app.find_repo_branch_by_name(repo.id, branch_name)
+
+	if branch.id == 0 {
+		return
+	}
+
+	data := repo.git('--no-pager log --abbrev-commit --abbrev=7 --pretty="%h$log_field_separator%aE$log_field_separator%cD$log_field_separator%s$log_field_separator%aN"')
+
+	for line in data.split_into_lines() {
+		args := line.split(log_field_separator)
+
+		if args.len > 3 {
+			commit_hash := args[0]
+			commit_author_email := args[1]
+			commit_message := args[3]
+			commit_author := args[4]
+			mut commit_author_id := 0
+
+			commit_date := time.parse_rfc2822(args[2]) or {
+				app.info('Error: $err')
+				return
+			}
+
+			user := app.find_user_by_email(commit_author_email) or { User{} }
+
+			if user.id > 0 {
+				app.add_contributor(user.id, repo.id)
+
+				commit_author_id = user.id
+			}
+
+			app.add_commit_if_not_exist(repo_id, branch.id, commit_hash, commit_author,
+				commit_author_id, commit_message, int(commit_date.unix))
+		}
+	}
 }
 
 // TODO: tags and other stuff
@@ -303,7 +337,7 @@ fn (mut app App) update_repo_after_push(repo_id int, branch_name string) {
 		return
 	}
 
-	app.update_repository(mut repo)
+	app.update_repo(mut repo)
 	app.delete_repository_files_in_branch(repo_id, branch_name)
 }
 
