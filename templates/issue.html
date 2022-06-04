@@ -7,20 +7,21 @@
 }
 
 .form .input-comment {
-	margin-top: 20px;
-	width: 100%;
+	margin-top: 10px;
 }
 </style>
 
-<h1>@issue.title#@issue.id</h1>
-<i>by @issue.author_name</i>
-<p>@issue.text</p>
+<div class="issue-main-post">
+	<h1>@issue.title #@issue.id</h1>
+	<i>by</i> <a href="/@issue.author_name"><i>@issue.author_name</i></a>
+	<p>@issue.text</p>
+</div>
 
 @for comment in comments
-	.comment {
-		<i>@comment.author_name commented @comment.relative()</i>
+	<div class="issue-comment-post">
+		<a href="/@comment.author_name"><i>@comment.author_name</i></a> </i>commented @comment.relative()</i>
 		<p>@comment.text</p>
-	}
+	</div>
 @end
 
 .form-error {
@@ -28,9 +29,9 @@
 }
 
 @if app.logged_in
-	<form method='post' class='form vertical-form' action='/@app.repo.user_name/@app.repo.name/comments'>
+	<form method='post' class='form vertical-form comment-post-form' action='/@app.repo.user_name/@app.repo.name/comments'>
 		<textarea type='text' class='input-comment' name='text' placeholder='Leave a comment' required></textarea>
-			<input type='hidden' name='issue_id' value='@issue.id'>
-	<input type='submit' name='submit' value='Comment'>
+		<input type='hidden' name='issue_id' value='@issue.id'>
+		<input type='submit' class="comment-post-submit" name='submit' value='Comment'>
 	</form>
 @end

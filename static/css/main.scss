@@ -222,12 +222,14 @@ input[type=text],input[type=password] {
 	font-weight: 300;
 	width: 250px;
 }
+
 .field {
 	margin-top: 25px;
 	margin-bottom: 8px;
 	font-weight: 300;
 	font-size: 18px;
 }
+
 .btn-info {
 	color: #FFF;
 	background-color: #0099eb;
@@ -778,13 +780,7 @@ img.clog-avatar {
 	}
 	padding-bottom:5px;
 }
-.clog-author {
-	a, span {
-		font-weight: bold;
-		font-size: 11px;
-		color: $gray-dark !important;
-	}
-}
+
 .clog-time {
 	font-size: 11px;
 	color: $gray-dark;

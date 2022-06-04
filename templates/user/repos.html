@@ -15,10 +15,13 @@
 		<a href="/@user.username/@repo.name">
 			<h3>@repo.name</h3>
 		</a>
+		@if repo.description.len > 0
+			<p><i>@repo.description</i></p>
+		@end
 		@if repo.is_public
-			<p>Public</p>
+			<p><b>Public</b></p>
 		@else
-			<p>Private</p>
+			<p><b>Private</b></p>
 		@end
 	</div>
 @end
