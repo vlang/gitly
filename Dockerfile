@@ -44,5 +44,5 @@ COPY --from=builder /opt/gitly/gitly .
 
 EXPOSE 8080
 
-CMD ${GITLY_HOME}/gitly
+CMD ["${GITLY_HOME}/gitly"]
 
