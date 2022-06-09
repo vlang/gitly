@@ -310,18 +310,6 @@ pub fn (mut app App) tree(username string, repository_name string, branch string
 		app.slow_fetch_files_info(branch, app.current_path)
 	}
 
-	mut readme := vweb.RawHtml('')
-	readme_file := find_readme_file(items) or { File{} }
-
-	if readme_file.id != 0 {
-		readme_path := '$path/$readme_file.name'
-		readme_content := app.repo.read_file(branch, readme_path)
-		highlighted_readme, _, _ := highlight.highlight_text(readme_content, readme_path,
-			false)
-
-		readme = vweb.RawHtml(highlighted_readme)
-	}
-
 	// Fetch last commit message for this directory, printed at the top of the tree
 	mut last_commit := Commit{}
 	if can_up {
@@ -358,6 +346,19 @@ pub fn (mut app App) tree(username string, repository_name string, branch string
 	items << files
 
 	has_commits := app.repo.commits_count > 0
+
+	// Get readme after updating repository
+	mut readme := vweb.RawHtml('')
+	readme_file := find_readme_file(items) or { File{} }
+
+	if readme_file.id != 0 {
+		readme_path := '$path/$readme_file.name'
+		readme_content := app.repo.read_file(branch, readme_path)
+		highlighted_readme, _, _ := highlight.highlight_text(readme_content, readme_path,
+			false)
+
+		readme = vweb.RawHtml(highlighted_readme)
+	}
 
 	return $vweb.html()
 }

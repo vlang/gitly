@@ -44,7 +44,7 @@ pub fn (mut app App) handle_oauth() vweb.Result {
 		return app.redirect_to_index()
 	}
 
-	mut token := access_response.text.find_between('access_token=', '&')
+	mut token := access_response.body.find_between('access_token=', '&')
 	mut request := http.new_request(.get, 'https://api.github.com/user', '') or {
 		app.info(err.msg())
 
@@ -61,17 +61,17 @@ pub fn (mut app App) handle_oauth() vweb.Result {
 
 	if user_response.status_code != 200 {
 		app.info(user_response.status_code.str())
-		app.info(user_response.text)
+		app.info(user_response.body)
 		return app.text('Received $user_response.status_code error while attempting to contact GitHub')
 	}
 
-	github_user := json.decode(GitHubUser, user_response.text) or { return app.redirect_to_index() }
+	github_user := json.decode(GitHubUser, user_response.body) or { return app.redirect_to_index() }
 
 	if github_user.email.trim_space().len == 0 {
 		app.add_security_log(
 			user_id: app.user.id
 			kind: .empty_oauth_email
-			arg1: user_response.text
+			arg1: user_response.body
 		)
 		app.info('Email is empty')
 	}
@@ -83,7 +83,7 @@ pub fn (mut app App) handle_oauth() vweb.Result {
 		app.add_security_log(
 			user_id: user.id
 			kind: .registered_via_github
-			arg1: user_response.text
+			arg1: user_response.body
 		)
 
 		app.register_user(github_user.username, '', '', [github_user.email], true, false)
@@ -96,7 +96,7 @@ pub fn (mut app App) handle_oauth() vweb.Result {
 	}
 
 	app.auth_user(user, app.ip())
-	app.add_security_log(user_id: user.id, kind: .logged_in_via_github, arg1: user_response.text)
+	app.add_security_log(user_id: user.id, kind: .logged_in_via_github, arg1: user_response.body)
 
 	return app.redirect_to_index()
 }
