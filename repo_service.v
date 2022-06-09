@@ -695,11 +695,10 @@ fn (r Repo) git_smart(service string, input string) string {
 	process.stdin_write(input)
 	process.stdin_write('\n')
 
-	process.wait()
-
 	output := process.stdout_slurp()
 	errors := process.stderr_slurp()
 
+	process.wait()
 	process.close()
 
 	if errors.len > 0 {
