@@ -7,6 +7,34 @@
 	}
 }
 
+.branch-specific-container {
+	border: 1px solid $gray;
+	border-radius: $medium-radius;
+	padding: 10px;
+
+	.branch-select {
+		border: none;
+		outline: none;
+	}
+
+	.commit-count {
+		display: inline;
+
+		a {
+			display: inline-block;
+			width: 14%;
+			text-align: center;
+			color: black !important;
+	
+			svg {
+				position: relative;
+				top: 2px;
+				height: 14px;
+			}
+		}
+	}
+}
+
 .repository-clone {
 	border: 1px solid $gray;
 	border-radius: $medium-radius;
