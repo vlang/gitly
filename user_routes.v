@@ -68,12 +68,14 @@ pub fn (mut app App) user(username string) vweb.Result {
 		return app.not_found()
 	}
 
+	is_page_owner := username == app.user.username
+
 	return $vweb.html()
 }
 
-['/:user/settings']
-pub fn (mut app App) user_settings(user string) vweb.Result {
-	is_users_settings := user == app.user.username
+['/:username/settings']
+pub fn (mut app App) user_settings(username string) vweb.Result {
+	is_users_settings := username == app.user.username
 
 	if !app.logged_in || !is_users_settings {
 		return app.redirect_to_index()
