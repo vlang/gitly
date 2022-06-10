@@ -1,0 +1,23 @@
+.profile-left-block {
+	max-width: 300px;
+}
+
+.profile-avatar {
+	height: 256px;
+	width: 256px;
+	border-radius: 100%;
+	background-color: $link_color;
+	margin-top: 5px;
+	overflow: hidden;
+	cursor: pointer;
+
+	img {
+		height: 256px;
+		width: 256px;
+		margin: 0;
+	}
+}
+
+.edit-profile-button {
+	width: 256px;
+}
