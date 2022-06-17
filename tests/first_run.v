@@ -66,7 +66,7 @@ fn main() {
 
 	ilog('Testing the new user /bob page is up after registration')
 	user_page_result := http.get('http://127.0.0.1:8080/bob') or { exit_with_message(err.str()) }
-	assert user_page_result.text.contains('<h3> bob </h3>')
+	assert user_page_result.text.contains('<h3>bob</h3>')
 
 	ilog('Try to login in with `bob` user token')
 	login_result := http.fetch(

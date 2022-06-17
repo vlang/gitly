@@ -136,6 +136,7 @@ pre > code {
 	color: $white;
 	background-color: #1a7be9;
 }
+
 .avatar {
 	height: 40px;
 	width: 40px;
@@ -146,16 +147,18 @@ pre > code {
 	overflow: hidden;
 	z-index: 15;
 	cursor: pointer;
-}
-.avatar > span {
-	line-height: 40px;
-	font-size: 25px;
-	margin: 0;
-}
-.avatar > img {
-	height: 40px;
-	width: 40px;
-	margin: 0;
+
+	span {
+		line-height: 40px;
+		font-size: 25px;
+		margin: 0;
+	}
+
+	img {
+		height: 40px;
+		width: 40px;
+		margin: 0;
+	}
 }
 
 .new {
@@ -268,4 +271,4 @@ form {
 	}
 }
 
-@import 'files', 'langs', 'tree', 'commits', 'hl_table', 'branches', 'admin', 'blob', 'new', 'contributors', 'issues';
+@import 'files', 'langs', 'tree', 'commits', 'hl_table', 'branches', 'admin', 'blob', 'new', 'contributors', 'issues', 'user';

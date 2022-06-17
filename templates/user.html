@@ -1,13 +1,50 @@
 @include 'header.html'
 
-<div class='avatar'>
-@if user.b_avatar
-	<img src="@user.avatar">
-@else
-	<span>@user.avatar</span>
-@end
+<div class="profile-block-container">
+	<div class="profile-block__left">
+		<div class="profile-avatar">
+			@if user.b_avatar
+				<img src="@user.avatar">
+			@end
+		</div>
+		
+		@if user.full_name.len > 0
+			<h4>@user.full_name</h4>
+		@end
+		<h3>@user.username</h3>
+		
+		@if is_page_owner
+			<a href="/@user.username/settings">
+				<button class="edit-profile-button">Edit profile</button>
+			</a>
+		@end
+	</div>
+	
+	<div class="profile-block__right">
+		<h1>Repositories</h1>
+
+		@if repos.len > 0
+			@for repo in repos
+				<div class="user-repo-item">
+					<a href="/@user.username/@repo.name">
+						<h3>@repo.name</h3>
+					</a>
+					@if repo.description.len > 0
+						<p><i>@repo.description</i></p>
+					@end
+					@if is_page_owner
+						@if repo.is_public
+							<p><b>Public</b></p>
+						@else
+							<p><b>Private</b></p>
+						@end
+					@end
+				</div>
+			@end
+			@else
+				<h2>No repositories</h2>
+			@end
+	</div>
 </div>
-<h3> @user.username </h3>
-<h4> @user.full_name </h4>
 
 @include 'footer.html'

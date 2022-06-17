@@ -307,6 +307,12 @@ fn (mut app App) change_username(user_id int, username string) {
 	}
 }
 
+fn (mut app App) change_full_name(user_id int, full_name string) {
+	sql app.db {
+		update User set full_name = full_name where id == user_id
+	}
+}
+
 fn (mut app App) incement_namechanges(user_id int) {
 	now := int(time.now().unix)
 

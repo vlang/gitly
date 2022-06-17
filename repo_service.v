@@ -67,15 +67,15 @@ fn (mut app App) find_user_repos(user_id int) []Repo {
 	}
 }
 
-fn (mut app App) get_count_user_public_repos(user_id int) int {
-	return sql app.db {
-		select count from Repo where user_id == user_id && is_public == true
-	}
-}
-
 fn (mut app App) find_user_public_repos(user_id int) []Repo {
 	return sql app.db {
 		select from Repo where user_id == user_id && is_public == true
+	}
+}
+
+fn (mut app App) get_count_user_public_repos(user_id int) int {
+	return sql app.db {
+		select count from Repo where user_id == user_id && is_public == true
 	}
 }
 

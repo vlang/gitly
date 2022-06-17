@@ -68,12 +68,19 @@ pub fn (mut app App) user(username string) vweb.Result {
 		return app.not_found()
 	}
 
+	is_page_owner := username == app.user.username
+	repos := if is_page_owner {
+		app.find_user_repos(user.id)
+	} else {
+		app.find_user_public_repos(user.id)
+	}
+
 	return $vweb.html()
 }
 
-['/:user/settings']
-pub fn (mut app App) user_settings(user string) vweb.Result {
-	is_users_settings := user == app.user.username
+['/:username/settings']
+pub fn (mut app App) user_settings(username string) vweb.Result {
+	is_users_settings := username == app.user.username
 
 	if !app.logged_in || !is_users_settings {
 		return app.redirect_to_index()
@@ -82,60 +89,71 @@ pub fn (mut app App) user_settings(user string) vweb.Result {
 	return $vweb.html()
 }
 
-['/:user/settings'; post]
-pub fn (mut app App) handle_update_user_settings(user string) vweb.Result {
-	is_users_settings := user == app.user.username
+['/:username/settings'; post]
+pub fn (mut app App) handle_update_user_settings(username string) vweb.Result {
+	is_users_settings := username == app.user.username
 
 	if !app.logged_in || !is_users_settings {
 		return app.redirect_to_index()
 	}
 
 	// TODO: uneven parameters count (2) in `handle_update_user_settings`, compared to the vweb route `['/:user/settings', 'post']` (1)
-	name := app.form['name']
+	new_username := app.form['name']
+	full_name := app.form['full_name']
 
-	is_username_empty := validation.is_string_empty(name)
+	is_username_empty := validation.is_string_empty(new_username)
 
 	if is_username_empty {
 		app.error('New name is empty')
 
-		return app.user_settings(user)
-	}
-
-	if name == user {
-		return app.user_settings(user)
+		return app.user_settings(username)
 	}
 
 	if app.user.namechanges_count > max_namechanges {
 		app.error('You can not change your username, limit reached')
 
-		return app.user_settings(user)
+		return app.user_settings(username)
 	}
 
-	is_username_valid := validation.is_username_valid(name)
+	is_username_valid := validation.is_username_valid(new_username)
 
 	if !is_username_valid {
 		app.error('New username is not valid')
 
-		return app.user_settings(user)
+		return app.user_settings(username)
 	}
 
-	if app.user.last_namechange_time == 0
-		|| app.user.last_namechange_time + namechange_period <= time.now().unix {
-		u := app.find_user_by_username(name) or { User{} }
-		if u.id != 0 {
+	is_first_namechange := app.user.last_namechange_time == 0
+	can_change_usernane := app.user.last_namechange_time + namechange_period <= time.now().unix
+
+	if !(is_first_namechange || can_change_usernane) {
+		app.error('You need to wait until you can change the name again')
+
+		return app.user_settings(username)
+	}
+
+	is_new_username := new_username != username
+	is_new_full_name := full_name != app.user.full_name
+
+	if is_new_full_name {
+		app.change_full_name(app.user.id, full_name)
+	}
+
+	if is_new_username {
+		user := app.find_user_by_username(new_username) or { User{} }
+
+		if user.id != 0 {
 			app.error('Name already exists')
-			return app.user_settings(user)
+
+			return app.user_settings(username)
 		}
 
-		app.change_username(app.user.id, name)
+		app.change_username(app.user.id, new_username)
 		app.incement_namechanges(app.user.id)
-		app.rename_user_directory(user, name)
-
-		return app.redirect('/$name')
+		app.rename_user_directory(username, new_username)
 	}
-	app.error('You need to wait until you can change the name again')
 
-	return app.user_settings(user)
+	return app.redirect('/$new_username')
 }
 
 fn (mut app App) rename_user_directory(old_name string, new_name string) {
