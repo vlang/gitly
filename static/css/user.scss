@@ -1,11 +1,26 @@
-.profile-left-block {
+.profile-block-container {
+	display: grid;
+	grid-template-areas: "profile repos";
+	grid-template-columns: 260px 1fr;
+}
+
+.profile-block__left {
+	grid-area: profile;
 	max-width: 300px;
+}
+
+.profile-block__right {
+	grid-area: repos;
+	padding-left: 10px;
+	padding-top: 10px;
+	width: 100%;
 }
 
 .profile-avatar {
 	height: 256px;
 	width: 256px;
 	border-radius: 100%;
+	border: 1px solid $gray;
 	background-color: $link_color;
 	margin-top: 5px;
 	overflow: hidden;
@@ -14,7 +29,6 @@
 	img {
 		height: 256px;
 		width: 256px;
-		margin: 0;
 	}
 }
 

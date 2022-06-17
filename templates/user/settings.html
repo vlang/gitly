@@ -8,7 +8,12 @@
 	}
 
 	<form action="/@app.user.username/settings" method="post">
-		<input type="text" name="name" value="@app.user.username">
+		<div class="field">
+			<input type="text" name="full_name" value="@app.user.full_name" placeholder="Full name">
+		</div>
+		<div class="field">
+			<input type="text" name="name" value="@app.user.username" placeholder="Username">
+		</div>
 		<input type="submit" value="Save settings">
 	</form>
 }
