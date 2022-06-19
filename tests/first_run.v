@@ -37,16 +37,16 @@ fn main() {
 
 	ilog("Ensure gitly's main page is up")
 	index_page_result := http.get('http://127.0.0.1:8080') or { exit_with_message(err.str()) }
-	assert index_page_result.text.contains('<html>')
-	assert index_page_result.text.contains('</html>')
+	assert index_page_result.body.contains('<html>')
+	assert index_page_result.body.contains('</html>')
 
 	ilog('Ensure there is a welcome and register message')
-	assert index_page_result.text.contains("Welcome to Gitly! Looks like you've just set it up, you'll need to register")
+	assert index_page_result.body.contains("Welcome to Gitly! Looks like you've just set it up, you'll need to register")
 	ilog('Ensure there is a Register button')
-	assert index_page_result.text.contains("<input type='submit' value='Register'>")
+	assert index_page_result.body.contains("<input type='submit' value='Register'>")
 
 	// Make sure no one's logged in
-	assert index_page_result.text.contains("<a href='/login' class='login-button'>Log in</a>")
+	assert index_page_result.body.contains("<a href='/login' class='login-button'>Log in</a>")
 
 	ilog('Register the first user `bob`')
 	mut register_result := http.post('http://127.0.0.1:8080/register', 'username=bob&password=1234zxcv&email=bob@example.com&no_redirect=1') or {
@@ -66,7 +66,7 @@ fn main() {
 
 	ilog('Testing the new user /bob page is up after registration')
 	user_page_result := http.get('http://127.0.0.1:8080/bob') or { exit_with_message(err.str()) }
-	assert user_page_result.text.contains('<h3>bob</h3>')
+	assert user_page_result.body.contains('<h3>bob</h3>')
 
 	ilog('Try to login in with `bob` user token')
 	login_result := http.fetch(
@@ -78,8 +78,8 @@ fn main() {
 	) or { exit_with_message(err.str()) }
 
 	ilog('Ensure that after login, there is a signed in as `bob` message')
-	assert login_result.text.contains('<span>Signed in as</span>')
-	assert login_result.text.contains("<a href='/bob'>bob</a>")
+	assert login_result.body.contains('<span>Signed in as</span>')
+	assert login_result.body.contains("<a href='/bob'>bob</a>")
 
 	ilog('Ensure gitly is stopped')
 	os.execute('pkill -9 gitly')
