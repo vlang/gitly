@@ -10,7 +10,7 @@ const (
 	langs = init_langs()
 )
 
-struct Lang {
+pub struct Lang {
 	keywords        []string
 	lang_extensions []string
 	string_start    []string
