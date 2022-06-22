@@ -24,12 +24,11 @@
 @if has_commits
 	.files {
 		.last_commit {
-			span.last_commit_author {
-				@last_commit.author
+			<b>@last_commit.author</b>
+			span.last_commit_message {
+				@last_commit.message
 			}
-			span.last_commit_msg {
-				commited <a href="/@app.repo.user_name/@app.repo.name/commit/@last_commit.hash" class="hash_string">@last_commit.hash</a>
-			}
+			<a href="/@app.repo.user_name/@app.repo.name/commit/@last_commit.hash" class="last_commit_hash">@last_commit.hash</a>
 			span.time {
 				@last_commit.relative()
 			}
