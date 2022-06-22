@@ -58,7 +58,7 @@
 					<a href='/@app.repo.user_name/@app.repo.name/@file.url()'>@file.name</a>
 				}
 				span.file-msg {
-					<a href="/@app.repo.user_name/@app.repo.name/commit/@file.last_hash#@file.full_path()">@file.last_msg</a>
+					<a href="/@app.repo.user_name/@app.repo.name/commit/@file.last_hash#@file.full_path()">@file.format_commit_message()</a>
 				}
 				span.file-time {
 					@file.pretty_last_time()

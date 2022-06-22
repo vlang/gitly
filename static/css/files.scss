@@ -36,9 +36,6 @@
 	cursor: pointer;
 	border-bottom: 1px solid $gray;
 	color: $black;
-	a {
-		color: black !important;
-	}
 	&:hover {
 		background-color: $gray-light;
 	}
@@ -92,9 +89,7 @@
 	//font-style: italic;
 	color: $gray-dark !important;
 	a {
-		//position: relative;
-		//top: 3px;
-		color: $gray-dark !important;
+		color: $gray-dark;
 	}
 }
 
