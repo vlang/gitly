@@ -3,14 +3,11 @@
 	justify-content: space-around;
 }
 .lang-stats-header {
-	//margin-left: 22%; // TODO top files bring back
+	margin-top: 10px;
 	border: 1px solid $gray;
 	border-radius: $medium-radius;
-    margin-bottom: 10px;
-    overflow: hidden; // rounded corners
-	/////ou
-	//display: flex;
-	//flex-wrap: no-wrap;
+	margin-bottom: 10px;
+	overflow: hidden; // rounded corners
 }
 .lang-stats-bar {
 	display: flex;
