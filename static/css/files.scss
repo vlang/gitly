@@ -6,16 +6,17 @@
 	background-color: #bfdbff54;
 }
 
-.last_commit_author {
-	margin-right: 4px;
+.last_commit_message {
+	word-break: break-all;
+
+	margin-left: 5px;
 }
 
-.last_commit_msg {
-	margin-right: 2px;
-}
+.last_commit_hash {
+	background-color: #CBE2FF;
 
-.hash_string {
-	background-color: #CBE2FF
+	margin-left: 5px;
+	margin-right: 5px;
 }
 
 .files {
@@ -36,9 +37,6 @@
 	cursor: pointer;
 	border-bottom: 1px solid $gray;
 	color: $black;
-	a {
-		color: black !important;
-	}
 	&:hover {
 		background-color: $gray-light;
 	}
@@ -92,9 +90,7 @@
 	//font-style: italic;
 	color: $gray-dark !important;
 	a {
-		//position: relative;
-		//top: 3px;
-		color: $gray-dark !important;
+		color: $gray-dark;
 	}
 }
 

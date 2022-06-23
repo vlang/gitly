@@ -2,6 +2,8 @@ import os
 import net.http
 import time
 
+const myfolder = os.dir(os.executable())
+
 [noreturn]
 fn exit_with_message(message string) {
 	println(message)
@@ -13,6 +15,8 @@ fn ilog(message string) {
 }
 
 fn main() {
+	// Ensure that we are always running in the gitly folder, no matter what is the starting one:
+	os.chdir(os.dir(myfolder))?
 	ilog('Testing first gitly run.')
 
 	ilog('Make sure gitly is not running')
