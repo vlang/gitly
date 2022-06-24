@@ -360,6 +360,13 @@ pub fn (mut app App) tree(username string, repository_name string, branch string
 		readme = vweb.RawHtml(highlighted_readme)
 	}
 
+	license_file := find_license_file(items) or { File{} }
+	mut license_file_path := ''
+
+	if license_file.id != 0 {
+		license_file_path = '/$username/$repository_name/blob/$branch/LICENSE'
+	}
+
 	return $vweb.html()
 }
 

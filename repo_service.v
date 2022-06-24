@@ -717,3 +717,13 @@ fn find_readme_file(items []File) ?File {
 
 	return none
 }
+
+fn find_license_file(items []File) ?File {
+	files := items.filter(it.name.to_lower() == 'license')
+
+	if files.len == 0 {
+		return none
+	}
+
+	return files[0]
+}
