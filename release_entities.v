@@ -11,5 +11,5 @@ mut:
 	tag_name string    [skip]
 	tag_hash string    [skip]
 	user     string    [skip]
-	date     time.Time [skip]
+	date     time.Time
 }

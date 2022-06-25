@@ -264,6 +264,8 @@ pub fn (mut app App) tree(username string, repository_name string, branch string
 	repo_id := app.repo.id
 	log_prefix := '$username/$repository_name'
 
+	app.fetch_tags(app.repo)
+
 	app.current_path = '/$path'
 	if app.current_path.contains('/favicon.svg') {
 		return vweb.not_found()

@@ -2,6 +2,7 @@ module main
 
 import time
 import math
+import os
 
 pub fn (mut app App) running_since() string {
 	duration := time.now().unix - app.started_at
@@ -27,4 +28,10 @@ pub fn (mut app App) make_path(i int) string {
 	s += app.path_split[1..i + 1].join('/')
 
 	return s
+}
+
+fn create_directory_if_not_exists(path string) {
+	if !os.exists(path) {
+		os.mkdir(path) or { panic('cannot create $path directory') }
+	}
 }
