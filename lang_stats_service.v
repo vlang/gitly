@@ -19,6 +19,12 @@ const (
 	]
 )
 
+fn (app App) add_lang_stat(lang_stat LangStat) {
+	sql app.db {
+		insert lang_stat into LangStat
+	}
+}
+
 pub fn (l &LangStat) pct_html() vweb.RawHtml {
 	x := f64(l.pct) / 10.0
 	sloc := if l.lines_count < 1000 {

@@ -335,6 +335,11 @@ fn (r &Repo) analyse_lang(app &App) {
 	mut tmp_a := []int{}
 
 	for lang, amount in lang_stats {
+		// skip 0 lines of code
+		if amount == 0 {
+			continue
+		}
+
 		mut tmp := f32(amount) / f32(all_size)
 		tmp *= 1000
 		pct := int(tmp)
@@ -366,9 +371,7 @@ fn (r &Repo) analyse_lang(app &App) {
 	app.remove_repo_lang_stats(r.id)
 
 	for lang_stat in d_lang_stats {
-		sql app.db {
-			insert lang_stat into LangStat
-		}
+		app.add_lang_stat(lang_stat)
 	}
 }
 
