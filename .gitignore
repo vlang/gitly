@@ -7,6 +7,7 @@ gitly
 static/assets/version
 logs/
 repos/
+archives/
 
 *.code-workspace
 .vscode
