@@ -7,44 +7,45 @@
 		@app.form_error
 	</div>
 
-	<form method='post'>
-		<div id='form-errors'>
-		<!--
-			if .clone_failed
-				Cloning failed. Most likely you provided an invalid git repo.
-			end
-			-->
-		</div>
-
-		@app.settings.hostname/@app.user.username/
-		<input type='text' name='name'required autofocus maxlength=@max_repo_name_len>
-
-		<div class='field'>
-			<p>Description <i>(optional)</i>:</p>
-			<input type='text' name='description' style='width:300px'>
-		</div>
-
-		<div class='field'>
-			<p>Clone URL <i>(only if you want to clone an existing repository)</i>:</p>
-			<input type='text' name='clone_url' placeholder='https://github.com/vlang/gitly' style='width:300px'>
-		</div>
-
-		<div class='field'>
-			<p>Repository visibility:</p>
-			<div>
-				<input type="radio" id="public" name="repo_visibility" value="public" checked>
-				<label for="public">Public</label>
+	<div class="form">
+		<form method='post'>
+			<div id='form-errors'>
+			<!--
+				if .clone_failed
+					Cloning failed. Most likely you provided an invalid git repo.
+				end
+				-->
 			</div>
-	
-			<div>
-				<input type="radio" id="private" name="repo_visibility" value="private">
-				<label for="private">Private</label>
+
+			@app.settings.hostname/@app.user.username/
+			<input type='text' name='name'required autofocus maxlength=@max_repo_name_len>
+
+			<div class='field'>
+				<p>Description <i>(optional)</i>:</p>
+				<input type='text' name='description'>
 			</div>
-		</div>
 
-		<input type='submit' class='btn-info' value='Create'>
-	</form>
+			<div class='field'>
+				<p>Clone URL <i>(only if you want to clone an existing repository)</i>:</p>
+				<input type='text' name='clone_url' placeholder='https://github.com/vlang/gitly'>
+			</div>
 
+			<div class='field'>
+				<p>Repository visibility:</p>
+				<div>
+					<input type="radio" id="public" name="repo_visibility" value="public" checked>
+					<label for="public">Public</label>
+				</div>
+		
+				<div>
+					<input type="radio" id="private" name="repo_visibility" value="private">
+					<label for="private">Private</label>
+				</div>
+			</div>
+
+			<input type='submit' class='btn-info' value='Create'>
+		</form>
+	</div>
 </div>
 
 @include 'footer.html'
