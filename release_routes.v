@@ -3,9 +3,10 @@ module main
 import vweb
 import time
 
-['/:user/:repo/releases']
-pub fn (mut app App) releases(user_str string, repo string) vweb.Result {
-	if !app.exists_user_repo(user_str, repo) {
+// TODO: add pagination
+['/:username/:repo_name/releases']
+pub fn (mut app App) releases(username string, repo_name string) vweb.Result {
+	if !app.exists_user_repo(username, repo_name) {
 		return app.not_found()
 	}
 
@@ -18,6 +19,8 @@ pub fn (mut app App) releases(user_str string, repo string) vweb.Result {
 	rels := app.find_repo_releases(app.repo.id)
 	users := app.find_repo_registered_contributor(app.repo.id)
 
+	download_archive_prefix := '/$username/$repo_name/tag'
+
 	for rel in rels {
 		release.notes = rel.notes
 		mut user_id := 0
@@ -26,7 +29,7 @@ pub fn (mut app App) releases(user_str string, repo string) vweb.Result {
 			if tag.id == rel.tag_id {
 				release.tag_name = tag.name
 				release.tag_hash = tag.hash
-				release.date = time.unix(tag.date)
+				release.date = time.unix(tag.created_at)
 				user_id = tag.user_id
 				break
 			}

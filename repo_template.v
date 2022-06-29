@@ -2,72 +2,38 @@ module main
 
 import vweb
 
-fn (r &Repo) format_commits_count() vweb.RawHtml {
-	nr := r.commits_count
-
-	if nr == 1 {
-		return '<b>1</b> commit'
+fn get_declension_form(count int, first_form string, second_form string) string {
+	if count == 1 {
+		return '<b>1</b> $first_form'
 	}
 
-	return '<b>$nr</b> commits'
+	return '<b>$count</b> $second_form'
+}
+
+fn (r &Repo) format_commits_count() vweb.RawHtml {
+	return get_declension_form(r.commits_count, 'commit', 'commits')
 }
 
 fn (r &Repo) format_branches_count() vweb.RawHtml {
-	nr := r.branches_count
-
-	if nr == 1 {
-		return '<b>1</b> branch'
-	}
-
-	return '<b>$nr</b> branches'
+	return get_declension_form(r.branches_count, 'branch', 'branches')
 }
 
 fn (r &Repo) format_open_prs_count() vweb.RawHtml {
-	nr := r.open_prs_count
-
-	if nr == 1 {
-		return '<b>1</b> pull request'
-	}
-
-	return '<b>$nr</b> pull requests'
+	return get_declension_form(r.open_prs_count, 'pull request', 'pull requests')
 }
 
 fn (r &Repo) format_open_issues_count() vweb.RawHtml {
-	nr := r.open_issues_count
-
-	if nr == 1 {
-		return '<b>1</b> issue'
-	}
-
-	return '<b>$nr</b> issues'
+	return get_declension_form(r.open_issues_count, 'issue', 'issues')
 }
 
 fn (r &Repo) format_contributors_count() vweb.RawHtml {
-	nr := r.contributors_count
-
-	if nr == 1 {
-		return '<b>1</b> contributor'
-	}
-
-	return '<b>$nr</b> contributors'
+	return get_declension_form(r.contributors_count, 'contributor', 'contributors')
 }
 
 fn (r &Repo) format_topics_count() vweb.RawHtml {
-	nr := r.topics_count
-
-	if nr == 1 {
-		return '<b>1</b> discussion'
-	}
-
-	return '<b>$nr</b> discussions'
+	return get_declension_form(r.topics_count, 'discussion', 'discussions')
 }
 
 fn (r &Repo) format_releases_count() vweb.RawHtml {
-	nr := r.releases_count
-
-	if nr == 1 {
-		return '<b>1</b> release'
-	}
-
-	return '<b>$nr</b> releases'
+	return get_declension_form(r.releases_count, 'release', 'releases')
 }

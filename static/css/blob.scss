@@ -19,6 +19,12 @@
 		margin: 10px 0;
 	}
 
+	code {
+		border: 1px solid $black;
+		border-radius: $small-radius;
+		padding: 5px;
+	}
+
 	h1 {
 		font-size: 2em;
 		border-bottom: 1px solid #dfdfdf;

@@ -8,5 +8,6 @@ mut:
 	oauth_client_id     string
 	oauth_client_secret string
 	repo_storage_path   string = './repos'
+	archive_path        string = './archives'
 	hostname            string = 'gitly.org'
 }

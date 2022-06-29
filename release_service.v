@@ -1,10 +1,13 @@
 module main
 
-pub fn (mut app App) add_release(tag_id int, repo_id int) {
+import time
+
+pub fn (mut app App) add_release(tag_id int, repo_id int, date time.Time, notes string) {
 	release := Release{
 		tag_id: tag_id
 		repo_id: repo_id
-		notes: 'Some notes about this release...'
+		notes: notes
+		date: date
 	}
 
 	sql app.db {
@@ -14,7 +17,7 @@ pub fn (mut app App) add_release(tag_id int, repo_id int) {
 
 pub fn (mut app App) find_repo_releases(repo_id int) []Release {
 	return sql app.db {
-		select from Release where repo_id == repo_id
+		select from Release where repo_id == repo_id order by date desc
 	}
 }
 

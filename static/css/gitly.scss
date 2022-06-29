@@ -176,9 +176,19 @@ pre > code {
 }
 
 
-#header .login-button {
-	color: $white;
-	line-height: 50px;
+#header {
+	.login-button {
+		color: $white;
+		line-height: 50px;
+	}
+
+	.repo-visibility {
+		border: 1px solid $link-color;
+		border-radius: 2em;
+		margin-left: 5px;
+		font-size: 12px;
+		padding: 5px;
+	}
 }
 
 
@@ -281,4 +291,4 @@ form {
 	}
 }
 
-@import 'files', 'langs', 'tree', 'commits', 'hl_table', 'branches', 'admin', 'blob', 'new', 'contributors', 'issues', 'user';
+@import 'files', 'langs', 'tree', 'commits', 'hl_table', 'branches', 'admin', 'blob', 'new', 'contributors', 'issues', 'user', 'releases';

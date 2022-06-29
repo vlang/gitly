@@ -23,6 +23,18 @@ enum RepoStatus {
 	clone_done
 }
 
+enum ArchiveFormat {
+	zip
+	tar
+}
+
+fn (f ArchiveFormat) str() string {
+	return match f {
+		.zip { 'zip' }
+		.tar { 'tar' }
+	}
+}
+
 fn (mut app App) save_repository(repository Repo) {
 	id := repository.id
 	desc := repository.description
@@ -187,12 +199,12 @@ fn (mut app App) user_has_repo(user_id int, repo_name string) bool {
 	return count >= 0
 }
 
-fn (mut app App) update_repository(mut repository Repo) {
-	repository_id := repository.id
+fn (mut app App) update_repository(mut repo Repo) {
+	repo_id := repo.id
 
-	repository.analyse_lang(app)
+	repo.analyse_lang(app)
 
-	data := repository.git('--no-pager log --abbrev-commit --abbrev=7 --pretty="%h$log_field_separator%aE$log_field_separator%cD$log_field_separator%s$log_field_separator%aN"')
+	data := repo.git('--no-pager log --abbrev-commit --abbrev=7 --pretty="%h$log_field_separator%aE$log_field_separator%cD$log_field_separator%s$log_field_separator%aN"')
 	app.db.exec('BEGIN TRANSACTION')
 
 	for line in data.split_into_lines() {
@@ -212,34 +224,34 @@ fn (mut app App) update_repository(mut repository Repo) {
 			user := app.find_user_by_email(commit_author_email) or { User{} }
 
 			if user.id > 0 {
-				app.add_contributor(user.id, repository_id)
+				app.add_contributor(user.id, repo_id)
 
 				commit_author_id = user.id
 			}
 
-			app.add_commit_if_not_exist(repository_id, commit_hash, commit_author, commit_author_id,
+			app.add_commit_if_not_exist(repo_id, commit_hash, commit_author, commit_author_id,
 				commit_message, int(commit_date.unix))
 		}
 	}
 
-	app.info(repository.contributors_count.str())
-	app.fetch_branches(repository)
+	app.info(repo.contributors_count.str())
+	app.fetch_branches(repo)
+	app.fetch_tags(repo)
 
-	repository.commits_count = app.get_count_repo_commits(repository_id)
-	repository.contributors_count = app.get_count_repo_contributors(repository_id)
-	repository.branches_count = app.get_count_repo_branches(repository_id)
+	repo.commits_count = app.get_count_repo_commits(repo_id)
+	repo.contributors_count = app.get_count_repo_contributors(repo_id)
+	repo.branches_count = app.get_count_repo_branches(repo_id)
 
-	app.update_repo_commits_count(repository_id, repository.commits_count)
-	app.update_repo_contributors_count(repository_id, repository.contributors_count)
+	app.update_repo_commits_count(repo_id, repo.commits_count)
+	app.update_repo_contributors_count(repo_id, repo.contributors_count)
 
-	// TODO: TEMPORARY - UNTIL WE GET PERSISTENT RELEASE INFO
-	for tag in app.get_all_repo_tags(repository_id) {
-		app.add_release(tag.id, repository_id)
+	for tag in app.get_all_repo_tags(repo_id) {
+		app.add_release(tag.id, repo_id, time.unix(tag.created_at), tag.message)
 
-		repository.releases_count++
+		repo.releases_count++
 	}
 
-	app.save_repository(repository)
+	app.save_repository(repo)
 	app.db.exec('END TRANSACTION')
 	app.info('Repository updated')
 }
@@ -335,6 +347,11 @@ fn (r &Repo) analyse_lang(app &App) {
 	mut tmp_a := []int{}
 
 	for lang, amount in lang_stats {
+		// skip 0 lines of code
+		if amount == 0 {
+			continue
+		}
+
 		mut tmp := f32(amount) / f32(all_size)
 		tmp *= 1000
 		pct := int(tmp)
@@ -366,9 +383,7 @@ fn (r &Repo) analyse_lang(app &App) {
 	app.remove_repo_lang_stats(r.id)
 
 	for lang_stat in d_lang_stats {
-		sql app.db {
-			insert lang_stat into LangStat
-		}
+		app.add_lang_stat(lang_stat)
 	}
 }
 
@@ -601,6 +616,11 @@ fn (r Repo) git_advertise(service string) string {
 	}
 
 	return git_output
+}
+
+fn (r Repo) archive_tag(tag string, path string, format ArchiveFormat) {
+	// TODO: check tag name before running command
+	r.git('archive $tag --format=$format --output="$path"')
 }
 
 fn (r Repo) get_commit_patch(commit_hash string) ?string {

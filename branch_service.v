@@ -3,6 +3,16 @@ module main
 import time
 import git
 
+fn (mut app App) fetch_branches(repo Repo) {
+	branches_output := repo.git('branch -a')
+
+	for branch_output in branches_output.split_into_lines() {
+		branch_name := git.parse_git_branch_output(branch_output)
+
+		app.fetch_branch(repo, branch_name)
+	}
+}
+
 fn (mut app App) fetch_branch(repo Repo, branch_name string) {
 	last_commit_hash := repo.get_last_branch_commit_hash(branch_name)
 
@@ -24,16 +34,6 @@ fn (mut app App) fetch_branch(repo Repo, branch_name string) {
 
 	app.create_branch_or_update(repo.id, branch_name, user.username, last_commit_hash,
 		int(committed_at.unix))
-}
-
-fn (mut app App) fetch_branches(repo Repo) {
-	branches_output := repo.git('branch -a')
-
-	for branch_output in branches_output.split_into_lines() {
-		branch_name := git.parse_git_branch_output(branch_output)
-
-		app.fetch_branch(repo, branch_name)
-	}
 }
 
 fn (mut app App) create_branch_or_update(repository_id int, branch_name string, author string, hash string, date int) {

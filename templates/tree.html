@@ -62,8 +62,7 @@
 
 		.lang-stats-bar {
 			@for stat in app.repo.lang_stats
-				<div style='flex:@{stat.pct}; background-color:@stat.color'>
-				</div>
+				<div style='flex:@{stat.pct}; background-color:@stat.color'></div>
 			@end
 		}
 	}
