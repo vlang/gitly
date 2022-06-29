@@ -75,6 +75,8 @@ pub fn (mut app App) user(username string) vweb.Result {
 		app.find_user_public_repos(user.id)
 	}
 
+	activities := app.find_activities(user.id)
+
 	return $vweb.html()
 }
 
