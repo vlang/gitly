@@ -18,11 +18,21 @@ the main administrator account for this server.
 
 @end
 
-<form method='post' action='/register'>
-	<input type='text' name='username' placeholder='Username' required autofocus>
-	<input type='password' name='password' placeholder='Password' required>
-	<input type='email' name="email" placeholder='Email' required>
-	<input type='submit' value='Register'>
-</form>
+<div class="form">
+	<form method='post' action='/register'>
+		<div class="field">
+			<input type='text' name='username' placeholder='Username' required autofocus>
+		</div>
+		<div class="field">
+			<input type='password' name='password' placeholder='Password' required>
+		</div>
+		<div class="field">
+			<input type='email' name="email" placeholder='Email' required>
+		</div>
+		<div class="field">
+			<input type='submit' value='Register'>
+		</div>
+	</form>
+</div>
 
 @include 'footer.html'
