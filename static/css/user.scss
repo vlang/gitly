@@ -35,3 +35,14 @@
 .edit-profile-button {
 	width: 256px;
 }
+
+.profile-activities {
+	margin-top: 25px;
+}
+
+.activity {
+	border: 1px solid $gray;
+	border-radius: $small-radius;
+	padding: 10px;
+	margin-top: 10px;
+}

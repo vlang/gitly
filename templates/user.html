@@ -47,4 +47,19 @@
 	</div>
 </div>
 
+<div class="profile-activities">
+	<h2>Contribution activity</h2>
+	@for activity in activities
+		@if activity.name == 'joined'
+			<div class="activity">
+				<h3>Joined Gitly</h3>
+				<div class="activity-joined">
+					<p>Joined Gitly</p>
+					<p>on @user.created_at.ddmmy()</p>
+				</div>
+			</div>
+		@end
+	@end
+</div>
+
 @include 'footer.html'

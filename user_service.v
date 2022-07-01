@@ -41,6 +41,7 @@ pub fn (mut app App) register_user(username string, password string, salt string
 			username: username
 			password: password
 			salt: salt
+			created_at: time.now()
 			is_registered: true
 			is_github: github
 			github_username: username
@@ -58,6 +59,8 @@ pub fn (mut app App) register_user(username string, password string, salt string
 			app.info('User was not inserted')
 			return false
 		}
+
+		app.add_activity(u.id, 'joined')
 
 		for email in emails {
 			app.add_email(u.id, email)
