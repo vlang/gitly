@@ -1,17 +1,20 @@
 module main
 
+import time
+
 struct User {
-	id              int    [primary; sql: serial]
+	id              int       [primary; sql: serial]
 	full_name       string
-	username        string [unique]
+	username        string    [unique]
 	github_username string
 	password        string
 	salt            string
+	created_at      time.Time
 	is_github       bool
 	is_registered   bool
 	is_blocked      bool
 	is_admin        bool
-	oauth_state     string [skip]
+	oauth_state     string    [skip]
 mut:
 	// for github oauth XSRF protection
 	namechanges_count    int

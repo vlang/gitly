@@ -200,6 +200,9 @@ fn (mut app App) create_tables() {
 		create table Contributor
 	}
 	sql app.db {
+		create table Activity
+	}
+	sql app.db {
 		create table Tag
 	}
 	sql app.db {

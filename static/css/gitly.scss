@@ -281,4 +281,14 @@ form {
 	}
 }
 
+.form {
+	max-width: 400px;
+	margin: 0 auto;
+
+	input:not([type=checkbox]):not([type=radio]) {
+		box-sizing: border-box;
+		width: 100%;
+	}
+}
+
 @import 'files', 'langs', 'tree', 'commits', 'hl_table', 'branches', 'admin', 'blob', 'new', 'contributors', 'issues', 'user', 'releases';
