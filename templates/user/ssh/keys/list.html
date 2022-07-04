@@ -1,0 +1,43 @@
+@include '../../../header.html'
+
+<h2>SSH keys</h2>
+
+.div-center {
+	.form-error {
+		@app.form_error
+	}
+
+	<div class="settings-block-container">
+		<div class="settings-block__left">
+			<ul>
+				<li>
+					<a href="/${app.user.username}/settings">Public profile</a>
+				</li>
+				<li>
+					<a href="/${app.user.username}/settings/ssh-keys">SSH keys</a>
+				</li>
+			</ul>
+		</div>
+		<div class="settings-block__right">
+			<div class="new-ssh-key-block">
+				<a href="/${app.user.username}/settings/ssh-keys/new">
+					<button>New SSH key</button>
+				</a>
+			</div>
+			@if ssh_keys.len == 0
+				<p>There are no SSH keys associated with your account.</p>
+			@else
+				@for ssh_key in ssh_keys
+					<div>
+						@ssh_key.title - @ssh_key.created_at.ddmmy()
+
+						Remove
+					</div>
+				@end
+			@end
+		</div>
+
+	</div>
+}
+
+@include '../../../footer.html'

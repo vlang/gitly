@@ -24,14 +24,6 @@ mut:
 	login_attempts       int
 }
 
-struct SshKey {
-	id         int    [primary; sql: serial]
-	user       int
-	title      string
-	sshkey     string
-	is_deleted bool
-}
-
 struct Email {
 	id      int    [primary; sql: serial]
 	user_id int

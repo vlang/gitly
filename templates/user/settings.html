@@ -7,15 +7,32 @@
 		@app.form_error
 	}
 
-	<form action="/@app.user.username/settings" method="post">
-		<div class="field">
-			<input type="text" name="full_name" value="@app.user.full_name" placeholder="Full name">
+	<div class="settings-block-container">
+		<div class="settings-block__left">
+			<ul>
+				<li>
+					<a href="/${app.user.username}/settings">Public profile</a>
+				</li>
+				<li>
+					<a href="/${app.user.username}/settings/ssh-keys">SSH keys</a>
+				</li>
+			</ul>
 		</div>
-		<div class="field">
-			<input type="text" name="name" value="@app.user.username" placeholder="Username">
+		<div class="settings-block__right">
+			<div class="form">
+				<form action="/@app.user.username/settings" method="post">
+					<div class="field">
+						<input type="text" name="full_name" value="@app.user.full_name" placeholder="Full name">
+					</div>
+					<div class="field">
+						<input type="text" name="name" value="@app.user.username" placeholder="Username">
+					</div>
+					<input type="submit" value="Save settings">
+				</form>
+			</div>
 		</div>
-		<input type="submit" value="Save settings">
-	</form>
+
+	</div>
 }
 
 @include '../footer.html'

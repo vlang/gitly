@@ -1,0 +1,29 @@
+@include '../../../header.html'
+
+<h2>New SSH key</h2>
+
+.div-center {
+	.form-error {
+		@app.form_error
+	}
+
+	<div class="settings-block-container">
+		<div class="settings-block__left">
+			<ul>
+				<li>
+					<a href="/${app.user.username}/settings">Public profile</a>
+				</li>
+				<li>
+					<a href="/${app.user.username}/settings/ssh-keys">SSH keys</a>
+				</li>
+			</ul>
+		</div>
+		<div class="settings-block__right">
+			<div class="form">
+				Add SSH key
+			</div>
+		</div>
+	</div>
+}
+
+@include '../../../footer.html'

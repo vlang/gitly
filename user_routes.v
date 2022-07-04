@@ -89,6 +89,30 @@ pub fn (mut app App) user_settings(username string) vweb.Result {
 	return $vweb.html()
 }
 
+['/:username/settings/ssh-keys']
+pub fn (mut app App) user_ssh_keys_list(username string) vweb.Result {
+	is_users_settings := username == app.user.username
+
+	if !app.logged_in || !is_users_settings {
+		return app.redirect_to_index()
+	}
+
+	ssh_keys := app.find_ssh_keys(app.user.id)
+
+	return $vweb.html()
+}
+
+['/:username/settings/ssh-keys/new']
+pub fn (mut app App) user_ssh_keys_new(username string) vweb.Result {
+	is_users_settings := username == app.user.username
+
+	if !app.logged_in || !is_users_settings {
+		return app.redirect_to_index()
+	}
+
+	return $vweb.html()
+}
+
 ['/:username/settings'; post]
 pub fn (mut app App) handle_update_user_settings(username string) vweb.Result {
 	is_users_settings := username == app.user.username
