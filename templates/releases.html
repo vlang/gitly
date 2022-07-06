@@ -8,10 +8,14 @@
 			.release {
 				<strong>Release:</strong> @r.tag_name<br/>
 				<strong>Hash:</strong> @r.tag_hash<br/>
-				<strong>Created by:</strong> @r.user<br/>
+				@if r.user != ''
+					<strong>Created by:</strong> @r.user<br/>
+				@end
+				<strong>Created at:</strong> @r.date<br/>
 				<strong>Notes:</strong> @r.notes<br/>
+				<a href="${download_archive_prefix}/$r.tag_name/zip">Download zip</a>,
+				<a href="${download_archive_prefix}/$r.tag_name/tar">download tar</a>
 			}
-			<br/>
 		@end
 	}
 @else

@@ -41,6 +41,7 @@ pub fn (mut app App) register_user(username string, password string, salt string
 			username: username
 			password: password
 			salt: salt
+			created_at: time.now()
 			is_registered: true
 			is_github: github
 			github_username: username
@@ -58,6 +59,8 @@ pub fn (mut app App) register_user(username string, password string, salt string
 			app.info('User was not inserted')
 			return false
 		}
+
+		app.add_activity(u.id, 'joined')
 
 		for email in emails {
 			app.add_email(u.id, email)
@@ -304,6 +307,12 @@ fn (mut app App) change_username(user_id int, username string) {
 
 	sql app.db {
 		update Repo set user_name = username where user_id == user_id
+	}
+}
+
+fn (mut app App) change_full_name(user_id int, full_name string) {
+	sql app.db {
+		update User set full_name = full_name where id == user_id
 	}
 }
 

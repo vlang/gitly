@@ -4,8 +4,13 @@
 	<a href="@raw_url" target="_blank">Raw file</a>
 </div>
 
-<pre>
-	@source
-</pre>
-
+@if is_markdown
+	<div class="blob-content blob-content__markdown">
+		@source
+	</div>
+@else
+	<pre class="blob-content">
+		@source
+	</pre>
+@end
 @include 'footer.html'

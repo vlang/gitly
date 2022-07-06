@@ -20,8 +20,8 @@
 				<a href="/@app.repo.user_name/@app.repo.name/issue/@issue.id">@issue.title</a>
 			}
 			span.clog-author {
-				#@issue.id opened @issue.relative_time()
-				by @issue.author_name
+				<b>#@issue.id</b> opened @issue.relative_time()
+				by <a href="/@issue.author_name">@issue.author_name</a>
 			}
 			@if issue.comments_count > 0
 			.comments {

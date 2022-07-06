@@ -64,7 +64,7 @@ fn new_app() &App {
 
 	app.create_tables()
 
-	create_log_directory_if_not_exists('logs')
+	create_directory_if_not_exists('logs')
 
 	app.setup_logger()
 
@@ -85,7 +85,8 @@ fn new_app() &App {
 
 	app.load_settings()
 
-	create_repo_storage_directory_if_not_exists(app.settings.repo_storage_path)
+	create_directory_if_not_exists(app.settings.repo_storage_path)
+	create_directory_if_not_exists(app.settings.archive_path)
 
 	// Create the first admin user if the db is empty
 	app.find_user_by_id(1) or {}
@@ -199,6 +200,9 @@ fn (mut app App) create_tables() {
 		create table Contributor
 	}
 	sql app.db {
+		create table Activity
+	}
+	sql app.db {
 		create table Tag
 	}
 	sql app.db {
@@ -227,14 +231,9 @@ fn (mut app App) create_tables() {
 	}
 }
 
-fn create_log_directory_if_not_exists(path string) {
-	if !os.is_dir(path) {
-		os.mkdir(path) or { panic('cannot create logs directory') }
-	}
-}
+// maybe it should be implemented with another static server, in dev
+fn (mut app App) send_file(filname string, content string) vweb.Result {
+	app.add_header('Content-Disposition', 'attachment; filename="$filname"')
 
-fn create_repo_storage_directory_if_not_exists(path string) {
-	if !os.exists(path) {
-		os.mkdir(path) or { panic('cannot create storage directory') }
-	}
+	return app.ok(content)
 }

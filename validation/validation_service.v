@@ -11,7 +11,7 @@ pub fn is_username_valid(value string) bool {
 }
 
 pub fn is_repository_name_valid(value string) bool {
-	query := r'^[A-Za-z][A-Za-z0-9_\.\-]{1,100}$'
+	query := r'^[A-Za-z][A-Za-z0-9_\.\-]{0,100}$'
 
 	mut re := regex.regex_opt(query) or { panic(err) }
 

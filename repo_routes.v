@@ -159,10 +159,10 @@ pub fn (mut app App) new() vweb.Result {
 }
 
 ['/new'; post]
-pub fn (mut app App) handle_new_repo(name string, clone_url string) vweb.Result {
+pub fn (mut app App) handle_new_repo(name string, clone_url string, description string) vweb.Result {
 	mut valid_clone_url := clone_url
 	is_clone_url_empty := validation.is_string_empty(clone_url)
-	is_public := app.form['is_private'] != 'on'
+	is_public := app.form['repo_visibility'] == 'public'
 
 	if !app.logged_in {
 		return app.redirect_to_login()
@@ -208,6 +208,7 @@ pub fn (mut app App) handle_new_repo(name string, clone_url string) vweb.Result 
 
 	app.repo = Repo{
 		name: name
+		description: description
 		git_dir: repository_path
 		user_id: app.user.id
 		primary_branch: 'master'
@@ -263,6 +264,8 @@ pub fn (mut app App) tree(username string, repository_name string, branch string
 	repo_id := app.repo.id
 	log_prefix := '$username/$repository_name'
 
+	app.fetch_tags(app.repo)
+
 	app.current_path = '/$path'
 	if app.current_path.contains('/favicon.svg') {
 		return vweb.not_found()
@@ -309,18 +312,6 @@ pub fn (mut app App) tree(username string, repository_name string, branch string
 		app.slow_fetch_files_info(branch, app.current_path)
 	}
 
-	mut readme := vweb.RawHtml('')
-	readme_file := find_readme_file(items) or { File{} }
-
-	if readme_file.id != 0 {
-		readme_path := '$path/$readme_file.name'
-		readme_content := app.repo.read_file(branch, readme_path)
-		highlighted_readme, _, _ := highlight.highlight_text(readme_content, readme_path,
-			false)
-
-		readme = vweb.RawHtml(highlighted_readme)
-	}
-
 	// Fetch last commit message for this directory, printed at the top of the tree
 	mut last_commit := Commit{}
 	if can_up {
@@ -357,6 +348,26 @@ pub fn (mut app App) tree(username string, repository_name string, branch string
 	items << files
 
 	has_commits := app.repo.commits_count > 0
+
+	// Get readme after updating repository
+	mut readme := vweb.RawHtml('')
+	readme_file := find_readme_file(items) or { File{} }
+
+	if readme_file.id != 0 {
+		readme_path := '$path/$readme_file.name'
+		readme_content := app.repo.read_file(branch, readme_path)
+		highlighted_readme, _, _ := highlight.highlight_text(readme_content, readme_path,
+			false)
+
+		readme = vweb.RawHtml(highlighted_readme)
+	}
+
+	license_file := find_license_file(items) or { File{} }
+	mut license_file_path := ''
+
+	if license_file.id != 0 {
+		license_file_path = '/$username/$repository_name/blob/$branch/LICENSE'
+	}
 
 	return $vweb.html()
 }
@@ -416,6 +427,7 @@ pub fn (mut app App) blob(username string, repo_name string, branch string, path
 	raw_url := '/$username/$repo_name/raw/$branch/$path'
 
 	blob_path := os.join_path(app.repo.git_dir, app.current_path)
+	is_markdown := blob_path.to_lower().ends_with('.md')
 	plain_text := app.repo.read_file(branch, app.current_path)
 	highlighted_source, _, _ := highlight.highlight_text(plain_text, blob_path, false)
 	source := vweb.RawHtml(highlighted_source)

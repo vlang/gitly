@@ -23,6 +23,18 @@ enum RepoStatus {
 	clone_done
 }
 
+enum ArchiveFormat {
+	zip
+	tar
+}
+
+fn (f ArchiveFormat) str() string {
+	return match f {
+		.zip { 'zip' }
+		.tar { 'tar' }
+	}
+}
+
 fn (mut app App) save_repository(repository Repo) {
 	id := repository.id
 	desc := repository.description
@@ -67,15 +79,15 @@ fn (mut app App) find_user_repos(user_id int) []Repo {
 	}
 }
 
-fn (mut app App) get_count_user_public_repos(user_id int) int {
-	return sql app.db {
-		select count from Repo where user_id == user_id && is_public == true
-	}
-}
-
 fn (mut app App) find_user_public_repos(user_id int) []Repo {
 	return sql app.db {
 		select from Repo where user_id == user_id && is_public == true
+	}
+}
+
+fn (mut app App) get_count_user_public_repos(user_id int) int {
+	return sql app.db {
+		select count from Repo where user_id == user_id && is_public == true
 	}
 }
 
@@ -189,14 +201,12 @@ fn (mut app App) user_has_repo(user_id int, repo_name string) bool {
 
 fn (mut app App) update_repo(mut repo Repo) {
 	repo_id := repo.id
-	branches_output := repo.git('branch -a')
-
-	repo.analyse_lang(app)
 
 	app.db.exec('BEGIN TRANSACTION')
 
-	app.info(repo.contributors_count.str())
-	app.fetch_branches(repo)
+	repo.analyse_lang(app)
+
+	branches_output := repo.git('branch -a')
 
 	for branch_output in branches_output.split_into_lines() {
 		branch_name := git.parse_git_branch_output(branch_output)
@@ -204,16 +214,16 @@ fn (mut app App) update_repo(mut repo Repo) {
 		app.update_repo_branch(mut repo, branch_name)
 	}
 
+	app.info(repo.contributors_count.str())
+	app.fetch_branches(repo)
+
 	repo.commits_count = app.get_count_repo_commits(repo_id)
 	repo.contributors_count = app.get_count_repo_contributors(repo_id)
 	repo.branches_count = app.get_count_repo_branches(repo_id)
 
-	app.update_repo_commits_count(repo_id, repo.commits_count)
-	app.update_repo_contributors_count(repo_id, repo.contributors_count)
-
 	// TODO: TEMPORARY - UNTIL WE GET PERSISTENT RELEASE INFO
 	for tag in app.get_all_repo_tags(repo_id) {
-		app.add_release(tag.id, repo_id)
+		app.add_release(tag.id, repo_id, time.unix(tag.created_at), tag.message)
 
 		repo.releases_count++
 	}
@@ -262,15 +272,16 @@ fn (mut app App) update_repo_branch(mut repo Repo, branch_name string) {
 }
 
 fn (mut app App) update_repo_data(mut repo Repo) {
+	repo_id := repo.id
+
 	repo.git('fetch --all')
 	repo.git('pull --all')
-	repo.analyse_lang(app)
-
-	branches_output := repo.git('branch -a')
 
 	app.db.exec('BEGIN TRANSACTION')
 
-	app.fetch_branches(repo)
+	repo.analyse_lang(app)
+
+	branches_output := repo.git('branch -a')
 
 	for branch_output in branches_output.split_into_lines() {
 		branch_name := git.parse_git_branch_output(branch_output)
@@ -278,14 +289,21 @@ fn (mut app App) update_repo_data(mut repo Repo) {
 		app.update_repo_branch_data(mut repo, branch_name)
 	}
 
-	repo.commits_count = app.get_count_repo_commits(repo.id)
-	repo.contributors_count = app.get_count_repo_contributors(repo.id)
-	repo.branches_count = app.get_count_repo_branches(repo.id)
+	for tag in app.get_all_repo_tags(repo_id) {
+		app.add_release(tag.id, repo_id, time.unix(tag.created_at), tag.message)
 
-	app.update_repo_commits_count(repo.id, repo.commits_count)
-	app.update_repo_contributors_count(repo.id, repo.contributors_count)
+		repo.releases_count++
+	}
+
+	app.info(repo.contributors_count.str())
+	app.fetch_branches(repo)
+	app.fetch_tags(repo)
+
+	repo.commits_count = app.get_count_repo_commits(repo_id)
+	repo.contributors_count = app.get_count_repo_contributors(repo_id)
+	repo.branches_count = app.get_count_repo_branches(repo_id)
+
 	app.save_repository(repo)
-
 	app.db.exec('END TRANSACTION')
 	app.info('Repo updated')
 }
@@ -369,6 +387,11 @@ fn (r &Repo) analyse_lang(app &App) {
 	mut tmp_a := []int{}
 
 	for lang, amount in lang_stats {
+		// skip 0 lines of code
+		if amount == 0 {
+			continue
+		}
+
 		mut tmp := f32(amount) / f32(all_size)
 		tmp *= 1000
 		pct := int(tmp)
@@ -400,9 +423,7 @@ fn (r &Repo) analyse_lang(app &App) {
 	app.remove_repo_lang_stats(r.id)
 
 	for lang_stat in d_lang_stats {
-		sql app.db {
-			insert lang_stat into LangStat
-		}
+		app.add_lang_stat(lang_stat)
 	}
 }
 
@@ -463,76 +484,6 @@ fn (r &Repo) get_all_file_paths() []string {
 	}
 
 	return file_paths
-}
-
-fn (r &Repo) format_commits_count() vweb.RawHtml {
-	nr := r.commits_count
-
-	if nr == 1 {
-		return '<b>1</b> commit'
-	}
-
-	return '<b>$nr</b> commits'
-}
-
-fn (r &Repo) format_branches_count() vweb.RawHtml {
-	nr := r.branches_count
-
-	if nr == 1 {
-		return '<b>1</b> branch'
-	}
-
-	return '<b>$nr</b> branches'
-}
-
-fn (r &Repo) format_open_prs_count() vweb.RawHtml {
-	nr := r.open_prs_count
-
-	if nr == 1 {
-		return '<b>1</b> pull request'
-	}
-
-	return '<b>$nr</b> pull requests'
-}
-
-fn (r &Repo) format_open_issues_count() vweb.RawHtml {
-	nr := r.open_issues_count
-
-	if nr == 1 {
-		return '<b>1</b> issue'
-	}
-
-	return '<b>$nr</b> issues'
-}
-
-fn (r &Repo) format_contributors_count() vweb.RawHtml {
-	nr := r.contributors_count
-
-	if nr == 1 {
-		return '<b>1</b> contributor'
-	}
-
-	return '<b>$nr</b> contributors'
-}
-
-fn (r &Repo) format_topics_count() vweb.RawHtml {
-	nr := r.topics_count
-
-	if nr == 1 {
-		return '<b>1</b> discussion'
-	}
-
-	return '<b>$nr</b> discussions'
-}
-
-fn (r &Repo) format_releases_count() vweb.RawHtml {
-	nr := r.releases_count
-
-	if nr == 1 {
-		return '<b>1</b> release'
-	}
-
-	return '<b>$nr</b> releases'
 }
 
 // TODO: return ?string
@@ -707,6 +658,11 @@ fn (r Repo) git_advertise(service string) string {
 	return git_output
 }
 
+fn (r Repo) archive_tag(tag string, path string, format ArchiveFormat) {
+	// TODO: check tag name before running command
+	r.git('archive $tag --format=$format --output="$path"')
+}
+
 fn (r Repo) get_commit_patch(commit_hash string) ?string {
 	patch := r.git('format-patch --stdout -1 $commit_hash')
 
@@ -729,11 +685,10 @@ fn (r Repo) git_smart(service string, input string) string {
 	process.stdin_write(input)
 	process.stdin_write('\n')
 
-	process.wait()
-
 	output := process.stdout_slurp()
 	errors := process.stderr_slurp()
 
+	process.wait()
 	process.close()
 
 	if errors.len > 0 {
@@ -821,4 +776,14 @@ fn find_readme_file(items []File) ?File {
 	}
 
 	return none
+}
+
+fn find_license_file(items []File) ?File {
+	files := items.filter(it.name.to_lower() == 'license')
+
+	if files.len == 0 {
+		return none
+	}
+
+	return files[0]
 }

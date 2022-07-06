@@ -136,6 +136,7 @@ pre > code {
 	color: $white;
 	background-color: #1a7be9;
 }
+
 .avatar {
 	height: 40px;
 	width: 40px;
@@ -146,16 +147,18 @@ pre > code {
 	overflow: hidden;
 	z-index: 15;
 	cursor: pointer;
-}
-.avatar > span {
-	line-height: 40px;
-	font-size: 25px;
-	margin: 0;
-}
-.avatar > img {
-	height: 40px;
-	width: 40px;
-	margin: 0;
+
+	span {
+		line-height: 40px;
+		font-size: 25px;
+		margin: 0;
+	}
+
+	img {
+		height: 40px;
+		width: 40px;
+		margin: 0;
+	}
 }
 
 .new {
@@ -173,9 +176,19 @@ pre > code {
 }
 
 
-#header .login-button {
-	color: $white;
-	line-height: 50px;
+#header {
+	.login-button {
+		color: $white;
+		line-height: 50px;
+	}
+
+	.repo-visibility {
+		border: 1px solid $link-color;
+		border-radius: 2em;
+		margin-left: 5px;
+		font-size: 12px;
+		padding: 5px;
+	}
 }
 
 
@@ -258,4 +271,24 @@ form.vertical-form *:last-child {
 	margin-bottom: 0px;
 }
 
-@import 'files', 'langs', 'tree', 'commits', 'hl_table', 'branches', 'admin', 'blob', 'new', 'contributors';
+form {
+	.field {
+		margin-top: 10px;
+	}
+
+	input[type=submit] {
+		margin-top: 10px;
+	}
+}
+
+.form {
+	max-width: 400px;
+	margin: 0 auto;
+
+	input:not([type=checkbox]):not([type=radio]) {
+		box-sizing: border-box;
+		width: 100%;
+	}
+}
+
+@import 'files', 'langs', 'tree', 'commits', 'hl_table', 'branches', 'admin', 'blob', 'new', 'contributors', 'issues', 'user', 'releases';
