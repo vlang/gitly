@@ -86,9 +86,7 @@ fn main() {
 	assert login_result.body.contains("<a href='/bob'>bob</a>")
 
 	ilog('Ensure that static css is served')
-	css := http.get('http://127.0.0.1:8080/css/gitly.css') or {
-		exit_with_message(err.str())
-	}
+	css := http.get('http://127.0.0.1:8080/css/gitly.css') or { exit_with_message(err.str()) }
 	assert css.status_code != 404
 	assert css.body.contains('a {')
 	assert css.body.contains('h3 {')
