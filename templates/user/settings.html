@@ -3,10 +3,6 @@
 <h2>User settings</h2>
 
 .div-center {
-	.form-error {
-		@app.form_error
-	}
-
 	<div class="settings-block-container">
 		<div class="settings-block__left">
 			<ul>
@@ -19,7 +15,11 @@
 			</ul>
 		</div>
 		<div class="settings-block__right">
-			<div class="form">
+			.form-error {
+				@app.form_error
+			}
+
+			<div class="form__embedded">
 				<form action="/@app.user.username/settings" method="post">
 					<div class="field">
 						<input type="text" name="full_name" value="@app.user.full_name" placeholder="Full name">

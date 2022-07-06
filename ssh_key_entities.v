@@ -4,9 +4,8 @@ import time
 
 struct SshKey {
 	id         int       [primary; sql: serial]
-	user_id    int
-	title      string
+	user_id    int       [unique: 'ssh_key']
+	title      string    [unique: 'ssh_key']
 	key        string
-	is_deleted bool
 	created_at time.Time
 }

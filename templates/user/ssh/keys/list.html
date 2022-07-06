@@ -28,15 +28,36 @@
 				<p>There are no SSH keys associated with your account.</p>
 			@else
 				@for ssh_key in ssh_keys
-					<div>
-						@ssh_key.title - @ssh_key.created_at.ddmmy()
-
-						Remove
+					<div class="ssh-key">
+						<h3>@ssh_key.title</h3>
+						<p>@ssh_key.created_at.relative()</p>
+						<button class="ssh-key-remove" data-id="@ssh_key.id" data-title="@ssh_key.title">Remove</button>
 					</div>
 				@end
 			@end
 		</div>
 
+		<script>
+			const removeEls = document.querySelectorAll(".ssh-key-remove");
+
+			[...removeEls].forEach(el => {
+				el.addEventListener("click", () => {
+					const title = el.dataset.title;
+
+					if (confirm("Do you really want to remove \"" + title + "\"?")) {
+						removeSSHKey(el.dataset.id)
+							.then(() => location.reload())
+							.catch(error => alert(error));
+					}
+				});
+			});
+
+			async function removeSSHKey(id) {
+				await fetch("/${app.user.username}/settings/ssh-keys/" + id, {
+					method: "DELETE"
+				});
+			}
+		</script>
 	</div>
 }
 

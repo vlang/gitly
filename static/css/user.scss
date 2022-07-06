@@ -66,6 +66,17 @@
 	margin-bottom: 10px;
 }
 
+.ssh-key {
+	border: 1px solid $gray;
+	border-radius: $small-radius;
+	padding: 10px;
+	margin-top: 10px;
+}
+
+.ssh-key-remove {
+	margin-top: 10px;
+}
+
 .profile-activities {
 	margin-top: 25px;
 }
