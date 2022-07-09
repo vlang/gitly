@@ -47,13 +47,12 @@ fn (mut app App) save_repository(repository Repo) {
 	branches_count := repository.branches_count
 	releases_count := repository.releases_count
 	contributors_count := repository.contributors_count
-	commits_count := repository.commits_count
 
 	sql app.db {
 		update Repo set description = desc, views_count = views_count, is_public = is_public,
 		webhook_secret = webhook_secret, tags_count = tags_count, open_issues_count = open_issues_count,
 		open_prs_count = open_prs_count, releases_count = releases_count, contributors_count = contributors_count,
-		commits_count = commits_count, branches_count = branches_count where id == id
+		branches_count = branches_count where id == id
 	}
 }
 
@@ -132,14 +131,6 @@ fn (mut app App) increment_repo_issues(repo_id int) {
 	app.repo.open_issues_count++
 }
 
-fn (mut app App) update_repo_commits_count(repo_id int, commits_count int) {
-	sql app.db {
-		update Repo set commits_count = commits_count where id == repo_id
-	}
-
-	app.repo.commits_count = commits_count
-}
-
 fn (mut app App) update_repo_webhook(repo_id int, webhook string) {
 	sql app.db {
 		update Repo set webhook_secret = webhook where id == repo_id
@@ -206,6 +197,9 @@ fn (mut app App) update_repo(mut repo Repo) {
 
 	repo.analyse_lang(app)
 
+	app.info(repo.contributors_count.str())
+	app.fetch_branches(repo)
+
 	branches_output := repo.git('branch -a')
 
 	for branch_output in branches_output.split_into_lines() {
@@ -214,10 +208,6 @@ fn (mut app App) update_repo(mut repo Repo) {
 		app.update_repo_branch(mut repo, branch_name)
 	}
 
-	app.info(repo.contributors_count.str())
-	app.fetch_branches(repo)
-
-	repo.commits_count = app.get_count_repo_commits(repo_id)
 	repo.contributors_count = app.get_count_repo_contributors(repo_id)
 	repo.branches_count = app.get_count_repo_branches(repo_id)
 
@@ -281,6 +271,10 @@ fn (mut app App) update_repo_data(mut repo Repo) {
 
 	repo.analyse_lang(app)
 
+	app.info(repo.contributors_count.str())
+	app.fetch_branches(repo)
+	app.fetch_tags(repo)
+
 	branches_output := repo.git('branch -a')
 
 	for branch_output in branches_output.split_into_lines() {
@@ -295,11 +289,6 @@ fn (mut app App) update_repo_data(mut repo Repo) {
 		repo.releases_count++
 	}
 
-	app.info(repo.contributors_count.str())
-	app.fetch_branches(repo)
-	app.fetch_tags(repo)
-
-	repo.commits_count = app.get_count_repo_commits(repo_id)
 	repo.contributors_count = app.get_count_repo_contributors(repo_id)
 	repo.branches_count = app.get_count_repo_branches(repo_id)
 

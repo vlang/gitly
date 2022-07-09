@@ -248,8 +248,8 @@ pub fn (mut app App) handle_new_repo(name string, clone_url string, description 
 	return app.redirect('/$app.user.username/repos')
 }
 
-['/:user/:repository/tree/:branch/:path...']
-pub fn (mut app App) tree(username string, repository_name string, branch string, path string) vweb.Result {
+['/:user/:repository/tree/:branch_name/:path...']
+pub fn (mut app App) tree(username string, repository_name string, branch_name string, path string) vweb.Result {
 	if !app.exists_user_repo(username, repository_name) {
 		return app.not_found()
 	}
@@ -278,7 +278,7 @@ pub fn (mut app App) tree(username string, repository_name string, branch string
 
 	app.is_tree = true
 	app.show_menu = true
-	app.branch = branch
+	app.branch = branch_name
 
 	app.increment_repo_views(repo_id)
 	mut up := '/'
@@ -295,21 +295,22 @@ pub fn (mut app App) tree(username string, repository_name string, branch string
 		app.current_path = app.current_path[1..]
 	}
 
-	mut items := app.find_repository_items(repo_id, branch, app.current_path)
+	mut items := app.find_repository_items(repo_id, branch_name, app.current_path)
+	branch := app.find_repo_branch_by_name(app.repo.id, branch_name)
 
-	app.info('$log_prefix: $items.len items found in branch $branch')
+	app.info('$log_prefix: $items.len items found in branch $branch_name')
 
 	if items.len == 0 {
 		// No files in the db, fetch them from git and cache in db
 		app.info('$log_prefix: caching items in repository with $repo_id')
 
-		items = app.cache_repository_items(mut app.repo, branch, app.current_path)
-		app.slow_fetch_files_info(branch, app.current_path)
+		items = app.cache_repository_items(mut app.repo, branch_name, app.current_path)
+		app.slow_fetch_files_info(branch_name, app.current_path)
 	}
 
 	if items.any(it.last_msg == '') {
 		// If any of the files has a missing `last_msg`, we need to refetch it.
-		app.slow_fetch_files_info(branch, app.current_path)
+		app.slow_fetch_files_info(branch_name, app.current_path)
 	}
 
 	// Fetch last commit message for this directory, printed at the top of the tree
@@ -322,12 +323,12 @@ pub fn (mut app App) tree(username string, repository_name string, branch string
 		if !p.contains('/') {
 			p = '/$p'
 		}
-		if dir := app.find_repo_file_by_path(app.repo.id, branch, p) {
+		if dir := app.find_repo_file_by_path(app.repo.id, branch_name, p) {
 			println('hash=$dir.last_hash')
 			last_commit = app.find_repo_commit_by_hash(app.repo.id, dir.last_hash)
 		}
 	} else {
-		last_commit = app.find_repo_last_commit(app.repo.id)
+		last_commit = app.find_repo_last_commit(app.repo.id, branch.id)
 	}
 
 	diff := int(time.ticks() - app.page_gen_start)
@@ -338,7 +339,7 @@ pub fn (mut app App) tree(username string, repository_name string, branch string
 	}
 
 	// Update items after fetching info
-	items = app.find_repository_items(repo_id, branch, app.current_path)
+	items = app.find_repository_items(repo_id, branch_name, app.current_path)
 
 	dirs := items.filter(it.is_dir)
 	files := items.filter(!it.is_dir)
@@ -347,7 +348,8 @@ pub fn (mut app App) tree(username string, repository_name string, branch string
 	items << dirs
 	items << files
 
-	has_commits := app.repo.commits_count > 0
+	commits_count := app.get_count_repo_commits(app.repo.id, branch.id)
+	has_commits := commits_count > 0
 
 	// Get readme after updating repository
 	mut readme := vweb.RawHtml('')
@@ -355,7 +357,7 @@ pub fn (mut app App) tree(username string, repository_name string, branch string
 
 	if readme_file.id != 0 {
 		readme_path := '$path/$readme_file.name'
-		readme_content := app.repo.read_file(branch, readme_path)
+		readme_content := app.repo.read_file(branch_name, readme_path)
 		highlighted_readme, _, _ := highlight.highlight_text(readme_content, readme_path,
 			false)
 
@@ -366,7 +368,7 @@ pub fn (mut app App) tree(username string, repository_name string, branch string
 	mut license_file_path := ''
 
 	if license_file.id != 0 {
-		license_file_path = '/$username/$repository_name/blob/$branch/LICENSE'
+		license_file_path = '/$username/$repository_name/blob/$branch_name/LICENSE'
 	}
 
 	return $vweb.html()
