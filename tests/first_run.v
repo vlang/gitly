@@ -87,10 +87,11 @@ fn main() {
 
 	ilog('Ensure that static css is served')
 	css := http.get('http://127.0.0.1:8080/css/gitly.css') or { exit_with_message(err.str()) }
+	println(css)
+
 	assert css.status_code != 404
 	assert css.body.contains('a {')
 	assert css.body.contains('h3 {')
-	println(css)
 
 	ilog('Ensure gitly is stopped')
 	os.execute('pkill -9 gitly')
