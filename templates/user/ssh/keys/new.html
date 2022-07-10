@@ -1,6 +1,6 @@
-@include '../header.html'
+@include '../../../header.html'
 
-<h2>User settings</h2>
+<h2>New SSH key</h2>
 
 .div-center {
 	<div class="settings-block-container">
@@ -20,18 +20,18 @@
 			}
 
 			<div class="form__embedded">
-				<form action="/@app.user.username/settings" method="post">
+				<form action="/@app.user.username/settings/ssh-keys" method="post">
 					<div class="field">
-						<input type="text" name="full_name" value="@app.user.full_name" placeholder="Full name">
+						<input type="text" name="title" placeholder="Title">
 					</div>
 					<div class="field">
-						<input type="text" name="name" value="@app.user.username" placeholder="Username">
+						<textarea type="text" name="key" placeholder="SSH Key"></textarea>
 					</div>
-					<input type="submit" value="Save settings">
+					<input type="submit" value="Add">
 				</form>
 			</div>
 		</div>
 	</div>
 }
 
-@include '../footer.html'
+@include '../../../footer.html'

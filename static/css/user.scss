@@ -36,6 +36,47 @@
 	width: 256px;
 }
 
+.settings-block-container {
+	display: grid;
+	grid-template-areas: "menu container";
+	grid-template-columns: 260px 1fr;
+	margin-top: 20px;
+}
+
+.settings-block__left {
+	grid-area: menu;
+	max-width: 300px;
+
+	ul {
+		li {
+			list-style: none;
+		}
+	}
+}
+
+.settings-block__right {
+	grid-area: container;
+	padding-left: 10px;
+	width: 100%;
+}
+
+.new-ssh-key-block {
+	border-bottom: 1px solid $gray;
+	padding-bottom: 10px;
+	margin-bottom: 10px;
+}
+
+.ssh-key {
+	border: 1px solid $gray;
+	border-radius: $small-radius;
+	padding: 10px;
+	margin-top: 10px;
+}
+
+.ssh-key-remove {
+	margin-top: 10px;
+}
+
 .profile-activities {
 	margin-top: 25px;
 }
