@@ -4,46 +4,35 @@ import vweb
 import highlight
 import time
 
-['/:user/:repo/commits']
-pub fn (mut app App) handle_commits(username string, repo string) vweb.Result {
-	return app.commits(username, repo, 0)
+['/:user/:repo/:branch_name/commits']
+pub fn (mut app App) handle_commits(username string, repo string, branch_name string) vweb.Result {
+	return app.commits(username, repo, branch_name, 0)
 }
 
-['/:user/:repo/commits/:page']
-pub fn (mut app App) commits(username string, repo string, page int) vweb.Result {
-	if !app.exists_user_repo(username, repo) {
+['/:username/:repo_name/commits/:branch_name/:page']
+pub fn (mut app App) commits(username string, repo_name string, branch_name string, page int) vweb.Result {
+	if !app.exists_user_repo(username, repo_name) {
 		return app.not_found()
 	}
 
 	app.show_menu = true
 
-	mut commits := app.find_repo_commits_as_page(app.repo.id, page)
+	branch := app.find_repo_branch_by_name(app.repo.id, branch_name)
+	commits_count := app.get_count_repo_commits(app.repo.id, branch.id)
+	mut commits := app.find_repo_commits_as_page(app.repo.id, branch.id, page)
 
 	// TODO: move to render logic
+	offset := commits_per_page * page
 	mut b_author := false
-	mut last := false
-	mut first := false
-
-	if app.repo.commits_count > commits_per_page {
-		offset := page * commits_per_page
-		delta := app.repo.commits_count - offset
-		if delta > 0 {
-			if delta == app.repo.commits_count && page == 0 {
-				first = true
-			} else {
-				last = true
-			}
-		}
-	} else {
-		last = true
-		first = true
-	}
+	mut first := page == 0
+	mut last := (commits_count - offset) < commits_per_page
 
 	mut last_site := 0
 	if page > 0 {
 		last_site = page - 1
 	}
 	next_site := page + 1
+
 	mut msg := 'on'
 	if b_author {
 		msg = 'by'
@@ -57,6 +46,7 @@ pub fn (mut app App) commits(username string, repo string, page int) vweb.Result
 		year := date.year
 		author := commit.author_id.str()
 		date_s := '${day}.${month}.$year'
+
 		if !b_author {
 			if date_s !in d_commits {
 				d_commits[date_s] = []Commit{}
@@ -69,6 +59,7 @@ pub fn (mut app App) commits(username string, repo string, page int) vweb.Result
 			d_commits[author] << commit
 		}
 	}
+
 	return $vweb.html()
 }
 

@@ -28,7 +28,6 @@ mut:
 	lang_stats         []LangStat        [skip]
 	created_at         int
 	contributors_count int
-	commits_count      int
 	labels             []Label           [skip]
 	status             RepoStatus        [skip]
 	msg_cache          map[string]string [skip]

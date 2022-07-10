@@ -60,9 +60,9 @@ fn (commit Commit) get_changes(repo Repo) []Change {
 	return changes
 }
 
-fn (mut app App) add_commit_if_not_exist(repository_id int, last_hash string, author string, author_id int, message string, date int) {
+fn (mut app App) add_commit_if_not_exist(repo_id int, branch_id int, last_hash string, author string, author_id int, message string, date int) {
 	commit := sql app.db {
-		select from Commit where repo_id == repository_id && hash == last_hash limit 1
+		select from Commit where repo_id == repo_id && branch_id == branch_id && hash == last_hash limit 1
 	}
 
 	if commit.id > 0 {
@@ -74,7 +74,8 @@ fn (mut app App) add_commit_if_not_exist(repository_id int, last_hash string, au
 		author: author
 		hash: last_hash
 		created_at: date
-		repo_id: repository_id
+		repo_id: repo_id
+		branch_id: branch_id
 		message: message
 	}
 
@@ -89,17 +90,17 @@ fn (mut app App) get_last_repo_commits(repo_id int) []Commit {
 	}
 }
 
-fn (mut app App) find_repo_commits_as_page(repo_id int, page int) []Commit {
+fn (mut app App) find_repo_commits_as_page(repo_id int, branch_id int, page int) []Commit {
 	offs := page * commits_per_page
 
 	return sql app.db {
-		select from Commit where repo_id == repo_id order by created_at desc limit 35 offset offs
+		select from Commit where repo_id == repo_id && branch_id == branch_id order by created_at desc limit 35 offset offs
 	}
 }
 
-fn (mut app App) get_count_repo_commits(repo_id int) int {
+fn (mut app App) get_count_repo_commits(repo_id int, branch_id int) int {
 	return sql app.db {
-		select count from Commit where repo_id == repo_id
+		select count from Commit where repo_id == repo_id && branch_id == branch_id
 	}
 }
 
@@ -113,8 +114,8 @@ fn (mut app App) find_repo_commit_by_hash(repo_id int, hash string) Commit {
 	return Commit{}
 }
 
-fn (mut app App) find_repo_last_commit(repo_id int) Commit {
+fn (mut app App) find_repo_last_commit(repo_id int, branch_id int) Commit {
 	return sql app.db {
-		select from Commit where repo_id == repo_id order by created_at desc limit 1
+		select from Commit where repo_id == repo_id && branch_id == branch_id order by created_at desc limit 1
 	}
 }
