@@ -44,8 +44,8 @@ jobs:
       - name: Compile CSS from SCSS files
         uses: gha-utilities/sass-build@v0.4.9
         with:
-          source: static/css/gitly.scss
-          destination: static/css/gitly.css
+          source: gitly/static/css/gitly.scss
+          destination: gitly/static/css/gitly.css
 
       - name: Run gitly
         run: |
@@ -91,8 +91,8 @@ jobs:
       - name: Compile CSS from SCSS files
         uses: gha-utilities/sass-build@v0.4.9
         with:
-          source: static/css/gitly.scss
-          destination: static/css/gitly.css
+          source: gitly/static/css/gitly.scss
+          destination: gitly/static/css/gitly.css
 
       - name: Run gitly
         run: |
@@ -198,6 +198,12 @@ jobs:
         run: |
           cd gitly
           v .
+
+      - name: Compile CSS from SCSS files
+        uses: gha-utilities/sass-build@v0.4.9
+        with:
+          source: gitly/static/css/gitly.scss
+          destination: gitly/static/css/gitly.css
 
       - name: Run gitly
         run: |
