@@ -90,8 +90,8 @@ fn main() {
 	println(css)
 
 	assert css.status_code != 404
-	assert css.body.contains('a {')
-	assert css.body.contains('h3 {')
+	assert css.body.contains('body')
+	assert css.body.contains('html')
 
 	ilog('Ensure gitly is stopped')
 	os.execute('pkill -9 gitly')
