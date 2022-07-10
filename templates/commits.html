@@ -24,16 +24,15 @@
 @end
 
 <div class="buttons">
-	<br/>
-@if first
-	<a href="/@app.repo.user_name/@app.repo.name/commits/@last_site" class="button disabled">Prev</a>
-@else
-	<a href="/@app.repo.user_name/@app.repo.name/commits/@last_site" class="button">Prev</a>
-@end
+	@if first
+		<a href="/@app.repo.user_name/@app.repo.name/commits/@branch_name/@last_site" class="button disabled">Prev</a>
+	@else
+		<a href="/@app.repo.user_name/@app.repo.name/commits/@branch_name/@last_site" class="button">Prev</a>
+	@end
 
-@if last
-	<a href="/@app.repo.user_name/@app.repo.name/commits/@next_site" class="button disabled">Next</a>
-@else
-	<a href="/@app.repo.user_name/@app.repo.name/commits/@next_site" class="button">Next</a>
-@end
+	@if last
+		<a href="/@app.repo.user_name/@app.repo.name/commits/@branch_name/@next_site" class="button disabled">Next</a>
+	@else
+		<a href="/@app.repo.user_name/@app.repo.name/commits/@branch_name/@next_site" class="button">Next</a>
+	@end
 </div>
