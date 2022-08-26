@@ -1,41 +1,48 @@
 .langs {
-	display: flex;
-	justify-content: space-around;
+  display: flex;
+  justify-content: space-around;
 }
+
 .lang-stats-header {
-	margin-top: 10px;
-	border: 1px solid $gray;
-	border-radius: $medium-radius;
-	margin-bottom: 10px;
-	overflow: hidden; // rounded corners
+  margin-top: 10px;
+  border: 1px solid $gray;
+  border-radius: $medium-radius;
+  margin-bottom: 10px;
+  overflow: hidden; // rounded corners
 }
+
 .lang-stats-bar {
-	display: flex;
-	div {
-		height: 5px;
-	}
+  display: flex;
+  div {
+    height: 5px;
+  }
 }
+
 .lang-stat {
-    display: flex;
-    align-items: center;
-    margin: 9px 5px 7px 5px;
+  display: flex;
+  align-items: center;
+  margin: 9px 5px 7px 5px;
 }
+
 .lang-stat * {
-    margin-right: 3px;
+  margin-right: 3px;
 }
+
 .lang-stat *:last-child {
-    margin-right: 0px;
+  margin-right: 0px;
 }
+
 .lang-stat-dot {
-	width: 10px;
-	height: 10px;
-	border-radius: 10px;
-	display: inline-block;
-    margin-right: 4px;
-    margin-bottom: 1px;
+  width: 10px;
+  height: 10px;
+  border-radius: 10px;
+  display: inline-block;
+  margin-right: 4px;
+  margin-bottom: 1px;
 }
+
 .lang-stat-loc {
-	font-size: 80%;
-	font-style: italic;
-	color: $gray-dark;
+  font-size: 80%;
+  font-style: italic;
+  color: $gray-dark;
 }

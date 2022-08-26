@@ -1,5 +1,5 @@
 $mob-max: 1000px;
-$link-color: #4078C0;
+$link-color: #4078c0;
 $gray: #dfdfdf;
 $gray-light: #f3f3f3;
 $gray-dark: #777; // 888
@@ -9,303 +9,343 @@ $white: #ffffff;
 $header-height: 50px;
 $medium-radius: 5px;
 $small-radius: 3px;
+
 @mixin mobile {
-	@media (max-width: $mob-max) {
-		@content;
-	}
+  @media (max-width: $mob-max) {
+    @content;
+  }
 }
+
 @mixin desktop {
-	@media (min-width: $mob-max) {
-		@content;
-	}
+  @media (min-width: $mob-max) {
+    @content;
+  }
 }
+
 .hl_table * {
-	font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-	font-size: 12px;
+  font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
+  font-size: 12px;
 }
-body, html, * {
-	font-family: system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif,BlinkMacSystemFont,Oxygen,Fira Sans,Droid Sans,Helvetica Neue;
-	font-size: 14px;
-	line-height: 1.5em;
-	padding: 0;
-	margin: 0;
+
+body,
+html,
+* {
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell,
+    Noto Sans, sans-serif, BlinkMacSystemFont, Oxygen, Fira Sans, Droid Sans,
+    Helvetica Neue;
+  font-size: 14px;
+  line-height: 1.5em;
+  padding: 0;
+  margin: 0;
 }
+
 a {
-	color: $link-color;
-	text-decoration: none;
+  color: $link-color;
+  text-decoration: none;
 }
+
 h3 {
-	margin-top: 10px;
-	margin-bottom: 10px;
-	font-size: 130%;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  font-size: 130%;
 }
+
 code {
-	background-color: #f7f7f7;
+  background-color: #f7f7f7;
 }
 
 .form-error {
-	color: red;
+  color: red;
 }
 
 pre > code {
-    background-color: #eff0f1;
-    display: block;
+  background-color: #eff0f1;
+  display: block;
 }
+
 .no_select {
-	-webkit-touch-callout: none;
-	-webkit-user-select: none;
-	-khtml-user-select: none;
-	-moz-user-select: none;
-	-ms-user-select: none;
-	user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
+
 .content {
-	max-width: $mob-max;
-	margin: 0 auto;
-	margin-bottom: 200px;
-	min-height: calc(100vh - 300px);
+  max-width: $mob-max;
+  margin: 0 auto;
+  margin-bottom: 200px;
+  min-height: calc(100vh - 300px);
 }
+
 .user {
-	display: flex;
-	position: absolute;
-	top: 0;
-	right: 0;
-	padding-right: 10px;
+  display: flex;
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding-right: 10px;
 }
+
 .user:focus {
-	outline: none;
+  outline: none;
 }
-.user:hover .header-dropdown, .header-dropdown:hover, .user:focus .header-dropdown {
-	transform: scale(1) translateY(0px);
-	opacity: 1;
-	pointer-events: all;
+
+.user:hover .header-dropdown,
+.header-dropdown:hover,
+.user:focus .header-dropdown {
+  transform: scale(1) translateY(0px);
+  opacity: 1;
+  pointer-events: all;
 }
+
 .user .header-dropdown * {
-	z-index: 10;
-	position: relative;
+  z-index: 10;
+  position: relative;
 }
+
 .user .header-dropdown .dropdown-hoverzone {
-	z-index: 5;
-	position: absolute;
-	top: -54px;
-	height: calc(100% + 54px + 4px);
-	width: calc(100% + 8px);
-	right: -4px;
+  z-index: 5;
+  position: absolute;
+  top: -54px;
+  height: calc(100% + 54px + 4px);
+  width: calc(100% + 8px);
+  right: -4px;
 }
+
 .user .header-dropdown {
-	position: absolute;
-	color: $black;
-	border: 1px solid $gray;
-	border-radius: $medium-radius;
-	background: $white;
-	right: 4px;
-	top: 54px;
-	min-width: 145px;
-	transform: scale(0.95) translateY(-3px);
-	opacity: 0;
-	transform-origin: top;
-	pointer-events: none;
-	transition: transform 0.1s, opacity 0.1s;
+  position: absolute;
+  color: $black;
+  border: 1px solid $gray;
+  border-radius: $medium-radius;
+  background: $white;
+  right: 4px;
+  top: 54px;
+  min-width: 145px;
+  transform: scale(0.95) translateY(-3px);
+  opacity: 0;
+  transform-origin: top;
+  pointer-events: none;
+  transition: transform 0.1s, opacity 0.1s;
 }
+
 .user .header-dropdown .username {
-	padding: 6px 12px;
-	span {
-		opacity: 0.9;
-		font-size: 13px;
-	}
-	a {
-		display: block;
-		padding: 0px;
-		font-size: 17px;
-		line-height: 1;
-		color: $black;
-	}
+  padding: 6px 12px;
+  span {
+    opacity: 0.9;
+    font-size: 13px;
+  }
+  a {
+    display: block;
+    padding: 0px;
+    font-size: 17px;
+    line-height: 1;
+    color: $black;
+  }
 }
+
 .user .header-dropdown .links {
-	border-top: 1px solid $gray;
-	padding: 4px 0px;
+  border-top: 1px solid $gray;
+  padding: 4px 0px;
 }
+
 .user .header-dropdown .links a {
-	padding: 3px 12px;
-	display: block;
-	background-color: $white;
-	color: $black;
-	transition: background-color 0.07s, color 0.07s;
+  padding: 3px 12px;
+  display: block;
+  background-color: $white;
+  color: $black;
+  transition: background-color 0.07s, color 0.07s;
 }
+
 .user .header-dropdown .link:hover {
-	color: $white;
-	background-color: #1a7be9;
+  color: $white;
+  background-color: #1a7be9;
 }
 
 .avatar {
-	height: 40px;
-	width: 40px;
-	text-align: center;
-	border-radius: 100%;
-	background-color: $link_color;
-	margin-top: 5px;
-	overflow: hidden;
-	z-index: 15;
-	cursor: pointer;
+  height: 40px;
+  width: 40px;
+  text-align: center;
+  border-radius: 100%;
+  background-color: $link_color;
+  margin-top: 5px;
+  overflow: hidden;
+  z-index: 15;
+  cursor: pointer;
 
-	span {
-		line-height: 40px;
-		font-size: 25px;
-		margin: 0;
-	}
+  span {
+    line-height: 40px;
+    font-size: 25px;
+    margin: 0;
+  }
 
-	img {
-		height: 40px;
-		width: 40px;
-		margin: 0;
-	}
+  img {
+    height: 40px;
+    width: 40px;
+    margin: 0;
+  }
 }
 
 .new {
-	display: flex;
-	position: absolute;
-	top: 0;
-	right: 0;
-	padding-right: 75px;
+  display: flex;
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding-right: 75px;
 }
 
 .new a {
-	line-height: 50px;
-	font-size: 16px !important;
-	color: $white;
+  line-height: 50px;
+  font-size: 16px !important;
+  color: $white;
 }
-
 
 #header {
-	.login-button {
-		color: $white;
-		line-height: 50px;
-	}
+  .login-button {
+    color: $white;
+    line-height: 50px;
+  }
 
-	.repo-visibility {
-		border: 1px solid $link-color;
-		border-radius: 2em;
-		margin-left: 5px;
-		font-size: 12px;
-		padding: 5px;
-	}
+  .repo-visibility {
+    border: 1px solid $link-color;
+    border-radius: 2em;
+    margin-left: 5px;
+    font-size: 12px;
+    padding: 5px;
+  }
 }
 
-
-#header a.repo-author, #header a.repo-name {
-	line-height: 50px;
-	font-size: 16px !important;
-	color: $white;
+#header a.repo-author,
+#header a.repo-name {
+  line-height: 50px;
+  font-size: 16px !important;
+  color: $white;
 }
 
 #header .slash {
-	display: inline;
-	line-height: 50px;
-	font-size: 16px !important;
-	color: $white;
+  display: inline;
+  line-height: 50px;
+  font-size: 16px !important;
+  color: $white;
 }
 
 #header {
-	background-color: $black;
-	height: $header-height;
-	color: white;
+  background-color: $black;
+  height: $header-height;
+  color: white;
 }
+
 #footer {
-	max-width: $mob-max;
-	margin: 0 auto;
-	color: #777;
-	//font-size:80%;
+  max-width: $mob-max;
+  margin: 0 auto;
+  color: #777;
 }
+
 #footer a {
-	color: #777;
-	text-decoration: underline;
+  color: #777;
+  text-decoration: underline;
 }
+
 #mainlogo {
-	line-height: 50px;
-	font-size: 20px !important;
-	margin-left: 10px;
-	float: left;
-	color: white;
+  line-height: 50px;
+  font-size: 20px !important;
+  margin-left: 10px;
+  float: left;
+  color: white;
 }
 
-textarea, input {
-	background: none;
-	color: $black;
-	border: 1px solid $gray;
-	padding: 5px 8px;
-	border-radius: $small-radius;
-	transition: border-color 0.07s;
+textarea,
+input {
+  background: none;
+  color: $black;
+  border: 1px solid $gray;
+  padding: 5px 8px;
+  border-radius: $small-radius;
+  transition: border-color 0.07s;
 }
 
-textarea:focus, input:focus {
-	outline: none;
-	border: 1px solid #4392eb;
+textarea:focus,
+input:focus {
+  outline: none;
+  border: 1px solid #4392eb;
 }
 
-.button, button, input[type="submit"] {
-	cursor: pointer;
-	background: none;
-	color: $black;
-	border: 1px solid $gray;
-	padding: 5px 8px;
-	border-radius: $small-radius;
-	transition: background-color 0.07s, border-color 0.07s, color 0.07s;
+.button,
+button,
+input[type="submit"] {
+  cursor: pointer;
+  background: none;
+  color: $black;
+  border: 1px solid $gray;
+  padding: 5px 8px;
+  border-radius: $small-radius;
+  transition: background-color 0.07s, border-color 0.07s, color 0.07s;
 }
-.button:hover, button:hover, input[type="submit"]:hover {
-	border: 1px solid #0366d6;
-	background-color:#1a7be9;
-	color: $white;
+
+.button:hover,
+button:hover,
+input[type="submit"]:hover {
+  border: 1px solid #0366d6;
+  background-color: #1a7be9;
+  color: $white;
 }
-.button.disabled, button.disabled, input[type="submit"].disabled, button:disabled, input[type="submit"]:disabled {
-	color: rgba(0, 0, 0, 0.6);
-	border: 1px solid $gray-light;
-	pointer-events:none;
+
+.button.disabled,
+button.disabled,
+input[type="submit"].disabled,
+button:disabled,
+input[type="submit"]:disabled {
+  color: rgba(0, 0, 0, 0.6);
+  border: 1px solid $gray-light;
+  pointer-events: none;
 }
 
 form.vertical-form * {
-	display: block;
-	margin-bottom: 5px;
+  display: block;
+  margin-bottom: 5px;
 }
 
 form.vertical-form *:last-child {
-	margin-bottom: 0px;
+  margin-bottom: 0px;
 }
 
 form {
-	.field {
-		margin-top: 10px;
-	}
+  .field {
+    margin-top: 10px;
+  }
 
-	input[type=submit] {
-		margin-top: 10px;
-	}
+  input[type="submit"] {
+    margin-top: 10px;
+  }
 }
 
 .form {
-	max-width: 400px;
-	margin: 0 auto;
+  max-width: 400px;
+  margin: 0 auto;
 
-	input:not([type=checkbox]):not([type=radio]) {
-		box-sizing: border-box;
-		width: 100%;
-	}
+  input:not([type="checkbox"]):not([type="radio"]) {
+    box-sizing: border-box;
+    width: 100%;
+  }
 
-	textarea {
-		box-sizing: border-box;
-		width: 100%;
-	}
+  textarea {
+    box-sizing: border-box;
+    width: 100%;
+  }
 }
 
 .form__embedded {
-	input:not([type=checkbox]):not([type=radio]) {
-		box-sizing: border-box;
-		width: 100%;
-	}
+  input:not([type="checkbox"]):not([type="radio"]) {
+    box-sizing: border-box;
+    width: 100%;
+  }
 
-	textarea {
-		box-sizing: border-box;
-		width: 100%;
-	}
+  textarea {
+    box-sizing: border-box;
+    width: 100%;
+  }
 }
 
-@import 'files', 'langs', 'tree', 'commits', 'hl_table', 'branches', 'admin', 'blob', 'new', 'contributors', 'issues', 'user', 'releases';
+@import "files", "langs", "tree", "commits", "hl_table", "branches", "admin",
+  "blob", "new", "contributors", "issues", "user", "releases";

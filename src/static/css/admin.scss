@@ -1,107 +1,107 @@
 .data {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
 .data-box {
-    flex-basis: 100%;
+  flex-basis: 100%;
 }
 
 .data-box {
-    display: none;
-    justify-content: space-between;
+  display: none;
+  justify-content: space-between;
 }
 
 .data-show-user {
-    cursor: pointer;
-	background: none;
-	color: $black;
-	border: 1px solid $gray;
-	padding: 5px 8px;
-	border-radius: $small-radius;
-    transition: background-color 0.07s, border-color 0.07s, color 0.07s;
-    -ms-user-select: none;
-    -moz-user-select: none;
-    -webkit-user-select: none;
-    user-select: none;
+  cursor: pointer;
+  background: none;
+  color: $black;
+  border: 1px solid $gray;
+  padding: 5px 8px;
+  border-radius: $small-radius;
+  transition: background-color 0.07s, border-color 0.07s, color 0.07s;
+  -ms-user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .data-show-user:hover {
-    border: 1px solid #0366d6;
-	background-color:#1a7be9;
-	color: $white;
+  border: 1px solid #0366d6;
+  background-color: #1a7be9;
+  color: $white;
 }
 
 .data-emails {
-    flex-basis: 35%;
+  flex-basis: 35%;
 }
 
 .data-emails > ul {
-    min-height: 125px;
-    max-height: 250px;
-    overflow-x: hidden;
-    overflow-y: auto;
+  min-height: 125px;
+  max-height: 250px;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .data-email {
-    list-style: none;
+  list-style: none;
 }
 
 .data-user {
-    display: flex;
-    align-items: center;
+  display: flex;
+  align-items: center;
 }
 
 .data-user > div {
-    margin-right: 5px;
+  margin-right: 5px;
 }
 
 .user-settings {
-    width: 60%;
-    display: flex;
-    flex-direction: column;
+  width: 60%;
+  display: flex;
+  flex-direction: column;
 }
 
 .user-settings > input {
-    float: right;
-    align-self: flex-end;
+  float: right;
+  align-self: flex-end;
 }
 
 .data-options {
-    flex-basis: 100%;
-    display: flex;
-    flex-direction: column;
+  flex-basis: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .data-options > div {
-    margin-bottom: 5px;
-    display: flex;
-    align-items: center;
+  margin-bottom: 5px;
+  display: flex;
+  align-items: center;
 }
 
 .data-options > div > label {
-    margin-left: 5px;
+  margin-left: 5px;
 }
 
 .m-right > div > label {
-    margin-left: 0px;
-    margin-right: 5px;
+  margin-left: 0px;
+  margin-right: 5px;
 }
 
 .m-right > div {
-    justify-content: space-between;
+  justify-content: space-between;
 }
 
-.m-right > div > input[type='text'] {
-    flex-basis: 50%;
+.m-right > div > input[type="text"] {
+  flex-basis: 50%;
 }
 
 .settings {
-    width: 1000px;
+  width: 1000px;
 }
 
 ::placeholder {
-    color: rgba(0, 0, 0, 0.8);
+  color: rgba(0, 0, 0, 0.8);
 }

@@ -1,155 +1,163 @@
 .repo-tabs {
-	position: fixed;
-	left: 5px;
-	top: 300px;
-	a {
-		display: block;
-	}
+  position: fixed;
+  left: 5px;
+  top: 300px;
+
+  a {
+    display: block;
+  }
 }
 
 .repo-wrapper {
-	display: grid;
-	gap: 10px;
+  display: grid;
+  gap: 10px;
 
-	margin-top: 10px;
+  margin-top: 10px;
 }
 
 .repo-stats {
-	border: 1px solid $gray;
-	border-radius: $medium-radius;
-	margin-top: 10px;
-	a.menu {
-		display: inline-block;
-		width: 14%;
-		@include mobile {
-			display: block;
-			width: 100%;
-		}
-		padding: 10px;
-		text-align: center;
-		color: black !important;
-		&:hover, &:hover * {
-			color: $link-color !important;
-			text-decoration: none;
-		}
-	}
+  border: 1px solid $gray;
+  border-radius: $medium-radius;
+  margin-top: 10px;
 
-	span {
-		position: relative;
-		top: 2px;
-	}
+  a.menu {
+    display: inline-block;
+    width: 14%;
 
-	svg {
-		position:relative;
-		top:2px;
-		height: 14px;
-	}
+    @include mobile {
+      display: block;
+      width: 100%;
+    }
+
+    padding: 10px;
+    text-align: center;
+    color: black !important;
+
+    &:hover,
+    &:hover * {
+      color: $link-color !important;
+      text-decoration: none;
+    }
+  }
+
+  span {
+    position: relative;
+    top: 2px;
+  }
+
+  svg {
+    position: relative;
+    top: 2px;
+    height: 14px;
+  }
 }
 
 .repo-about {
-	border: 1px solid $gray;
-	border-radius: $medium-radius;
-	padding: 10px;
+  border: 1px solid $gray;
+  border-radius: $medium-radius;
+  padding: 10px;
 
-	grid-column: 5;
-	grid-row: 1 / 3;
+  grid-column: 5;
+  grid-row: 1 / 3;
 }
 
 .branch-specific-container {
-	border: 1px solid $gray;
-	border-radius: $medium-radius;
-	padding: 10px;
+  border: 1px solid $gray;
+  border-radius: $medium-radius;
+  padding: 10px;
 
-	grid-column: 1 / 5;
+  grid-column: 1 / 5;
 
-	.branch-select {
-		border: none;
-		outline: none;
-	}
+  .branch-select {
+    border: none;
+    outline: none;
+  }
 
-	.commit-count {
-		display: inline;
+  .commit-count {
+    display: inline;
 
-		a {
-			width: 14%;
-			text-align: center;
-			color: black !important;
-	
-			svg {
-				position: relative;
-				top: 2px;
-				height: 14px;
-			}
-		}
-	}
+    a {
+      width: 14%;
+      text-align: center;
+      color: black !important;
+
+      svg {
+        position: relative;
+        top: 2px;
+        height: 14px;
+      }
+    }
+  }
 }
 
 .repo-clone {
-	border: 1px solid $gray;
-	border-radius: $medium-radius;
-	padding: 5px 10px 5px 10px;
+  border: 1px solid $gray;
+  border-radius: $medium-radius;
+  padding: 5px 10px 5px 10px;
 
-	grid-column: 1 / 5;
+  grid-column: 1 / 5;
 
-	input {
-		min-width: 200px;
-	}
+  input {
+    min-width: 200px;
+  }
 }
 
-.tree-path, .tree-path a, h3 a {
-	display: inline-block;
-	font-size: 20px !important;
-	font-weight: 300;
-	margin: 7px 0 7px 0;
+.tree-path,
+.tree-path a,
+h3 a {
+  display: inline-block;
+  font-size: 20px !important;
+  font-weight: 300;
+  margin: 7px 0 7px 0;
 }
 
 .readme {
-	border: 1px solid #dfdfdf;
-	border-radius: 3px;
+  border: 1px solid #dfdfdf;
+  border-radius: 3px;
 
-	padding: 20px 30px 20px 30px;
-	margin-top: 10px;
+  padding: 20px 30px 20px 30px;
+  margin-top: 10px;
 
-	> * {
-		margin: 10px 0;
-	}
+  > * {
+    margin: 10px 0;
+  }
 
-	code {
-		border: 1px solid $black;
-		border-radius: $small-radius;
-		padding: 5px;
-	}
+  code {
+    border: 1px solid $black;
+    border-radius: $small-radius;
+    padding: 5px;
+  }
 
-	h1 {
-		font-size: 2em;
-		border-bottom: 1px solid #dfdfdf;
-	}
+  h1 {
+    font-size: 2em;
+    border-bottom: 1px solid #dfdfdf;
+  }
 
-	h2 {
-		font-size: 1.75em;
-	}
+  h2 {
+    font-size: 1.75em;
+  }
 
-	h3 {
-		font-size: 1.5em;
-	}
+  h3 {
+    font-size: 1.5em;
+  }
 
-	h4 {
-		font-size: 1.25em;
-	}
+  h4 {
+    font-size: 1.25em;
+  }
 
-	h5 {
-		font-size: 1em;
-	}
+  h5 {
+    font-size: 1em;
+  }
 
-	h6 {
-		font-size: 0.75em;
-	}
+  h6 {
+    font-size: 0.75em;
+  }
 
-	img {
-		max-width: 100%;
-	}
+  img {
+    max-width: 100%;
+  }
 }
 
 .issue-id-anchor {
-	color: $link-color !important;
+  color: $link-color !important;
 }

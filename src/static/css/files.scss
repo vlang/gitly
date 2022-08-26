@@ -1,101 +1,111 @@
 .last_commit {
-	display: flex;
-	align-items: center;
-	padding: 9px 11px;
-	border-bottom: 1px solid $gray;
-	background-color: #bfdbff54;
+  display: flex;
+  align-items: center;
+  padding: 9px 11px;
+  border-bottom: 1px solid $gray;
+  background-color: #bfdbff54;
 }
 
 .last_commit_message {
-	word-break: break-all;
+  word-break: break-all;
 
-	margin-left: 5px;
+  margin-left: 5px;
 }
 
 .last_commit_hash {
-	background-color: #CBE2FF;
+  background-color: #cbe2ff;
 
-	margin-left: 5px;
-	margin-right: 5px;
+  margin-left: 5px;
+  margin-right: 5px;
 }
 
 .files {
-	@include mobile {
-		width: 100%;
-	}
-	margin: 0 auto;
-	border-left: 1px solid #dfdfdf;
-	border-right: 1px solid #dfdfdf;
-	border-top: 1px solid #dfdfdf;
-	border-radius: $small-radius;
+  @include mobile {
+    width: 100%;
+  }
+
+  margin: 0 auto;
+  border-left: 1px solid #dfdfdf;
+  border-right: 1px solid #dfdfdf;
+  border-top: 1px solid #dfdfdf;
+  border-radius: $small-radius;
 }
 
 .file {
-    display: flex;
-    align-items: center;
-	padding: 9px 11px;
-	cursor: pointer;
-	border-bottom: 1px solid $gray;
-	color: $black;
-	&:hover {
-		background-color: $gray-light;
-	}
+  display: flex;
+  align-items: center;
+  padding: 9px 11px;
+  cursor: pointer;
+  border-bottom: 1px solid $gray;
+  color: $black;
+
+  &:hover {
+    background-color: $gray-light;
+  }
 }
 
 .file svg {
-	height: 16px;
+  height: 16px;
 }
 
-.file-ico{
-		margin-right: 6px;
-		height: 16px;
-		width: 16px;
+.file-ico {
+  margin-right: 6px;
+  height: 16px;
+  width: 16px;
 }
 
 .file-name {
-    @include desktop {
-        width: 25%;
-	}
-    @include mobile {
-        flex: 1;
-	}
+  @include desktop {
+    width: 25%;
+  }
+
+  @include mobile {
+    flex: 1;
+  }
+
+  position: relative;
+  top: 1px;
+
+  a {
+    color: $black !important;
+
+    &:hover {
+      text-decoration: none;
+    }
+
     position: relative;
-    top: 1px;
-	a {
-		color: $black !important;
-		&:hover {
-			text-decoration: none;
-		}
-		position:relative;
-		top:-2px;
-	}
+    top: -2px;
+  }
 }
 
 .file-size {
-	@include mobile {
-		display: none;
-	}
-	width: 15%;
-	margin-right: 10px;
+  @include mobile {
+    display: none;
+  }
+
+  width: 15%;
+  margin-right: 10px;
 }
 
 .file-msg {
-	@include mobile {
-		display: none;
-	}
-	flex: 1;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-	overflow: hidden;
-	//font-style: italic;
-	color: $gray-dark !important;
-	a {
-		color: $gray-dark;
-	}
+  @include mobile {
+    display: none;
+  }
+
+  flex: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  //font-style: italic;
+  color: $gray-dark !important;
+
+  a {
+    color: $gray-dark;
+  }
 }
 
 .file-time {
-	color: $gray-dark !important;
-	//position: relative;
-	//top: 3px;
+  color: $gray-dark !important;
+  //position: relative;
+  //top: 3px;
 }

@@ -1,89 +1,89 @@
 .profile-block-container {
-	display: grid;
-	grid-template-areas: "profile repos";
-	grid-template-columns: 260px 1fr;
+  display: grid;
+  grid-template-areas: "profile repos";
+  grid-template-columns: 260px 1fr;
 }
 
 .profile-block__left {
-	grid-area: profile;
-	max-width: 300px;
+  grid-area: profile;
+  max-width: 300px;
 }
 
 .profile-block__right {
-	grid-area: repos;
-	padding-left: 10px;
-	padding-top: 10px;
-	width: 100%;
+  grid-area: repos;
+  padding-left: 10px;
+  padding-top: 10px;
+  width: 100%;
 }
 
 .profile-avatar {
-	height: 256px;
-	width: 256px;
-	border-radius: 100%;
-	border: 1px solid $gray;
-	background-color: $link_color;
-	margin-top: 5px;
-	overflow: hidden;
-	cursor: pointer;
+  height: 256px;
+  width: 256px;
+  border-radius: 100%;
+  border: 1px solid $gray;
+  background-color: $link_color;
+  margin-top: 5px;
+  overflow: hidden;
+  cursor: pointer;
 
-	img {
-		height: 256px;
-		width: 256px;
-	}
+  img {
+    height: 256px;
+    width: 256px;
+  }
 }
 
 .edit-profile-button {
-	width: 256px;
+  width: 256px;
 }
 
 .settings-block-container {
-	display: grid;
-	grid-template-areas: "menu container";
-	grid-template-columns: 260px 1fr;
-	margin-top: 20px;
+  display: grid;
+  grid-template-areas: "menu container";
+  grid-template-columns: 260px 1fr;
+  margin-top: 20px;
 }
 
 .settings-block__left {
-	grid-area: menu;
-	max-width: 300px;
+  grid-area: menu;
+  max-width: 300px;
 
-	ul {
-		li {
-			list-style: none;
-		}
-	}
+  ul {
+    li {
+      list-style: none;
+    }
+  }
 }
 
 .settings-block__right {
-	grid-area: container;
-	padding-left: 10px;
-	width: 100%;
+  grid-area: container;
+  padding-left: 10px;
+  width: 100%;
 }
 
 .new-ssh-key-block {
-	border-bottom: 1px solid $gray;
-	padding-bottom: 10px;
-	margin-bottom: 10px;
+  border-bottom: 1px solid $gray;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
 }
 
 .ssh-key {
-	border: 1px solid $gray;
-	border-radius: $small-radius;
-	padding: 10px;
-	margin-top: 10px;
+  border: 1px solid $gray;
+  border-radius: $small-radius;
+  padding: 10px;
+  margin-top: 10px;
 }
 
 .ssh-key-remove {
-	margin-top: 10px;
+  margin-top: 10px;
 }
 
 .profile-activities {
-	margin-top: 25px;
+  margin-top: 25px;
 }
 
 .activity {
-	border: 1px solid $gray;
-	border-radius: $small-radius;
-	padding: 10px;
-	margin-top: 10px;
+  border: 1px solid $gray;
+  border-radius: $small-radius;
+  padding: 10px;
+  margin-top: 10px;
 }
