@@ -68,7 +68,7 @@ fn new_app() &App {
 
 	app.setup_logger()
 
-	mut version := os.read_file('static/assets/version') or { 'unknown' }
+	mut version := os.read_file('src/static/assets/version') or { 'unknown' }
 	git_result := os.execute('git rev-parse --short HEAD')
 
 	if git_result.exit_code == 0 && !git_result.output.contains('fatal') {
@@ -76,12 +76,12 @@ fn new_app() &App {
 	}
 
 	if version != app.version {
-		os.write_file('static/assets/version', app.version) or { panic(err) }
+		os.write_file('src/static/assets/version', app.version) or { panic(err) }
 	}
 
 	app.version = version
 
-	app.handle_static('static', true)
+	app.handle_static('src/static', true)
 
 	app.load_settings()
 

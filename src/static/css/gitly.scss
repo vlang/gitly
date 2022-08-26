@@ -289,6 +289,23 @@ form {
 		box-sizing: border-box;
 		width: 100%;
 	}
+
+	textarea {
+		box-sizing: border-box;
+		width: 100%;
+	}
+}
+
+.form__embedded {
+	input:not([type=checkbox]):not([type=radio]) {
+		box-sizing: border-box;
+		width: 100%;
+	}
+
+	textarea {
+		box-sizing: border-box;
+		width: 100%;
+	}
 }
 
 @import 'files', 'langs', 'tree', 'commits', 'hl_table', 'branches', 'admin', 'blob', 'new', 'contributors', 'issues', 'user', 'releases';

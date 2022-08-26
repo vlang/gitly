@@ -1,0 +1,37 @@
+@include '../header.html'
+
+<h2>User settings</h2>
+
+.div-center {
+	<div class="settings-block-container">
+		<div class="settings-block__left">
+			<ul>
+				<li>
+					<a href="/${app.user.username}/settings">Public profile</a>
+				</li>
+				<li>
+					<a href="/${app.user.username}/settings/ssh-keys">SSH keys</a>
+				</li>
+			</ul>
+		</div>
+		<div class="settings-block__right">
+			.form-error {
+				@app.form_error
+			}
+
+			<div class="form__embedded">
+				<form action="/@app.user.username/settings" method="post">
+					<div class="field">
+						<input type="text" name="full_name" value="@app.user.full_name" placeholder="Full name">
+					</div>
+					<div class="field">
+						<input type="text" name="name" value="@app.user.username" placeholder="Username">
+					</div>
+					<input type="submit" value="Save settings">
+				</form>
+			</div>
+		</div>
+	</div>
+}
+
+@include '../footer.html'
