@@ -3,10 +3,22 @@ module main
 import vweb
 import highlight
 import time
+import api
 
-['/:user/:repo/:branch_name/commits']
-pub fn (mut app App) handle_commits(username string, repo string, branch_name string) vweb.Result {
-	return app.commits(username, repo, branch_name, 0)
+['/api/v1/:user/:repo_name/:branch_name/commits/count']
+fn (mut app App) handle_commits_count(username string, repo_name string, branch_name string) vweb.Result {
+	// TODO: add auth checking module
+	if !app.exists_user_repo(username, repo_name) {
+		return app.not_found()
+	}
+
+	branch := app.find_repo_branch_by_name(app.repo.id, branch_name)
+	count := app.get_repo_commit_count(app.repo.id, branch.id)
+
+	return app.json(api.ApiCommitCount{
+		success: true
+		result: count
+	})
 }
 
 ['/:username/:repo_name/commits/:branch_name/:page']
@@ -18,7 +30,7 @@ pub fn (mut app App) commits(username string, repo_name string, branch_name stri
 	app.show_menu = true
 
 	branch := app.find_repo_branch_by_name(app.repo.id, branch_name)
-	commits_count := app.get_count_repo_commits(app.repo.id, branch.id)
+	commits_count := app.get_repo_commit_count(app.repo.id, branch.id)
 	mut commits := app.find_repo_commits_as_page(app.repo.id, branch.id, page)
 
 	// TODO: move to render logic
