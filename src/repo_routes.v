@@ -245,6 +245,12 @@ pub fn (mut app App) handle_new_repo(name string, clone_url string, description 
 		app.update_repo(mut app.repo)
 	}
 
+	has_first_repo_activity := app.has_activity(app.user.id, 'first_repo')
+
+	if !has_first_repo_activity {
+		app.add_activity(app.user.id, 'first_repo')
+	}
+
 	return app.redirect('/$app.user.username/repos')
 }
 
