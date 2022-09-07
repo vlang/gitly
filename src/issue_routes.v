@@ -66,6 +66,12 @@ pub fn (mut app App) handle_add_repo_issue(user string, repo string) vweb.Result
 
 	app.increment_repo_issues(app.repo.id)
 
+	has_first_issue_activity := app.has_activity(app.user.id, 'first_issue')
+
+	if !has_first_issue_activity {
+		app.add_activity(app.user.id, 'first_issue')
+	}
+
 	return app.redirect('/$user/$repo/issues')
 }
 
