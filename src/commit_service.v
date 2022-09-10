@@ -98,7 +98,7 @@ fn (mut app App) find_repo_commits_as_page(repo_id int, branch_id int, page int)
 	}
 }
 
-fn (mut app App) get_count_repo_commits(repo_id int, branch_id int) int {
+fn (mut app App) get_repo_commit_count(repo_id int, branch_id int) int {
 	return sql app.db {
 		select count from Commit where repo_id == repo_id && branch_id == branch_id
 	}

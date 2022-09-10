@@ -159,7 +159,7 @@ pub fn (mut app App) new() vweb.Result {
 }
 
 ['/new'; post]
-pub fn (mut app App) handle_new_repo(name string, clone_url string, description string) vweb.Result {
+pub fn (mut app App) handle_new_repo(name string, clone_url string, description string, no_redirect string) vweb.Result {
 	mut valid_clone_url := clone_url
 	is_clone_url_empty := validation.is_string_empty(clone_url)
 	is_public := app.form['repo_visibility'] == 'public'
@@ -243,6 +243,10 @@ pub fn (mut app App) handle_new_repo(name string, clone_url string, description 
 	// Update only cloned repositories
 	if !is_clone_url_empty {
 		app.update_repo(mut app.repo)
+	}
+
+	if no_redirect == '1' {
+		return app.text('ok')
 	}
 
 	has_first_repo_activity := app.has_activity(app.user.id, 'first_repo')
@@ -354,7 +358,7 @@ pub fn (mut app App) tree(username string, repository_name string, branch_name s
 	items << dirs
 	items << files
 
-	commits_count := app.get_count_repo_commits(app.repo.id, branch.id)
+	commits_count := app.get_repo_commit_count(app.repo.id, branch.id)
 	has_commits := commits_count > 0
 
 	// Get readme after updating repository

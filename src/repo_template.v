@@ -12,7 +12,7 @@ fn get_declension_form(count int, first_form string, second_form string) string 
 
 fn (mut app App) format_commits_count(repo Repo, branch_name string) vweb.RawHtml {
 	branch := app.find_repo_branch_by_name(repo.id, branch_name)
-	commits_count := app.get_count_repo_commits(repo.id, branch.id)
+	commits_count := app.get_repo_commit_count(repo.id, branch.id)
 
 	return get_declension_form(commits_count, 'commit', 'commits')
 }

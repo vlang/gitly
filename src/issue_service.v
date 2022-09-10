@@ -45,6 +45,12 @@ fn (mut app App) find_repo_issues_as_page(repo_id int, page int) []Issue {
 	}
 }
 
+fn (mut app App) get_repo_issue_count(repo_id int) int {
+	return sql app.db {
+		select count from Issue where repo_id == repo_id
+	}
+}
+
 fn (mut app App) get_all_repo_issues(repo_id int) []Issue {
 	issues := sql app.db {
 		select from Issue where repo_id == repo_id && is_pr == false
