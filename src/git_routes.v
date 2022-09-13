@@ -4,6 +4,7 @@ module main
 
 import vweb
 import git
+import compress.deflate
 
 ['/:username/:repository/info/refs']
 fn (mut app App) handle_git_info(username string, git_repository_name string) vweb.Result {
@@ -34,6 +35,7 @@ fn (mut app App) handle_git_info(username string, git_repository_name string) vw
 
 ['/:user/:repository/git-upload-pack'; post]
 fn (mut app App) handle_git_upload_pack(username string, git_repository_name string) vweb.Result {
+	body := app.parse_body()
 	repository_name := git.remove_git_extension_if_exists(git_repository_name)
 	user := app.find_user_by_username(username) or { return app.not_found() }
 	repository := app.find_repo_by_name(user.id, repository_name) or { return app.not_found() }
@@ -43,7 +45,7 @@ fn (mut app App) handle_git_upload_pack(username string, git_repository_name str
 		app.check_git_http_access(username, repository_name) or { return app.ok('') }
 	}
 
-	git_response := repository.git_smart('upload-pack', app.req.data)
+	git_response := repository.git_smart('upload-pack', body)
 
 	app.set_git_content_type_headers(.upload)
 
@@ -52,7 +54,7 @@ fn (mut app App) handle_git_upload_pack(username string, git_repository_name str
 
 ['/:user/:repository/git-receive-pack'; post]
 fn (mut app App) handle_git_receive_pack(username string, git_repository_name string) vweb.Result {
-	body := app.req.data
+	body := app.parse_body()
 	repository_name := git.remove_git_extension_if_exists(git_repository_name)
 	user := app.find_user_by_username(username) or { return app.not_found() }
 	repository := app.find_repo_by_name(user.id, repository_name) or { return app.not_found() }
@@ -176,4 +178,19 @@ fn (mut app App) send_not_found() {
 fn (mut app App) send_custom_error(code int, text string) {
 	app.set_status(code, text)
 	app.send_response_to_client(vweb.mime_types['.txt'], '')
+}
+
+fn (mut app App) parse_body() string {
+	body := app.req.data
+
+	if app.get_header('Content-Encoding') == 'gzip' {
+		decompressed := deflate.decompress(body.bytes()[10..]) or {
+			println(err)
+			return body
+		}
+
+		return decompressed.bytestr()
+	}
+
+	return body
 }
