@@ -1,61 +1,61 @@
 .commit-day-title {
-  color: #767676;
-  padding: 30px 0 10px 0;
+	color: #767676;
+	padding: 30px 0 10px 0;
 }
 
 .clog {
-  border: 1px solid $gray;
-  padding: 10px;
-  border-top: 0;
+	border: 1px solid $gray;
+	padding: 10px;
+	border-top: 0;
 }
 
 .clog:first-child {
-  border-top: 1px solid $gray;
-  border-top-left-radius: $medium-radius !important;
-  border-top-right-radius: $medium-radius !important;
+	border-top: 1px solid $gray;
+	border-top-left-radius: $medium-radius !important;
+	border-top-right-radius: $medium-radius !important;
 }
 
 .clog:last-child {
-  border-bottom-left-radius: $medium-radius !important;
-  border-bottom-right-radius: $medium-radius !important;
+	border-bottom-left-radius: $medium-radius !important;
+	border-bottom-right-radius: $medium-radius !important;
 }
 
 img.clog-avatar {
-  border-radius: $small-radius;
-  width: 35px;
-  //display: inline-block;
-  float: left;
-  margin-right: 10px;
+	border-radius: $small-radius;
+	width: 35px;
+	//display: inline-block;
+	float: left;
+	margin-right: 10px;
 }
 
 .clog-msg {
-  font-size: 14px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  overflow: hidden;
-  a {
-    color: $black !important;
-    font-size: 15px;
-    font-weight: 700;
-  }
-  padding-bottom: 5px;
+	font-size: 14px;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	overflow: hidden;
+	a {
+		color: $black !important;
+		font-size: 15px;
+		font-weight: 700;
+	}
+	padding-bottom: 5px;
 }
 
 .clog-time {
-  font-size: 11px;
-  color: $gray-dark;
+	font-size: 11px;
+	color: $gray-dark;
 }
 
 .commit-info-block {
-  border: 1px solid #dfdfdf;
-  border-radius: 3px;
-  padding: 10px;
+	border: 1px solid #dfdfdf;
+	border-radius: 3px;
+	padding: 10px;
 }
 
 .commit-file-diff {
-  margin-top: 10px;
+	margin-top: 10px;
 }
 
 .buttons {
-  margin-top: 10px;
+	margin-top: 10px;
 }
