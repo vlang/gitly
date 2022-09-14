@@ -1,5 +1,5 @@
 $mob-max: 1000px;
-$link-color: #4078C0;
+$link-color: #4078c0;
 $gray: #dfdfdf;
 $gray-light: #f3f3f3;
 $gray-dark: #777; // 888
@@ -9,36 +9,48 @@ $white: #ffffff;
 $header-height: 50px;
 $medium-radius: 5px;
 $small-radius: 3px;
+
 @mixin mobile {
 	@media (max-width: $mob-max) {
 		@content;
 	}
 }
+
 @mixin desktop {
 	@media (min-width: $mob-max) {
 		@content;
 	}
 }
+
 .hl_table * {
-	font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+	font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+	"Courier New", monospace;
 	font-size: 12px;
 }
-body, html, * {
-	font-family: system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif,BlinkMacSystemFont,Oxygen,Fira Sans,Droid Sans,Helvetica Neue;
+
+body,
+html,
+* {
+	font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell,
+	Noto Sans, sans-serif, BlinkMacSystemFont, Oxygen, Fira Sans, Droid Sans,
+	Helvetica Neue;
 	font-size: 14px;
 	line-height: 1.5em;
 	padding: 0;
 	margin: 0;
 }
+
 a {
 	color: $link-color;
 	text-decoration: none;
 }
+
 h3 {
 	margin-top: 10px;
 	margin-bottom: 10px;
 	font-size: 130%;
 }
+
 code {
 	background-color: #f7f7f7;
 }
@@ -48,9 +60,10 @@ code {
 }
 
 pre > code {
-    background-color: #eff0f1;
-    display: block;
+	background-color: #eff0f1;
+	display: block;
 }
+
 .no_select {
 	-webkit-touch-callout: none;
 	-webkit-user-select: none;
@@ -59,12 +72,14 @@ pre > code {
 	-ms-user-select: none;
 	user-select: none;
 }
+
 .content {
 	max-width: $mob-max;
 	margin: 0 auto;
 	margin-bottom: 200px;
 	min-height: calc(100vh - 300px);
 }
+
 .user {
 	display: flex;
 	position: absolute;
@@ -72,18 +87,24 @@ pre > code {
 	right: 0;
 	padding-right: 10px;
 }
+
 .user:focus {
 	outline: none;
 }
-.user:hover .header-dropdown, .header-dropdown:hover, .user:focus .header-dropdown {
+
+.user:hover .header-dropdown,
+.header-dropdown:hover,
+.user:focus .header-dropdown {
 	transform: scale(1) translateY(0px);
 	opacity: 1;
 	pointer-events: all;
 }
+
 .user .header-dropdown * {
 	z-index: 10;
 	position: relative;
 }
+
 .user .header-dropdown .dropdown-hoverzone {
 	z-index: 5;
 	position: absolute;
@@ -92,6 +113,7 @@ pre > code {
 	width: calc(100% + 8px);
 	right: -4px;
 }
+
 .user .header-dropdown {
 	position: absolute;
 	color: $black;
@@ -107,24 +129,27 @@ pre > code {
 	pointer-events: none;
 	transition: transform 0.1s, opacity 0.1s;
 }
+
 .user .header-dropdown .username {
 	padding: 6px 12px;
 	span {
-		opacity: 0.9;
-		font-size: 13px;
+	opacity: 0.9;
+	font-size: 13px;
 	}
 	a {
-		display: block;
-		padding: 0px;
-		font-size: 17px;
-		line-height: 1;
-		color: $black;
+	display: block;
+	padding: 0px;
+	font-size: 17px;
+	line-height: 1;
+	color: $black;
 	}
 }
+
 .user .header-dropdown .links {
 	border-top: 1px solid $gray;
 	padding: 4px 0px;
 }
+
 .user .header-dropdown .links a {
 	padding: 3px 12px;
 	display: block;
@@ -132,6 +157,7 @@ pre > code {
 	color: $black;
 	transition: background-color 0.07s, color 0.07s;
 }
+
 .user .header-dropdown .link:hover {
 	color: $white;
 	background-color: #1a7be9;
@@ -149,15 +175,15 @@ pre > code {
 	cursor: pointer;
 
 	span {
-		line-height: 40px;
-		font-size: 25px;
-		margin: 0;
+	line-height: 40px;
+	font-size: 25px;
+	margin: 0;
 	}
 
 	img {
-		height: 40px;
-		width: 40px;
-		margin: 0;
+	height: 40px;
+	width: 40px;
+	margin: 0;
 	}
 }
 
@@ -175,24 +201,23 @@ pre > code {
 	color: $white;
 }
 
-
 #header {
 	.login-button {
-		color: $white;
-		line-height: 50px;
+	color: $white;
+	line-height: 50px;
 	}
 
 	.repo-visibility {
-		border: 1px solid $link-color;
-		border-radius: 2em;
-		margin-left: 5px;
-		font-size: 12px;
-		padding: 5px;
+	border: 1px solid $link-color;
+	border-radius: 2em;
+	margin-left: 5px;
+	font-size: 12px;
+	padding: 5px;
 	}
 }
 
-
-#header a.repo-author, #header a.repo-name {
+#header a.repo-author,
+#header a.repo-name {
 	line-height: 50px;
 	font-size: 16px !important;
 	color: $white;
@@ -210,16 +235,18 @@ pre > code {
 	height: $header-height;
 	color: white;
 }
+
 #footer {
 	max-width: $mob-max;
 	margin: 0 auto;
 	color: #777;
-	//font-size:80%;
 }
+
 #footer a {
 	color: #777;
 	text-decoration: underline;
 }
+
 #mainlogo {
 	line-height: 50px;
 	font-size: 20px !important;
@@ -228,7 +255,8 @@ pre > code {
 	color: white;
 }
 
-textarea, input {
+textarea,
+input {
 	background: none;
 	color: $black;
 	border: 1px solid $gray;
@@ -237,12 +265,15 @@ textarea, input {
 	transition: border-color 0.07s;
 }
 
-textarea:focus, input:focus {
+textarea:focus,
+input:focus {
 	outline: none;
 	border: 1px solid #4392eb;
 }
 
-.button, button, input[type="submit"] {
+.button,
+button,
+input[type="submit"] {
 	cursor: pointer;
 	background: none;
 	color: $black;
@@ -251,15 +282,23 @@ textarea:focus, input:focus {
 	border-radius: $small-radius;
 	transition: background-color 0.07s, border-color 0.07s, color 0.07s;
 }
-.button:hover, button:hover, input[type="submit"]:hover {
+
+.button:hover,
+button:hover,
+input[type="submit"]:hover {
 	border: 1px solid #0366d6;
-	background-color:#1a7be9;
+	background-color: #1a7be9;
 	color: $white;
 }
-.button.disabled, button.disabled, input[type="submit"].disabled, button:disabled, input[type="submit"]:disabled {
+
+.button.disabled,
+button.disabled,
+input[type="submit"].disabled,
+button:disabled,
+input[type="submit"]:disabled {
 	color: rgba(0, 0, 0, 0.6);
 	border: 1px solid $gray-light;
-	pointer-events:none;
+	pointer-events: none;
 }
 
 form.vertical-form * {
@@ -273,11 +312,11 @@ form.vertical-form *:last-child {
 
 form {
 	.field {
-		margin-top: 10px;
+	margin-top: 10px;
 	}
 
-	input[type=submit] {
-		margin-top: 10px;
+	input[type="submit"] {
+	margin-top: 10px;
 	}
 }
 
@@ -285,27 +324,28 @@ form {
 	max-width: 400px;
 	margin: 0 auto;
 
-	input:not([type=checkbox]):not([type=radio]) {
-		box-sizing: border-box;
-		width: 100%;
+	input:not([type="checkbox"]):not([type="radio"]) {
+	box-sizing: border-box;
+	width: 100%;
 	}
 
 	textarea {
-		box-sizing: border-box;
-		width: 100%;
+	box-sizing: border-box;
+	width: 100%;
 	}
 }
 
 .form__embedded {
-	input:not([type=checkbox]):not([type=radio]) {
-		box-sizing: border-box;
-		width: 100%;
+	input:not([type="checkbox"]):not([type="radio"]) {
+	box-sizing: border-box;
+	width: 100%;
 	}
 
 	textarea {
-		box-sizing: border-box;
-		width: 100%;
+	box-sizing: border-box;
+	width: 100%;
 	}
 }
 
-@import 'files', 'langs', 'tree', 'commits', 'hl_table', 'branches', 'admin', 'blob', 'new', 'contributors', 'issues', 'user', 'releases';
+@import "files", "langs", "tree", "commits", "hl_table", "branches", "admin",
+	"blob", "new", "contributors", "issues", "user", "releases";

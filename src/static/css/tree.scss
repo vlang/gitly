@@ -2,8 +2,9 @@
 	position: fixed;
 	left: 5px;
 	top: 300px;
+
 	a {
-		display: block;
+	display: block;
 	}
 }
 
@@ -18,31 +19,36 @@
 	border: 1px solid $gray;
 	border-radius: $medium-radius;
 	margin-top: 10px;
+
 	a.menu {
-		display: inline-block;
-		width: 14%;
-		@include mobile {
-			display: block;
-			width: 100%;
-		}
-		padding: 10px;
-		text-align: center;
-		color: black !important;
-		&:hover, &:hover * {
-			color: $link-color !important;
-			text-decoration: none;
-		}
+	display: inline-block;
+	width: 14%;
+
+	@include mobile {
+		display: block;
+		width: 100%;
+	}
+
+	padding: 10px;
+	text-align: center;
+	color: black !important;
+
+	&:hover,
+	&:hover * {
+		color: $link-color !important;
+		text-decoration: none;
+	}
 	}
 
 	span {
-		position: relative;
-		top: 2px;
+	position: relative;
+	top: 2px;
 	}
 
 	svg {
-		position:relative;
-		top:2px;
-		height: 14px;
+	position: relative;
+	top: 2px;
+	height: 14px;
 	}
 }
 
@@ -63,24 +69,24 @@
 	grid-column: 1 / 5;
 
 	.branch-select {
-		border: none;
-		outline: none;
+	border: none;
+	outline: none;
 	}
 
 	.commit-count {
-		display: inline;
+	display: inline;
 
-		a {
-			width: 14%;
-			text-align: center;
-			color: black !important;
-	
-			svg {
-				position: relative;
-				top: 2px;
-				height: 14px;
-			}
+	a {
+		width: 14%;
+		text-align: center;
+		color: black !important;
+
+		svg {
+		position: relative;
+		top: 2px;
+		height: 14px;
 		}
+	}
 	}
 }
 
@@ -92,11 +98,13 @@
 	grid-column: 1 / 5;
 
 	input {
-		min-width: 200px;
+	min-width: 200px;
 	}
 }
 
-.tree-path, .tree-path a, h3 a {
+.tree-path,
+.tree-path a,
+h3 a {
 	display: inline-block;
 	font-size: 20px !important;
 	font-weight: 300;
@@ -111,42 +119,42 @@
 	margin-top: 10px;
 
 	> * {
-		margin: 10px 0;
+	margin: 10px 0;
 	}
 
 	code {
-		border: 1px solid $black;
-		border-radius: $small-radius;
-		padding: 5px;
+	border: 1px solid $black;
+	border-radius: $small-radius;
+	padding: 5px;
 	}
 
 	h1 {
-		font-size: 2em;
-		border-bottom: 1px solid #dfdfdf;
+	font-size: 2em;
+	border-bottom: 1px solid #dfdfdf;
 	}
 
 	h2 {
-		font-size: 1.75em;
+	font-size: 1.75em;
 	}
 
 	h3 {
-		font-size: 1.5em;
+	font-size: 1.5em;
 	}
 
 	h4 {
-		font-size: 1.25em;
+	font-size: 1.25em;
 	}
 
 	h5 {
-		font-size: 1em;
+	font-size: 1em;
 	}
 
 	h6 {
-		font-size: 0.75em;
+	font-size: 0.75em;
 	}
 
 	img {
-		max-width: 100%;
+	max-width: 100%;
 	}
 }
 

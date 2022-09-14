@@ -1,44 +1,54 @@
-pre > *{
+pre > * {
 	font-family: Roboto-Mono, Menlo;
 }
-pre  {
+
+pre {
 	overflow-y: hidden;
 	overflow-x: auto;
 }
+
 .hl_table a {
 	padding-right: 5px;
 	padding-left: 5px;
 	float: right;
 }
+
 .hl_table td {
 	padding: 0px;
 }
+
 .hl_table td:first-child {
 	width: 1%; // trick to make the numer row as small as possible
 	padding-right: 4px;
+
 	a {
 		font-family: SFMono-Regular, Consolas, Menlo, monospace;
 		color: $gray-dark;
 		opacity: 0.7;
 		cursor: pointer;
 	}
+
 	a:hover {
 		opacity: 1;
 	}
 }
+
 .hl_table tr {
 	height: 16px;
 }
+
 .hl_table b {
 	// keyword
 	color: rgb(74, 103, 154);
 	font-weight: normal;
 }
+
 .hl_table u {
 	// string
 	color: rgb(179, 58, 44);
 	text-decoration: none;
 }
+
 .hl_table i {
 	// comment
 	color: rgb(169, 169, 169);
