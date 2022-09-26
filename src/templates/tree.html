@@ -30,11 +30,30 @@
 			</div>
 		@end
 
-			@if license_file_path.len > 0
-				<div>
-					<a href="@{license_file_path}">LICENSE</a>
-				</div>
-			@end
+		@if license_file_path.len > 0
+			<div>
+				<a href="@{license_file_path}">LICENSE</a>
+			</div>
+		@end
+
+		<hr/>
+
+		@if is_repo_starred
+			<button class="star-button">
+				<svg enable-background="new 0 0 280.124 280.124" version="1.1" viewBox="0 0 280.12 280.12" xml:space="preserve" xmlns="http://www.w3.org/2000/svg">
+					<path d="m280.12 106.91-92.059-6.598-48.008-95.875-48.55 95.874-91.507 6.599 61.282 74.015-17.519 94.754 96.294-43.614 96.294 43.606-17.799-94.754c1e-3 -2e-3 61.572-74.007 61.572-74.007z" fill="#F4B459"/>
+					<polygon points="236.35 275.68 218.55 180.92 280.07 106.98 280.07 106.9 188.06 100.32 140.06 4.441 140.06 232.07" fill="#E3A753"/>
+				</svg>
+				Starred @{star_count}
+			</button>
+		@else
+			<button class="star-button">
+				<svg enable-background="new 0 0 243.317 243.317" version="1.1" viewBox="0 0 243.32 243.32" xml:space="preserve" xmlns="http://www.w3.org/2000/svg">
+					<path d="m242.95 93.714c-0.882-2.715-3.229-4.694-6.054-5.104l-74.98-10.9-33.53-67.941c-1.264-2.56-3.871-4.181-6.725-4.181-2.855 0-5.462 1.621-6.726 4.181l-33.53 67.941-74.982 10.9c-2.826 0.411-5.173 2.39-6.055 5.104-0.882 2.715-0.147 5.695 1.898 7.688l54.257 52.886-12.807 74.672c-0.482 2.814 0.674 5.658 2.983 7.335 2.309 1.678 5.371 1.9 7.898 0.571l67.064-35.254 67.063 35.254c1.097 0.577 2.296 0.861 3.489 0.861h0.021 1e-3c4.142 0 7.5-3.358 7.5-7.5 0-0.629-0.078-1.24-0.223-1.824l-12.713-74.117 54.254-52.885c2.044-1.991 2.78-4.972 1.897-7.687zm-69.445 52.585c-1.768 1.723-2.575 4.206-2.157 6.639l10.906 63.581-57.102-30.018c-2.185-1.149-4.795-1.149-6.979 0l-57.103 30.018 10.906-63.581c0.418-2.433-0.389-4.915-2.157-6.639l-46.199-45.031 63.847-9.281c2.443-0.355 4.555-1.889 5.647-4.103l28.55-57.849 28.55 57.849c1.092 2.213 3.204 3.748 5.646 4.103l63.844 9.281-46.199 45.031z"/>
+				</svg>
+				Star @{star_count}
+			</button>
+		@end
 	</div>
 
 	<script>
@@ -123,6 +142,7 @@
 @end
 
 <script>
+	const repoId = @app.repo.id;
 	// Make the entire row clickable
 	const fileEls = document.querySelectorAll(".file");
 
@@ -130,6 +150,33 @@
 		fileEl.addEventListener("click", () => {
 			window.location = fileEl.querySelector("a").href;
 		});
+	});
+
+	const starButtonEl = document.querySelector(".star-button");
+
+	async function starRepo(repoId) {
+		const url = "/api/v1/repos/" + repoId + "/star";
+		const response = await fetch(url, {
+			method: "POST"
+		});
+		const json = await response.json();
+
+		if (json.success) {
+			return json.result === "true";
+		} else {
+			console.log(json)
+			throw new Error(json.message);
+		}
+	}
+
+	starButtonEl.addEventListener("click", () => {
+		starRepo(repoId)
+			.then((status) => {
+				location.reload()
+			})
+			.catch((error) => {
+				alert(error.toString());
+			})
 	});
 </script>
 
