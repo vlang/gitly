@@ -17,8 +17,8 @@ https://gitly.org
 The V web framework and Gitly are at an early stage of development. Lots of features are missing.
 The biggest missing features that will be implemented soon:
 
-- [x] <strike>Multiple users and multiple repos</strike>
-- [ ] `git push`
+- [x] Multiple users and multiple repos
+- [x] `git push`
 - [ ] Access via ssh
 - [ ] Pull requests
 
