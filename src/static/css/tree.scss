@@ -119,42 +119,46 @@ h3 a {
 	margin-top: 10px;
 
 	> * {
-	margin: 10px 0;
+		margin: 10px 0;
 	}
 
 	code {
-	border: 1px solid $black;
-	border-radius: $small-radius;
-	padding: 5px;
+		border: 1px solid $black;
+		border-radius: $small-radius;
+		padding: 5px;
 	}
 
 	h1 {
-	font-size: 2em;
-	border-bottom: 1px solid #dfdfdf;
+		font-size: 2em;
+		border-bottom: 1px solid #dfdfdf;
 	}
 
 	h2 {
-	font-size: 1.75em;
+		font-size: 1.75em;
 	}
 
 	h3 {
-	font-size: 1.5em;
+		font-size: 1.5em;
 	}
 
 	h4 {
-	font-size: 1.25em;
+		font-size: 1.25em;
 	}
 
 	h5 {
-	font-size: 1em;
+		font-size: 1em;
 	}
 
 	h6 {
-	font-size: 0.75em;
+		font-size: 0.75em;
 	}
 
 	img {
-	max-width: 100%;
+		max-width: 100%;
+	}
+
+	li.task-list-item:has(> input.task-list-item-checkbox) {
+		list-style: none;
 	}
 }
 
