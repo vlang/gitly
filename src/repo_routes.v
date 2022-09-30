@@ -41,14 +41,14 @@ fn (mut app App) repo_belongs_to(user string, repo string) bool {
 }
 
 ['/:user/:repo/settings'; post]
-pub fn (mut app App) handle_update_repo_settings(user string, repo string, webhook_secret string) vweb.Result {
+pub fn (mut app App) handle_update_repo_settings(user string, repo string) vweb.Result {
 	if !app.repo_belongs_to(user, repo) {
 		return app.redirect_to_current_repository()
 	}
 
-	if webhook_secret != '' && webhook_secret != app.repo.webhook_secret {
-		webhook := sha1.hexhash(webhook_secret)
-		app.update_repo_webhook(app.repo.id, webhook)
+	if app.form['webhook_secret'] != '' && app.form['webhook_secret'] != app.repo.webhook_secret {
+		webhook := sha1.hexhash(app.form['webhook_secret'])
+		app.update_repo_webhook(app.repo.id, app.form['webhook_secret'])
 	}
 
 	return app.redirect_to_current_repository()
