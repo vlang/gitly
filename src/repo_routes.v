@@ -71,14 +71,14 @@ pub fn (mut app App) handle_repo_delete(user string, repo string) vweb.Result {
 }
 
 ['/:user/:repo/move'; post]
-pub fn (mut app App) handle_repo_move(user string, repo string, dest string, verify string) vweb.Result {
+pub fn (mut app App) handle_repo_move(user string, repo string) vweb.Result {
 	if !app.repo_belongs_to(user, repo) {
 		return app.redirect_to_current_repository()
 	}
 
-	if dest != '' && verify == '$user/$repo' {
-		dest_user := app.find_user_by_username(dest) or {
-			app.error('Unknown user $dest')
+	if app.form['dest'] != '' && app.form['verify'] == '$user/$repo' {
+		dest_user := app.find_user_by_username(app.form['dest']) or {
+			app.error('Unknown user ${app.form['dest']}')
 			return app.repo_settings(user, repo)
 		}
 
