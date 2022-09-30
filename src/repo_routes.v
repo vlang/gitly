@@ -54,7 +54,7 @@ pub fn (mut app App) handle_update_repo_settings(user string, repo string, webho
 	return app.redirect_to_current_repository()
 }
 
-['/:user/:repo'; delete]
+['/:user/:repo/delete'; post]
 pub fn (mut app App) handle_repo_delete(user string, repo string) vweb.Result {
 	if !app.repo_belongs_to(user, repo) {
 		return app.redirect_to_current_repository()
