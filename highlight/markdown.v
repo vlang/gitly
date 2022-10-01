@@ -20,7 +20,12 @@ const (
 		'dt',
 		'em',
 		'font',
-		'h',
+		'h1',
+		'h2',
+		'h3',
+		'h4',
+		'h5',
+		'h6',
 		'hr',
 		'i',
 		'img',
@@ -88,7 +93,7 @@ fn sanitize_html_tags(code string) string {
 	// tag name, attributes, tag content(optional)
 	// paired_tags_re := r'<[\s]*?(?<tag>[a-zA-Z]*)(.*?)>([\s\S]*?)<\/\s*?\g{tag}*?\s*?>'
 	// unpaired_tags_re := r'<(\w*)\s+(.*?)()\/>'
-	paired_tags_re := r'<[\s]*?(?<tag>[a-zA-Z]*)(.*?)>([\s\S]*?)<\/\s*?\g{tag}*?\s*?>'
+	paired_tags_re := r'<[\s]*?(?<tag>[a-zA-Z0-9]*)(.*?)>([\s\S]*?)<\/\s*?\g{tag}*?\s*?>'
 	unpaired_tags_re := r'<(\w*)\s+(.*?)()>'
 
 	result = sanitize_html_tags_with_re(paired_tags_re, result)
@@ -116,10 +121,8 @@ fn sanitize_html_tags_with_re(re string, code string) string {
 
 		tag_parts := matched.get_all()
 		tag_name := tag_parts[0].trim_space().to_lower()
-
 		tag_attributes := tag_parts[1].trim_space()
 		tag_content := tag_parts[2].trim_space()
-
 		is_allowed_tag := highlight.allowed_tags.contains(tag_name)
 
 		if !is_allowed_tag {
