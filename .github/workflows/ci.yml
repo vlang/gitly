@@ -21,6 +21,11 @@ jobs:
         with:
           repository: vlang/markdown
           path: vlib/markdown
+      - name: Install PCRE
+        uses: actions/checkout@v2
+        with:
+          repository: vlang/pcre
+          path: vlib/pcre
       - name: Build V
         run: |
           make
@@ -68,6 +73,11 @@ jobs:
         with:
           repository: vlang/markdown
           path: vlib/markdown
+      - name: Install PCRE
+        uses: actions/checkout@v2
+        with:
+          repository: vlang/pcre
+          path: vlib/pcre
       - name: Build V
         run: |
           make
@@ -126,6 +136,11 @@ jobs:
 #        with:
 #          repository: vlang/markdown
 #          path: vlib/markdown
+#      - name: Install PCRE
+#        uses: actions/checkout@v2
+#        with:
+#          repository: vlang/pcre
+#          path: vlib/pcre
 #      - name: Build V
 #        run: |
 #          ./make.bat -msvc -skip-path
@@ -155,6 +170,11 @@ jobs:
         with:
           repository: vlang/markdown
           path: vlib/markdown
+      - name: Install PCRE
+        uses: actions/checkout@v2
+        with:
+          repository: vlang/pcre
+          path: vlib/pcre
       - name: Build V
         run: |
           ./make.bat -gcc
@@ -183,6 +203,11 @@ jobs:
         with:
           repository: vlang/markdown
           path: vlib/markdown
+      - name: Install PCRE
+        uses: actions/checkout@v2
+        with:
+          repository: vlang/pcre
+          path: vlib/pcre
       - name: Build V
         run: |
           echo $VFLAGS
