@@ -164,7 +164,6 @@
 		if (json.success) {
 			return json.result === "true";
 		} else {
-			console.log(json)
 			throw new Error(json.message);
 		}
 	}
