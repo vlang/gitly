@@ -91,8 +91,6 @@ pub fn sanitize_markdown_code(code string) string {
 fn sanitize_html_tags(code string) string {
 	mut result := code
 	// tag name, attributes, tag content(optional)
-	// paired_tags_re := r'<[\s]*?(?<tag>[a-zA-Z]*)(.*?)>([\s\S]*?)<\/\s*?\g{tag}*?\s*?>'
-	// unpaired_tags_re := r'<(\w*)\s+(.*?)()\/>'
 	paired_tags_re := r'<[\s]*?(?<tag>[a-zA-Z0-9]*)(.*?)>([\s\S]*?)<\/\s*?\g{tag}*?\s*?>'
 	unpaired_tags_re := r'<(\w*)\s+(.*?)()>'
 
@@ -130,26 +128,22 @@ fn sanitize_html_tags_with_re(re string, code string) string {
 			last_found_index = matched_start_index
 		}
 
-		if tag_attributes.len > 0 {
-			sanitized_attributes := sanitize_html_attributes(tag_attributes)
-			is_attributes_length_equal := tag_attributes.len == sanitized_attributes.len
+		sanitized_attributes := sanitize_html_attributes(tag_attributes)
+		is_attributes_length_equal := tag_attributes.len == sanitized_attributes.len
 
-			if !is_attributes_length_equal {
-				result = result.replace(tag, tag.replace(tag_attributes, sanitized_attributes))
-				difference := tag_attributes.len - sanitized_attributes.len
-				last_found_index -= difference
-			}
+		if !is_attributes_length_equal {
+			result = result.replace(tag, tag.replace(tag_attributes, sanitized_attributes))
+			difference := tag_attributes.len - sanitized_attributes.len
+			last_found_index -= difference
 		}
 
-		if tag_content.len > 0 {
-			sanitized_content := sanitize_html_tags(tag_content)
-			is_content_length_equal := tag_content.len == sanitized_content.len
+		sanitized_content := sanitize_html_tags(tag_content)
+		is_content_length_equal := tag_content.len == sanitized_content.len
 
-			if !is_content_length_equal {
-				result = result.replace(tag, tag.replace(tag_content, sanitized_content))
-				difference := tag_content.len - sanitized_content.len
-				last_found_index -= difference
-			}
+		if !is_content_length_equal {
+			result = result.replace(tag, tag.replace(tag_content, sanitized_content))
+			difference := tag_content.len - sanitized_content.len
+			last_found_index -= difference
 		}
 	}
 
