@@ -5,9 +5,9 @@ module main
 import vweb
 import json
 
-['/api/:user/:repo/issues']
-pub fn (mut app App) handle_api_issues(user string, repo string) vweb.Result {
-	if !app.exists_user_repo(user, repo) {
+['/api/:username/:repo/issues']
+pub fn (mut app App) handle_api_issues(username string, repo string) vweb.Result {
+	if !app.exists_user_repo(username, repo) {
 		return app.json('{}')
 	}
 
@@ -17,9 +17,9 @@ pub fn (mut app App) handle_api_issues(user string, repo string) vweb.Result {
 	return app.json(js)
 }
 
-['/api/:user/:repo/commits']
-pub fn (mut app App) handle_api_commits(user string, repo string) vweb.Result {
-	if !app.exists_user_repo(user, repo) {
+['/api/:username/:repo/commits']
+pub fn (mut app App) handle_api_commits(username string, repo string) vweb.Result {
+	if !app.exists_user_repo(username, repo) {
 		return app.json('{}')
 	}
 

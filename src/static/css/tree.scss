@@ -102,6 +102,19 @@
 	}
 }
 
+.star-button {
+	margin-top: 10px;
+	min-width: 80px;
+
+	svg {
+		display: block;
+		height: 16px;
+		width: 16px;
+		padding-top: 4px;
+		margin: 0 auto;
+	}
+}
+
 .tree-path,
 .tree-path a,
 h3 a {

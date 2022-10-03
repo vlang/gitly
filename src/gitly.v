@@ -7,6 +7,7 @@ import time
 import os
 import log
 import sqlite
+import api
 
 const (
 	commits_per_page   = 35
@@ -229,6 +230,26 @@ fn (mut app App) create_tables() {
 	sql app.db {
 		create table SecurityLog
 	}
+	sql app.db {
+		create table Star
+	}
+}
+
+// TODO: use generics
+fn (mut app App) json_success(result string) vweb.Result {
+	response := api.ApiSuccessResponse<string>{
+		success: true
+		result: result
+	}
+
+	return app.json(response)
+}
+
+fn (mut app App) json_error(message string) vweb.Result {
+	return app.json(api.ApiErrorResponse{
+		success: false
+		message: message
+	})
 }
 
 // maybe it should be implemented with another static server, in dev

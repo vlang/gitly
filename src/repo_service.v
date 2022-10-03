@@ -111,6 +111,14 @@ fn (mut app App) exists_user_repo(username string, name string) bool {
 	return true
 }
 
+fn (mut app App) check_repo_exists(repo_id int) bool {
+	repo := sql app.db {
+		select from Repo where id == repo_id
+	}
+
+	return repo.id > 0
+}
+
 fn (mut app App) increment_repo_views(repo_id int) {
 	sql app.db {
 		update Repo set views_count = views_count + 1 where id == repo_id
