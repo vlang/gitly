@@ -54,14 +54,14 @@ fn (mut app App) repo_belongs_to(user string, repo string) bool {
 }
 
 ['/:user/:repo/settings'; post]
-pub fn (mut app App) handle_update_repo_settings(user string, repo string, webhook_secret string) vweb.Result {
+pub fn (mut app App) handle_update_repo_settings(user string, repo string) vweb.Result {
 	if !app.repo_belongs_to(user, repo) {
 		return app.redirect_to_current_repository()
 	}
 
-	if webhook_secret != '' && webhook_secret != app.repo.webhook_secret {
-		webhook := sha1.hexhash(webhook_secret)
-		app.update_repo_webhook(app.repo.id, webhook)
+	if app.form['webhook_secret'] != '' && app.form['webhook_secret'] != app.repo.webhook_secret {
+		webhook := sha1.hexhash(app.form['webhook_secret'])
+		app.update_repo_webhook(app.repo.id, app.form['webhook_secret'])
 	}
 
 	return app.redirect_to_current_repository()
@@ -84,14 +84,14 @@ pub fn (mut app App) handle_repo_delete(user string, repo string) vweb.Result {
 }
 
 ['/:user/:repo/move'; post]
-pub fn (mut app App) handle_repo_move(user string, repo string, dest string, verify string) vweb.Result {
+pub fn (mut app App) handle_repo_move(user string, repo string) vweb.Result {
 	if !app.repo_belongs_to(user, repo) {
 		return app.redirect_to_current_repository()
 	}
 
-	if dest != '' && verify == '$user/$repo' {
-		dest_user := app.find_user_by_username(dest) or {
-			app.error('Unknown user $dest')
+	if app.form['dest'] != '' && app.form['verify'] == '$user/$repo' {
+		dest_user := app.find_user_by_username(app.form['dest']) or {
+			app.error('Unknown user ${app.form['dest']}')
 			return app.repo_settings(user, repo)
 		}
 
