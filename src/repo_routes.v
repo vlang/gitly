@@ -59,11 +59,12 @@ pub fn (mut app App) handle_update_repo_settings(user string, repo string) vweb.
 		return app.redirect_to_current_repository()
 	}
 
-	if app.form['webhook_secret'] != '' && app.form['webhook_secret'] != app.repo.webhook_secret {
+	if app.form['webhook_secret'] != '' {
 		webhook := sha1.hexhash(app.form['webhook_secret'])
-		app.update_repo_webhook(app.repo.id, app.form['webhook_secret'])
+		if webhook != app.repo.webhook_secret {
+			app.update_repo_webhook(app.repo.id, webhook)
+		}
 	}
-
 	return app.redirect_to_current_repository()
 }
 
