@@ -413,7 +413,7 @@ pub fn (mut app App) handle_api_repo_star(repo_id_str string) vweb.Result {
 	app.toggle_repo_star(repo_id, user_id)
 	is_repo_starred := app.check_repo_starred(repo_id, user_id)
 
-	return app.json_success(is_repo_starred.str())
+	return app.json_success(is_repo_starred)
 }
 
 ['/:user/:repo/pull/:id']

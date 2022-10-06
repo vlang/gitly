@@ -235,9 +235,8 @@ fn (mut app App) create_tables() {
 	}
 }
 
-// TODO: use generics
-fn (mut app App) json_success(result string) vweb.Result {
-	response := api.ApiSuccessResponse<string>{
+fn (mut app App) json_success<T>(result T) vweb.Result {
+	response := api.ApiSuccessResponse<T>{
 		success: true
 		result: result
 	}
