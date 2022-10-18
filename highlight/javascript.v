@@ -34,6 +34,7 @@ fn init_js() Lang {
 			'throw',
 			'delete',
 			'in',
+			'of',
 			'try',
 			'as',
 			'let',
