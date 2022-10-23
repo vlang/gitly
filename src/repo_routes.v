@@ -38,6 +38,20 @@ pub fn (mut app App) user_stars(username string) vweb.Result {
 	return $vweb.html()
 }
 
+['/:username/feed']
+pub fn (mut app App) user_feed(username string) vweb.Result {
+	exists, user := app.check_username(username)
+
+	if !exists {
+		return app.not_found()
+	}
+
+	// TODO: add pagination
+	feed := app.build_user_feed(app.user.id)
+
+	return $vweb.html()
+}
+
 ['/:user/:repo/settings']
 pub fn (mut app App) repo_settings(user string, repo string) vweb.Result {
 	if !app.repo_belongs_to(user, repo) {
@@ -395,7 +409,9 @@ pub fn (mut app App) tree(username string, repository_name string, branch_name s
 	}
 
 	star_count := app.get_count_repo_stars(repo_id)
+	watcher_count := app.get_count_repo_watchers(repo_id)
 	is_repo_starred := app.check_repo_starred(repo_id, app.user.id)
+	is_repo_watcher := app.check_repo_watcher_status(repo_id, app.user.id)
 
 	return $vweb.html()
 }
@@ -414,6 +430,22 @@ pub fn (mut app App) handle_api_repo_star(repo_id_str string) vweb.Result {
 	is_repo_starred := app.check_repo_starred(repo_id, user_id)
 
 	return app.json_success(is_repo_starred)
+}
+
+['/api/v1/repos/:repo_id/watch'; 'post']
+pub fn (mut app App) handle_api_repo_watch(repo_id_str string) vweb.Result {
+	repo_id := repo_id_str.int()
+
+	// TODO: add auth checking module
+	if !app.check_repo_exists(repo_id) {
+		return app.json_error("Repository doesn't exist")
+	}
+
+	user_id := app.user.id
+	app.toggle_repo_watcher_status(repo_id, user_id)
+	is_watching := app.check_repo_watcher_status(repo_id, user_id)
+
+	return app.json_success(is_watching)
 }
 
 ['/:user/:repo/pull/:id']

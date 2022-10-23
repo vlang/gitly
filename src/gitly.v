@@ -233,6 +233,9 @@ fn (mut app App) create_tables() {
 	sql app.db {
 		create table Star
 	}
+	sql app.db {
+		create table Watch
+	}
 }
 
 fn (mut app App) json_success<T>(result T) vweb.Result {
