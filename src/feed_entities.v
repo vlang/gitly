@@ -4,6 +4,7 @@ import time
 
 // now only for commits
 struct FeedItem {
+	id          int
 	author_name string
 	created_at  time.Time
 	repo_name   string

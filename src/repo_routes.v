@@ -48,6 +48,18 @@ pub fn (mut app App) user_feed(username string) vweb.Result {
 
 	// TODO: add pagination
 	feed := app.build_user_feed(app.user.id)
+	mut items_start_day_group := []int{}
+	mut last_unique_date := ''
+
+	for item in feed {
+		item_ymmdd := item.created_at.ymmdd()
+
+		if item_ymmdd != last_unique_date {
+			items_start_day_group << item.id
+
+			last_unique_date = item_ymmdd
+		}
+	}
 
 	return $vweb.html()
 }

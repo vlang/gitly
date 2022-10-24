@@ -11,6 +11,10 @@
 
 @if feed.len > 0
 	@for item in feed
+		@if item.id in items_start_day_group
+			<div class="feed-date-group">@item.created_at.relative()</div>
+		@end
+
 		<div class="user-repo-item">
 			<a href="/@item.repo_owner/@item.repo_name">
 				<h3>@item.repo_owner/@item.repo_name</h3>
