@@ -25,6 +25,19 @@ pub fn (mut app App) user_repos(username string) vweb.Result {
 	return $vweb.html()
 }
 
+['/:username/stars']
+pub fn (mut app App) user_stars(username string) vweb.Result {
+	exists, user := app.check_username(username)
+
+	if !exists {
+		return app.not_found()
+	}
+
+	repos := app.find_user_starred_repos(app.user.id)
+
+	return $vweb.html()
+}
+
 ['/:user/:repo/settings']
 pub fn (mut app App) repo_settings(user string, repo string) vweb.Result {
 	if !app.repo_belongs_to(user, repo) {
@@ -54,7 +67,7 @@ pub fn (mut app App) handle_update_repo_settings(user string, repo string, webho
 	return app.redirect_to_current_repository()
 }
 
-['/:user/:repo'; delete]
+['/:user/:repo/delete'; post]
 pub fn (mut app App) handle_repo_delete(user string, repo string) vweb.Result {
 	if !app.repo_belongs_to(user, repo) {
 		return app.redirect_to_current_repository()
@@ -381,7 +394,26 @@ pub fn (mut app App) tree(username string, repository_name string, branch_name s
 		license_file_path = '/$username/$repository_name/blob/$branch_name/LICENSE'
 	}
 
+	star_count := app.get_count_repo_stars(repo_id)
+	is_repo_starred := app.check_repo_starred(repo_id, app.user.id)
+
 	return $vweb.html()
+}
+
+['/api/v1/repos/:repo_id/star'; 'post']
+pub fn (mut app App) handle_api_repo_star(repo_id_str string) vweb.Result {
+	repo_id := repo_id_str.int()
+
+	// TODO: add auth checking module
+	if !app.check_repo_exists(repo_id) {
+		return app.json_error("Repository doesn't exist")
+	}
+
+	user_id := app.user.id
+	app.toggle_repo_star(repo_id, user_id)
+	is_repo_starred := app.check_repo_starred(repo_id, user_id)
+
+	return app.json_success(is_repo_starred.str())
 }
 
 ['/:user/:repo/pull/:id']

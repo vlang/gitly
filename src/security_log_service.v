@@ -20,7 +20,7 @@ fn (app &App) get_all_user_security_logs(user_id int) []SecurityLog {
 	}
 
 	for i, log in logs {
-		logs[i].kind = SecurityLogKind(log.kind_id)
+		logs[i].kind = unsafe { SecurityLogKind(log.kind_id) }
 	}
 
 	return logs
