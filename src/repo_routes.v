@@ -188,7 +188,7 @@ pub fn (mut app App) handle_new_repo(name string, clone_url string, description 
 	}
 
 	if name.len > max_repo_name_len {
-		app.error('Repository name is too long (should be fewer than $max_repo_name_len characters)')
+		app.error('The repository name is too long (should be fewer than $max_repo_name_len characters)')
 		return app.new()
 	}
 
@@ -198,22 +198,32 @@ pub fn (mut app App) handle_new_repo(name string, clone_url string, description 
 	}
 
 	if name.contains(' ') {
-		app.error('Repository name cannot contain spaces')
+		app.error('The repository name cannot contain spaces')
 		return app.new()
 	}
 
 	is_repository_name_valid := validation.is_repository_name_valid(name)
 
 	if !is_repository_name_valid {
-		app.error('Repository name is not valid')
+		app.error('The repository name is not valid')
 
 		return app.new()
 	}
 
 	has_clone_url_https_prefix := clone_url.starts_with('https://')
 
-	if !is_clone_url_empty && !has_clone_url_https_prefix {
-		valid_clone_url = 'https://' + clone_url
+	if !is_clone_url_empty {
+		if !has_clone_url_https_prefix {
+			valid_clone_url = 'https://' + clone_url
+		}
+
+		is_git_repo := git.check_git_repo_url(valid_clone_url)
+
+		if !is_git_repo {
+			app.error('The repository URL does not contain any git repository or the server does not respond')
+
+			return app.new()
+		}
 	}
 
 	repository_path := os.join_path(app.settings.repo_storage_path, app.user.username,
