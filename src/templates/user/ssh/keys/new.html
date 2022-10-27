@@ -20,7 +20,7 @@
 			}
 
 			<div class="form__embedded">
-				<form action="/@app.user.username/settings/ssh-keys" method="post">
+				<form class="form-ssh" action="/@app.user.username/settings/ssh-keys" method="post">
 					<div class="field">
 						<input type="text" name="title" placeholder="Title">
 					</div>
@@ -33,5 +33,14 @@
 		</div>
 	</div>
 }
+
+<script>
+	const formEl = document.querySelector(".form-ssh");
+
+	formEl.addEventListener("submit", () => {
+		const submitEl = formEl.querySelector("input[type=submit]");
+		submitEl.disabled = true;
+	});
+</script>
 
 @include '../../../footer.html'

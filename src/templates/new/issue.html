@@ -13,10 +13,19 @@
 New issue
 </h3>
 
-<form method='post' class="vertical-form" action='/@app.repo.user_name/@app.repo.name/issues'>
+<form method='post' class="form-issue vertical-form" action='/@app.repo.user_name/@app.repo.name/issues'>
 	<input type='text' autofocus name='title' placeholder='Title' required>
 	<textarea name='text' placeholder='Leave a comment' required></textarea>
 	<input type='submit' value='Submit new issue'>
 </form>
+
+<script>
+	const formEl = document.querySelector(".form-issue");
+
+	formEl.addEventListener("submit", () => {
+		const submitEl = formEl.querySelector("input[type=submit]");
+		submitEl.disabled = true;
+	});
+</script>
 
 @include '../footer.html'

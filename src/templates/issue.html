@@ -29,9 +29,18 @@
 }
 
 @if app.logged_in
-	<form method='post' class='form vertical-form comment-post-form' action='/@app.repo.user_name/@app.repo.name/comments'>
+	<form method='post' class='form-issue-comment form vertical-form comment-post-form' action='/@app.repo.user_name/@app.repo.name/comments'>
 		<textarea type='text' class='input-comment' name='text' placeholder='Leave a comment' required></textarea>
 		<input type='hidden' name='issue_id' value='@issue.id'>
 		<input type='submit' class="comment-post-submit" name='submit' value='Comment'>
 	</form>
+
+	<script>
+		const formEl = document.querySelector(".form-issue-comment");
+
+		formEl.addEventListener("submit", () => {
+			const submitEl = formEl.querySelector("input[type=submit]");
+			submitEl.disabled = true;
+		});
+	</script>
 @end
