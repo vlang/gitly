@@ -21,7 +21,11 @@
 	</div>
 
 	<div class="profile-block__right">
-		<h1>Repositories</h1>
+		@if has_repos
+			<h1>Last repositories(<a href="/@user.username/repos">view all</a>)</h1>
+		@else
+			<h1>Last repositories</h1>
+		@end
 
 		@if repos.len > 0
 			@for repo in repos
@@ -41,9 +45,9 @@
 					@end
 				</div>
 			@end
-			@else
-				<h2>No repositories</h2>
-			@end
+		@else
+			<h2>No repositories</h2>
+		@end
 	</div>
 </div>
 

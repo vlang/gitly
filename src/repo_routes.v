@@ -228,6 +228,7 @@ pub fn (mut app App) handle_new_repo(name string, clone_url string, description 
 		user_name: app.user.username
 		clone_url: valid_clone_url
 		is_public: is_public
+		created_at: int(time.now().unix)
 	}
 
 	if is_clone_url_empty {
