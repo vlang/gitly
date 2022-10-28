@@ -5,6 +5,7 @@ import os
 import vweb
 import rand
 import validation
+import api
 
 pub fn (mut app App) login() vweb.Result {
 	csrf := rand.string(30)
@@ -251,4 +252,50 @@ pub fn (mut app App) handle_register(username string, email string, password str
 	}
 
 	return app.redirect('/' + username)
+}
+
+['/api/v1/users/avatar'; post]
+pub fn (mut app App) handle_upload_avatar() vweb.Result {
+	if !app.logged_in {
+		return app.not_found()
+	}
+
+	avatar := app.Context.files['file'].first()
+	file_content_type := avatar.content_type
+	file_content := avatar.data
+
+	file_extension := extract_file_extension_from_mime_type(file_content_type) or {
+		response := api.ApiErrorResponse{
+			message: err.str()
+		}
+
+		return app.json(response)
+	}
+
+	is_content_size_valid := validate_avatar_file_size(file_content)
+
+	if !is_content_size_valid {
+		response := api.ApiErrorResponse{
+			message: 'This file is too large to be uploaded'
+		}
+
+		return app.json(response)
+	}
+
+	username := app.user.username
+	avatar_filename := '${username}.$file_extension'
+
+	app.write_user_avatar(avatar_filename, file_content)
+	app.update_user_avatar(app.user.id, avatar_filename)
+
+	avatar_file_path := app.build_avatar_file_path(avatar_filename)
+	avatar_file_url := app.build_avatar_file_url(avatar_filename)
+
+	app.serve_static(avatar_file_url, avatar_file_path)
+
+	response := api.ApiResponse{
+		success: true
+	}
+
+	return app.json(response)
 }

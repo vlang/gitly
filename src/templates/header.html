@@ -48,11 +48,7 @@
 	<div class="user" tabindex="0">
 		@if app.logged_in
 			.avatar {
-				@if app.user.b_avatar
-					<img src="@app.user.avatar">
-				@else
-					<span>@app.user.avatar</span>
-				@end
+					<img src="@{app.prepare_user_avatar_url(app.user.avatar)}">
 			}
 			.header-dropdown {
 				.username {

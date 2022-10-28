@@ -83,11 +83,13 @@ fn new_app() &App {
 	app.version = version
 
 	app.handle_static('src/static', true)
+	app.handle_static('avatars', false)
 
 	app.load_settings()
 
 	create_directory_if_not_exists(app.settings.repo_storage_path)
 	create_directory_if_not_exists(app.settings.archive_path)
+	create_directory_if_not_exists(app.settings.avatars_path)
 
 	// Create the first admin user if the db is empty
 	app.find_user_by_id(1) or {}
@@ -136,11 +138,6 @@ pub fn (mut app App) before_request() {
 		app.user = app.get_user_from_cookies() or {
 			app.logged_in = false
 			User{}
-		}
-
-		app.user.b_avatar = app.user.avatar == ''
-		if !app.user.b_avatar {
-			app.user.avatar = app.user.username[..1]
 		}
 	}
 
