@@ -9,6 +9,8 @@ logs/
 repos/
 archives/
 
+avatars/
+
 *.code-workspace
 .vscode
 
