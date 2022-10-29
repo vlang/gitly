@@ -8,6 +8,7 @@ import os
 import log
 import sqlite
 import api
+import config
 
 const (
 	commits_per_page   = 35
@@ -30,7 +31,8 @@ pub mut:
 mut:
 	version       string        [vweb_global]
 	logger        log.Log       [vweb_global]
-	settings      GitlySettings
+	config        config.Config [vweb_global]
+	settings      Settings
 	current_path  string
 	repo          Repo
 	html_path     vweb.RawHtml
@@ -86,8 +88,12 @@ fn new_app() &App {
 
 	app.load_settings()
 
-	create_directory_if_not_exists(app.settings.repo_storage_path)
-	create_directory_if_not_exists(app.settings.archive_path)
+	app.config = config.read_config('./config.json') or {
+		panic('Config not found or has syntax errors')
+	}
+
+	create_directory_if_not_exists(app.config.repo_storage_path)
+	create_directory_if_not_exists(app.config.archive_path)
 
 	// Create the first admin user if the db is empty
 	app.find_user_by_id(1) or {}
@@ -222,7 +228,7 @@ fn (mut app App) create_tables() {
 		create table Visit
 	}
 	sql app.db {
-		create table GitlySettings
+		create table Settings
 	}
 	sql app.db {
 		create table Token

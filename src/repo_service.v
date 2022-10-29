@@ -698,7 +698,7 @@ fn (r Repo) git_smart(service string, input string) string {
 }
 
 fn (mut app App) generate_clone_url() string {
-	hostname := app.settings.hostname
+	hostname := app.config.hostname
 	username := app.repo.user_name
 	repository_name := app.repo.name
 

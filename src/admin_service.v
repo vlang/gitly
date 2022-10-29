@@ -34,8 +34,8 @@ pub fn (mut app App) remove_admin(user_id int) {
 	app.set_user_admin_status(user_id, false)
 }
 
-pub fn (mut app App) update_gitly_settings(oauth_client_id string, oauth_client_secret string, hostname string, repo_storage_path string) {
-	app.update_settings(oauth_client_id, oauth_client_secret, hostname, repo_storage_path)
+pub fn (mut app App) update_gitly_settings(oauth_client_id string, oauth_client_secret string) {
+	app.update_settings(oauth_client_id, oauth_client_secret)
 
 	app.load_settings()
 }

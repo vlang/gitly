@@ -88,7 +88,7 @@ pub fn (mut app App) register_user(username string, password string, salt string
 }
 
 fn (mut app App) create_user_dir(username string) {
-	user_path := '$app.settings.repo_storage_path/$username'
+	user_path := '$app.config.repo_storage_path/$username'
 
 	os.mkdir(user_path) or {
 		app.info('Failed to create $user_path')

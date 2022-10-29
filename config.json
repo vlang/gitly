@@ -1,0 +1,5 @@
+{
+	"repo_storage_path": "./repos",
+	"archive_path": "./archives",
+	"hostname": "gitly.org"
+}

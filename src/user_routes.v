@@ -159,7 +159,7 @@ pub fn (mut app App) handle_update_user_settings(username string) vweb.Result {
 }
 
 fn (mut app App) rename_user_directory(old_name string, new_name string) {
-	os.mv('$app.settings.repo_storage_path/$old_name', '$app.settings.repo_storage_path/$new_name') or {
+	os.mv('$app.config.repo_storage_path/$old_name', '$app.config.repo_storage_path/$new_name') or {
 		panic(err)
 	}
 }
