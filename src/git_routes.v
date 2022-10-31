@@ -7,24 +7,28 @@ import git
 import compress.deflate
 
 ['/:username/:repository/info/refs']
-fn (mut app App) handle_git_info(username string, git_repository_name string) vweb.Result {
-	repository_name := git.remove_git_extension_if_exists(git_repository_name)
-	user := app.find_user_by_username(username) or { return app.not_found() }
-	repository := app.find_repo_by_name(user.id, repository_name) or { return app.not_found() }
+fn (mut app App) handle_git_info(username string, git_repo_name string) vweb.Result {
+	repo_name := git.remove_git_extension_if_exists(git_repo_name)
+	user := app.get_user_by_username(username) or { return app.not_found() }
+	repo := app.find_repo(user.id, repo_name)
 	service := extract_service_from_url(app.req.url)
+
+	if repo.id == 0 {
+		return app.not_found()
+	}
 
 	if service == .unknown {
 		return app.not_found()
 	}
 
 	is_receive_service := service == .receive
-	is_private_repository := !repository.is_public
+	is_private_repository := !repo.is_public
 
 	if is_receive_service || is_private_repository {
-		app.check_git_http_access(username, repository_name) or { return app.ok('') }
+		app.check_git_http_access(username, repo_name) or { return app.ok('') }
 	}
 
-	refs := repository.git_advertise(service.str())
+	refs := repo.git_advertise(service.str())
 	git_response := build_git_service_response(service, refs)
 
 	app.set_content_type('application/x-git-$service-advertisement')
@@ -34,15 +38,19 @@ fn (mut app App) handle_git_info(username string, git_repository_name string) vw
 }
 
 ['/:user/:repository/git-upload-pack'; post]
-fn (mut app App) handle_git_upload_pack(username string, git_repository_name string) vweb.Result {
+fn (mut app App) handle_git_upload_pack(username string, git_repo_name string) vweb.Result {
 	body := app.parse_body()
-	repository_name := git.remove_git_extension_if_exists(git_repository_name)
-	user := app.find_user_by_username(username) or { return app.not_found() }
-	repository := app.find_repo_by_name(user.id, repository_name) or { return app.not_found() }
+	repo_name := git.remove_git_extension_if_exists(git_repo_name)
+	user := app.get_user_by_username(username) or { return app.not_found() }
+	repository := app.find_repo(user.id, repo_name)
 	is_private_repository := !repository.is_public
 
+	if repository.id == 0 {
+		return app.not_found()
+	}
+
 	if is_private_repository {
-		app.check_git_http_access(username, repository_name) or { return app.ok('') }
+		app.check_git_http_access(username, repo_name) or { return app.ok('') }
 	}
 
 	git_response := repository.git_smart('upload-pack', body)
@@ -53,13 +61,17 @@ fn (mut app App) handle_git_upload_pack(username string, git_repository_name str
 }
 
 ['/:user/:repository/git-receive-pack'; post]
-fn (mut app App) handle_git_receive_pack(username string, git_repository_name string) vweb.Result {
+fn (mut app App) handle_git_receive_pack(username string, git_repo_name string) vweb.Result {
 	body := app.parse_body()
-	repository_name := git.remove_git_extension_if_exists(git_repository_name)
-	user := app.find_user_by_username(username) or { return app.not_found() }
-	repository := app.find_repo_by_name(user.id, repository_name) or { return app.not_found() }
+	repo_name := git.remove_git_extension_if_exists(git_repo_name)
+	user := app.get_user_by_username(username) or { return app.not_found() }
+	repository := app.find_repo(user.id, repo_name)
 
-	app.check_git_http_access(username, repository_name) or { return app.ok('') }
+	if repository.id == 0 {
+		return app.not_found()
+	}
+
+	app.check_git_http_access(username, repo_name) or { return app.ok('') }
 
 	git_response := repository.git_smart('receive-pack', body)
 
@@ -138,7 +150,7 @@ fn (mut app App) extract_user_credentials() ?(string, string) {
 
 fn (mut app App) check_user_credentials() bool {
 	username, password := app.extract_user_credentials() or { return false }
-	user := app.find_user_by_username(username) or { return false }
+	user := app.get_user_by_username(username) or { return false }
 
 	return compare_password_with_hash(password, user.salt, user.password)
 }

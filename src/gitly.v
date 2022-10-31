@@ -90,7 +90,7 @@ fn new_app() &App {
 	create_directory_if_not_exists(app.settings.archive_path)
 
 	// Create the first admin user if the db is empty
-	app.find_user_by_id(1) or {}
+	app.get_user_by_id(1) or {}
 
 	if '-cmdapi' in os.args {
 		go app.command_fetcher()

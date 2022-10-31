@@ -94,7 +94,7 @@ pub fn (mut app App) issues(user string, repo string, page int) vweb.Result {
 	mut last := false
 
 	for index, issue in issues {
-		issues[index].author_name = app.find_username_by_id(issue.author_id)
+		issues[index].author_name = app.get_username_by_id(issue.author_id) or { '' }
 	}
 
 	if app.repo.open_issues_count > commits_per_page {
@@ -133,7 +133,7 @@ pub fn (mut app App) issue(user string, repo string, id string) vweb.Result {
 
 	mut issue := app.find_issue_by_id(id.int()) or { return app.not_found() }
 
-	issue.author_name = app.find_username_by_id(issue.author_id)
+	issue.author_name = app.get_username_by_id(issue.author_id) or { '' }
 	comments := app.get_all_issue_comments(issue.id)
 
 	return $vweb.html()

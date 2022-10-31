@@ -21,7 +21,7 @@ fn (mut app App) get_all_issue_comments(issue_id int) []Comment {
 	}
 
 	for i, comment in comments {
-		comments[i].author_name = app.find_username_by_id(comment.author_id)
+		comments[i].author_name = app.get_username_by_id(comment.author_id) or { '' }
 	}
 
 	return comments

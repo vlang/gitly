@@ -90,7 +90,7 @@ pub fn (mut app App) handle_repo_move(user string, repo string, dest string, ver
 	}
 
 	if dest != '' && verify == '$user/$repo' {
-		dest_user := app.find_user_by_username(dest) or {
+		dest_user := app.get_user_by_username(dest) or {
 			app.error('Unknown user $dest')
 			return app.repo_settings(user, repo)
 		}
@@ -239,8 +239,9 @@ pub fn (mut app App) handle_new_repo(name string, clone_url string, description 
 	}
 
 	app.add_repo(app.repo)
+	app.repo = app.find_repo(app.user.id, app.repo.name)
 
-	app.repo = app.find_repo_by_name(app.user.id, app.repo.name) or {
+	if app.repo.id == 0 {
 		app.info('Repo was not inserted')
 
 		return app.redirect('/new')
@@ -481,11 +482,15 @@ pub fn (mut app App) blob(username string, repo_name string, branch string, path
 
 ['/:user/:repository/raw/:branch/:path...']
 pub fn (mut app App) handle_raw(username string, repo_name string, branch string, path string) vweb.Result {
-	user := app.find_user_by_username(username) or { return app.not_found() }
-	repository := app.find_repo_by_name(user.id, repo_name) or { return app.not_found() }
+	user := app.get_user_by_username(username) or { return app.not_found() }
+	repo := app.find_repo(user.id, repo_name)
+
+	if repo.id == 0 {
+		return app.not_found()
+	}
 
 	// TODO: throw error when git returns non-zero status
-	file_source := repository.git('--no-pager show $branch:$path')
+	file_source := repo.git('--no-pager show $branch:$path')
 
 	return app.ok(file_source)
 }

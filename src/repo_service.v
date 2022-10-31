@@ -56,14 +56,16 @@ fn (mut app App) save_repository(repository Repo) {
 	}
 }
 
-fn (mut app App) find_repo_by_name(user int, name string) ?Repo {
-	x := sql app.db {
-		select from Repo where name == name && user_id == user limit 1
+fn (app App) find_repo(user_id int, repo_name string) Repo {
+	return sql app.db {
+		select from Repo where name == repo_name && user_id == user_id limit 1
 	}
-	if x.id == 0 {
-		return none
-	}
-	return x
+}
+
+fn (app App) find_repo_by_name_and_username(repo_name string, username string) Repo {
+	user := app.get_user_by_username(username) or { return Repo{} }
+
+	return app.find_repo(user.id, repo_name)
 }
 
 fn (mut app App) get_count_user_repos(user_id int) int {
@@ -84,13 +86,13 @@ fn (mut app App) find_user_public_repos(user_id int) []Repo {
 	}
 }
 
-fn (mut app App) get_count_user_public_repos(user_id int) int {
+fn (app App) get_count_user_public_repos(user_id int) int {
 	return sql app.db {
 		select count from Repo where user_id == user_id && is_public == true
 	}
 }
 
-fn (mut app App) find_repo_by_id(repo_id int) Repo {
+fn (app App) find_repo_by_id(repo_id int) Repo {
 	return sql app.db {
 		select from Repo where id == repo_id
 	}
@@ -101,9 +103,13 @@ fn (mut app App) exists_user_repo(username string, name string) bool {
 		return false
 	}
 
-	user := app.find_user_by_username(username) or { return false }
+	user := app.get_user_by_username(username) or { return false }
 
-	app.repo = app.find_repo_by_name(user.id, name) or { return false }
+	app.repo = app.find_repo(user.id, name)
+
+	if app.repo.id == 0 {
+		return false
+	}
 
 	app.repo.lang_stats = app.find_repo_lang_stats(app.repo.id)
 	app.html_path = app.repo.html_path_to(app.current_path, app.repo.primary_branch)
@@ -255,7 +261,7 @@ fn (mut app App) update_repo_branch(mut repo Repo, branch_name string) {
 				return
 			}
 
-			user := app.find_user_by_email(commit_author_email) or { User{} }
+			user := app.get_user_by_email(commit_author_email) or { User{} }
 
 			if user.id > 0 {
 				app.add_contributor(user.id, repo_id)
@@ -330,7 +336,7 @@ fn (mut app App) update_repo_branch_data(mut repo Repo, branch_name string) {
 				return
 			}
 
-			user := app.find_user_by_email(commit_author_email) or { User{} }
+			user := app.get_user_by_email(commit_author_email) or { User{} }
 
 			if user.id > 0 {
 				app.add_contributor(user.id, repo.id)
@@ -783,4 +789,35 @@ fn find_license_file(items []File) ?File {
 	}
 
 	return files[0]
+}
+
+fn (app App) has_user_repo_read_access(user_id int, repo_id int) bool {
+	if !app.logged_in {
+		return false
+	}
+
+	repo := app.find_repo_by_id(repo_id)
+
+	if repo.id == 0 {
+		return false
+	}
+
+	if repo.is_public {
+		return true
+	}
+
+	is_repo_owner := repo.user_id == user_id
+
+	if is_repo_owner {
+		return true
+	}
+
+	return false
+}
+
+fn (app App) has_user_repo_read_access_by_repo_name(user_id int, repo_owner_name string, repo_name string) bool {
+	user := app.get_user_by_username(repo_owner_name) or { return false }
+	repo := app.find_repo(user.id, repo_name)
+
+	return app.has_user_repo_read_access(user_id, repo.id)
 }

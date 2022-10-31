@@ -23,7 +23,7 @@ pub fn (mut app App) handle_login(username string, password string) vweb.Result 
 		return app.redirect_to_login()
 	}
 
-	user := app.find_user_by_username(username) or { return app.redirect_to_login() }
+	user := app.get_user_by_username(username) or { return app.redirect_to_login() }
 
 	if user.is_blocked {
 		return app.redirect_to_login()
@@ -142,7 +142,7 @@ pub fn (mut app App) handle_update_user_settings(username string) vweb.Result {
 	}
 
 	if is_new_username {
-		user := app.find_user_by_username(new_username) or { User{} }
+		user := app.get_user_by_username(new_username) or { User{} }
 
 		if user.id != 0 {
 			app.error('Name already exists')
@@ -232,7 +232,7 @@ pub fn (mut app App) handle_register(username string, email string, password str
 		return app.register()
 	}
 
-	user := app.find_user_by_username(username) or {
+	user := app.get_user_by_username(username) or {
 		app.error('User already exists')
 		return app.register()
 	}

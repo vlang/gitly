@@ -76,7 +76,7 @@ pub fn (mut app App) handle_oauth() vweb.Result {
 		app.info('Email is empty')
 	}
 
-	mut user := app.find_user_by_github_username(github_user.username) or { User{} }
+	mut user := app.get_user_by_github_username(github_user.username) or { User{} }
 
 	if !user.is_github {
 		// Register a new user via github
@@ -88,7 +88,7 @@ pub fn (mut app App) handle_oauth() vweb.Result {
 
 		app.register_user(github_user.username, '', '', [github_user.email], true, false)
 
-		user = app.find_user_by_github_username(github_user.username) or {
+		user = app.get_user_by_github_username(github_user.username) or {
 			return app.redirect_to_index()
 		}
 

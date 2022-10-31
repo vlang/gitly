@@ -18,7 +18,7 @@ fn (mut app App) fetch_tags(repo Repo) {
 			return
 		}
 
-		user := app.find_user_by_email(author_email) or {
+		user := app.get_user_by_email(author_email) or {
 			User{
 				username: author_email
 			}
