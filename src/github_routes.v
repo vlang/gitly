@@ -92,7 +92,7 @@ pub fn (mut app App) handle_oauth() vweb.Result {
 			return app.redirect_to_index()
 		}
 
-		app.update_user_avatar(github_user.avatar, user.id)
+		app.update_user_avatar(user.id, github_user.avatar)
 	}
 
 	app.auth_user(user, app.ip())

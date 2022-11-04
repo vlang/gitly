@@ -168,22 +168,24 @@ pre > code {
 	width: 40px;
 	text-align: center;
 	border-radius: 100%;
-	background-color: $link_color;
+	border: 1px solid #24292e;
+	background-color: #fff;
 	margin-top: 5px;
 	overflow: hidden;
 	z-index: 15;
 	cursor: pointer;
 
 	span {
-	line-height: 40px;
-	font-size: 25px;
-	margin: 0;
+		line-height: 40px;
+		font-size: 25px;
+		margin: 0;
 	}
 
 	img {
-	height: 40px;
-	width: 40px;
-	margin: 0;
+		height: 40px;
+		width: 40px;
+		margin: 0;
+		object-fit: cover;
 	}
 }
 
