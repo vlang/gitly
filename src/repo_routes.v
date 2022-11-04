@@ -198,7 +198,7 @@ pub fn (mut app App) handle_new_repo(name string, clone_url string, description 
 	}
 
 	if name.contains(' ') {
-		app.error('The repository name cannot contain spaces')
+		app.error('Repository name cannot contain spaces')
 		return app.new()
 	}
 
