@@ -349,5 +349,23 @@ form {
 	}
 }
 
+@keyframes alert-show {
+	0% { right: -100px; }
+	100% { right: 20px; }
+}
+
+.alert {
+	position: absolute;
+	top: 60px;
+	right: 20px;
+	padding: 20px;
+	background-color: #d94338;
+	color: #fff;
+	cursor: pointer;
+	border-radius: $small-radius;
+	animation-name: alert-show;
+	animation-duration: 1s;
+}
+
 @import "files", "langs", "tree", "commits", "hl_table", "branches", "admin",
 	"blob", "new", "contributors", "issues", "user", "releases";
