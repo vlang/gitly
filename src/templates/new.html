@@ -8,14 +8,8 @@
 	</div>
 
 	<div class="form">
-		<form method='post'>
-			<div id='form-errors'>
-			<!--
-				if .clone_failed
-					Cloning failed. Most likely you provided an invalid git repo.
-				end
-				-->
-			</div>
+		<form class="form-repo" method='post'>
+			<div id='form-errors'></div>
 
 			@app.settings.hostname/@app.user.username/
 			<input type='text' name='name'required autofocus maxlength=@max_repo_name_len>
@@ -47,5 +41,14 @@
 		</form>
 	</div>
 </div>
+
+<script>
+	const formEl = document.querySelector(".form-repo");
+
+	formEl.addEventListener("submit", () => {
+		const submitEl = formEl.querySelector("input[type=submit]");
+		submitEl.disabled = true;
+	});
+</script>
 
 @include 'footer.html'

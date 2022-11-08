@@ -19,7 +19,7 @@ the main administrator account for this server.
 @end
 
 <div class="form">
-	<form method='post' action='/register'>
+	<form class="form-register" method='post' action='/register'>
 		<div class="field">
 			<input type='text' name='username' placeholder='Username' required autofocus>
 		</div>
@@ -34,5 +34,14 @@ the main administrator account for this server.
 		</div>
 	</form>
 </div>
+
+<script>
+	const formEl = document.querySelector(".form-register");
+
+	formEl.addEventListener("submit", () => {
+		const submitEl = formEl.querySelector("input[type=submit]");
+		submitEl.disabled = true;
+	});
+</script>
 
 @include 'footer.html'

@@ -9,7 +9,7 @@ Login
 }
 
 <div class="form">
-	<form method='post' action='/login'>
+	<form class="form-login" method='post' action='/login'>
 		<div class="field">
 			<input type='text' name='username' placeholder='Username' required autofocus>
 		</div>
@@ -21,6 +21,16 @@ Login
 		</div>
 	</form>
 </div>
+
+<script>
+	const formEl = document.querySelector(".form-login");
+
+	formEl.addEventListener("submit", () => {
+		const submitEl = formEl.querySelector("input[type=submit]");
+		submitEl.disabled = true;
+	});
+</script>
+
 
 @if app.settings.oauth_client_id != ''
 	<a href='https://github.com/login/oauth/authorize?response_type=code&state=@csrf&client_id=@app.settings.oauth_client_id'>Login via GitHub</a>

@@ -4,7 +4,7 @@
 <br>
 
 <h3>Settings</h3>
-<form action='/admin/settings' method='post' class='user-settings settings' autocomplete='off'>
+<form action='/admin/settings' method='post' class='form-settings user-settings settings' autocomplete='off'>
     .data-options m-right {
         <div>
             <label>OAuth client id</label>
@@ -25,6 +25,15 @@
     }
     <input type='submit' value='Update settings'>
 </form>
+
+<script>
+	const formEl = document.querySelector(".form-settings");
+
+	formEl.addEventListener("submit", () => {
+		const submitEl = formEl.querySelector("input[type=submit]");
+		submitEl.disabled = true;
+	});
+</script>
 
 @include '../footer.html'
 
