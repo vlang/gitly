@@ -15,7 +15,7 @@ const test_github_repo_url = 'https://github.com/vlang/ui'
 const test_github_repo_primary_branch = 'master'
 
 fn main() {
-	before()?
+	before()!
 
 	test_index_page()
 
@@ -45,17 +45,17 @@ fn main() {
 	assert get_repo_issue_count(token, test_username, 'test2') == 0
 	assert get_repo_branch_count(token, test_username, 'test2') > 0
 
-	after()?
+	after()!
 }
 
-fn before() ? {
-	cd_executable_dir()?
+fn before() ! {
+	cd_executable_dir()!
 
 	ilog('Make sure gitly is not running')
 	kill_gitly_processes()
 
-	remove_database_if_exists()?
-	remove_repos_dir_if_exists()?
+	remove_database_if_exists()!
+	remove_repos_dir_if_exists()!
 	compile_gitly()
 
 	ilog('Start gitly in the background, then wait till gitly starts and is responding to requests')
@@ -64,9 +64,9 @@ fn before() ? {
 	wait_gitly()
 }
 
-fn after() ? {
-	remove_database_if_exists()?
-	remove_repos_dir_if_exists()?
+fn after() ! {
+	remove_database_if_exists()!
+	remove_repos_dir_if_exists()!
 
 	ilog('Ensure gitly is stopped')
 	kill_gitly_processes()
@@ -89,10 +89,10 @@ fn ilog(message string) {
 	println('$time.now().format_ss_milli() | $message')
 }
 
-fn cd_executable_dir() ? {
+fn cd_executable_dir() ! {
 	executable_dir := os.dir(os.executable())
 	// Ensure that we are always running in the gitly folder, no matter what is the starting one:
-	os.chdir(os.dir(executable_dir))?
+	os.chdir(os.dir(executable_dir))!
 
 	ilog('Testing first gitly run.')
 }
@@ -101,19 +101,19 @@ fn kill_gitly_processes() {
 	os.execute('pkill -9 gitly')
 }
 
-fn remove_database_if_exists() ? {
+fn remove_database_if_exists() ! {
 	ilog('Remove old gitly DB')
 
 	if os.exists('gitly.sqlite') {
-		os.rm('gitly.sqlite')?
+		os.rm('gitly.sqlite')!
 	}
 }
 
-fn remove_repos_dir_if_exists() ? {
+fn remove_repos_dir_if_exists() ! {
 	ilog('Remove repos directory')
 
 	if os.exists('repos') {
-		os.rmdir_all('repos')?
+		os.rmdir_all('repos')!
 	}
 }
 
