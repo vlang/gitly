@@ -1,7 +1,7 @@
 @include '../header.html'
 
 <div class='avatar'>
-@if user.b_avatar
+@if user.avatar.len > 0
 	<img src="@user.avatar">
 @else
 	<span>@user.avatar</span>
