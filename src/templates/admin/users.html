@@ -1,71 +1,80 @@
-@include '../header.html'
+<!DOCTYPE html>
+<html>
+	<head>
+		@include '../layout/head.html'
+	</head>
+	<body>
+		@include '../layout/header.html'
 
-<script>
-function onClick(id) {
-	elem = document.getElementById(id)
-	elem.style.display = elem.style.display == 'flex' ? 'none' : 'flex'
-	document.getElementById('l_' + id).innerText = 
-		document.getElementById('l_' + id).innerText.toLowerCase().startsWith('show') ? 'Hide user' : 'Show user'
-}
-</script>
+		<div class="content">
+			<h1>Admin panel</h1>
 
-<a href="/admin"><h1>Admin panel</h1></a>
-<br>
+			<div class="admin-menu">
+				<a href="/admin/settings">Settings</a>
+				|
+				<span>Users</span>
+				|
+				<a href="/admin/statistics">Statistics</a>
+			</div>
 
-.clog-block {
-	@for user in users
-		.clog {
-			<form action='/admin/users/@user.id' method='post' class='data'>
-				.data-user {
-					.avatar {
-						@if user.b_avatar
-							<img src="@user.avatar">
-						@else
-							<span>@user.avatar</span>
-						@end
+			.clog-block {
+				@for user in users
+					.clog {
+						<form action='/admin/users/@user.id' method='post' class='data'>
+							.data-user {
+								.avatar {
+									@if user.b_avatar
+										<img src="@user.avatar">
+									@else
+										<span>@user.avatar</span>
+									@end
+								}
+								<label>@user.username</label>
+							}
+							<label class='data-show-user' id='l_@user.id' data-id="@user.id">Show user</label>
+							<div class='data-box' id='@user.id'>
+								.clog-block data-emails {
+									<label>User emails</label>
+									<ul>
+										@for email in user.emails
+											<li class='clog data-email'>@email.email</li>
+										@end
+									</ul>
+								}
+								<div class='user-settings'>
+									.data-options {
+										<label>Settings</label>
+										<div>
+											<input name="stop-session" type="checkbox">
+											<label>Clear user sessions</label>
+										</div>
+										<div>
+											<input name="is-blocked" type="checkbox"
+											@if user.is_blocked
+												checked
+											@end
+											>
+											<label>Blocked status</label>
+										</div>
+										<div>
+											<input name="is-admin" type="checkbox"
+											@if user.is_admin
+												checked
+											@end
+											>
+											<label>Admin user</label>
+										</div>
+									}
+									<input type="submit" value="Edit user">
+								</div>
+							</div>
+						</form>
 					}
-					<label>@user.username</label>
-				}
-				<label class='data-show-user' id='l_@user.id' onclick='onClick(@user.id)'>Show user</label>
-				<div class='data-box' id='@user.id'>
-					.clog-block data-emails {
-						<label>User emails</label>
-						<ul>
-							@for email in user.emails
-								<li class='clog data-email'>@email.email</li>
-							@end
-						</ul>
-					}
-					<div class='user-settings'>
-						.data-options {
-							<label>Settings</label>
-							<div>
-								<input name="stop-session" type="checkbox">
-								<label>Clear user sessions</label>
-							</div>
-							<div>
-								<input name="is-blocked" type="checkbox"
-								@if user.is_blocked
-									checked
-								@end
-								>
-								<label>Blocked status</label>
-							</div>
-							<div>
-								<input name="is-admin" type="checkbox"
-								@if user.is_admin
-									checked
-								@end
-								>
-								<label>Admin user</label>
-							</div>
-						}
-						<input type="submit" value="Edit user">
-					</div>
-				</div>
-			</form>
-		}
-	@end
-}
+				@end
+			}
+		</div>
 
-@include '../footer.html'
+		@js '/js/users.js'
+		@include '../layout/footer.html'
+	</body>
+</html>

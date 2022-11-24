@@ -1,64 +1,67 @@
-@include '../header.html'
+<!DOCTYPE html>
+<html>
+	<head>
+		@include '../layout/head.html'
+	</head>
+	<body>
+		@include '../layout/header.html'
 
-<div class='avatar'>
-@if user.b_avatar
-	<img src="@user.avatar">
-@else
-	<span>@user.avatar</span>
-@end
-</div>
-<h3> @user.username s issues</h3>
-
-.commit-day {
-}
-
-.clog-block {
-	@for issue in issues
-		.clog {
-			.clog-msg {
-				<a href="/@issue.repo_author/@issue.repo_name/issue/@issue.id">@issue.title</a>
-			}
-			span.clog-author {
-				#@issue.id opened @issue.relative_time()
-				by @issue.author_name
-			}
-			@if issue.comments_count > 0
-			.comments {
-				@if issue.comments_count == 1
-					@issue.comments_count comment
+		<div class="content">
+			<div class='avatar'>
+				@if user.b_avatar
+					<img src="@user.avatar">
 				@else
-					@issue.comments_count comments
+					<span>@user.avatar</span>
 				@end
-			}
-			@end
-		}
-	@end
-}
+				</div>
+				<h1>@user.username s issues</h1>
 
-@if issues.len > 0
-	@for issue in issues
-		<a href="/#" class="userrepo">
-			<h3>@issue.title</h3>
-			<p>@issue.author_name</p>
-		</a>
-	@end
+				.commit-day {
+				}
 
-	<div class="buttons">
-		<br>
-		@if first
-			<a href="/@app.user.username/issues/@last_site" class="button disabled">Prev</a>
-		@else
-			<a href="/@app.user.username/issues/@last_site" class="button">Prev</a>/
-		@end
+				.clog-block {
+					@for issue in issues
+						.clog {
+							.clog-msg {
+								<a href="/@issue.repo_author/@issue.repo_name/issue/@issue.id">@issue.title</a>
+							}
+							span.clog-author {
+								#@issue.id opened @issue.relative_time()
+								by @issue.author_name
+							}
+							@if issue.comments_count > 0
+							.comments {
+								@if issue.comments_count == 1
+									@issue.comments_count comment
+								@else
+									@issue.comments_count comments
+								@end
+							}
+							@end
+						}
+					@end
+				}
 
-		@if last
-			<a href="/@app.user.username/issues/@next_site" class="button disabled">Next</a>
-		@else
-			<a href="/@app.user.username/issues/@next_site" class="button">Next</a>
-		@end
-	</div>
-@else
-	<h2>No issues</h2>
-@end
+				@if issues.len > 0
+					<div class="buttons">
+						<br>
+						@if first
+							<a href="/@app.user.username/issues/@last_site" class="button disabled">Prev</a>
+						@else
+							<a href="/@app.user.username/issues/@last_site" class="button">Prev</a>/
+						@end
 
-@include '../footer.html'
+						@if last
+							<a href="/@app.user.username/issues/@next_site" class="button disabled">Next</a>
+						@else
+							<a href="/@app.user.username/issues/@next_site" class="button">Next</a>
+						@end
+					</div>
+				@else
+					<h2>No issues</h2>
+				@end
+		</div>
+
+		@include '../layout/footer.html'
+	</body>
+</html>

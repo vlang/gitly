@@ -1,38 +1,52 @@
-@include 'header.html'
+<!DOCTYPE html>
+<html>
+	<head>
+		@include 'layout/head.html'
+	</head>
+	<body>
+		@include 'layout/header.html'
 
-@for day, commits2 in d_commits
-	.commit-day {
-		.commit-day-title {
-			Commits @msg @day
-		}
-		.clog-block {
-			@for commit in commits2
-				.clog {
-					.clog-msg {
-						<a href='/@app.repo.user_name/@app.repo.name/commit/@commit.hash'>@commit.message</a>
+		<div class="content">
+			@include 'layout/repo_menu.html'
+
+			@for day, commits2 in d_commits
+				.commit-day {
+					.commit-day-title {
+						Commits @msg @day
 					}
-					span.clog-author {
-						<span>@commit.author</span>
-					}
-					span.clog-time {
-						commited @commit.relative()
+					.clog-block {
+						@for commit in commits2
+							.clog {
+								.clog-msg {
+									<a href='/@repo.user_name/@repo.name/commit/@commit.hash'>@commit.message</a>
+								}
+								span.clog-author {
+									<span>@commit.author</span>
+								}
+								span.clog-time {
+									commited @commit.relative()
+								}
+							}
+						@end
 					}
 				}
 			@end
-		}
-	}
-@end
 
-<div class="buttons">
-	@if first
-		<a href="/@app.repo.user_name/@app.repo.name/commits/@branch_name/@last_site" class="button disabled">Prev</a>
-	@else
-		<a href="/@app.repo.user_name/@app.repo.name/commits/@branch_name/@last_site" class="button">Prev</a>
-	@end
+			<div class="buttons">
+				@if first
+					<a href="/@repo.user_name/@repo.name/@branch_name/commits/@last_site" class="button disabled">Prev</a>
+				@else
+					<a href="/@repo.user_name/@repo.name/@branch_name/commits/@last_site" class="button">Prev</a>
+				@end
 
-	@if last
-		<a href="/@app.repo.user_name/@app.repo.name/commits/@branch_name/@next_site" class="button disabled">Next</a>
-	@else
-		<a href="/@app.repo.user_name/@app.repo.name/commits/@branch_name/@next_site" class="button">Next</a>
-	@end
-</div>
+				@if last
+					<a href="/@repo.user_name/@repo.name/@branch_name/commits/@next_site" class="button disabled">Next</a>
+				@else
+					<a href="/@repo.user_name/@repo.name/@branch_name/commits/@next_site" class="button">Next</a>
+				@end
+			</div>
+		</div>
+
+		@include 'layout/footer.html'
+	</body>
+</html>

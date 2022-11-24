@@ -1,30 +1,45 @@
-@include '../header.html'
+<!DOCTYPE html>
+<html>
+	<head>
+		@include '../layout/head.html'
+	</head>
+	<body>
+		@include '../layout/header.html'
 
-<a href="/admin"><h1>Admin panel</h1></a>
-<br>
+		<div class="content">
+			<h1>Admin panel</h1>
 
-<h3>Settings</h3>
-<form action='/admin/settings' method='post' class='user-settings settings' autocomplete='off'>
-    .data-options m-right {
-        <div>
-            <label>OAuth client id</label>
-            <input name='oauth_client_id' type='text' placeholder='SJP1JME7H0XN3GBU1DXP'>
-        </div>
-        <div>
-            <label>OAuth client secret</label>
-            <input name='oauth_client_secret' type='text' placeholder='2XL8M65OVQQVV8BXZGOYHV9FX2QG9WJ7IFYGPG2J'>
-        </div>
-        <div>
-            <label>Hostname</label>
-            <input name='hostname' type='text' value='@app.settings.hostname'>
-        </div>
-        <div>
-            <label>Repo storage path</label>
-            <input name='repo_storage_path' type='text' value='@app.settings.repo_storage_path'>
-        </div>
-    }
-    <input type='submit' value='Update settings'>
-</form>
+			<div class="admin-menu">
+				<span>Settings</span>
+				|
+				<a href="/admin/users">Users</a>
+				|
+				<a href="/admin/statistics">Statistics</a>
+			</div>
 
-@include '../footer.html'
+			<form action='/admin/settings' method='post' class='form' autocomplete='off'>
+				<div class="field">
+					<label>OAuth client id:</label>
+					<input name='oauth_client_id' type='text' placeholder='...'>
+				</div>
+				<div class="field">
+					<label>OAuth client secret:</label>
+					<input name='oauth_client_secret' type='text' placeholder='...'>
+				</div>
+				<div class="field">
+					<label>Hostname:</label>
+					<input name='hostname' type='text' value='@app.settings.hostname'>
+				</div>
+				<div class="field">
+					<label>Repo storage path:</label>
+					<input name='repo_storage_path' type='text' value='@app.settings.repo_storage_path'>
+				</div>
+				<div class="field">
+					<input type='submit' value='Update settings'>
+				</div>
+			</form>
+		</div>
 
+		@include '../layout/footer.html'
+	</body>
+</html>

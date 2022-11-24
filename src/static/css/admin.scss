@@ -7,9 +7,6 @@
 
 .data-box {
 	flex-basis: 100%;
-}
-
-.data-box {
 	display: none;
 	justify-content: space-between;
 }
@@ -85,23 +82,14 @@
 	margin-left: 5px;
 }
 
-.m-right > div > label {
-	margin-left: 0px;
-	margin-right: 5px;
-}
-
-.m-right > div {
-	justify-content: space-between;
-}
-
-.m-right > div > input[type="text"] {
-	flex-basis: 50%;
-}
-
 .settings {
-	width: 1000px;
+	margin: 0 auto;
 }
 
 ::placeholder {
 	color: rgba(0, 0, 0, 0.8);
+}
+
+.admin-menu {
+	margin-bottom: 10px;
 }

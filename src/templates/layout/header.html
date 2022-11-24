@@ -1,0 +1,46 @@
+<header>
+	<a id='mainlogo' href='/'>Gitly</a>
+
+	@if app.logged_in
+		<div class="new">
+			<a href="/new">New repository</a>
+		</div>
+	@end
+
+	<div class="user" tabindex="0">
+		@if app.logged_in
+			.avatar {
+				@if app.user.b_avatar
+					<img src="@app.user.avatar">
+				@else
+					<span>@app.user.avatar</span>
+				@end
+			}
+			.header-dropdown {
+				.username {
+					<span>Signed in as</span>
+					<a href='/@app.user.username'>@app.user.username</a>
+				}
+				.links {
+					<a href='/@app.user.username' class="link">Profile</a>
+					<a href='/@app.user.username/repos' class="link">Repositories</a>
+					<a href='/@app.user.username/issues' class="link">Issues</a>
+					<a href='/@app.user.username/stars' class="link">Stars</a>
+				}
+				.links {
+					<a href="/@app.user.username/settings" class="link">Settings</a>
+					@if app.user.is_admin
+						<a href='/admin/settings' class="link">Admin Panel</a>
+					@end
+				}
+				.links {
+					<a href='/logout' class="link">Sign out</a>
+				}
+				<div class="dropdown-hoverzone"></div>
+			}
+		@else
+			<a href='/login' class='login-button'>Log in</a>
+			<a href='/register' class="login-button" style="margin-left: 5px">Register</a>
+		@end
+	</div>
+</header>

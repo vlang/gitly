@@ -1,37 +1,35 @@
-@include '../header.html'
+<!DOCTYPE html>
+<html>
+	<head>
+		@include '../layout/head.html'
+	</head>
+	<body>
+		@include '../layout/header.html'
 
-<h2>User settings</h2>
+		.form-error {
+			@app.form_error
+		}
 
-.div-center {
-	<div class="settings-block-container">
-		<div class="settings-block__left">
-			<ul>
-				<li>
-					<a href="/${app.user.username}/settings">Public profile</a>
-				</li>
-				<li>
-					<a href="/${app.user.username}/settings/ssh-keys">SSH keys</a>
-				</li>
-			</ul>
-		</div>
-		<div class="settings-block__right">
-			.form-error {
-				@app.form_error
-			}
+		<div class="content">
+			<h1>User settings</h1>
 
-			<div class="form__embedded">
-				<form action="/@app.user.username/settings" method="post">
-					<div class="field">
-						<input type="text" name="full_name" value="@app.user.full_name" placeholder="Full name">
-					</div>
-					<div class="field">
-						<input type="text" name="name" value="@app.user.username" placeholder="Username">
-					</div>
+			<a href="/${app.user.username}/settings">Public profile</a>
+			|
+			<a href="/${app.user.username}/settings/ssh-keys">SSH keys</a>
+
+			<form class="form" action="/@app.user.username/settings" method="post">
+				<div class="field">
+					<input type="text" name="full_name" value="@app.user.full_name" placeholder="Full name">
+				</div>
+				<div class="field">
+					<input type="text" name="name" value="@app.user.username" placeholder="Username">
+				</div>
+				<div class="field">
 					<input type="submit" value="Save settings">
-				</form>
-			</div>
+				</div>
+			</form>
 		</div>
-	</div>
-}
 
-@include '../footer.html'
+		@include '../layout/footer.html'
+	</body>
+</html>
