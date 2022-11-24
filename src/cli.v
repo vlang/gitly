@@ -19,7 +19,7 @@ pub fn (mut app App) command_fetcher() {
 								false)
 							println('Added user ${args[1]}')
 						} else {
-							error('Not enough arguments (3 required but only $args.len given)')
+							error('Not enough arguments (3 required but only ${args.len} given)')
 						}
 					}
 					else {

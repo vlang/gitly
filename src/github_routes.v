@@ -23,8 +23,8 @@ pub fn (mut app App) handle_oauth() vweb.Result {
 		app.add_security_log(
 			user_id: app.user.id
 			kind: .wrong_oauth_state
-			arg1: 'csrf=$csrf'
-			arg2: 'state=$state'
+			arg1: 'csrf=${csrf}'
+			arg2: 'state=${state}'
 		)
 
 		return app.redirect_to_index()
@@ -51,7 +51,7 @@ pub fn (mut app App) handle_oauth() vweb.Result {
 		return app.redirect_to_index()
 	}
 
-	request.add_header(.authorization, 'token $token')
+	request.add_header(.authorization, 'token ${token}')
 
 	user_response := request.do() or {
 		app.info(err.msg())
@@ -62,7 +62,7 @@ pub fn (mut app App) handle_oauth() vweb.Result {
 	if user_response.status_code != 200 {
 		app.info(user_response.status_code.str())
 		app.info(user_response.body)
-		return app.text('Received $user_response.status_code error while attempting to contact GitHub')
+		return app.text('Received ${user_response.status_code} error while attempting to contact GitHub')
 	}
 
 	github_user := json.decode(GitHubUser, user_response.body) or { return app.redirect_to_index() }
