@@ -17,7 +17,7 @@ pub fn (mut app App) set_user_admin_status(user_id int, status bool) {
 }
 
 fn hash_password_with_salt(password string, salt string) string {
-	salted_password := '$password$salt'
+	salted_password := '${password}${salt}'
 
 	return sha256.sum(salted_password.bytes()).hex().str()
 }
@@ -30,7 +30,7 @@ pub fn (mut app App) register_user(username string, password string, salt string
 	mut user := app.get_user_by_username(username) or { User{} }
 
 	if user.id != 0 && user.is_registered {
-		app.info('User $username already exists')
+		app.info('User ${username} already exists')
 		return false
 	}
 
@@ -66,7 +66,7 @@ pub fn (mut app App) register_user(username string, password string, salt string
 			app.add_email(u.id, email)
 		}
 
-		u.emails = app.get_user_emails(u.id)
+		u.emails = app.find_user_emails(u.id)
 	} else {
 		// Update existing user
 		if !github {
@@ -88,11 +88,11 @@ pub fn (mut app App) register_user(username string, password string, salt string
 }
 
 fn (mut app App) create_user_dir(username string) {
-	user_path := '$app.settings.repo_storage_path/$username'
+	user_path := '${app.settings.repo_storage_path}/${username}'
 
 	os.mkdir(user_path) or {
-		app.info('Failed to create $user_path')
-		app.info('Error: $err')
+		app.info('Failed to create ${user_path}')
+		app.info('Error: ${err}')
 		return
 	}
 }
@@ -151,10 +151,10 @@ pub fn (app App) get_user_by_username(value string) ?User {
 	}
 
 	if user.id == 0 {
-		return error('User not found')
+		return none
 	}
 
-	emails := app.get_user_emails(user.id)
+	emails := app.find_user_emails(user.id)
 	user.emails = emails
 
 	return user
@@ -169,7 +169,7 @@ pub fn (mut app App) get_user_by_id(id int) ?User {
 		return none
 	}
 
-	emails := app.get_user_emails(user.id)
+	emails := app.find_user_emails(user.id)
 	user.emails = emails
 
 	return user
@@ -184,7 +184,7 @@ pub fn (mut app App) get_user_by_github_username(name string) ?User {
 		return none
 	}
 
-	emails := app.get_user_emails(user.id)
+	emails := app.find_user_emails(user.id)
 	user.emails = emails
 
 	return user
@@ -196,13 +196,13 @@ pub fn (mut app App) get_user_by_email(value string) ?User {
 	}
 
 	if emails.len != 1 {
-		return error('Email do not exist')
+		return none
 	}
 
 	return app.get_user_by_id(emails[0].user_id)
 }
 
-pub fn (app App) get_user_emails(user_id int) []Email {
+pub fn (app App) find_user_emails(user_id int) []Email {
 	emails := sql app.db {
 		select from Email where user_id == user_id
 	}
@@ -238,7 +238,7 @@ pub fn (mut app App) get_all_registered_users() []User {
 			users[i].avatar = user.username[..1]
 		}
 
-		users[i].emails = app.get_user_emails(user.id)
+		users[i].emails = app.find_user_emails(user.id)
 	}
 
 	return users

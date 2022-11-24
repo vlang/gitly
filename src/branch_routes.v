@@ -5,12 +5,19 @@ import api
 
 ['/api/v1/:user/:repo_name/branches/count']
 fn (mut app App) handle_branch_count(username string, repo_name string) vweb.Result {
-	// TODO: add auth checking module
-	if !app.exists_user_repo(username, repo_name) {
-		return app.not_found()
+	has_access := app.has_user_repo_read_access_by_repo_name(app.user.id, username, repo_name)
+
+	if !has_access {
+		return app.json_error('Not found')
 	}
 
-	count := app.get_count_repo_branches(app.repo.id)
+	repo := app.find_repo_by_name_and_username(repo_name, username)
+
+	if repo.id == 0 {
+		return app.json_error('Not found')
+	}
+
+	count := app.get_count_repo_branches(repo.id)
 
 	return app.json(api.ApiBranchCount{
 		success: true
@@ -19,14 +26,14 @@ fn (mut app App) handle_branch_count(username string, repo_name string) vweb.Res
 }
 
 ['/:user/:repo/branches']
-pub fn (mut app App) branches(user string, repo string) vweb.Result {
-	if !app.exists_user_repo(user, repo) {
-		return app.not_found()
+pub fn (mut app App) branches(username string, repo_name string) vweb.Result {
+	repo := app.find_repo_by_name_and_username(repo_name, username)
+
+	if repo.id == 0 {
+		return app.json_error('Not found')
 	}
 
-	app.show_menu = true
-
-	branches := app.get_all_repo_branches(app.repo.id)
+	branches := app.get_all_repo_branches(repo.id)
 
 	return $vweb.html()
 }
