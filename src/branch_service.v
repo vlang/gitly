@@ -72,6 +72,12 @@ fn (mut app App) find_repo_branch_by_name(repo_id int, name string) Branch {
 	}
 }
 
+fn (mut app App) find_repo_branch_by_id(repo_id int, id int) Branch {
+	return sql app.db {
+		select from Branch where id == id && repo_id == repo_id limit 1
+	}
+}
+
 fn (app App) get_all_repo_branches(repo_id int) []Branch {
 	return sql app.db {
 		select from Branch where repo_id == repo_id order by date desc

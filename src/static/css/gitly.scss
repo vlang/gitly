@@ -169,7 +169,8 @@ pre > code {
 	width: 40px;
 	text-align: center;
 	border-radius: 100%;
-	background-color: $link_color;
+	border: 1px solid #24292e;
+	background-color: #fff;
 	margin-top: 5px;
 	overflow: hidden;
 	z-index: 15;
@@ -185,6 +186,7 @@ pre > code {
 		height: 40px;
 		width: 40px;
 		margin: 0;
+		object-fit: cover;
 	}
 }
 
@@ -363,5 +365,23 @@ form {
 	}
 }
 
+@keyframes alert-show {
+	0% { right: -100px; }
+	100% { right: 20px; }
+}
+
+.alert {
+	position: absolute;
+	top: 60px;
+	right: 20px;
+	padding: 20px;
+	background-color: #d94338;
+	color: #fff;
+	cursor: pointer;
+	border-radius: $small-radius;
+	animation-name: alert-show;
+	animation-duration: 1s;
+}
+
 @import "files", "langs", "tree", "commits", "hl_table", "branches", "admin",
-	"blob", "new", "contributors", "issues", "user", "releases";
+	"blob", "new", "contributors", "issues", "user", "releases", "feed";

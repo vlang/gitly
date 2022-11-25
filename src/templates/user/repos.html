@@ -8,13 +8,10 @@
 
 		<div class="content">
 			<div class='avatar'>
-				@if user.b_avatar
-					<img src="@user.avatar">
-				@else
-					<span>@user.avatar</span>
-				@end
-				</div>
-				<h1>@{user.username}'s repositories</h1>
+				<img src="@{app.prepare_user_avatar_url(user.avatar)}">
+			</div>
+
+			<h1>@{user.username}'s repositories</h1>
 
 				@if repos.len > 0
 					@for repo in repos

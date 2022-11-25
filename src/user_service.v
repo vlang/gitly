@@ -45,6 +45,7 @@ pub fn (mut app App) register_user(username string, password string, salt string
 			is_registered: true
 			is_github: github
 			github_username: username
+			avatar: default_avatar_name
 			is_admin: is_admin
 		}
 
@@ -97,9 +98,9 @@ fn (mut app App) create_user_dir(username string) {
 	}
 }
 
-pub fn (mut app App) update_user_avatar(data string, id int) {
+pub fn (mut app App) update_user_avatar(user_id int, filename_or_url string) {
 	sql app.db {
-		update User set avatar = data where id == id
+		update User set avatar = filename_or_url where id == user_id
 	}
 }
 
@@ -232,12 +233,6 @@ pub fn (mut app App) get_all_registered_users() []User {
 	}
 
 	for i, user in users {
-		users[i].b_avatar = user.avatar != ''
-
-		if !users[i].b_avatar {
-			users[i].avatar = user.username[..1]
-		}
-
 		users[i].emails = app.find_user_emails(user.id)
 	}
 
@@ -334,12 +329,6 @@ fn (mut app App) check_username(username string) (bool, User) {
 
 	mut user := app.get_user_by_username(username) or { return false, User{} }
 
-	user.b_avatar = user.avatar != ''
-
-	if !user.b_avatar {
-		user.avatar = user.username[..1]
-	}
-
 	return user.is_registered, user
 }
 
@@ -375,12 +364,6 @@ pub fn (mut app App) get_user_from_cookies() ?User {
 	token := app.get_token(token_cookie) or { return none }
 
 	mut user := app.get_user_by_id(token.user_id) or { return none }
-
-	user.b_avatar = user.avatar != ''
-
-	if !user.b_avatar {
-		user.avatar = user.username[..1]
-	}
 
 	return user
 }

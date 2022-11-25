@@ -4,7 +4,7 @@ import vweb
 import validation
 import api
 
-['/api/v1/:user/:repo_name/issues/count']
+['/api/v1/:username/:repo_name/issues/count']
 fn (mut app App) handle_issues_count(username string, repo_name string) vweb.Result {
 	has_access := app.has_user_repo_read_access_by_repo_name(app.user.id, username, repo_name)
 
@@ -26,15 +26,15 @@ fn (mut app App) handle_issues_count(username string, repo_name string) vweb.Res
 	})
 }
 
-['/:username/:repo/issues/new']
+['/:username/:repo_name/issues/new']
 pub fn (mut app App) new_issue(username string, repo_name string) vweb.Result {
-	repo := app.find_repo_by_name_and_username(repo_name, username)
-
-	if repo.id == 0 {
+	if !app.logged_in {
 		return app.not_found()
 	}
 
-	if !app.logged_in {
+	repo := app.find_repo_by_name_and_username(repo_name, username)
+
+	if repo.id == 0 {
 		return app.not_found()
 	}
 
@@ -48,15 +48,15 @@ pub fn (mut app App) handle_get_user_issues(username string) vweb.Result {
 
 ['/:username/:repo_name/issues'; post]
 pub fn (mut app App) handle_add_repo_issue(username string, repo_name string) vweb.Result {
+	// TODO: use captcha instead of user restrictions
+	if !app.logged_in || (app.logged_in && app.user.posts_count >= posts_per_day) {
+		return app.redirect_to_index()
+	}
+
 	repo := app.find_repo_by_name_and_username(repo_name, username)
 
 	if repo.id == 0 {
 		return app.not_found()
-	}
-
-	// TODO: use captcha instead of user restrictions
-	if !app.logged_in || (app.logged_in && app.user.posts_count >= posts_per_day) {
-		return app.redirect_to_index()
 	}
 
 	title := app.form['title']
@@ -89,7 +89,7 @@ pub fn (mut app App) handle_get_repo_issues(username string, repo_name string) v
 	return app.issues(username, repo_name, 0)
 }
 
-['/:username/:repo/issues/:page']
+['/:username/:repo_name/issues/:page']
 pub fn (mut app App) issues(username string, repo_name string, page int) vweb.Result {
 	repo := app.find_repo_by_name_and_username(repo_name, username)
 

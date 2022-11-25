@@ -6,6 +6,10 @@
 	<body>
 		@include 'layout/header.html'
 
+		.form-error {
+			@app.form_error
+		}
+
 		<div class="content">
 			@include 'layout/repo_menu.html'
 
@@ -22,10 +26,6 @@
 				</div>
 			@end
 
-			.form-error {
-				@app.form_error
-			}
-
 			@if app.logged_in
 				<form method='post' class='form vertical-form comment-post-form' action='/@repo.user_name/@repo.name/comments'>
 					<textarea type='text' class='input-comment' name='text' placeholder='Leave a comment' required></textarea>
@@ -35,6 +35,7 @@
 			@end
 		</div>
 
+		@js '/js/block-form.js'
 		@include 'layout/footer.html'
 	</body>
 </html>

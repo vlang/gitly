@@ -9,10 +9,8 @@
 		<div class="content">
 			<div class="profile-block-container">
 				<div class="profile-block__left">
-					<div class="profile-avatar">
-						@if user.b_avatar
-							<img src="@user.avatar">
-						@end
+					<div class="profile-avatar" onclick="selectAvatar()">
+						<img src="@{app.prepare_user_avatar_url(user.avatar)}">
 					</div>
 
 					@if user.full_name.len > 0
@@ -28,7 +26,7 @@
 				</div>
 
 				<div class="profile-block__right">
-					<h2>Repositories</h2>
+					<h1>Repositories</h1>
 
 					@if repos.len > 0
 						@for repo in repos
@@ -91,6 +89,7 @@
 			</div>
 		</div>
 
+		@js '/js/user.js'
 		@include 'layout/footer.html'
 	</body>
 </html>

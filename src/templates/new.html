@@ -15,7 +15,6 @@
 
 			<div class="form">
 				<form method='post'>
-					<div id='form-errors'></div>
 
 					@app.settings.hostname/@app.user.username/
 					<input type='text' name='name'required autofocus maxlength=@max_repo_name_len>
@@ -48,6 +47,7 @@
 			</div>
 		</div>
 
+		@js '/js/block-form.js'
 		@include 'layout/footer.html'
 	</body>
 </html>

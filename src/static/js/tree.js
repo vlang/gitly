@@ -3,7 +3,7 @@ branchSelectEl.addEventListener("change", (event) => {
   window.location.href = TREE_BRANCH_PATH_TEMPLATE + event.target.value;
 });
 
-branchSelectEl.value =BRANCH_NAME;
+branchSelectEl.value = BRANCH_NAME;
 
 // Make the entire row clickable
 const fileEls = document.querySelectorAll(".file");
@@ -49,4 +49,30 @@ copyCloneURLButton.addEventListener("click", async () => {
   }
 
   alert("The Clipboard API is not available.");
+});
+
+const watchButtonEl = document.querySelector(".watch-button");
+
+async function watchRepo(repoId) {
+  const url = "/api/v1/repos/" + repoId + "/watch";
+  const response = await fetch(url, {
+    method: "POST"
+  });
+  const json = await response.json();
+
+  if (json.success) {
+    return json.result;
+  } else {
+    throw new Error(json.message);
+  }
+}
+
+watchButtonEl.addEventListener("click", () => {
+  watchRepo(REPO_ID)
+    .then(() => {
+      location.reload()
+    })
+    .catch((error) => {
+      alert(error.toString());
+    })
 });
