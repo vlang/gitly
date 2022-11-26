@@ -16,17 +16,17 @@ fn (mut app App) fetch_branches(repo Repo) {
 fn (mut app App) fetch_branch(repo Repo, branch_name string) {
 	last_commit_hash := repo.get_last_branch_commit_hash(branch_name)
 
-	branch_data := repo.git('log $branch_name -1 --pretty="%aE$log_field_separator%cD" $last_commit_hash')
+	branch_data := repo.git('log ${branch_name} -1 --pretty="%aE${log_field_separator}%cD" ${last_commit_hash}')
 	log_parts := branch_data.split(log_field_separator)
 
 	author_email := log_parts[0]
 	committed_at := time.parse_rfc2822(log_parts[1]) or {
-		app.info('Error: $err')
+		app.info('Error: ${err}')
 
 		return
 	}
 
-	user := app.find_user_by_email(author_email) or {
+	user := app.get_user_by_email(author_email) or {
 		User{
 			username: author_email
 		}

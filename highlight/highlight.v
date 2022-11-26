@@ -19,7 +19,7 @@ pub fn highlight_text(st string, file_path string, commit bool) (string, int, in
 	}
 
 	lang := extension_to_lang(file_path) or { Lang{} }
-	text := '$st '
+	text := '${st} '
 	mut res := []u8{cap: text.len}
 	mut lines := 0
 	mut sloc := 0
@@ -52,9 +52,9 @@ pub fn highlight_text(st string, file_path string, commit bool) (string, int, in
 				} else if runes[pos + 1] == `-` {
 					class = 'class="d"'
 				}
-				res << '</td></tr>\n<tr><td><a id="$lines" class="no_select" href="#$lines">$lines</a></td><td $class>'.bytes()
+				res << '</td></tr>\n<tr><td><a id="${lines}" class="no_select" href="#${lines}">${lines}</a></td><td ${class}>'.bytes()
 			} else {
-				res << '</td></tr>\n<tr><td><a id="$lines" class="no_select" href="#$lines">$lines</a></td><td>'.bytes()
+				res << '</td></tr>\n<tr><td><a id="${lines}" class="no_select" href="#${lines}">${lines}</a></td><td>'.bytes()
 			}
 			if in_line_comment {
 				in_line_comment = false
@@ -111,7 +111,7 @@ pub fn highlight_text(st string, file_path string, commit bool) (string, int, in
 			w := data.bytestr()
 			pos--
 			if w in lang.keywords {
-				res << '<b>$w</b>'.bytes()
+				res << '<b>${w}</b>'.bytes()
 			} else {
 				res << w.bytes()
 			}

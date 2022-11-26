@@ -2,15 +2,6 @@ module main
 
 import vweb
 
-['/admin']
-pub fn (mut app App) admin() vweb.Result {
-	if !app.is_admin() {
-		return app.redirect_to_index()
-	}
-
-	return $vweb.html()
-}
-
 ['/admin/settings']
 pub fn (mut app App) admin_settings() vweb.Result {
 	if !app.is_admin() {

@@ -1,23 +1,34 @@
-@include '../header.html'
+<!DOCTYPE html>
+<html>
+	<head>
+		@include '../layout/head.html'
+	</head>
+	<body>
+		@include '../layout/header.html'
 
-<div class='avatar'>
-	<img src="@{app.prepare_user_avatar_url(user.avatar)}">
-</div>
-<h3> @{user.username}'s stars</h3>
+		<div class="content">
+			<div class='avatar'>
+				<img src="@{app.prepare_user_avatar_url(user.avatar)}">
+			</div>
 
-@if repos.len > 0
-	@for repo in repos
-		<div class="user-repo-item">
-			<a href="/@repo.user_name/@repo.name">
-				<h3>@repo.user_name/@repo.name</h3>
-			</a>
-			@if repo.description.len > 0
-				<p><i>@repo.description</i></p>
+			<h1>@{user.username}'s stars</h1>
+
+			@if repos.len > 0
+				@for repo in repos
+					<div class="user-repo-item">
+						<a href="/@repo.user_name/@repo.name">
+							<h3>@repo.user_name/@repo.name</h3>
+						</a>
+						@if repo.description.len > 0
+							<p><i>@repo.description</i></p>
+						@end
+					</div>
+				@end
+			@else
+				<h2>No stars</h2>
 			@end
 		</div>
-	@end
-@else
-	<h2>No stars</h2>
-@end
 
-@include '../footer.html'
+		@include '../layout/footer.html'
+	</body>
+</html>

@@ -28,16 +28,6 @@ fn (mut app App) find_issue_by_id(issue_id int) ?Issue {
 	return issue
 }
 
-fn (mut app App) find_pr_by_id(issue_id int) ?Issue {
-	pr := sql app.db {
-		select from Issue where id == issue_id limit 1
-	}
-	if pr.id == 0 {
-		return none
-	}
-	return pr
-}
-
 fn (mut app App) find_repo_issues_as_page(repo_id int, page int) []Issue {
 	off := page * commits_per_page
 	return sql app.db {
@@ -49,21 +39,6 @@ fn (mut app App) get_repo_issue_count(repo_id int) int {
 	return sql app.db {
 		select count from Issue where repo_id == repo_id
 	}
-}
-
-fn (mut app App) get_all_repo_issues(repo_id int) []Issue {
-	issues := sql app.db {
-		select from Issue where repo_id == repo_id && is_pr == false
-	}
-
-	return issues
-}
-
-fn (mut app App) find_repo_prs(repo_id int) []Issue {
-	issues := sql app.db {
-		select from Issue where repo_id == repo_id && is_pr == true
-	}
-	return issues
 }
 
 fn (mut app App) find_user_issues(user_id int) []Issue {

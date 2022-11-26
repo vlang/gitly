@@ -32,11 +32,8 @@ mut:
 	logger        log.Log       [vweb_global]
 	settings      GitlySettings
 	current_path  string
-	repo          Repo
-	html_path     vweb.RawHtml
 	page_gen_time string
 	is_tree       bool
-	show_menu     bool
 	logged_in     bool
 	user          User
 	path_split    []string
@@ -92,10 +89,10 @@ fn new_app() &App {
 	create_directory_if_not_exists(app.settings.avatars_path)
 
 	// Create the first admin user if the db is empty
-	app.find_user_by_id(1) or {}
+	app.get_user_by_id(1) or {}
 
 	if '-cmdapi' in os.args {
-		go app.command_fetcher()
+		spawn app.command_fetcher()
 	}
 
 	return app
@@ -140,14 +137,10 @@ pub fn (mut app App) before_request() {
 			User{}
 		}
 	}
-
-	app.add_visit(app.repo.id, app.req.url, app.req.referer())
 }
 
 ['/']
 pub fn (mut app App) index() vweb.Result {
-	app.show_menu = false
-
 	no_users := app.get_users_count() == 0
 	if no_users {
 		return app.redirect('/register')
@@ -164,8 +157,8 @@ pub fn (mut app App) redirect_to_login() vweb.Result {
 	return app.redirect('/login')
 }
 
-pub fn (mut app App) redirect_to_current_repository() vweb.Result {
-	return app.redirect('/$app.user.username/$app.repo.name')
+pub fn (mut app App) redirect_to_repository(username string, repo_name string) vweb.Result {
+	return app.redirect('/${username}/${repo_name}')
 }
 
 fn (mut app App) create_tables() {
@@ -216,9 +209,6 @@ fn (mut app App) create_tables() {
 		create table Branch
 	}
 	sql app.db {
-		create table Visit
-	}
-	sql app.db {
 		create table GitlySettings
 	}
 	sql app.db {
@@ -253,7 +243,7 @@ fn (mut app App) json_error(message string) vweb.Result {
 
 // maybe it should be implemented with another static server, in dev
 fn (mut app App) send_file(filname string, content string) vweb.Result {
-	app.add_header('Content-Disposition', 'attachment; filename="$filname"')
+	app.add_header('Content-Disposition', 'attachment; filename="${filname}"')
 
 	return app.ok(content)
 }

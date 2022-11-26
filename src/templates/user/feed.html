@@ -1,31 +1,42 @@
-@include '../header.html'
+<!DOCTYPE html>
+<html>
+	<head>
+		@include '../layout/head.html'
+	</head>
+	<body>
+		@include '../layout/header.html'
 
-<div class='avatar'>
-@if user.avatar.len > 0
-	<img src="@user.avatar">
-@else
-	<span>@user.avatar</span>
-@end
-</div>
-<h3> @{user.username}'s feed</h3>
+		.form-error {
+			@app.form_error
+		}
 
-@if feed.len > 0
-	@for item in feed
-		@if item.id in items_start_day_group
-			<div class="feed-date-group">@item.created_at.relative()</div>
-		@end
+		<div class="content">
+			<div class='avatar'>
+				<img src="@{app.prepare_user_avatar_url(app.user.avatar)}">
+			</div>
 
-		<div class="user-repo-item">
-			<a href="/@item.repo_owner/@item.repo_name">
-				<h3>@item.repo_owner/@item.repo_name</h3>
-			</a>
-			<p><b>@item.author_name </b>commited <q>@item.message</q></p>
-			<br>
-			<time><i>@item.created_at</i></time>
+			<h1> @{user.username}'s feed</h1>
+
+			@if feed.len > 0
+				@for item in feed
+					@if item.id in items_start_day_group
+						<div class="feed-date-group">@item.created_at.relative()</div>
+					@end
+
+					<div class="user-repo-item">
+						<a href="/@item.repo_owner/@item.repo_name">
+							<h3>@item.repo_owner/@item.repo_name</h3>
+						</a>
+						<p><b>@item.author_name </b>commited <q>@item.message</q></p>
+						<br>
+						<time><i>@item.created_at</i></time>
+					</div>
+				@end
+			@else
+				<h2>Feed is empty</h2>
+			@end
 		</div>
-	@end
-@else
-	<h2>Feed is empty</h2>
-@end
 
-@include '../footer.html'
+		@include '../layout/footer.html'
+	</body>
+</html>

@@ -4,7 +4,7 @@ import net.http
 
 pub fn check_git_repo_url(url string) bool {
 	repo_url := remove_git_extension_if_exists(url)
-	refs_url := '$repo_url/info/refs?service=git-upload-pack'
+	refs_url := '${repo_url}/info/refs?service=git-upload-pack'
 	mut headers := http.new_header()
 
 	headers.add_custom('User-Agent', 'git/2.30.0') or {}

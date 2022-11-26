@@ -6,20 +6,20 @@ import time
 // TODO: add pagination
 ['/:username/:repo_name/releases']
 pub fn (mut app App) releases(username string, repo_name string) vweb.Result {
-	if !app.exists_user_repo(username, repo_name) {
+	repo := app.find_repo_by_name_and_username(repo_name, username)
+
+	if repo.id == 0 {
 		return app.not_found()
 	}
-
-	app.show_menu = true
 
 	mut releases := []Release{}
 	mut release := Release{}
 
-	tags := app.get_all_repo_tags(app.repo.id)
-	rels := app.find_repo_releases(app.repo.id)
-	users := app.find_repo_registered_contributor(app.repo.id)
+	tags := app.get_all_repo_tags(repo.id)
+	rels := app.find_repo_releases(repo.id)
+	users := app.find_repo_registered_contributor(repo.id)
 
-	download_archive_prefix := '/$username/$repo_name/tag'
+	download_archive_prefix := '/${username}/${repo_name}/tag'
 
 	for rel in rels {
 		release.notes = rel.notes

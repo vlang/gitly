@@ -1,59 +1,35 @@
-@include 'header.html'
+<!DOCTYPE html>
+<html>
+	<head>
+		@include 'layout/head.html'
+	</head>
+	<body>
+		@include 'layout/header.html'
 
-<style>
-pre {
-	overflow-y: hidden;
-	overflow-x: scroll;
-}
-pre > *{
-	font-family:Roboto-Mono, Menlo;
-}
-.hl_table a {
-	padding-right: 5px;
-	padding-left: 5px;
-	float: right;
-}
+		<div class="content">
+			@include 'layout/repo_menu.html'
 
-.hl_table {
-	width: 1000px;
-	border: 1px solid #dfdfdf;
-	border-radius: 3px;
-}
+			<div class="commit-info-block">
+				span.additions {
+					Additions: @all_adds
+				}
 
-.hl_table b {
-	color: rgb(150, 77, 0);
-}
-.hl_table u {
-	color: rgb(0, 124, 255);
-	text-decoration: none;
-}
-.hl_table i {
-	color: rgb(3, 125, 3);
-}
-.a {
-	background-color: #90fb90;
-}
-.d {
-	background-color: #f27e7e;
-}
-</style>
+				span.deletions {
+					Deletions: @all_dels
+				}
 
-<div class="commit-info-block">
-	span.additions {
-		Additions: @all_adds
-	}
+				<span>
+					<a href="@patch_url">View patch</a>
+				</span>
+			</div>
 
-	span.deletions {
-		Deletions: @all_dels
-	}
+			@for _, src in sources
+				<div class="commit-file-diff">
+					<pre>@src</pre>
+				</div>
+			@end
+		</div>
 
-	<span>
-		<a href="@patch_url">View patch</a>
-	</span>
-</div>
-
-@for _, src in sources
-	<div class="commit-file-diff">
-		<pre>@src</pre>
-	</div>
-@end
+		@include 'layout/footer.html'
+	</body>
+</html>

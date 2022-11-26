@@ -1,40 +1,38 @@
-@include 'header.html'
+<!DOCTYPE html>
+<html>
+	<head>
+		@include 'layout/head.html'
+	</head>
+	<body>
+		@include 'layout/header.html'
 
-<h3>
-Login
-</h3>
+		<div class="content">
+			<h1>Login</h1>
 
-.form-error {
-	@app.form_error
-}
+			.form-error {
+				@app.form_error
+			}
 
-<div class="form">
-	<form class="form-login" method='post' action='/login'>
-		<div class="field">
-			<input type='text' name='username' placeholder='Username' required autofocus>
+			<div class="form">
+				<form method='post' action='/login'>
+					<div class="field">
+						<input type='text' name='username' placeholder='Username' required autofocus>
+					</div>
+					<div class="field">
+						<input type='password' name='password' placeholder='Password' required>
+					</div>
+					<div class="field">
+						<input type='submit' value='Login'>
+					</div>
+				</form>
+			</div>
+
+			@if app.settings.oauth_client_id != ''
+				<a href='https://github.com/login/oauth/authorize?response_type=code&state=@csrf&client_id=@app.settings.oauth_client_id'>Login via GitHub</a>
+			@end
 		</div>
-		<div class="field">
-			<input type='password' name='password' placeholder='Password' required>
-		</div>
-		<div class="field">
-			<input type='submit' value='Login'>
-		</div>
-	</form>
-</div>
 
-<script>
-	const formEl = document.querySelector(".form-login");
-
-	formEl.addEventListener("submit", () => {
-		const submitEl = formEl.querySelector("input[type=submit]");
-		submitEl.disabled = true;
-	});
-</script>
-
-
-@if app.settings.oauth_client_id != ''
-	<a href='https://github.com/login/oauth/authorize?response_type=code&state=@csrf&client_id=@app.settings.oauth_client_id'>Login via GitHub</a>
-@end
-
-@include 'footer.html'
-
+		@js '/js/block-form.js'
+		@include 'layout/footer.html'
+	</body>
+</html>
