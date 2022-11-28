@@ -7,8 +7,16 @@
 		@include 'layout/header.html'
 
 		<div class="content">
+			@include './layout/tree_path.html'
+
 			<div class="blob-options-block">
 				<a href="@raw_url" target="_blank">Raw file</a>
+				|
+				<span>${loc} loc (${sloc} sloc)</span>
+				|
+				<span>${file.pretty_size()}</span>
+				|
+				<span>Latest commit hash ${file.last_hash}</span>
 			</div>
 
 			@if is_markdown
@@ -16,7 +24,7 @@
 					@source
 				</div>
 			@else
-			<pre class="blob-content">@source</pre>
+				<pre class="blob-content">@source</pre>
 			@end
 		</div>
 
