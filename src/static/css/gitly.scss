@@ -79,6 +79,23 @@ pre > code {
 	min-height: calc(100vh - 300px);
 }
 
+.search-input {
+	position: absolute;
+	top: 10px;
+	right: 200px;
+
+	background-color: #000;
+	color: #fff;
+}
+
+.search-input::placeholder {
+	color: rgba(255, 255, 255, 0.6);
+}
+
+.search-input::focus {
+	outline: none;
+}
+
 .user {
 	display: flex;
 	position: absolute;
@@ -194,8 +211,7 @@ pre > code {
 	display: flex;
 	position: absolute;
 	top: 0;
-	right: 0;
-	padding-right: 75px;
+	right: 75px;
 }
 
 .new a {
@@ -383,5 +399,13 @@ form {
 	animation-duration: 1s;
 }
 
+.list-item {
+	border: 1px solid #dfdfdf;
+	border-radius: 3px;
+	padding: 5px 0 5px 10px;
+	margin-top: 10px;
+	width: 100%;
+}
+
 @import "files", "langs", "tree", "commits", "hl_table", "branches", "admin",
-	"blob", "new", "contributors", "issues", "user", "releases", "feed";
+	"blob", "contributors", "issues", "user", "releases", "feed", "search";

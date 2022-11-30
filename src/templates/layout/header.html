@@ -1,6 +1,10 @@
 <header>
 	<a id='mainlogo' href='/'>Gitly</a>
 
+	<form action="/search" method="GET">
+		<input class="search-input" name="query" type="text" placeholder="Search..." autocomplete="off">
+	</form>
+
 	@if app.logged_in
 		<div class="new">
 			<a href="/new">New repository</a>
