@@ -15,14 +15,22 @@
 
 			<div class="issue-main-post">
 				<h1>@issue.title #@issue.id</h1>
-				<i>by</i> <a href="/@issue.author_name"><i>@issue.author_name</i></a>
-				<p>@issue.text</p>
+				<div class="avatar-with-user-info">
+					<img src="@{app.prepare_user_avatar_url(issue_author.avatar)}">
+					<span>
+						<i>by</i> <a href="/@issue_author.username"><i>@issue_author.username</i></a>
+						<p>@issue.text</p>
+					</span>
+				</div>
 			</div>
 
-			@for comment in comments
-				<div class="issue-comment-post">
-					<a href="/@comment.author_name"><i>@comment.author_name</i></a> </i>commented @comment.relative()</i>
-					<p>@comment.text</p>
+			@for comment_with_user in comments_with_users
+				<div class="avatar-with-user-info issue-comment-post">
+					<img src="@{app.prepare_user_avatar_url(comment_with_user.user.avatar)}">
+					<span>
+						<a href="/@comment_with_user.user.username"><i>@comment_with_user.user.username</i></a> </i>commented @comment_with_user.item.relative()</i>
+						<p>@comment_with_user.item.text</p>
+					</span>
 				</div>
 			@end
 

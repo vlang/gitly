@@ -225,8 +225,8 @@ fn (mut app App) create_tables() {
 	}
 }
 
-fn (mut app App) json_success<T>(result T) vweb.Result {
-	response := api.ApiSuccessResponse<T>{
+fn (mut app App) json_success[T](result T) vweb.Result {
+	response := api.ApiSuccessResponse[T]{
 		success: true
 		result: result
 	}

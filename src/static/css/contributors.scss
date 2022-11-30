@@ -1,6 +1,14 @@
 .contributors-item {
+	display: flex;
+	align-items: center;
+
 	border: 1px solid #dfdfdf;
-	border-radius: 3px;
-	padding: 10px 30px;
+	border-radius: $medium-radius;
+
+	padding: 10px;
 	margin-top: 10px;
+
+	a {
+		margin-left: 10px;
+	}
 }

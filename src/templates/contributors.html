@@ -16,9 +16,12 @@
 					@for contributor in contributors
 						.contributors-item {
 							@if contributor.is_registered
-								<a href="/@contributor.username"><span>@contributor.username</span></a>
+								<div class='avatar'>
+									<img src="@{app.prepare_user_avatar_url(app.user.avatar)}">
+								</div>
+								<a href="/@contributor.username"><h3>@contributor.username</h3></a>
 							@else
-								<span>@contributor.username</span>
+								<h3>@contributor.username</h3>
 							@end
 						}
 					@end

@@ -4,6 +4,14 @@ import vweb
 import validation
 import api
 
+struct ItemWithUser[T] {
+	item T
+	user User
+}
+
+type IssueWithUser = ItemWithUser[Issue]
+type CommentWithUser = ItemWithUser[Comment]
+
 ['/api/v1/:username/:repo_name/issues/count']
 fn (mut app App) handle_issues_count(username string, repo_name string) vweb.Result {
 	has_access := app.has_user_repo_read_access_by_repo_name(app.user.id, username, repo_name)
@@ -97,14 +105,19 @@ pub fn (mut app App) issues(username string, repo_name string, page int) vweb.Re
 		app.not_found()
 	}
 
-	mut issues := app.find_repo_issues_as_page(repo.id, page)
+	mut issues_with_users := []IssueWithUser{}
+
+	for issue in app.find_repo_issues_as_page(repo.id, page) {
+		user := app.get_user_by_id(issue.author_id) or { continue }
+
+		issues_with_users << IssueWithUser{
+			item: issue
+			user: user
+		}
+	}
 
 	mut first := false
 	mut last := false
-
-	for index, issue in issues {
-		issues[index].author_name = app.get_username_by_id(issue.author_id) or { '' }
-	}
 
 	if repo.open_issues_count > commits_per_page {
 		offset := page * commits_per_page
@@ -140,10 +153,19 @@ pub fn (mut app App) issue(username string, repo_name string, id string) vweb.Re
 		return app.not_found()
 	}
 
-	mut issue := app.find_issue_by_id(id.int()) or { return app.not_found() }
+	issue := app.find_issue_by_id(id.int()) or { return app.not_found() }
+	issue_author := app.get_user_by_id(issue.author_id) or { return app.not_found() }
 
-	issue.author_name = app.get_username_by_id(issue.author_id) or { '' }
-	comments := app.get_all_issue_comments(issue.id)
+	mut comments_with_users := []CommentWithUser{}
+
+	for comment in app.get_all_issue_comments(issue.id) {
+		user := app.get_user_by_id(comment.author_id) or { continue }
+
+		comments_with_users << CommentWithUser{
+			item: comment
+			user: user
+		}
+	}
 
 	return $vweb.html()
 }
@@ -158,20 +180,17 @@ pub fn (mut app App) user_issues(username string, page int) vweb.Result {
 		return app.not_found()
 	}
 
-	exists, u := app.check_username(username)
+	exists, user := app.check_username(username)
 
 	if !exists {
 		return app.not_found()
 	}
-
-	user := u
 
 	mut issues := app.find_user_issues(user.id)
 	mut first := false
 	mut last := false
 
 	for i, issue in issues {
-		issues[i].author_name = username
 		repo := app.find_repo_by_id(issue.repo_id)
 		issues[i].repo_author = repo.user_name
 		issues[i].repo_name = repo.name
@@ -190,6 +209,17 @@ pub fn (mut app App) user_issues(username string, page int) vweb.Result {
 	} else {
 		last = true
 		first = true
+	}
+
+	mut issues_with_users := []IssueWithUser{}
+
+	for issue in issues {
+		issue_author := app.get_user_by_id(issue.author_id) or { continue }
+
+		issues_with_users << IssueWithUser{
+			item: issue
+			user: issue_author
+		}
 	}
 
 	mut last_site := 0
