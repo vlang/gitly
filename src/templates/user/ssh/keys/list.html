@@ -1,29 +1,28 @@
-@include '../../../header.html'
+<!DOCTYPE html>
+<html>
+	<head>
+		@include '../../../layout/head.html'
+	</head>
+	<body>
+		@include '../../../layout/header.html'
 
-<h2>SSH keys</h2>
+		.form-error {
+			@app.form_error
+		}
 
-.div-center {
-	.form-error {
-		@app.form_error
-	}
+		<div class="content">
+			<h1>SSH keys</h1>
 
-	<div class="settings-block-container">
-		<div class="settings-block__left">
-			<ul>
-				<li>
-					<a href="/${app.user.username}/settings">Public profile</a>
-				</li>
-				<li>
-					<a href="/${app.user.username}/settings/ssh-keys">SSH keys</a>
-				</li>
-			</ul>
-		</div>
-		<div class="settings-block__right">
+			<a href="/${app.user.username}/settings">Public profile</a>
+			|
+			<a href="/${app.user.username}/settings/ssh-keys">SSH keys</a>
+
 			<div class="new-ssh-key-block">
 				<a href="/${app.user.username}/settings/ssh-keys/new">
 					<button>New SSH key</button>
 				</a>
 			</div>
+
 			@if ssh_keys.len == 0
 				<p>There are no SSH keys associated with your account.</p>
 			@else
@@ -31,34 +30,13 @@
 					<div class="ssh-key">
 						<h3>@ssh_key.title</h3>
 						<p>@ssh_key.created_at.relative()</p>
-						<button class="ssh-key-remove" data-id="@ssh_key.id" data-title="@ssh_key.title">Remove</button>
+						<button class="ssh-key-remove" data-id="@ssh_key.id" data-username="@app.user.username" data-title="@ssh_key.title">Remove</button>
 					</div>
 				@end
 			@end
 		</div>
 
-		<script>
-			const removeEls = document.querySelectorAll(".ssh-key-remove");
-
-			[...removeEls].forEach(el => {
-				el.addEventListener("click", () => {
-					const title = el.dataset.title;
-
-					if (confirm("Do you really want to remove \"" + title + "\"?")) {
-						removeSSHKey(el.dataset.id)
-							.then(() => location.reload())
-							.catch(error => alert(error));
-					}
-				});
-			});
-
-			async function removeSSHKey(id) {
-				await fetch("/${app.user.username}/settings/ssh-keys/" + id, {
-					method: "DELETE"
-				});
-			}
-		</script>
-	</div>
-}
-
-@include '../../../footer.html'
+		@js '/js/ssh-list.js'
+		@include '../../../layout/footer.html'
+	</body>
+</html>

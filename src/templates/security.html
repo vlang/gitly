@@ -1,13 +1,25 @@
-@include 'header.html'
+<!DOCTYPE html>
+<html>
+	<head>
+		@include 'layout/head.html'
+	</head>
+	<body>
+		@include 'layout/header.html'
 
-<h3>Security log</h3>
+		<div class="content">
+			<h1>Security log</h1>
 
-.commit-day {
-}
+			.commit-day {
+			}
 
-@for log in logs
-	<div>
-	@log
+			@for log in logs
+				<div>
+				@log
 
-	</div>
-@end
+				</div>
+			@end
+		</div>
+
+		@include 'layout/footer.html'
+	</body>
+</html>

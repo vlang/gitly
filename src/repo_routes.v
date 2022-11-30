@@ -38,128 +38,166 @@ pub fn (mut app App) user_stars(username string) vweb.Result {
 	return $vweb.html()
 }
 
-['/:user/:repo/settings']
-pub fn (mut app App) repo_settings(user string, repo string) vweb.Result {
-	if !app.repo_belongs_to(user, repo) {
-		return app.redirect_to_current_repository()
+['/:username/feed']
+pub fn (mut app App) user_feed(username string) vweb.Result {
+	exists, user := app.check_username(username)
+
+	if !exists {
+		return app.not_found()
 	}
 
-	app.show_menu = true
+	// TODO: add pagination
+	feed := app.build_user_feed(app.user.id)
+	mut items_start_day_group := []int{}
+	mut last_unique_date := ''
+
+	for item in feed {
+		item_ymmdd := item.created_at.ymmdd()
+
+		if item_ymmdd != last_unique_date {
+			items_start_day_group << item.id
+
+			last_unique_date = item_ymmdd
+		}
+	}
 
 	return $vweb.html()
 }
 
-fn (mut app App) repo_belongs_to(user string, repo string) bool {
-	return app.logged_in && app.exists_user_repo(user, repo) && app.repo.user_id == app.user.id
-}
+['/:username/:repo_name/settings']
+pub fn (mut app App) repo_settings(username string, repo_name string) vweb.Result {
+	repo := app.find_repo_by_name_and_username(repo_name, username)
+	is_owner := app.check_repo_owner(app.user.username, repo_name)
 
-['/:user/:repo/settings'; post]
-pub fn (mut app App) handle_update_repo_settings(user string, repo string, webhook_secret string) vweb.Result {
-	if !app.repo_belongs_to(user, repo) {
-		return app.redirect_to_current_repository()
+	if !is_owner {
+		return app.redirect_to_repository(username, repo_name)
 	}
 
-	if webhook_secret != '' && webhook_secret != app.repo.webhook_secret {
+	return $vweb.html()
+}
+
+['/:username/:repo_name/settings'; post]
+pub fn (mut app App) handle_update_repo_settings(username string, repo_name string, webhook_secret string) vweb.Result {
+	repo := app.find_repo_by_name_and_username(repo_name, username)
+	is_owner := app.check_repo_owner(app.user.username, repo_name)
+
+	if !is_owner {
+		return app.redirect_to_repository(username, repo_name)
+	}
+
+	if webhook_secret != '' && webhook_secret != repo.webhook_secret {
 		webhook := sha1.hexhash(webhook_secret)
-		app.update_repo_webhook(app.repo.id, webhook)
+		app.set_repo_webhook_secret(repo.id, webhook)
 	}
 
-	return app.redirect_to_current_repository()
+	return app.redirect_to_repository(username, repo_name)
 }
 
-['/:user/:repo/delete'; post]
-pub fn (mut app App) handle_repo_delete(user string, repo string) vweb.Result {
-	if !app.repo_belongs_to(user, repo) {
-		return app.redirect_to_current_repository()
+['/:user/:repo_name/delete'; post]
+pub fn (mut app App) handle_repo_delete(username string, repo_name string) vweb.Result {
+	repo := app.find_repo_by_name_and_username(repo_name, username)
+	is_owner := app.check_repo_owner(app.user.username, repo_name)
+
+	if !is_owner {
+		return app.redirect_to_repository(username, repo_name)
 	}
 
-	if app.form['verify'] == '$user/$repo' {
-		go app.delete_repository(app.repo.id, app.repo.git_dir, app.repo.name)
+	if app.form['verify'] == '${username}/${repo_name}' {
+		spawn app.delete_repository(repo.id, repo.git_dir, repo.name)
 	} else {
 		app.error('Verification failed')
-		return app.repo_settings(user, repo)
+		return app.repo_settings(username, repo_name)
 	}
 
 	return app.redirect_to_index()
 }
 
-['/:user/:repo/move'; post]
-pub fn (mut app App) handle_repo_move(user string, repo string, dest string, verify string) vweb.Result {
-	if !app.repo_belongs_to(user, repo) {
-		return app.redirect_to_current_repository()
+['/:username/:repo_name/move'; post]
+pub fn (mut app App) handle_repo_move(username string, repo_name string, dest string, verify string) vweb.Result {
+	repo := app.find_repo_by_name_and_username(repo_name, username)
+	is_owner := app.check_repo_owner(app.user.username, repo_name)
+
+	if !is_owner {
+		return app.redirect_to_repository(username, repo_name)
 	}
 
-	if dest != '' && verify == '$user/$repo' {
-		dest_user := app.find_user_by_username(dest) or {
-			app.error('Unknown user $dest')
-			return app.repo_settings(user, repo)
+	if dest != '' && verify == '${username}/${repo_name}' {
+		dest_user := app.get_user_by_username(dest) or {
+			app.error('Unknown user ${dest}')
+			return app.repo_settings(username, repo_name)
 		}
 
-		if app.user_has_repo(dest_user.id, app.repo.name) {
-			app.error('User already owns repo $app.repo.name')
-			return app.repo_settings(user, repo)
+		if app.user_has_repo(dest_user.id, repo.name) {
+			app.error('User already owns repo ${repo.name}')
+			return app.repo_settings(username, repo_name)
 		}
 
 		if app.get_count_user_repos(dest_user.id) >= max_user_repos {
 			app.error('User already reached the repo limit')
-			return app.repo_settings(user, repo)
+			return app.repo_settings(username, repo_name)
 		}
 
-		app.move_repo_to_user(app.repo.id, dest_user.id, dest_user.username)
+		app.move_repo_to_user(repo.id, dest_user.id, dest_user.username)
 
-		return app.redirect('/$dest_user.username/$app.repo.name')
+		return app.redirect('/${dest_user.username}/${repo.name}')
 	} else {
 		app.error('Verification failed')
 
-		return app.repo_settings(user, repo)
+		return app.repo_settings(username, repo_name)
 	}
 
 	return app.redirect_to_index()
 }
 
-['/:user/:repo']
-pub fn (mut app App) handle_tree(user string, repo string) vweb.Result {
-	match repo {
+['/:username/:repo_name']
+pub fn (mut app App) handle_tree(username string, repo_name string) vweb.Result {
+	match repo_name {
 		'repos' {
-			return app.user_repos(user)
+			return app.user_repos(username)
 		}
 		'issues' {
-			return app.handle_get_user_issues(user)
+			return app.handle_get_user_issues(username)
 		}
 		'settings' {
-			return app.user_settings(user)
+			return app.user_settings(username)
 		}
 		else {}
 	}
 
-	if !app.exists_user_repo(user, repo) {
+	repo := app.find_repo_by_name_and_username(repo_name, username)
+
+	if repo.id == 0 {
 		return app.not_found()
 	}
 
-	return app.tree(user, repo, app.repo.primary_branch, '')
+	return app.tree(username, repo_name, repo.primary_branch, '')
 }
 
-['/:user/:repo/tree/:branch']
-pub fn (mut app App) handle_branch_tree(user string, repo string, branch string) vweb.Result {
-	if !app.exists_user_repo(user, repo) {
+['/:username/:repo_name/tree/:branch_name']
+pub fn (mut app App) handle_branch_tree(username string, repo_name string, branch_name string) vweb.Result {
+	repo := app.find_repo_by_name_and_username(repo_name, username)
+
+	if repo.id == 0 {
 		return app.not_found()
 	}
 
-	return app.tree(user, repo, branch, '')
+	return app.tree(username, repo_name, branch_name, '')
 }
 
-['/:user/:repo/update']
-pub fn (mut app App) handle_repo_update(user string, repo string) vweb.Result {
-	if !app.exists_user_repo(user, repo) {
+['/:username/:repo_name/update']
+pub fn (mut app App) handle_repo_update(username string, repo_name string) vweb.Result {
+	mut repo := app.find_repo_by_name_and_username(repo_name, username)
+
+	if repo.id == 0 {
 		return app.not_found()
 	}
 
 	if app.user.is_admin {
-		app.update_repo_data(mut app.repo)
-		app.slow_fetch_files_info('master', '.')
+		app.update_repo_from_remote(mut repo)
+		app.slow_fetch_files_info(mut repo, 'master', '.')
 	}
 
-	return app.redirect_to_current_repository()
+	return app.redirect_to_repository(username, repo_name)
 }
 
 ['/new']
@@ -188,12 +226,14 @@ pub fn (mut app App) handle_new_repo(name string, clone_url string, description 
 	}
 
 	if name.len > max_repo_name_len {
-		app.error('Repository name is too long (should be fewer than $max_repo_name_len characters)')
+		app.error('The repository name is too long (should be fewer than ${max_repo_name_len} characters)')
 		return app.new()
 	}
 
-	if app.exists_user_repo(app.user.username, name) {
-		app.error('A repository with the name "$name" already exists')
+	repo := app.find_repo_by_name_and_username(name, app.user.username)
+
+	if repo.id != 0 {
+		app.error('A repository with the name "${name}" already exists')
 		return app.new()
 	}
 
@@ -202,27 +242,36 @@ pub fn (mut app App) handle_new_repo(name string, clone_url string, description 
 		return app.new()
 	}
 
-	is_repository_name_valid := validation.is_repository_name_valid(name)
+	is_repo_name_valid := validation.is_repository_name_valid(name)
 
-	if !is_repository_name_valid {
-		app.error('Repository name is not valid')
+	if !is_repo_name_valid {
+		app.error('The repository name is not valid')
 
 		return app.new()
 	}
 
 	has_clone_url_https_prefix := clone_url.starts_with('https://')
 
-	if !is_clone_url_empty && !has_clone_url_https_prefix {
-		valid_clone_url = 'https://' + clone_url
+	if !is_clone_url_empty {
+		if !has_clone_url_https_prefix {
+			valid_clone_url = 'https://' + clone_url
+		}
+
+		is_git_repo := git.check_git_repo_url(valid_clone_url)
+
+		if !is_git_repo {
+			app.error('The repository URL does not contain any git repository or the server does not respond')
+
+			return app.new()
+		}
 	}
 
-	repository_path := os.join_path(app.settings.repo_storage_path, app.user.username,
-		name)
+	repo_path := os.join_path(app.settings.repo_storage_path, app.user.username, name)
 
-	app.repo = Repo{
+	mut new_repo := Repo{
 		name: name
 		description: description
-		git_dir: repository_path
+		git_dir: repo_path
 		user_id: app.user.id
 		primary_branch: 'master'
 		user_name: app.user.username
@@ -232,31 +281,31 @@ pub fn (mut app App) handle_new_repo(name string, clone_url string, description 
 	}
 
 	if is_clone_url_empty {
-		os.mkdir(app.repo.git_dir) or { panic(err) }
+		os.mkdir(new_repo.git_dir) or { panic(err) }
 
-		app.repo.git('init --bare')
+		new_repo.git('init --bare')
 	} else {
-		app.repo.clone()
+		new_repo.clone()
 	}
 
-	app.add_repo(app.repo)
+	app.add_repo(new_repo)
+	new_repo = app.find_repo_by_name_and_user_id(new_repo.name, app.user.id)
+	repo_id := new_repo.id
 
-	app.repo = app.find_repo_by_name(app.user.id, app.repo.name) or {
+	if repo_id == 0 {
 		app.info('Repo was not inserted')
 
 		return app.redirect('/new')
 	}
 
-	repository_id := app.repo.id
+	primary_branch := git.get_repository_primary_branch(repo_path)
+	app.update_repo_primary_branch(repo_id, primary_branch)
 
-	primary_branch := git.get_repository_primary_branch(repository_path)
-	app.update_repo_primary_branch(repository_id, primary_branch)
-
-	app.repo = app.find_repo_by_id(repository_id)
+	new_repo = app.find_repo_by_id(repo_id)
 
 	// Update only cloned repositories
 	if !is_clone_url_empty {
-		app.update_repo(mut app.repo)
+		app.update_repo_from_fs(mut new_repo)
 	}
 
 	if no_redirect == '1' {
@@ -269,42 +318,43 @@ pub fn (mut app App) handle_new_repo(name string, clone_url string, description 
 		app.add_activity(app.user.id, 'first_repo')
 	}
 
-	return app.redirect('/$app.user.username/repos')
+	return app.redirect('/${app.user.username}/repos')
 }
 
 ['/:user/:repository/tree/:branch_name/:path...']
-pub fn (mut app App) tree(username string, repository_name string, branch_name string, path string) vweb.Result {
-	if !app.exists_user_repo(username, repository_name) {
+pub fn (mut app App) tree(username string, repo_name string, branch_name string, path string) vweb.Result {
+	mut repo := app.find_repo_by_name_and_username(repo_name, username)
+
+	if repo.id == 0 {
 		return app.not_found()
 	}
 
 	_, user := app.check_username(username)
-	if !app.repo.is_public {
+	if !repo.is_public {
 		if user.id != app.user.id {
 			return app.not_found()
 		}
 	}
 
-	repo_id := app.repo.id
-	log_prefix := '$username/$repository_name'
+	repo_id := repo.id
+	log_prefix := '${username}/${repo_name}'
 
-	app.fetch_tags(app.repo)
+	app.fetch_tags(repo)
 
-	app.current_path = '/$path'
+	app.current_path = '/${path}'
 	if app.current_path.contains('/favicon.svg') {
 		return vweb.not_found()
 	}
 
 	path_parts := path.split('/')
 
-	app.path_split = [repository_name]
+	app.path_split = [repo_name]
 	app.path_split << path_parts
 
 	app.is_tree = true
-	app.show_menu = true
-	app.branch = branch_name
 
-	app.increment_repo_views(repo_id)
+	app.increment_repo_views(repo.id)
+
 	mut up := '/'
 	can_up := path != ''
 	if can_up {
@@ -320,21 +370,21 @@ pub fn (mut app App) tree(username string, repository_name string, branch_name s
 	}
 
 	mut items := app.find_repository_items(repo_id, branch_name, app.current_path)
-	branch := app.find_repo_branch_by_name(app.repo.id, branch_name)
+	branch := app.find_repo_branch_by_name(repo.id, branch_name)
 
-	app.info('$log_prefix: $items.len items found in branch $branch_name')
+	app.info('${log_prefix}: ${items.len} items found in branch ${branch_name}')
 
 	if items.len == 0 {
 		// No files in the db, fetch them from git and cache in db
-		app.info('$log_prefix: caching items in repository with $repo_id')
+		app.info('${log_prefix}: caching items in repository with ${repo_id}')
 
-		items = app.cache_repository_items(mut app.repo, branch_name, app.current_path)
-		app.slow_fetch_files_info(branch_name, app.current_path)
+		items = app.cache_repository_items(mut repo, branch_name, app.current_path)
+		app.slow_fetch_files_info(mut repo, branch_name, app.current_path)
 	}
 
 	if items.any(it.last_msg == '') {
 		// If any of the files has a missing `last_msg`, we need to refetch it.
-		app.slow_fetch_files_info(branch_name, app.current_path)
+		app.slow_fetch_files_info(mut repo, branch_name, app.current_path)
 	}
 
 	// Fetch last commit message for this directory, printed at the top of the tree
@@ -345,14 +395,14 @@ pub fn (mut app App) tree(username string, repository_name string, branch_name s
 			p = p[0..path.len - 1]
 		}
 		if !p.contains('/') {
-			p = '/$p'
+			p = '/${p}'
 		}
-		if dir := app.find_repo_file_by_path(app.repo.id, branch_name, p) {
-			println('hash=$dir.last_hash')
-			last_commit = app.find_repo_commit_by_hash(app.repo.id, dir.last_hash)
+		if dir := app.find_repo_file_by_path(repo.id, branch_name, p) {
+			println('hash=${dir.last_hash}')
+			last_commit = app.find_repo_commit_by_hash(repo.id, dir.last_hash)
 		}
 	} else {
-		last_commit = app.find_repo_last_commit(app.repo.id, branch.id)
+		last_commit = app.find_repo_last_commit(repo.id, branch.id)
 	}
 
 	diff := int(time.ticks() - app.page_gen_start)
@@ -372,7 +422,7 @@ pub fn (mut app App) tree(username string, repository_name string, branch_name s
 	items << dirs
 	items << files
 
-	commits_count := app.get_repo_commit_count(app.repo.id, branch.id)
+	commits_count := app.get_repo_commit_count(repo.id, branch.id)
 	has_commits := commits_count > 0
 
 	// Get readme after updating repository
@@ -380,8 +430,8 @@ pub fn (mut app App) tree(username string, repository_name string, branch_name s
 	readme_file := find_readme_file(items) or { File{} }
 
 	if readme_file.id != 0 {
-		readme_path := '$path/$readme_file.name'
-		readme_content := app.repo.read_file(branch_name, readme_path)
+		readme_path := '${path}/${readme_file.name}'
+		readme_content := repo.read_file(branch_name, readme_path)
 		highlighted_readme, _, _ := highlight.highlight_text(readme_content, readme_path,
 			false)
 
@@ -392,11 +442,14 @@ pub fn (mut app App) tree(username string, repository_name string, branch_name s
 	mut license_file_path := ''
 
 	if license_file.id != 0 {
-		license_file_path = '/$username/$repository_name/blob/$branch_name/LICENSE'
+		license_file_path = '/${username}/${repo_name}/blob/${branch_name}/LICENSE'
 	}
 
 	star_count := app.get_count_repo_stars(repo_id)
+	watcher_count := app.get_count_repo_watchers(repo_id)
 	is_repo_starred := app.check_repo_starred(repo_id, app.user.id)
+	is_repo_watcher := app.check_repo_watcher_status(repo_id, app.user.id)
+	is_top_directory := app.current_path == ''
 
 	return $vweb.html()
 }
@@ -405,53 +458,54 @@ pub fn (mut app App) tree(username string, repository_name string, branch_name s
 pub fn (mut app App) handle_api_repo_star(repo_id_str string) vweb.Result {
 	repo_id := repo_id_str.int()
 
-	// TODO: add auth checking module
-	if !app.check_repo_exists(repo_id) {
-		return app.json_error("Repository doesn't exist")
+	has_access := app.has_user_repo_read_access(app.user.id, repo_id)
+
+	if !has_access {
+		return app.json_error('Not found')
 	}
 
 	user_id := app.user.id
 	app.toggle_repo_star(repo_id, user_id)
 	is_repo_starred := app.check_repo_starred(repo_id, user_id)
 
-	return app.json_success(is_repo_starred.str())
+	return app.json_success(is_repo_starred)
 }
 
-['/:user/:repo/pull/:id']
-pub fn (mut app App) pull(user string, repo string, id_str string) vweb.Result {
-	if !app.exists_user_repo(user, repo) {
+['/api/v1/repos/:repo_id/watch'; 'post']
+pub fn (mut app App) handle_api_repo_watch(repo_id_str string) vweb.Result {
+	repo_id := repo_id_str.int()
+
+	has_access := app.has_user_repo_read_access(app.user.id, repo_id)
+
+	if !has_access {
+		return app.json_error('Not found')
+	}
+
+	user_id := app.user.id
+	app.toggle_repo_watcher_status(repo_id, user_id)
+	is_watching := app.check_repo_watcher_status(repo_id, user_id)
+
+	return app.json_success(is_watching)
+}
+
+['/:username/:repo_name/contributors']
+pub fn (mut app App) contributors(username string, repo_name string) vweb.Result {
+	repo := app.find_repo_by_name_and_username(repo_name, username)
+
+	if repo.id == 0 {
 		return app.not_found()
 	}
 
-	id := 0
-	pr := app.find_pr_by_id(id) or { return app.not_found() }
-
-	comments := app.get_all_issue_comments(pr.id)
-	return $vweb.html()
-}
-
-pub fn (mut app App) pulls() vweb.Result {
-	prs := app.find_repo_prs(app.repo.id)
+	contributors := app.find_repo_registered_contributor(repo.id)
 
 	return $vweb.html()
 }
 
-['/:user/:repo/contributors']
-pub fn (mut app App) contributors(user string, repo string) vweb.Result {
-	if !app.exists_user_repo(user, repo) {
-		return app.not_found()
-	}
+['/:username/:repo_name/blob/:branch_name/:path...']
+pub fn (mut app App) blob(username string, repo_name string, branch_name string, path string) vweb.Result {
+	repo := app.find_repo_by_name_and_username(repo_name, username)
 
-	app.show_menu = true
-
-	contributors := app.find_repo_registered_contributor(app.repo.id)
-
-	return $vweb.html()
-}
-
-['/:user/:repo/blob/:branch/:path...']
-pub fn (mut app App) blob(username string, repo_name string, branch string, path string) vweb.Result {
-	if !app.exists_user_repo(username, repo_name) {
+	if repo.id == 0 {
 		return app.not_found()
 	}
 
@@ -462,31 +516,33 @@ pub fn (mut app App) blob(username string, repo_name string, branch string, path
 	app.path_split = [repo_name]
 	app.path_split << path_parts
 
-	app.branch = branch
-
-	if !app.contains_repo_branch(app.repo.id, branch) && branch != app.repo.primary_branch {
-		app.info('Branch $branch not found')
+	if !app.contains_repo_branch(repo.id, branch_name) && branch_name != repo.primary_branch {
+		app.info('Branch ${branch_name} not found')
 		return app.not_found()
 	}
 
-	raw_url := '/$username/$repo_name/raw/$branch/$path'
+	raw_url := '/${username}/${repo_name}/raw/${branch_name}/${path}'
 
-	blob_path := os.join_path(app.repo.git_dir, app.current_path)
+	blob_path := os.join_path(repo.git_dir, app.current_path)
 	is_markdown := blob_path.to_lower().ends_with('.md')
-	plain_text := app.repo.read_file(branch, app.current_path)
+	plain_text := repo.read_file(branch_name, app.current_path)
 	highlighted_source, _, _ := highlight.highlight_text(plain_text, blob_path, false)
 	source := vweb.RawHtml(highlighted_source)
 
 	return $vweb.html()
 }
 
-['/:user/:repository/raw/:branch/:path...']
-pub fn (mut app App) handle_raw(username string, repo_name string, branch string, path string) vweb.Result {
-	user := app.find_user_by_username(username) or { return app.not_found() }
-	repository := app.find_repo_by_name(user.id, repo_name) or { return app.not_found() }
+['/:user/:repository/raw/:branch_name/:path...']
+pub fn (mut app App) handle_raw(username string, repo_name string, branch_name string, path string) vweb.Result {
+	user := app.get_user_by_username(username) or { return app.not_found() }
+	repo := app.find_repo_by_name_and_user_id(repo_name, user.id)
+
+	if repo.id == 0 {
+		return app.not_found()
+	}
 
 	// TODO: throw error when git returns non-zero status
-	file_source := repository.git('--no-pager show $branch:$path')
+	file_source := repo.git('--no-pager show ${branch_name}:${path}')
 
 	return app.ok(file_source)
 }

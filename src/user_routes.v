@@ -5,6 +5,7 @@ import os
 import vweb
 import rand
 import validation
+import api
 
 const (
 	user_last_repo_count = 5
@@ -27,7 +28,7 @@ pub fn (mut app App) handle_login(username string, password string) vweb.Result 
 		return app.redirect_to_login()
 	}
 
-	user := app.find_user_by_username(username) or { return app.redirect_to_login() }
+	user := app.get_user_by_username(username) or { return app.redirect_to_login() }
 
 	if user.is_blocked {
 		return app.redirect_to_login()
@@ -37,7 +38,7 @@ pub fn (mut app App) handle_login(username string, password string) vweb.Result 
 		app.increment_user_login_attempts(user.id)
 
 		if user.login_attempts == max_login_attempts {
-			app.warn('User $user.username got blocked')
+			app.warn('User ${user.username} got blocked')
 			app.block_user(user.id)
 		}
 
@@ -53,7 +54,7 @@ pub fn (mut app App) handle_login(username string, password string) vweb.Result 
 	app.auth_user(user, app.ip())
 	app.add_security_log(user_id: user.id, kind: .logged_in)
 
-	return app.redirect_to_index()
+	return app.redirect('/${username}')
 }
 
 ['/logout']
@@ -65,7 +66,6 @@ pub fn (mut app App) handle_logout() vweb.Result {
 
 ['/:username']
 pub fn (mut app App) user(username string) vweb.Result {
-	app.show_menu = false
 	exists, user := app.check_username(username)
 
 	if !exists {
@@ -148,7 +148,7 @@ pub fn (mut app App) handle_update_user_settings(username string) vweb.Result {
 	}
 
 	if is_new_username {
-		user := app.find_user_by_username(new_username) or { User{} }
+		user := app.get_user_by_username(new_username) or { User{} }
 
 		if user.id != 0 {
 			app.error('Name already exists')
@@ -161,11 +161,11 @@ pub fn (mut app App) handle_update_user_settings(username string) vweb.Result {
 		app.rename_user_directory(username, new_username)
 	}
 
-	return app.redirect('/$new_username')
+	return app.redirect('/${new_username}')
 }
 
 fn (mut app App) rename_user_directory(old_name string, new_name string) {
-	os.mv('$app.settings.repo_storage_path/$old_name', '$app.settings.repo_storage_path/$new_name') or {
+	os.mv('${app.settings.repo_storage_path}/${old_name}', '${app.settings.repo_storage_path}/${new_name}') or {
 		panic(err)
 	}
 }
@@ -183,14 +183,14 @@ pub fn (mut app App) handle_register(username string, email string, password str
 	no_users := app.get_users_count() == 0
 
 	if username in ['login', 'register', 'new', 'new_post', 'oauth'] {
-		app.error('Username `$username` is not available')
+		app.error('Username `${username}` is not available')
 		return app.register()
 	}
 
 	user_chars := username.bytes()
 
 	if user_chars.len > max_username_len {
-		app.error('Username is too long (max. $max_username_len)')
+		app.error('Username is too long (max. ${max_username_len})')
 		return app.register()
 	}
 
@@ -238,7 +238,7 @@ pub fn (mut app App) handle_register(username string, email string, password str
 		return app.register()
 	}
 
-	user := app.find_user_by_username(username) or {
+	user := app.get_user_by_username(username) or {
 		app.error('User already exists')
 		return app.register()
 	}
@@ -257,4 +257,50 @@ pub fn (mut app App) handle_register(username string, email string, password str
 	}
 
 	return app.redirect('/' + username)
+}
+
+['/api/v1/users/avatar'; post]
+pub fn (mut app App) handle_upload_avatar() vweb.Result {
+	if !app.logged_in {
+		return app.not_found()
+	}
+
+	avatar := app.Context.files['file'].first()
+	file_content_type := avatar.content_type
+	file_content := avatar.data
+
+	file_extension := extract_file_extension_from_mime_type(file_content_type) or {
+		response := api.ApiErrorResponse{
+			message: err.str()
+		}
+
+		return app.json(response)
+	}
+
+	is_content_size_valid := validate_avatar_file_size(file_content)
+
+	if !is_content_size_valid {
+		response := api.ApiErrorResponse{
+			message: 'This file is too large to be uploaded'
+		}
+
+		return app.json(response)
+	}
+
+	username := app.user.username
+	avatar_filename := '${username}.${file_extension}'
+
+	app.write_user_avatar(avatar_filename, file_content)
+	app.update_user_avatar(app.user.id, avatar_filename)
+
+	avatar_file_path := app.build_avatar_file_path(avatar_filename)
+	avatar_file_url := app.build_avatar_file_url(avatar_filename)
+
+	app.serve_static(avatar_file_url, avatar_file_path)
+
+	response := api.ApiResponse{
+		success: true
+	}
+
+	return app.json(response)
 }

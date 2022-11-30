@@ -1,16 +1,25 @@
-@include 'header.html'
+<!DOCTYPE html>
+<html>
+	<head>
+		@include 'layout/head.html'
+	</head>
+	<body>
+		@include 'layout/header.html'
 
-<div class="blob-options-block">
-	<a href="@raw_url" target="_blank">Raw file</a>
-</div>
+		<div class="content">
+			<div class="blob-options-block">
+				<a href="@raw_url" target="_blank">Raw file</a>
+			</div>
 
-@if is_markdown
-	<div class="blob-content blob-content__markdown">
-		@source
-	</div>
-@else
-	<pre class="blob-content">
-		@source
-	</pre>
-@end
-@include 'footer.html'
+			@if is_markdown
+				<div class="blob-content blob-content__markdown">
+					@source
+				</div>
+			@else
+			<pre class="blob-content">@source</pre>
+			@end
+		</div>
+
+		@include 'layout/footer.html'
+	</body>
+</html>

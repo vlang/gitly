@@ -31,7 +31,7 @@ fn extract_service_from_url(url string) GitService {
 
 fn build_git_service_response(service GitService, body string) string {
 	mut git_response := strings.new_builder(100)
-	git_response.write_string(git.write_packet('# service=git-$service\n'))
+	git_response.write_string(git.write_packet('# service=git-${service}\n'))
 	git_response.write_string(git.flush_packet())
 	git_response.write_string(body)
 

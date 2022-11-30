@@ -20,8 +20,7 @@
 	height: 256px;
 	width: 256px;
 	border-radius: 100%;
-	border: 1px solid $gray;
-	background-color: $link_color;
+	border: 2px solid #24292e;
 	margin-top: 5px;
 	overflow: hidden;
 	cursor: pointer;
@@ -29,6 +28,7 @@
 	img {
 		height: 256px;
 		width: 256px;
+		object-fit: cover;
 	}
 }
 
@@ -36,34 +36,10 @@
 	width: 256px;
 }
 
-.settings-block-container {
-	display: grid;
-	grid-template-areas: "menu container";
-	grid-template-columns: 260px 1fr;
-	margin-top: 20px;
-}
-
-.settings-block__left {
-	grid-area: menu;
-	max-width: 300px;
-
-	ul {
-	li {
-		list-style: none;
-	}
-	}
-}
-
-.settings-block__right {
-	grid-area: container;
-	padding-left: 10px;
-	width: 100%;
-}
-
 .new-ssh-key-block {
 	border-bottom: 1px solid $gray;
 	padding-bottom: 10px;
-	margin-bottom: 10px;
+	margin: 10px 0 10px 0;
 }
 
 .ssh-key {

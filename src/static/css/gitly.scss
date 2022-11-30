@@ -3,7 +3,7 @@ $link-color: #4078c0;
 $gray: #dfdfdf;
 $gray-light: #f3f3f3;
 $gray-dark: #777; // 888
-$font-size: 13px;
+$font-size: 14px;
 $black: #24292e;
 $white: #ffffff;
 $header-height: 50px;
@@ -34,21 +34,20 @@ html,
 	font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell,
 	Noto Sans, sans-serif, BlinkMacSystemFont, Oxygen, Fira Sans, Droid Sans,
 	Helvetica Neue;
-	font-size: 14px;
 	line-height: 1.5em;
 	padding: 0;
 	margin: 0;
 }
 
-a {
-	color: $link-color;
-	text-decoration: none;
+body {
+	font-size: 14px;
+	min-width: 300px;
 }
 
-h3 {
-	margin-top: 10px;
-	margin-bottom: 10px;
-	font-size: 130%;
+a {
+	color: $link-color;
+	font-size: 14px;
+	text-decoration: none;
 }
 
 code {
@@ -132,16 +131,18 @@ pre > code {
 
 .user .header-dropdown .username {
 	padding: 6px 12px;
+
 	span {
-	opacity: 0.9;
-	font-size: 13px;
+		opacity: 0.9;
+		font-size: 13px;
 	}
+
 	a {
-	display: block;
-	padding: 0px;
-	font-size: 17px;
-	line-height: 1;
-	color: $black;
+		display: block;
+		padding: 0px;
+		font-size: 17px;
+		line-height: 1;
+		color: $black;
 	}
 }
 
@@ -168,22 +169,24 @@ pre > code {
 	width: 40px;
 	text-align: center;
 	border-radius: 100%;
-	background-color: $link_color;
+	border: 1px solid #24292e;
+	background-color: #fff;
 	margin-top: 5px;
 	overflow: hidden;
 	z-index: 15;
 	cursor: pointer;
 
 	span {
-	line-height: 40px;
-	font-size: 25px;
-	margin: 0;
+		line-height: 40px;
+		font-size: 25px;
+		margin: 0;
 	}
 
 	img {
-	height: 40px;
-	width: 40px;
-	margin: 0;
+		height: 40px;
+		width: 40px;
+		margin: 0;
+		object-fit: cover;
 	}
 }
 
@@ -201,48 +204,49 @@ pre > code {
 	color: $white;
 }
 
-#header {
+header {
 	.login-button {
-	color: $white;
-	line-height: 50px;
+		color: $white;
+		line-height: 50px;
 	}
+}
 
-	.repo-visibility {
-	border: 1px solid $link-color;
+a.repo-author, a.repo-name {
+	line-height: 50px;
+	font-size: 20px !important;
+	font-weight: 600;
+}
+
+.repo-visibility {
+	border: 2px solid $black;
 	border-radius: 2em;
+	background-color: $black;
+	color: #fff;
 	margin-left: 5px;
-	font-size: 12px;
-	padding: 5px;
-	}
+	font-size: 14px;
+	padding: 4px;
 }
 
-#header a.repo-author,
-#header a.repo-name {
-	line-height: 50px;
-	font-size: 16px !important;
-	color: $white;
-}
-
-#header .slash {
+.slash {
 	display: inline;
 	line-height: 50px;
 	font-size: 16px !important;
-	color: $white;
+	color: $black;
 }
 
-#header {
+header {
 	background-color: $black;
 	height: $header-height;
 	color: white;
 }
 
-#footer {
+footer {
 	max-width: $mob-max;
 	margin: 0 auto;
 	color: #777;
 }
 
-#footer a {
+footer a {
 	color: #777;
 	text-decoration: underline;
 }
@@ -316,7 +320,7 @@ form {
 	}
 
 	input[type="submit"] {
-	margin-top: 10px;
+		margin-top: 10px;
 	}
 }
 
@@ -325,27 +329,59 @@ form {
 	margin: 0 auto;
 
 	input:not([type="checkbox"]):not([type="radio"]) {
-	box-sizing: border-box;
-	width: 100%;
+		box-sizing: border-box;
+		width: 100%;
 	}
 
 	textarea {
-	box-sizing: border-box;
-	width: 100%;
+		box-sizing: border-box;
+		width: 100%;
 	}
 }
 
-.form__embedded {
-	input:not([type="checkbox"]):not([type="radio"]) {
-	box-sizing: border-box;
-	width: 100%;
-	}
+.block {
+	margin: auto;
+	max-width: 700px;
+	padding: 20px 10px 0 10px;
+}
 
-	textarea {
-	box-sizing: border-box;
+.list {
+	margin-left: 20px;
+}
+
+.gitly-screenshot {
 	width: 100%;
+}
+
+.table-features {
+	border-collapse: collapse;
+	border: 1px solid #dfdfdf;
+	width: 100%;
+
+	td {
+		border-collapse: collapse;
+		border: 1px solid #dfdfdf;
+		padding: 5px;
 	}
+}
+
+@keyframes alert-show {
+	0% { right: -100px; }
+	100% { right: 20px; }
+}
+
+.alert {
+	position: absolute;
+	top: 60px;
+	right: 20px;
+	padding: 20px;
+	background-color: #d94338;
+	color: #fff;
+	cursor: pointer;
+	border-radius: $small-radius;
+	animation-name: alert-show;
+	animation-duration: 1s;
 }
 
 @import "files", "langs", "tree", "commits", "hl_table", "branches", "admin",
-	"blob", "new", "contributors", "issues", "user", "releases";
+	"blob", "new", "contributors", "issues", "user", "releases", "feed";

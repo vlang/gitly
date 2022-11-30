@@ -1,23 +1,37 @@
-@include 'header.html'
+<!DOCTYPE html>
+<html>
+	<head>
+		@include 'layout/head.html'
+	</head>
+	<body>
+		@include 'layout/header.html'
 
-<h3>Releases</h3>
+		<div class="content">
+			@include 'layout/repo_menu.html'
 
-@if releases.len > 0
-	.releases {
-		@for r in releases
-			.release {
-				<strong>Release:</strong> @r.tag_name<br/>
-				<strong>Hash:</strong> @r.tag_hash<br/>
-				@if r.user != ''
-					<strong>Created by:</strong> @r.user<br/>
-				@end
-				<strong>Created at:</strong> @r.date<br/>
-				<strong>Notes:</strong> @r.notes<br/>
-				<a href="${download_archive_prefix}/$r.tag_name/zip">Download zip</a>,
-				<a href="${download_archive_prefix}/$r.tag_name/tar">download tar</a>
-			}
-		@end
-	}
-@else
-	<h2>No releases</h2>
-@end
+			<h1>Releases</h1>
+
+			@if releases.len > 0
+				.releases {
+					@for r in releases
+						.release {
+							<strong>Release:</strong> @r.tag_name<br/>
+							<strong>Hash:</strong> @r.tag_hash<br/>
+							@if r.user != ''
+								<strong>Created by:</strong> @r.user<br/>
+							@end
+							<strong>Created at:</strong> @r.date<br/>
+							<strong>Notes:</strong> @r.notes<br/>
+							<a href="${download_archive_prefix}/$r.tag_name/zip">Download zip</a>,
+							<a href="${download_archive_prefix}/$r.tag_name/tar">download tar</a>
+						}
+					@end
+				}
+			@else
+				<h2>No releases</h2>
+			@end
+		</div>
+
+		@include 'layout/footer.html'
+	</body>
+</html>

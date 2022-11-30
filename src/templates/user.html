@@ -1,89 +1,99 @@
-@include 'header.html'
+<!DOCTYPE html>
+<html>
+	<head>
+		@include 'layout/head.html'
+	</head>
+	<body>
+		@include 'layout/header.html'
 
-<div class="profile-block-container">
-	<div class="profile-block__left">
-		<div class="profile-avatar">
-			@if user.b_avatar
-				<img src="@user.avatar">
-			@end
+		<div class="content">
+			<div class="profile-block-container">
+				<div class="profile-block__left">
+					<div class="profile-avatar" onclick="selectAvatar()">
+						<img src="@{app.prepare_user_avatar_url(user.avatar)}">
+					</div>
+
+					@if user.full_name.len > 0
+						<h4>@user.full_name</h4>
+					@end
+					<h3>@user.username</h3>
+
+					@if is_page_owner
+						<a href="/@user.username/settings">
+							<button class="edit-profile-button">Edit profile</button>
+						</a>
+					@end
+				</div>
+
+				<div class="profile-block__right">
+					@if has_repos
+						<h3>Last repositories(<a href="/@user.username/repos">view all</a>)</h3>
+					@else
+						<h3>Last repositories</h3>
+					@end
+
+					@if repos.len > 0
+						@for repo in repos
+							<div class="user-repo-item">
+								<a href="/@user.username/@repo.name">
+									<h3>@repo.name</h3>
+								</a>
+								@if repo.description.len > 0
+									<p><i>@repo.description</i></p>
+								@end
+								@if is_page_owner
+									@if repo.is_public
+										<p><b>Public</b></p>
+									@else
+										<p><b>Private</b></p>
+									@end
+								@end
+							</div>
+						@end
+					@else
+						<h2>No repositories</h2>
+					@end
+				</div>
+			</div>
+
+			<div class="profile-activities">
+				<h3>Contribution activity</h3>
+
+				@for activity in activities
+					@if activity.name == 'joined'
+						<div class="activity">
+							<h4>Joined Gitly</h4>
+							<div class="activity-joined">
+								<p>Joined Gitly</p>
+								<p>on @user.created_at.ddmmy()</p>
+							</div>
+						</div>
+					@end
+
+					@if activity.name == 'first_repo'
+						<div class="activity">
+							<h4>First repository</h4>
+							<div class="activity-first_repo">
+								<p>First repository</p>
+								<p>on @activity.created_at.ddmmy()</p>
+							</div>
+						</div>
+					@end
+
+					@if activity.name == 'first_issue'
+						<div class="activity">
+							<h4>First issue</h4>
+							<div class="activity-first_issue">
+								<p>First issue</p>
+								<p>on @activity.created_at.ddmmy()</p>
+							</div>
+						</div>
+					@end
+				@end
+			</div>
 		</div>
 
-		@if user.full_name.len > 0
-			<h4>@user.full_name</h4>
-		@end
-		<h3>@user.username</h3>
-
-		@if is_page_owner
-			<a href="/@user.username/settings">
-				<button class="edit-profile-button">Edit profile</button>
-			</a>
-		@end
-	</div>
-
-	<div class="profile-block__right">
-		@if has_repos
-			<h1>Last repositories(<a href="/@user.username/repos">view all</a>)</h1>
-		@else
-			<h1>Last repositories</h1>
-		@end
-
-		@if repos.len > 0
-			@for repo in repos
-				<div class="user-repo-item">
-					<a href="/@user.username/@repo.name">
-						<h3>@repo.name</h3>
-					</a>
-					@if repo.description.len > 0
-						<p><i>@repo.description</i></p>
-					@end
-					@if is_page_owner
-						@if repo.is_public
-							<p><b>Public</b></p>
-						@else
-							<p><b>Private</b></p>
-						@end
-					@end
-				</div>
-			@end
-		@else
-			<h2>No repositories</h2>
-		@end
-	</div>
-</div>
-
-<div class="profile-activities">
-	<h2>Contribution activity</h2>
-	@for activity in activities
-		@if activity.name == 'joined'
-			<div class="activity">
-				<h3>Joined Gitly</h3>
-				<div class="activity-joined">
-					<p>Joined Gitly</p>
-					<p>on @user.created_at.ddmmy()</p>
-				</div>
-			</div>
-		@end
-
-		@if activity.name == 'first_repo'
-			<div class="activity">
-				<h3>First repository</h3>
-				<div class="activity-first_repo">
-					<p>First repository</p>
-					<p>on @activity.created_at.ddmmy()</p>
-				</div>
-			</div>
-		@end
-
-		@if activity.name == 'first_issue'
-			<div class="activity">
-				<h3>First issue</h3>
-				<div class="activity-first_issue">
-					<p>First issue</p>
-					<p>on @activity.created_at.ddmmy()</p>
-				</div>
-			</div>
-		@end
-	@end
-</div>
-
-@include 'footer.html'
+		@js '/js/user.js'
+		@include 'layout/footer.html'
+	</body>
+</html>

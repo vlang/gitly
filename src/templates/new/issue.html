@@ -1,22 +1,30 @@
-@include '../header.html'
+<!DOCTYPE html>
+<html>
+	<head>
+		@include '../layout/head.html'
+	</head>
+	<body>
+		@include '../layout/header.html'
 
-<style>
-	input[type=text], textarea {
-		width: 50%;
-	}
-	textarea {
-		height: 300px;
-	}
-</style>
+		<div class="content">
+			@include '../layout/repo_menu.html'
 
-<h3>
-New issue
-</h3>
+			<h1>New issue</h1>
 
-<form method='post' class="vertical-form" action='/@app.repo.user_name/@app.repo.name/issues'>
-	<input type='text' autofocus name='title' placeholder='Title' required>
-	<textarea name='text' placeholder='Leave a comment' required></textarea>
-	<input type='submit' value='Submit new issue'>
-</form>
+			<form method='post' class="form" action='/@repo.user_name/@repo.name/issues'>
+				<div class="field">
+					<input type='text' autofocus name='title' placeholder='Title' required>
+				</div>
+				<div class="field">
+					<textarea name='text' placeholder='Leave a comment' required></textarea>
+				</div>
+				<div class="field">
+					<input type='submit' value='Submit new issue'>
+				</div>
+			</form>
+		</div>
 
-@include '../footer.html'
+		@js '/js/block-form.js'
+		@include '../layout/footer.html'
+	</body>
+</html>

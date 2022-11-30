@@ -6,7 +6,7 @@ import regex
 fn replace_issue_id(re regex.RE, in_txt string, _ int, _ int) string {
 	issue_id := re.get_group_by_id(in_txt, 0)
 
-	return in_txt.replace(issue_id, '<a class="issue-id-anchor" href="#">$issue_id</a>')
+	return in_txt.replace(issue_id, '<a class="issue-id-anchor" href="#">${issue_id}</a>')
 }
 
 fn (f File) format_commit_message() vweb.RawHtml {
