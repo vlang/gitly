@@ -3,9 +3,11 @@ module main
 import vweb
 import validation
 
-['/:user/:repo/comments'; post]
-pub fn (mut app App) handle_add_comment(user string, repo string) vweb.Result {
-	if !app.exists_user_repo(user, repo) {
+['/:username/:repo_name/comments'; post]
+pub fn (mut app App) handle_add_comment(username string, repo_name string) vweb.Result {
+	repo := app.find_repo_by_name_and_username(repo_name, username)
+
+	if repo.id == 0 {
 		return app.not_found()
 	}
 
@@ -18,7 +20,7 @@ pub fn (mut app App) handle_add_comment(user string, repo string) vweb.Result {
 	if is_text_empty || is_issue_id_empty || !app.logged_in {
 		app.error('Issue comment is not valid')
 
-		return app.issue(user, repo, issue_id)
+		return app.issue(username, repo_name, issue_id)
 	}
 
 	app.add_issue_comment(app.user.id, issue_id.int(), text)
@@ -26,5 +28,5 @@ pub fn (mut app App) handle_add_comment(user string, repo string) vweb.Result {
 	// TODO: count comments
 	app.increment_issue_comments(issue_id.int())
 
-	return app.redirect('/$user/$repo/issue/$issue_id')
+	return app.redirect('/${username}/${repo_name}/issue/${issue_id}')
 }

@@ -1,51 +1,52 @@
-@include 'header.html'
+<!DOCTYPE html>
+<html>
+	<head>
+		@include 'layout/head.html'
+	</head>
+	<body>
+		@include 'layout/header.html'
 
-<h3>New repository</h3>
+		<div class="content">
+			<h1>New repository</h1>
 
-<div id='div-center'>
-	<div class='form-error'>
-		@app.form_error
-	</div>
-
-	<div class="form">
-		<form method='post'>
-			<div id='form-errors'>
-			<!--
-				if .clone_failed
-					Cloning failed. Most likely you provided an invalid git repo.
-				end
-				-->
+			<div class='form-error'>
+				@app.form_error
 			</div>
 
-			@app.config.hostname/@app.user.username/
-			<input type='text' name='name'required autofocus maxlength=@max_repo_name_len>
+			<div class="form">
+				<form method='post'>
+					@app.config.hostname/@app.user.username/
+					<input type='text' name='name'required autofocus maxlength=@max_repo_name_len>
 
-			<div class='field'>
-				<p>Description <i>(optional)</i>:</p>
-				<input type='text' name='description'>
+					<div class='field'>
+						<p>Description <i>(optional)</i>:</p>
+						<input type='text' name='description'>
+					</div>
+
+					<div class='field'>
+						<p>Clone URL <i>(only if you want to clone an existing repository)</i>:</p>
+						<input type='text' name='clone_url' placeholder='https://github.com/vlang/gitly'>
+					</div>
+
+					<div class='field'>
+						<p>Repository visibility:</p>
+						<div>
+							<input type="radio" id="public" name="repo_visibility" value="public" checked>
+							<label for="public">Public</label>
+						</div>
+
+						<div>
+							<input type="radio" id="private" name="repo_visibility" value="private">
+							<label for="private">Private</label>
+						</div>
+					</div>
+
+					<input type='submit' class='btn-info' value='Create'>
+				</form>
 			</div>
+		</div>
 
-			<div class='field'>
-				<p>Clone URL <i>(only if you want to clone an existing repository)</i>:</p>
-				<input type='text' name='clone_url' placeholder='https://github.com/vlang/gitly'>
-			</div>
-
-			<div class='field'>
-				<p>Repository visibility:</p>
-				<div>
-					<input type="radio" id="public" name="repo_visibility" value="public" checked>
-					<label for="public">Public</label>
-				</div>
-
-				<div>
-					<input type="radio" id="private" name="repo_visibility" value="private">
-					<label for="private">Private</label>
-				</div>
-			</div>
-
-			<input type='submit' class='btn-info' value='Create'>
-		</form>
-	</div>
-</div>
-
-@include 'footer.html'
+		@js '/js/block-form.js'
+		@include 'layout/footer.html'
+	</body>
+</html>

@@ -1,37 +1,41 @@
-@include 'header.html'
+<!DOCTYPE html>
+<html>
+	<head>
+		@include 'layout/head.html'
+	</head>
+	<body>
+		@include 'layout/header.html'
 
-<style>
-.comment {
-	margin-left: 20px;
-	margin-top: 20px;
-}
+		.form-error {
+			@app.form_error
+		}
 
-.form .input-comment {
-	margin-top: 10px;
-}
-</style>
+		<div class="content">
+			@include 'layout/repo_menu.html'
 
-<div class="issue-main-post">
-	<h1>@issue.title #@issue.id</h1>
-	<i>by</i> <a href="/@issue.author_name"><i>@issue.author_name</i></a>
-	<p>@issue.text</p>
-</div>
+			<div class="issue-main-post">
+				<h1>@issue.title #@issue.id</h1>
+				<i>by</i> <a href="/@issue.author_name"><i>@issue.author_name</i></a>
+				<p>@issue.text</p>
+			</div>
 
-@for comment in comments
-	<div class="issue-comment-post">
-		<a href="/@comment.author_name"><i>@comment.author_name</i></a> </i>commented @comment.relative()</i>
-		<p>@comment.text</p>
-	</div>
-@end
+			@for comment in comments
+				<div class="issue-comment-post">
+					<a href="/@comment.author_name"><i>@comment.author_name</i></a> </i>commented @comment.relative()</i>
+					<p>@comment.text</p>
+				</div>
+			@end
 
-.form-error {
-	@app.form_error
-}
+			@if app.logged_in
+				<form method='post' class='form vertical-form comment-post-form' action='/@repo.user_name/@repo.name/comments'>
+					<textarea type='text' class='input-comment' name='text' placeholder='Leave a comment' required></textarea>
+					<input type='hidden' name='issue_id' value='@issue.id'>
+					<input type='submit' class="comment-post-submit" name='submit' value='Comment'>
+				</form>
+			@end
+		</div>
 
-@if app.logged_in
-	<form method='post' class='form vertical-form comment-post-form' action='/@app.repo.user_name/@app.repo.name/comments'>
-		<textarea type='text' class='input-comment' name='text' placeholder='Leave a comment' required></textarea>
-		<input type='hidden' name='issue_id' value='@issue.id'>
-		<input type='submit' class="comment-post-submit" name='submit' value='Comment'>
-	</form>
-@end
+		@js '/js/block-form.js'
+		@include 'layout/footer.html'
+	</body>
+</html>

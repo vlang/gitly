@@ -1,5 +1,6 @@
 {
 	"repo_storage_path": "./repos",
 	"archive_path": "./archives",
+	"avatars_path": "./avatars",
 	"hostname": "gitly.org"
 }

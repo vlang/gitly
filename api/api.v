@@ -10,7 +10,7 @@ pub struct ApiResponse {
 	message string
 }
 
-pub struct ApiSuccessResponse<T> {
+pub struct ApiSuccessResponse[T] {
 	success bool
 	result  T
 }

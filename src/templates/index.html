@@ -1,162 +1,137 @@
-@include 'header.html'
+<!DOCTYPE html>
+<html>
+	<head>
+		@include 'layout/head.html'
+	</head>
+	<body>
+		@include 'layout/header.html'
 
-<style>
-body {
- min-width: 300px;
-}
+		<article>
+			<div class="block">
+				<h3>Gitly is an upcoming open-source development platform that is going to have</h3>
 
-.block {
-	margin: auto;
-	max-width: 700px;
-	padding: 20px 10px 0 10px;
-}
+				<ul class="list">
+					<li>Source code hosting</li>
+					<li>Project management</li>
+					<li>CI & CD</li>
+				</ul>
+			</div>
 
-.list {
-	margin-left: 20px;
-}
+			<div class="block">
+				<h3>Main features:</h3>
 
-.gitly-screenshot {
-	width: 100%;
-}
+				<ul class="list">
+					<li>Light and fast</li>
+					<li>Minimal amount of RAM usage (works great on the cheapest $3.5 AWS Lightsail instance)</li>
+					<li>Easy to deploy (a single <1 MB binary that includes compiled templates)</li>
+					<li>Works without JavaScript</li>
+					<li>Detailed language stats for each directory</li>
+					<li>"Top files" feature to give an overview of the project</li>
+					<li>Very fast CI with pre-cached dependencies</li>
+					<li>Submitting a pull request without forking the repository</li>
+				</ul>
+			</div>
 
-.table-features {
-	width: 100%;
-}
+			<div class="block">
+				<table class="table-features">
+					<tr>
+						<td></td>
+						<td>GitHub</td>
+						<td>GitLab</td>
+						<td>Gitly</td>
+					</tr>
+					<tr>
+						<td>Open source</td>
+						<td>No</td>
+						<td>Yes</td>
+						<td>Yes</td>
+					</tr>
+					<tr>
+						<td>All features are open source</td>
+						<td>No</td>
+						<td>No</td>
+						<td>Yes</td>
+					</tr>
+					<tr>
+						<td>Minimum RAM</td>
+						<td>32 GB <a target="_blank" href="https://docs.github.com/en/enterprise-server/admin/installation/setting-up-a-github-enterprise-server-instance/installing-github-enterprise-server-on-aws#minimum-requirements">[0]</a></td>
+						<td>4 GB <a target="_blank" href="https://docs.gitlab.com/ee/install/requirements.html#memory">[1]</a></td>
+						<td>128 MB</td>
+					</tr>
+					<tr>
+						<td>Cheapest server</td>
+						<td>$160</td>
+						<td>$20</td>
+						<td>$3.50<a target="_blank" href="https://aws.amazon.com/lightsail/pricing/">[2]</a></td>
+					</tr>
+					<tr>
+						<td>Works without JS</td>
+						<td>Partially</td>
+						<td>No</td>
+						<td>Yes</td>
+					</tr>
+					<tr>
+						<td>Detailed language stats</td>
+						<td>No</td>
+						<td>No</td>
+						<td>Yes</td>
+					</tr>
+					<tr>
+						<td>Installation size</td>
+						<td>?</td>
+						<td>3.9 GB <a target="_blank" href="https://gist.github.com/medvednikov/a90fba85e5e2703a7a6270f1adc50dad">[3]</a>
+						</td>
+						<td><1 MB</td>
+					</tr>
+					<tr>
+						<td>CI features</td>
+						<td></td>
+						<td></td>
+						<td></td>
+					<tr>
+						<td># CPU cores</td>
+						<td>2</td>
+						<td>1</td>
+						<td>4 - 8</td>
+					</tr>
+					<tr>
+						<td>FreeBSD</td>
+						<td>No</td>
+						<td>No</td>
+						<td>Yes</td>
+					</tr>
+					<tr>
+						<td>macOS</td>
+						<td>Yes</td>
+						<td>No</td>
+						<td>Yes</td>
+					</tr>
+					<tr>
+						<td>Built-in dependency cache</td>
+						<td>No</td>
+						<td>No</td>
+						<td>Yes</td>
+					</tr>
+					<tr>
+						<td>CI minutes in a basic package</td>
+						<td>3000<a target="_blank" href="https://docs.github.com/en/github/setting-up-and-managing-billing-and-payments-on-github/about-billing-for-github-actions">[4]</a></td>
+						<td>2000<a target="_blank" href="https://about.gitlab.com/pricing/">[5]</a></td>
+						<td>43200</td>
+					</tr>
+				</table>
+			</div>
 
-table, td {
-	border-collapse: collapse;
-	border: 1px solid #dfdfdf;
-}
+			<div class="block">
+				Check out Gitly in action by browsing the V language repo:
 
-td {
-	padding: 5px;
-}
-</style>
+				<a href="/alex/v">gitly.org/vlang/v</a>
 
-<article>
-	<div class="block">
-		<h1>Gitly is an upcoming open-source development platform that is going to have</h1>
+				<a href="/alex/v">
+					<img class="gitly-screenshot" src="https://user-images.githubusercontent.com/687996/85933714-b195fe80-b8da-11ea-9ddd-09cadc2103e4.png">
+				</a>
+			</div>
+		</article>
 
-		<ul class="list">
-			<li>Source code hosting</li>
-			<li>Project management</li>
-			<li>CI & CD</li>
-		</ul>
-	</div>
-
-	<div class="block">
-		<h1>Main features:</h1>
-
-		<ul class="list">
-			<li>Light and fast</li>
-			<li>Minimal amount of RAM usage (works great on the cheapest $3.5 AWS Lightsail instance)</li>
-			<li>Easy to deploy (a single <1 MB binary that includes compiled templates)</li>
-			<li>Works without JavaScript</li>
-			<li>Detailed language stats for each directory</li>
-			<li>"Top files" feature to give an overview of the project</li>
-			<li>Very fast CI with pre-cached dependencies</li>
-			<li>Submitting a pull request without forking the repository</li>
-		</ul>
-	</div>
-
-	<div class="block">
-		<table class="table-features">
-			<tr>
-				<td></td>
-				<td>GitHub</td>
-				<td>GitLab</td>
-				<td>Gitly</td>
-			</tr>
-			<tr>
-				<td>Open source</td>
-				<td>No</td>
-				<td>Yes</td>
-				<td>Yes</td>
-			</tr>
-			<tr>
-				<td>All features are open source</td>
-				<td>No</td>
-				<td>No</td>
-				<td>Yes</td>
-			</tr>
-			<tr>
-				<td>Minimum RAM</td>
-				<td>32 GB <a target="_blank" href="https://docs.github.com/en/enterprise-server/admin/installation/setting-up-a-github-enterprise-server-instance/installing-github-enterprise-server-on-aws#minimum-requirements">[0]</a></td>
-				<td>4 GB <a target="_blank" href="https://docs.gitlab.com/ee/install/requirements.html#memory">[1]</a></td>
-				<td>128 MB</td>
-			</tr>
-			<tr>
-				<td>Cheapest server</td>
-				<td>$160</td>
-				<td>$20</td>
-				<td>$3.50<a target="_blank" href="https://aws.amazon.com/lightsail/pricing/">[2]</a></td>
-			</tr>
-			<tr>
-				<td>Works without JS</td>
-				<td>Partially</td>
-				<td>No</td>
-				<td>Yes</td>
-			</tr>
-			<tr>
-				<td>Detailed language stats</td>
-				<td>No</td>
-				<td>No</td>
-				<td>Yes</td>
-			</tr>
-			<tr>
-				<td>Installation size</td>
-				<td>?</td>
-				<td>3.9 GB				<a target="_blank" href="https://gist.github.com/medvednikov/a90fba85e5e2703a7a6270f1adc50dad">[3]</a>
-				</td>
-				<td><1 MB</td>
-			</tr>
-			<tr>
-				<td>CI features</td>
-				<td></td>
-				<td></td>
-				<td></td>
-			<tr>
-				<td># CPU cores</td>
-				<td>2</td>
-				<td>1</td>
-				<td>4 - 8</td>
-			</tr>
-			<tr>
-				<td>FreeBSD</td>
-				<td>No</td>
-				<td>No</td>
-				<td>Yes</td>
-			</tr>
-			<tr>
-				<td>macOS</td>
-				<td>Yes</td>
-				<td>No</td>
-				<td>Yes</td>
-			</tr>
-			<tr>
-				<td>Built-in dependency cache</td>
-				<td>No</td>
-				<td>No</td>
-				<td>Yes</td>
-			</tr>
-			<tr>
-				<td>CI minutes in a basic package</td>
-				<td>3000<a target="_blank" href="https://docs.github.com/en/github/setting-up-and-managing-billing-and-payments-on-github/about-billing-for-github-actions">[4]</a></td>
-				<td>2000<a target="_blank" href="https://about.gitlab.com/pricing/">[5]</a></td>
-				<td>43200</td>
-			</tr>
-		</table>
-	</div>
-
-	<div class="block">
-		Check out Gitly in action by browsing the V language repo:
-
-		<a href="/alex/v">gitly.org/vlang/v</a>
-
-		<a href="/alex/v">
-			<img class="gitly-screenshot" src="https://user-images.githubusercontent.com/687996/85933714-b195fe80-b8da-11ea-9ddd-09cadc2103e4.png">
-		</a>
-	</div>
-</article>
-
-@include 'footer.html'
+		@include 'layout/footer.html'
+	</body>
+</html>

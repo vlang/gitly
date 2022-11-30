@@ -10,16 +10,16 @@ const default_branch = 'main'
 
 const test_username = 'bob'
 
-const test_github_repo_url = 'https://github.com/vlang/ui'
+const test_github_repo_url = 'https://github.com/vlang/pcre'
 
 const test_github_repo_primary_branch = 'master'
 
 fn main() {
-	before()?
+	before()!
 
 	test_index_page()
 
-	ilog('Register the first user `$test_username`')
+	ilog('Register the first user `${test_username}`')
 	mut register_headers, token := register_user(test_username, '1234zxcv', 'bob@example.com') or {
 		exit_with_message(err.str())
 	}
@@ -45,28 +45,28 @@ fn main() {
 	assert get_repo_issue_count(token, test_username, 'test2') == 0
 	assert get_repo_branch_count(token, test_username, 'test2') > 0
 
-	after()?
+	after()!
 }
 
-fn before() ? {
-	cd_executable_dir()?
+fn before() ! {
+	cd_executable_dir()!
 
 	ilog('Make sure gitly is not running')
 	kill_gitly_processes()
 
-	remove_database_if_exists()?
-	remove_repos_dir_if_exists()?
+	remove_database_if_exists()!
+	remove_repos_dir_if_exists()!
 	compile_gitly()
 
 	ilog('Start gitly in the background, then wait till gitly starts and is responding to requests')
-	go run_gitly()
+	spawn run_gitly()
 
 	wait_gitly()
 }
 
-fn after() ? {
-	remove_database_if_exists()?
-	remove_repos_dir_if_exists()?
+fn after() ! {
+	remove_database_if_exists()!
+	remove_repos_dir_if_exists()!
 
 	ilog('Ensure gitly is stopped')
 	kill_gitly_processes()
@@ -86,13 +86,13 @@ fn exit_with_message(message string) {
 }
 
 fn ilog(message string) {
-	println('$time.now().format_ss_milli() | $message')
+	println('${time.now().format_ss_milli()} | ${message}')
 }
 
-fn cd_executable_dir() ? {
+fn cd_executable_dir() ! {
 	executable_dir := os.dir(os.executable())
 	// Ensure that we are always running in the gitly folder, no matter what is the starting one:
-	os.chdir(os.dir(executable_dir))?
+	os.chdir(os.dir(executable_dir))!
 
 	ilog('Testing first gitly run.')
 }
@@ -101,19 +101,19 @@ fn kill_gitly_processes() {
 	os.execute('pkill -9 gitly')
 }
 
-fn remove_database_if_exists() ? {
+fn remove_database_if_exists() ! {
 	ilog('Remove old gitly DB')
 
 	if os.exists('gitly.sqlite') {
-		os.rm('gitly.sqlite')?
+		os.rm('gitly.sqlite')!
 	}
 }
 
-fn remove_repos_dir_if_exists() ? {
+fn remove_repos_dir_if_exists() ! {
 	ilog('Remove repos directory')
 
 	if os.exists('repos') {
-		os.rmdir_all('repos')?
+		os.rmdir_all('repos')!
 	}
 }
 
@@ -125,7 +125,7 @@ fn compile_gitly() {
 
 fn wait_gitly() {
 	for waiting_cycles := 0; waiting_cycles < 50; waiting_cycles++ {
-		ilog('\twait: $waiting_cycles')
+		ilog('\twait: ${waiting_cycles}')
 		time.sleep(100 * time.millisecond)
 		http.get(prepare_url('')) or { continue }
 		break
@@ -133,7 +133,7 @@ fn wait_gitly() {
 }
 
 fn prepare_url(path string) string {
-	return '$gitly_url/$path'
+	return '${gitly_url}/${path}'
 }
 
 fn test_index_page() {
@@ -153,7 +153,7 @@ fn test_index_page() {
 
 // returns headers and token
 fn register_user(username string, password string, email string) ?(http.Header, string) {
-	response := http.post(prepare_url('register'), 'username=$username&password=$password&email=$email&no_redirect=1') or {
+	response := http.post(prepare_url('register'), 'username=${username}&password=${password}&email=${email}&no_redirect=1') or {
 		return err
 	}
 
@@ -175,14 +175,14 @@ fn test_static_served() {
 }
 
 fn test_user_page(username string) {
-	ilog('Testing the new user /$username page is up after registration')
+	ilog('Testing the new user /${username} page is up after registration')
 	user_page_result := http.get(prepare_url(username)) or { exit_with_message(err.str()) }
 
-	assert user_page_result.body.contains('<h3>$username</h3>')
+	assert user_page_result.body.contains('<h3>${username}</h3>')
 }
 
 fn test_login_with_token(username string, token string) {
-	ilog('Try to login in with `$username` user token')
+	ilog('Try to login in with `${username}` user token')
 
 	login_result := http.fetch(
 		method: .get
@@ -192,10 +192,10 @@ fn test_login_with_token(username string, token string) {
 		url: prepare_url(username)
 	) or { exit_with_message(err.str()) }
 
-	ilog('Ensure that after login, there is a signed in as `$username` message')
+	ilog('Ensure that after login, there is a signed in as `${username}` message')
 
 	assert login_result.body.contains('<span>Signed in as</span>')
-	assert login_result.body.contains("<a href='/$username'>$username</a>")
+	assert login_result.body.contains("<a href='/${username}'>${username}</a>")
 }
 
 fn test_create_repo(token string, name string, clone_url string) {
@@ -208,7 +208,7 @@ fn test_create_repo(token string, name string, clone_url string) {
 			'token': token
 		}
 		url: prepare_url('new')
-		data: 'name=$name&description=$description&clone_url=$clone_url&repo_visibility=$repo_visibility&no_redirect=1'
+		data: 'name=${name}&description=${description}&clone_url=${clone_url}&repo_visibility=${repo_visibility}&no_redirect=1'
 	) or { exit_with_message(err.str()) }
 
 	assert response.status_code == 200
@@ -221,7 +221,7 @@ fn get_repo_commit_count(token string, username string, repo_name string, branch
 		cookies: {
 			'token': token
 		}
-		url: prepare_url('api/v1/$username/$repo_name/$branch_name/commits/count')
+		url: prepare_url('api/v1/${username}/${repo_name}/${branch_name}/commits/count')
 	) or { exit_with_message(err.str()) }
 
 	response_json := json.decode(api.ApiCommitCount, response.body) or {
@@ -237,7 +237,7 @@ fn get_repo_issue_count(token string, username string, repo_name string) int {
 		cookies: {
 			'token': token
 		}
-		url: prepare_url('api/v1/$username/$repo_name/issues/count')
+		url: prepare_url('api/v1/${username}/${repo_name}/issues/count')
 	) or { exit_with_message(err.str()) }
 
 	response_json := json.decode(api.ApiIssueCount, response.body) or {
@@ -253,7 +253,7 @@ fn get_repo_branch_count(token string, username string, repo_name string) int {
 		cookies: {
 			'token': token
 		}
-		url: prepare_url('api/v1/$username/$repo_name/branches/count')
+		url: prepare_url('api/v1/${username}/${repo_name}/branches/count')
 	) or { exit_with_message(err.str()) }
 
 	response_json := json.decode(api.ApiBranchCount, response.body) or {

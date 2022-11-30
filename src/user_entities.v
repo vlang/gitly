@@ -22,7 +22,6 @@ mut:
 	posts_count          int
 	last_post_time       int
 	avatar               string
-	b_avatar             bool    [skip]
 	emails               []Email [skip]
 	login_attempts       int
 }

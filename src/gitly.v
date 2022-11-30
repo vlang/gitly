@@ -34,11 +34,8 @@ mut:
 	config        config.Config [vweb_global]
 	settings      Settings
 	current_path  string
-	repo          Repo
-	html_path     vweb.RawHtml
 	page_gen_time string
 	is_tree       bool
-	show_menu     bool
 	logged_in     bool
 	user          User
 	path_split    []string
@@ -85,6 +82,7 @@ fn new_app() &App {
 	app.version = version
 
 	app.handle_static('src/static', true)
+	app.handle_static('avatars', false)
 
 	app.load_settings()
 
@@ -94,12 +92,13 @@ fn new_app() &App {
 
 	create_directory_if_not_exists(app.config.repo_storage_path)
 	create_directory_if_not_exists(app.config.archive_path)
+	create_directory_if_not_exists(app.config.avatars_path)
 
 	// Create the first admin user if the db is empty
-	app.find_user_by_id(1) or {}
+	app.get_user_by_id(1) or {}
 
 	if '-cmdapi' in os.args {
-		go app.command_fetcher()
+		spawn app.command_fetcher()
 	}
 
 	return app
@@ -143,20 +142,11 @@ pub fn (mut app App) before_request() {
 			app.logged_in = false
 			User{}
 		}
-
-		app.user.b_avatar = app.user.avatar == ''
-		if !app.user.b_avatar {
-			app.user.avatar = app.user.username[..1]
-		}
 	}
-
-	app.add_visit(app.repo.id, app.req.url, app.req.referer())
 }
 
 ['/']
 pub fn (mut app App) index() vweb.Result {
-	app.show_menu = false
-
 	no_users := app.get_users_count() == 0
 	if no_users {
 		return app.redirect('/register')
@@ -173,8 +163,8 @@ pub fn (mut app App) redirect_to_login() vweb.Result {
 	return app.redirect('/login')
 }
 
-pub fn (mut app App) redirect_to_current_repository() vweb.Result {
-	return app.redirect('/$app.user.username/$app.repo.name')
+pub fn (mut app App) redirect_to_repository(username string, repo_name string) vweb.Result {
+	return app.redirect('/${username}/${repo_name}')
 }
 
 fn (mut app App) create_tables() {
@@ -225,9 +215,6 @@ fn (mut app App) create_tables() {
 		create table Branch
 	}
 	sql app.db {
-		create table Visit
-	}
-	sql app.db {
 		create table Settings
 	}
 	sql app.db {
@@ -239,11 +226,13 @@ fn (mut app App) create_tables() {
 	sql app.db {
 		create table Star
 	}
+	sql app.db {
+		create table Watch
+	}
 }
 
-// TODO: use generics
-fn (mut app App) json_success(result string) vweb.Result {
-	response := api.ApiSuccessResponse<string>{
+fn (mut app App) json_success[T](result T) vweb.Result {
+	response := api.ApiSuccessResponse[T]{
 		success: true
 		result: result
 	}
@@ -260,7 +249,7 @@ fn (mut app App) json_error(message string) vweb.Result {
 
 // maybe it should be implemented with another static server, in dev
 fn (mut app App) send_file(filname string, content string) vweb.Result {
-	app.add_header('Content-Disposition', 'attachment; filename="$filname"')
+	app.add_header('Content-Disposition', 'attachment; filename="${filname}"')
 
 	return app.ok(content)
 }

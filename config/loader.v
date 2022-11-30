@@ -7,6 +7,7 @@ pub struct Config {
 pub:
 	repo_storage_path string
 	archive_path      string
+	avatars_path      string
 	hostname          string
 }
 
