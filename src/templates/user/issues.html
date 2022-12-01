@@ -17,23 +17,25 @@
 			}
 
 			.clog-block {
-				@for issue in issues
+				@for issue_with_user in issues_with_users
 					.clog {
 						.clog-msg {
-							<a href="/@issue.repo_author/@issue.repo_name/issue/@issue.id">@issue.title</a>
+							<a href="/@issue_with_user.item.repo_author/@issue_with_user.item.repo_name/issue/@issue_with_user.item.id">@issue_with_user.item.title</a>
 						}
-						span.clog-author {
-							#@issue.id opened @issue.relative_time()
-							by @issue.author_name
-						}
-						@if issue.comments_count > 0
-						.comments {
-							@if issue.comments_count == 1
-								@issue.comments_count comment
-							@else
-								@issue.comments_count comments
-							@end
-						}
+
+						<span>
+							#@issue_with_user.item.id opened @issue_with_user.item.relative_time()
+							by @issue_with_user.user.username
+						</span>
+
+						@if issue_with_user.item.comments_count > 0
+							.comments {
+								@if issue_with_user.item.comments_count == 1
+									@issue_with_user.item.comments_count comment
+								@else
+									@issue_with_user.item.comments_count comments
+								@end
+							}
 						@end
 					}
 				@end

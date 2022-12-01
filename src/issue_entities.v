@@ -14,7 +14,6 @@ mut:
 	created_at     int
 	status         IssueStatus [skip]
 	linked_issues  []int       [skip]
-	author_name    string      [skip]
 	repo_author    string      [skip]
 	repo_name      string      [skip]
 }

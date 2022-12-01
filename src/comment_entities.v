@@ -4,10 +4,9 @@ module main
 
 struct Comment {
 mut:
-	id          int    [primary; sql: serial]
-	author_id   int
-	issue_id    int
-	created_at  int
-	text        string
-	author_name string [skip]
+	id         int    [primary; sql: serial]
+	author_id  int
+	issue_id   int
+	created_at int
+	text       string
 }
