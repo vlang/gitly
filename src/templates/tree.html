@@ -87,17 +87,7 @@
 				@end
 			</div>
 
-			@if app.current_path != ''
-				<div class="tree-path">
-					@for i, p in app.path_split
-						<a href="/@repo.user_name/@{app.make_path(branch_name, i)}">@p</a>
-
-						@if i < app.path_split.len - 1
-							/
-						@end
-					@end
-				</div>
-			@end
+			@include './layout/tree_path.html'
 
 			@if has_commits
 				.lang-stats-header {

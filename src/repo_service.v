@@ -519,7 +519,8 @@ fn (r &Repo) parse_ls(ls_line string, branch string) ?File {
 	}
 
 	item_type := ls_line_parts[1]
-	item_path := ls_line_parts[3]
+	item_size := ls_line_parts[3]
+	item_path := ls_line_parts[4]
 	item_hash := r.git('log ${branch} -n 1 --format="%h" -- ${item_path}')
 
 	item_name := item_path.after('/')
@@ -543,6 +544,7 @@ fn (r &Repo) parse_ls(ls_line string, branch string) ?File {
 		last_hash: item_hash
 		branch: branch
 		is_dir: item_type == 'tree'
+		size: if item_type == 'blob' { item_size.int() } else { 0 }
 	}
 }
 
@@ -562,7 +564,8 @@ fn (mut app App) cache_repository_items(mut r Repo, branch string, path string) 
 		}
 	} else {
 		directory_path := if path == '' { path } else { '${path}/' }
-		repository_ls = r.git('ls-tree --full-name ${branch} ${directory_path}')
+		format := '%(objectmode) %(objecttype) %(objectname) %(objectsize) %(path)'
+		repository_ls = r.git('ls-tree --full-name --format="${format}" ${branch} ${directory_path}')
 	}
 
 	// mode type name path
