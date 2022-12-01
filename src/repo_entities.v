@@ -25,6 +25,7 @@ mut:
 	open_prs_count     int
 	releases_count     int
 	branches_count     int
+	stars_count        int
 	lang_stats         []LangStat        [skip]
 	created_at         int
 	contributors_count int

@@ -34,24 +34,25 @@ fn (f ArchiveFormat) str() string {
 	}
 }
 
-fn (mut app App) save_repository(repository Repo) {
-	id := repository.id
-	desc := repository.description
-	views_count := repository.views_count
-	webhook_secret := repository.webhook_secret
-	tags_count := repository.tags_count
-	is_public := if repository.is_public { 1 } else { 0 }
-	open_issues_count := repository.open_issues_count
-	open_prs_count := repository.open_prs_count
-	branches_count := repository.branches_count
-	releases_count := repository.releases_count
-	contributors_count := repository.contributors_count
+fn (mut app App) save_repo(repo Repo) {
+	id := repo.id
+	desc := repo.description
+	views_count := repo.views_count
+	webhook_secret := repo.webhook_secret
+	tags_count := repo.tags_count
+	is_public := if repo.is_public { 1 } else { 0 }
+	open_issues_count := repo.open_issues_count
+	open_prs_count := repo.open_prs_count
+	branches_count := repo.branches_count
+	releases_count := repo.releases_count
+	stars_count := repo.stars_count
+	contributors_count := repo.contributors_count
 
 	sql app.db {
 		update Repo set description = desc, views_count = views_count, is_public = is_public,
 		webhook_secret = webhook_secret, tags_count = tags_count, open_issues_count = open_issues_count,
 		open_prs_count = open_prs_count, releases_count = releases_count, contributors_count = contributors_count,
-		branches_count = branches_count where id == id
+		stars_count = stars_count, branches_count = branches_count where id == id
 	}
 }
 
@@ -91,6 +92,27 @@ fn (mut app App) find_user_public_repos(user_id int) []Repo {
 	}
 }
 
+fn (app App) search_public_repos(query string) []Repo {
+	repo_rows, _ := app.db.exec('select id, name, user_id, description, stars_count from `Repo` where is_public is true and name like "%${query}%"')
+
+	mut repos := []Repo{}
+
+	for row in repo_rows {
+		user_id := row.vals[2].int()
+		user := app.get_user_by_id(user_id) or { User{} }
+
+		repos << Repo{
+			id: row.vals[0].int()
+			name: row.vals[1]
+			user_name: user.username
+			description: row.vals[3]
+			stars_count: row.vals[4].int()
+		}
+	}
+
+	return repos
+}
+
 fn (app App) find_repo_by_id(repo_id int) Repo {
 	mut repo := sql app.db {
 		select from Repo where id == repo_id
@@ -106,6 +128,18 @@ fn (app App) find_repo_by_id(repo_id int) Repo {
 fn (mut app App) increment_repo_views(repo_id int) {
 	sql app.db {
 		update Repo set views_count = views_count + 1 where id == repo_id
+	}
+}
+
+fn (mut app App) increment_repo_stars(repo_id int) {
+	sql app.db {
+		update Repo set stars_count = stars_count + 1 where id == repo_id
+	}
+}
+
+fn (mut app App) decrement_repo_stars(repo_id int) {
+	sql app.db {
+		update Repo set stars_count = stars_count - 1 where id == repo_id
 	}
 }
 
@@ -201,7 +235,7 @@ fn (mut app App) update_repo_from_fs(mut repo Repo) {
 		repo.releases_count++
 	}
 
-	app.save_repository(repo)
+	app.save_repo(repo)
 	app.db.exec('END TRANSACTION')
 	app.info('Repo updated')
 }
@@ -276,7 +310,7 @@ fn (mut app App) update_repo_from_remote(mut repo Repo) {
 	repo.contributors_count = app.get_count_repo_contributors(repo_id)
 	repo.branches_count = app.get_count_repo_branches(repo_id)
 
-	app.save_repository(repo)
+	app.save_repo(repo)
 	app.db.exec('END TRANSACTION')
 	app.info('Repo updated')
 }

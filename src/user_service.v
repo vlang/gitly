@@ -161,7 +161,7 @@ pub fn (app App) get_user_by_username(value string) ?User {
 	return user
 }
 
-pub fn (mut app App) get_user_by_id(id int) ?User {
+pub fn (app App) get_user_by_id(id int) ?User {
 	mut user := sql app.db {
 		select from User where id == id
 	}
@@ -234,6 +234,23 @@ pub fn (mut app App) get_all_registered_users() []User {
 
 	for i, user in users {
 		users[i].emails = app.find_user_emails(user.id)
+	}
+
+	return users
+}
+
+fn (app App) search_users(query string) []User {
+	repo_rows, _ := app.db.exec('select id, full_name, username, avatar from `User` where is_blocked is false and (username like "%${query}%" or full_name like "%${query}%")')
+
+	mut users := []User{}
+
+	for row in repo_rows {
+		users << User{
+			id: row.vals[0].int()
+			full_name: row.vals[1]
+			username: row.vals[2]
+			avatar: row.vals[3]
+		}
 	}
 
 	return users
