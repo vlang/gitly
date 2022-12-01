@@ -266,7 +266,7 @@ pub fn (mut app App) handle_new_repo(name string, clone_url string, description 
 		}
 	}
 
-	repo_path := os.join_path(app.settings.repo_storage_path, app.user.username, name)
+	repo_path := os.join_path(app.config.repo_storage_path, app.user.username, name)
 
 	mut new_repo := Repo{
 		name: name

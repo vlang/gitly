@@ -684,11 +684,11 @@ fn (r Repo) git_smart(service string, input string) string {
 }
 
 fn (mut app App) generate_clone_url(repo Repo) string {
-	hostname := app.settings.hostname
+	hostname := app.config.hostname
 	username := repo.user_name
-	repository_name := repo.name
+	repo_name := repo.name
 
-	return 'https://${hostname}/${username}/${repository_name}.git'
+	return 'https://${hostname}/${username}/${repo_name}.git'
 }
 
 fn first_line(s string) string {

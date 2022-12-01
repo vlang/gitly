@@ -12,12 +12,12 @@ pub fn (mut app App) admin_settings() vweb.Result {
 }
 
 ['/admin/settings'; post]
-pub fn (mut app App) handle_admin_update_settings(oauth_client_id string, oauth_client_secret string, hostname string, repo_storage_path string) vweb.Result {
+pub fn (mut app App) handle_admin_update_settings(oauth_client_id string, oauth_client_secret string) vweb.Result {
 	if !app.is_admin() {
 		return app.redirect_to_index()
 	}
 
-	app.update_gitly_settings(oauth_client_id, oauth_client_secret, hostname, repo_storage_path)
+	app.update_gitly_settings(oauth_client_id, oauth_client_secret)
 
 	return app.redirect('/admin')
 }

@@ -2,13 +2,9 @@
 // Use of this source code is governed by a GPL license that can be found in the LICENSE file.
 module main
 
-struct GitlySettings {
+struct Settings {
 	id int [primary; sql: serial]
 mut:
 	oauth_client_id     string
 	oauth_client_secret string
-	repo_storage_path   string = './repos'
-	archive_path        string = './archives'
-	avatars_path        string = './avatars'
-	hostname            string = 'gitly.org'
 }
