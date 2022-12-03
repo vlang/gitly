@@ -35,3 +35,26 @@ fn create_directory_if_not_exists(path string) {
 		os.mkdir(path) or { panic('cannot create ${path} directory') }
 	}
 }
+
+fn calculate_pages(count int, per_page int) int {
+	if count == 0 {
+		return 0
+	}
+
+	return int(math.ceil(f32(count) / f32(per_page))) - 1
+}
+
+fn generate_prev_next_pages(page int) (int, int) {
+	prev_page := if page > 0 { page - 1 } else { 0 }
+	next_page := page + 1
+
+	return prev_page, next_page
+}
+
+fn check_first_page(page int) bool {
+	return page == 0
+}
+
+fn check_last_page(total int, offset int, per_page int) bool {
+	return (total - offset) < per_page
+}

@@ -32,19 +32,23 @@
 				}
 			@end
 
-			<div class="buttons">
-				@if first
-					<a href="/@repo.user_name/@repo.name/@branch_name/commits/@last_site" class="button disabled">Prev</a>
-				@else
-					<a href="/@repo.user_name/@repo.name/@branch_name/commits/@last_site" class="button">Prev</a>
-				@end
+			@if d_commits.len > 0
+				<div class="buttons">
+					@if is_first_page
+						<a href="/@repo.user_name/@repo.name/@branch_name/commits/@prev_page" class="button disabled">Prev</a>
+					@else
+						<a href="/@repo.user_name/@repo.name/@branch_name/commits/@prev_page" class="button">Prev</a>
+					@end
 
-				@if last
-					<a href="/@repo.user_name/@repo.name/@branch_name/commits/@next_site" class="button disabled">Next</a>
-				@else
-					<a href="/@repo.user_name/@repo.name/@branch_name/commits/@next_site" class="button">Next</a>
-				@end
-			</div>
+					<span>@page of @page_count</span>
+
+					@if is_last_page
+						<a href="/@repo.user_name/@repo.name/@branch_name/commits/@next_page" class="button disabled">Next</a>
+					@else
+						<a href="/@repo.user_name/@repo.name/@branch_name/commits/@next_page" class="button">Next</a>
+					@end
+				</div>
+			@end
 		</div>
 
 		@include 'layout/footer.html'

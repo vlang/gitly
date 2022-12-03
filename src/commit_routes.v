@@ -38,24 +38,18 @@ pub fn (mut app App) commits(username string, repo_name string, branch_name stri
 
 	branch := app.find_repo_branch_by_name(repo.id, branch_name)
 	commits_count := app.get_repo_commit_count(repo.id, branch.id)
-	mut commits := app.find_repo_commits_as_page(repo.id, branch.id, page)
 
-	// TODO: move to render logic
 	offset := commits_per_page * page
-	mut b_author := false
-	mut first := page == 0
-	mut last := (commits_count - offset) < commits_per_page
+	// FIXME: b_author always false
+	b_author := false
+	page_count := calculate_pages(commits_count, commits_per_page)
+	is_first_page := check_first_page(page)
+	is_last_page := check_last_page(commits_count, offset, commits_per_page)
+	prev_page, next_page := generate_prev_next_pages(page)
 
-	mut last_site := 0
-	if page > 0 {
-		last_site = page - 1
-	}
-	next_site := page + 1
+	mut commits := app.find_repo_commits_as_page(repo.id, branch.id, offset)
 
-	mut msg := 'on'
-	if b_author {
-		msg = 'by'
-	}
+	msg := if b_author { 'by' } else { 'on' }
 
 	mut d_commits := map[string][]Commit{}
 	for commit in commits {
@@ -66,16 +60,16 @@ pub fn (mut app App) commits(username string, repo_name string, branch_name stri
 		author := commit.author_id.str()
 		date_s := '${day}.${month}.${year}'
 
-		if !b_author {
-			if date_s !in d_commits {
-				d_commits[date_s] = []Commit{}
-			}
-			d_commits[date_s] << commit
-		} else {
+		if b_author {
 			if author !in d_commits {
 				d_commits[author] = []Commit{}
 			}
 			d_commits[author] << commit
+		} else {
+			if date_s !in d_commits {
+				d_commits[date_s] = []Commit{}
+			}
+			d_commits[date_s] << commit
 		}
 	}
 
