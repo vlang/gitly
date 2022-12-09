@@ -27,6 +27,22 @@
 						}
 					@end
 				}
+
+				<div class="buttons">
+					@if is_first_page
+						<a href="/@username/@repo_name/releases/@prev_page" class="button disabled">Prev</a>
+					@else
+						<a href="/@username/@repo_name/releases/@prev_page" class="button">Prev</a>
+					@end
+
+					<span>@page of @page_count</span>
+
+					@if is_last_page
+						<a href="/@username/@repo_name/releases/@next_page" class="button disabled">Next</a>
+					@else
+						<a href="/@username/@repo_name/releases/@next_page" class="button">Next</a>
+					@end
+				</div>
 			@else
 				<h2>No releases</h2>
 			@end

@@ -2,6 +2,10 @@ module main
 
 import vweb
 
+const (
+	admin_users_per_page = 30
+)
+
 ['/admin/settings']
 pub fn (mut app App) admin_settings() vweb.Result {
 	if !app.is_admin() {
@@ -38,13 +42,23 @@ pub fn (mut app App) handle_admin_edit_user(user_id string) vweb.Result {
 }
 
 ['/admin/users']
-pub fn (mut app App) admin_users() vweb.Result {
+pub fn (mut app App) admin_users_default() vweb.Result {
+	return app.admin_users(0)
+}
+
+['/admin/users/:page']
+pub fn (mut app App) admin_users(page int) vweb.Result {
 	if !app.is_admin() {
 		return app.redirect_to_index()
 	}
 
-	// TODO: add pagination
-	users := app.get_all_registered_users()
+	user_count := app.get_all_registered_user_count()
+	offset := admin_users_per_page * page
+	users := app.get_all_registered_users_as_page(offset)
+	page_count := calculate_pages(user_count, admin_users_per_page)
+	is_first_page := check_first_page(page)
+	is_last_page := check_last_page(user_count, offset, admin_users_per_page)
+	prev_page, next_page := generate_prev_next_pages(page)
 
 	return $vweb.html()
 }

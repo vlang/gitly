@@ -38,32 +38,6 @@ pub fn (mut app App) user_stars(username string) vweb.Result {
 	return $vweb.html()
 }
 
-['/:username/feed']
-pub fn (mut app App) user_feed(username string) vweb.Result {
-	exists, user := app.check_username(username)
-
-	if !exists {
-		return app.not_found()
-	}
-
-	// TODO: add pagination
-	feed := app.build_user_feed(app.user.id)
-	mut items_start_day_group := []int{}
-	mut last_unique_date := ''
-
-	for item in feed {
-		item_ymmdd := item.created_at.ymmdd()
-
-		if item_ymmdd != last_unique_date {
-			items_start_day_group << item.id
-
-			last_unique_date = item_ymmdd
-		}
-	}
-
-	return $vweb.html()
-}
-
 ['/:username/:repo_name/settings']
 pub fn (mut app App) repo_settings(username string, repo_name string) vweb.Result {
 	repo := app.find_repo_by_name_and_username(repo_name, username)

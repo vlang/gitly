@@ -1,9 +1,5 @@
 module main
 
-const (
-	user_feed_page_size = 50
-)
-
 fn (mut app App) watch_repo(repo_id int, user_id int) {
 	watch := Watch{
 		repo_id: repo_id

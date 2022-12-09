@@ -134,13 +134,8 @@ pub fn (mut app App) issues(username string, repo_name string, page int) vweb.Re
 		first = true
 	}
 
-	mut last_site := 0
-
-	if page > 0 {
-		last_site = page - 1
-	}
-
-	next_site := page + 1
+	page_count := calculate_pages(repo.open_issues_count, commits_per_page)
+	prev_page, next_page := generate_prev_next_pages(page)
 
 	return $vweb.html()
 }

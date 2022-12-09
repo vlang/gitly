@@ -227,9 +227,10 @@ pub fn (mut app App) find_repo_registered_contributor(id int) []User {
 	return users
 }
 
-pub fn (mut app App) get_all_registered_users() []User {
+pub fn (mut app App) get_all_registered_users_as_page(offset int) []User {
+	// FIXME: 30 -> admin_users_per_page
 	mut users := sql app.db {
-		select from User where is_registered == true
+		select from User where is_registered == true limit 30 offset offset
 	}
 
 	for i, user in users {
@@ -237,6 +238,12 @@ pub fn (mut app App) get_all_registered_users() []User {
 	}
 
 	return users
+}
+
+pub fn (mut app App) get_all_registered_user_count() int {
+	return sql app.db {
+		select count from User where is_registered == true
+	}
 }
 
 fn (app App) search_users(query string) []User {
