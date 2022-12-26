@@ -3,11 +3,12 @@
 module main
 
 struct File {
-	id                 int    [primary; sql: serial]
-	repo_id            int    [unique: 'file']
-	name               string [unique: 'file']
-	parent_path        string [unique: 'file']
-	is_dir             bool
+	id          int    [primary; sql: serial]
+	repo_id     int    [unique: 'file']
+	name        string [unique: 'file']
+	parent_path string [unique: 'file']
+	is_dir      bool
+	// FIXME: branch id instead of name
 	branch             string [unique: 'file']
 	contributors_count int
 	last_hash          string

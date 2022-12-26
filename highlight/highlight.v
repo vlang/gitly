@@ -6,7 +6,7 @@ const (
 	tab = '    ' //        '
 )
 
-// returns HTML code, number of lines, number of lines with source code
+// highlight_text returns HTML code, number of lines, number of lines with source code
 pub fn highlight_text(st string, file_path string, commit bool) (string, int, int) {
 	if !commit {
 		file_extension := extract_extension_from_file_path(file_path)

@@ -1,4 +1,5 @@
 gitly
+bin/
 *.sqlite
 *.css
 *.css.map
@@ -13,5 +14,6 @@ avatars/
 
 *.code-workspace
 .vscode
+.idea
 
 .DS_Store

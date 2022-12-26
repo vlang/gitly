@@ -70,7 +70,7 @@ fn (mut app App) find_repository_items(repo_id int, branch string, parent_path s
 	return items
 }
 
-fn (mut app App) find_repo_file_by_path(repo_id int, item_branch string, path string) ?File {
+fn (mut app App) get_repo_file_by_path(repo_id int, branch_name string, path string) ?File {
 	mut valid_parent_path := os.dir(path)
 	item_name := path.after('/')
 
@@ -78,11 +78,9 @@ fn (mut app App) find_repo_file_by_path(repo_id int, item_branch string, path st
 		valid_parent_path = '.'
 	}
 
-	app.info('find file repo_id=${repo_id} parent_path = ${valid_parent_path} branch=${item_branch} name=${item_branch}')
-
 	file := sql app.db {
 		select from File where repo_id == repo_id && parent_path == valid_parent_path
-		&& branch == item_branch && name == item_name limit 1
+		&& branch == branch_name && name == item_name limit 1
 	}
 
 	if file.name == '' {
@@ -98,12 +96,6 @@ fn (mut app App) delete_repository_files(repository_id int) {
 	}
 }
 
-fn (mut app App) delete_repository_files_in_branch(repository_id int, branch_name string) {
-	sql app.db {
-		delete from File where repo_id == repository_id && branch == branch_name
-	}
-}
-
-fn (mut app App) delete_repo_folder(path string) {
+fn (mut _ App) delete_repo_folder(path string) {
 	os.rmdir_all(os.real_path(path)) or { panic(err) }
 }
