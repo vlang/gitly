@@ -149,7 +149,7 @@ fn write(c byte) []u8 {
 
 fn is_letter(c byte, lang Lang) bool {
 	name := lang.name.to_lower()
-	if (name == 'cpp' || name == 'c' || name == 'swift') && c == '#'.bytes()[0] {
+	if (name == 'cpp' || name == 'c' || name == 'd' || name == 'swift') && c == '#'.bytes()[0] {
 		return true
 	}
 	return c.is_letter() || c == `_`
