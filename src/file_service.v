@@ -70,7 +70,7 @@ fn (mut app App) find_repository_items(repo_id int, branch string, parent_path s
 	return items
 }
 
-fn (mut app App) get_repo_file_by_path(repo_id int, branch_name string, path string) ?File {
+fn (app &App) get_repo_file_by_path(repo_id int, branch_name string, path string) ?File {
 	mut valid_parent_path := os.dir(path)
 	item_name := path.after('/')
 

@@ -206,13 +206,8 @@ fn (mut app App) update_repo_from_fs(mut repo Repo) ! {
 	app.db.exec('BEGIN TRANSACTION')
 
 	app.create_branches_from_fs(repo)
-
-	for branch in app.get_all_repo_branches(repo_id) {
-		branch_name := branch.name
-
-		app.create_commits_from_fs(mut repo, branch_name)!
-		app.create_files_from_fs(mut repo, branch_name, '.')
-	}
+	app.create_commits_from_fs(mut repo, repo.primary_branch)!
+	app.create_files_from_fs(mut repo, repo.primary_branch, '.')
 
 	repo.contributors_count = app.get_count_repo_contributors(repo_id)
 	repo.branches_count = app.get_count_repo_branches(repo_id)
@@ -241,9 +236,10 @@ fn (mut app App) update_repo_after_push(repo_id int, branch_name string, last_co
 
 	app.db.exec('BEGIN TRANSACTION')
 
-	has_branch := app.has_repo_branch(repo.id, branch_name)
+	branch := app.find_repo_branch_by_name(repo.id, branch_name)
+	is_branch_updated_from_fs := branch.hash != ''
 
-	if !has_branch {
+	if !is_branch_updated_from_fs {
 		app.create_branch_if_not_exists(repo.id, branch_name)
 		app.create_files_from_fs(mut repo, branch_name, '.')
 	}

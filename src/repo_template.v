@@ -2,6 +2,20 @@ module main
 
 import vweb
 
+fn generate_parent_path(url string, path string) string {
+	can_up := path != ''
+
+	if can_up {
+		if path.split('/').len == 1 {
+			return '../..'
+		} else {
+			return url.all_before_last('/')
+		}
+	}
+
+	return '/'
+}
+
 fn get_declension_form(count int, first_form string, second_form string) string {
 	if count == 1 {
 		return '<b>${count}</b> ${first_form}'

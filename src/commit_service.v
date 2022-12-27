@@ -145,18 +145,38 @@ fn (mut app App) get_repo_commit_count(repo_id int, branch_id int) int {
 	}
 }
 
-fn (mut app App) find_repo_commit_by_hash(repo_id int, hash string) Commit {
-	commits := sql app.db {
-		select from Commit where repo_id == repo_id && hash == hash
+fn (app &App) find_repo_commit_by_hash(repo_id int, branch_id int, hash string) Commit {
+	return sql app.db {
+		select from Commit where repo_id == repo_id && branch_id == branch_id && hash == hash limit 1
 	}
-	if commits.len == 1 {
-		return commits[0]
-	}
-	return Commit{}
 }
 
-fn (mut app App) find_repo_last_commit(repo_id int, branch_id int) Commit {
+fn (app &App) find_repo_last_commit(repo_id int, branch_id int) Commit {
 	return sql app.db {
 		select from Commit where repo_id == repo_id && branch_id == branch_id order by created_at desc limit 1
 	}
+}
+
+fn (app &App) get_last_commit_for_path(repo_id int, branch &Branch, item_path string) Commit {
+	mut last_commit := Commit{}
+	can_up := item_path != ''
+
+	if can_up {
+		mut path := item_path
+		if path.ends_with('/') {
+			path = path[0..item_path.len - 1]
+		}
+
+		if !path.contains('/') {
+			path = '/${path}'
+		}
+
+		if dir := app.get_repo_file_by_path(repo_id, branch.name, path) {
+			last_commit = app.find_repo_commit_by_hash(repo_id, branch.id, dir.last_hash)
+		}
+	} else {
+		last_commit = app.find_repo_last_commit(repo_id, branch.id)
+	}
+
+	return last_commit
 }

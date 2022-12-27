@@ -296,6 +296,7 @@ pub fn (mut app App) tree(username string, repo_name string, branch_name string,
 	repo_id := repo.id
 	log_prefix := '${username}/${repo_name}'
 
+	// FIXME: tags fetch every time
 	app.fetch_tags(repo)
 
 	app.current_path = '/${path}'
@@ -303,56 +304,34 @@ pub fn (mut app App) tree(username string, repo_name string, branch_name string,
 		return vweb.not_found()
 	}
 
-	path_parts := path.split('/')
-
 	app.path_split = [repo_name]
-	app.path_split << path_parts
-
+	app.path_split << path.split('/')
 	app.is_tree = true
 
 	app.increment_repo_views(repo.id)
 
-	mut up := '/'
+	up := generate_parent_path(app.req.url, path)
 	can_up := path != ''
-	if can_up {
-		if path.split('/').len == 1 {
-			up = '../..'
-		} else {
-			up = app.req.url.all_before_last('/')
-		}
-	}
 
 	if app.current_path.starts_with('/') {
 		app.current_path = app.current_path[1..]
 	}
 
 	branch := app.find_repo_branch_by_name(repo.id, branch_name)
+	is_branch_updated_from_fs := branch.hash != ''
+
+	if !is_branch_updated_from_fs {
+		app.create_commits_from_fs(mut repo, branch_name) or {
+			app.send_internal_error(err.str())
+
+			return app.ok('')
+		}
+
+		app.create_files_from_fs(mut repo, branch_name, '.')
+	}
 
 	// Fetch last commit message for this directory, printed at the top of the tree
-	mut last_commit := Commit{}
-	if can_up {
-		mut p := path
-		if p.ends_with('/') {
-			p = p[0..path.len - 1]
-		}
-
-		if !p.contains('/') {
-			p = '/${p}'
-		}
-
-		if dir := app.get_repo_file_by_path(repo.id, branch_name, p) {
-			last_commit = app.find_repo_commit_by_hash(repo.id, dir.last_hash)
-		}
-	} else {
-		last_commit = app.find_repo_last_commit(repo.id, branch.id)
-	}
-
-	diff := int(time.ticks() - app.page_gen_start)
-	if diff == 0 {
-		app.page_gen_time = '<1ms'
-	} else {
-		app.page_gen_time = '${diff}ms'
-	}
+	last_commit := app.get_last_commit_for_path(repo_id, branch, path)
 
 	mut items := app.find_repository_items(repo_id, branch_name, app.current_path)
 
@@ -392,6 +371,8 @@ pub fn (mut app App) tree(username string, repo_name string, branch_name string,
 	is_repo_starred := app.check_repo_starred(repo_id, app.user.id)
 	is_repo_watcher := app.check_repo_watcher_status(repo_id, app.user.id)
 	is_top_directory := app.current_path == ''
+
+	app.calculate_and_set_page_gen_time()
 
 	return $vweb.html()
 }
@@ -487,4 +468,10 @@ pub fn (mut app App) handle_raw(username string, repo_name string, branch_name s
 	file_source := repo.git('--no-pager show ${branch_name}:${path}')
 
 	return app.ok(file_source)
+}
+
+fn (mut app App) calculate_and_set_page_gen_time() {
+	diff := int(time.ticks() - app.page_gen_start)
+
+	app.page_gen_time = if diff == 0 { '<1ms' } else { '${diff}ms' }
 }
