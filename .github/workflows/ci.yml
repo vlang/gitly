@@ -175,6 +175,17 @@ jobs:
         with:
           repository: vlang/pcre
           path: vlib/pcre
+      - name: Install PCRE2
+        uses: actions/checkout@v2
+        with:
+          repository: PCRE2Project/pcre2
+          path: pcre2
+      - name: Configure PCRE2
+        working-directory: ./pcre2
+        run: cmake -DPCRE2_SUPPORT_JIT=ON -DPCRE2_BUILD_PCRE2_16=ON -DPCRE2_BUILD_PCRE2_32=ON -B build -A Win32
+      - name: Build PCRE2
+        working-directory: ./pcre2
+        run: cmake --build build
       - name: Build V
         run: |
           ./make.bat -gcc
