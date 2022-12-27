@@ -182,7 +182,7 @@ jobs:
           path: pcre2
       - name: Configure PCRE2
         working-directory: ./pcre2
-        run: cmake -DPCRE2_SUPPORT_JIT=ON -DPCRE2_BUILD_PCRE2_16=ON -DPCRE2_BUILD_PCRE2_32=ON -B build -A Win32
+        run: cmake -B build -A Win32
       - name: Build PCRE2
         working-directory: ./pcre2
         run: cmake --build build
