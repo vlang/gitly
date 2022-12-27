@@ -30,6 +30,7 @@ fn init_v() Lang {
 			'pub',
 			'return',
 			'struct',
+			'spawn',
 			'type',
 			'mut',
 			'true',

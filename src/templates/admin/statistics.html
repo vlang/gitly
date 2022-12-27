@@ -1,9 +1,27 @@
-@include '../header.html'
+<!DOCTYPE html>
+<html>
+	<head>
+		@include '../layout/head.html'
+	</head>
+	<body>
+		@include '../layout/header.html'
 
-<a href="/admin"><h1>Admin panel</h1></a>
-<br>
-<h2>Statistics</h2>
+		<div class="content">
+			<h1>Admin panel</h1>
 
-<label>Gitly runs since <b>@app.running_since()</b></label>
+			<div class="admin-menu">
+				<a href="/admin/settings">Settings</a>
+				|
+				<a href="/admin/users">Users</a>
+				|
+				<span>Statistics</span>
+			</div>
 
-@include '../footer.html'
+			<div>
+				<p>Gitly runs since <b>@app.running_since()</b></p>
+			</div>
+		</div>
+
+		@include '../layout/footer.html'
+	</body>
+</html>

@@ -1,16 +1,33 @@
-@include 'header.html'
+<!DOCTYPE html>
+<html>
+	<head>
+		@include 'layout/head.html'
+	</head>
+	<body>
+		@include 'layout/header.html'
 
-<div class="blob-options-block">
-	<a href="@raw_url" target="_blank">Raw file</a>
-</div>
+		<div class="content">
+			@include './layout/tree_path.html'
 
-@if is_markdown
-	<div class="blob-content blob-content__markdown">
-		@source
-	</div>
-@else
-	<pre class="blob-content">
-		@source
-	</pre>
-@end
-@include 'footer.html'
+			<div class="blob-options-block">
+				<a href="@raw_url" target="_blank">Raw file</a>
+				|
+				<span>${loc} loc (${sloc} sloc)</span>
+				|
+				<span>${file.pretty_size()}</span>
+				|
+				<span>Latest commit hash ${file.last_hash}</span>
+			</div>
+
+			@if is_markdown
+				<div class="blob-content blob-content__markdown">
+					@source
+				</div>
+			@else
+				<pre class="blob-content">@source</pre>
+			@end
+		</div>
+
+		@include 'layout/footer.html'
+	</body>
+</html>

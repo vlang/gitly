@@ -1,182 +1,171 @@
-@include 'header.html'
+<!DOCTYPE html>
+<html>
+	<head>
+		@include 'layout/head.html'
+	</head>
+	<body>
+		@include 'layout/header.html'
 
-<div class="repo-wrapper">
-	<div class="branch-specific-container">
-		<select class="branch-select" name="branch">
-			@for name in app.get_all_repo_branch_names(app.repo.id)
-				<option value="@name">@name</option>
-			@end
-		</select>
+		<script>
+			const TREE_BRANCH_PATH_TEMPLATE = "/@repo.user_name/@repo.name/tree/";
+			const BRANCH_NAME = "@branch_name";
+			const REPO_ID = @repo.id;
+		</script>
 
-		<div class="commit-count">
-			<a href='/@app.repo.user_name/@app.repo.name/@branch_name/commits'>
-				<svg aria-hidden="true" focusable="false" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M504 255.531c.253 136.64-111.18 248.372-247.82 248.468-59.015.042-113.223-20.53-155.822-54.911-11.077-8.94-11.905-25.541-1.839-35.607l11.267-11.267c8.609-8.609 22.353-9.551 31.891-1.984C173.062 425.135 212.781 440 256 440c101.705 0 184-82.311 184-184 0-101.705-82.311-184-184-184-48.814 0-93.149 18.969-126.068 49.932l50.754 50.754c10.08 10.08 2.941 27.314-11.313 27.314H24c-8.837 0-16-7.163-16-16V38.627c0-14.254 17.234-21.393 27.314-11.314l49.372 49.372C129.209 34.136 189.552 8 256 8c136.81 0 247.747 110.78 248 247.531zm-180.912 78.784l9.823-12.63c8.138-10.463 6.253-25.542-4.21-33.679L288 256.349V152c0-13.255-10.745-24-24-24h-16c-13.255 0-24 10.745-24 24v135.651l65.409 50.874c10.463 8.137 25.541 6.253 33.679-4.21z"></path></svg>
-				@{app.format_commits_count(app.repo, app.branch)}
-			</a>
-		</div>
-	</div>
+		<div class="content">
+			@include 'layout/repo_menu.html'
 
-	<div class='repo-clone'>
-		Clone with HTTPS: <input type='text' value='@app.generate_clone_url()' readonly/>
-	</div>
+			<div class="repo-wrapper">
+				<span class="branch-specific-container">
+					<select class="branch-select" name="branch">
+						@for name in app.get_all_repo_branch_names(repo.id)
+							<option value="@name">@name</option>
+						@end
+					</select>
 
-	<div class="repo-about">
-		<h2>About</h2>
-		<p>@app.repo.description</p>
+					<div class="branch-specific-item">
+						<a href='/@repo.user_name/@repo.name/@branch_name/commits/0'>
+							<svg aria-hidden="true" focusable="false" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M504 255.531c.253 136.64-111.18 248.372-247.82 248.468-59.015.042-113.223-20.53-155.822-54.911-11.077-8.94-11.905-25.541-1.839-35.607l11.267-11.267c8.609-8.609 22.353-9.551 31.891-1.984C173.062 425.135 212.781 440 256 440c101.705 0 184-82.311 184-184 0-101.705-82.311-184-184-184-48.814 0-93.149 18.969-126.068 49.932l50.754 50.754c10.08 10.08 2.941 27.314-11.313 27.314H24c-8.837 0-16-7.163-16-16V38.627c0-14.254 17.234-21.393 27.314-11.314l49.372 49.372C129.209 34.136 189.552 8 256 8c136.81 0 247.747 110.78 248 247.531zm-180.912 78.784l9.823-12.63c8.138-10.463 6.253-25.542-4.21-33.679L288 256.349V152c0-13.255-10.745-24-24-24h-16c-13.255 0-24 10.745-24 24v135.651l65.409 50.874c10.463 8.137 25.541 6.253 33.679-4.21z"></path></svg>
+							@{app.format_commits_count(repo, branch_name)}
+						</a>
+					</div>
 
-		@if readme.len > 0
-			<div>
-				<a href="#readme">README</a>
+					<div class="repo-code-container">
+						<div class="repo-code-button">Code ▼</div>
+
+						<div class="repo-clone-dropdown">
+							Clone with HTTPS:
+							<div class="clone-input-group">
+								<input disabled value="@{app.generate_clone_url(repo)}">
+								<button class="copy-clone-url-button">Copy</button>
+							</div>
+						</div>
+					</div>
+				</span>
+
+				@if is_top_directory
+					<div class="repo-about">
+						<h2>About</h2>
+						<p>@repo.description</p>
+
+						@if readme.len > 0
+							<div>
+								<a href="#readme">Readme</a>
+							</div>
+						@end
+
+						@if license_file_path.len > 0
+							<div>
+								<a href="@{license_file_path}">License</a>
+							</div>
+						@end
+
+						@if is_repo_starred
+							<button class="star-button">
+								@include 'svgs/unstar.html'
+								Starred @{repo.stars_count}
+							</button>
+						@else
+							<button class="star-button">
+								@include 'svgs/star.html'
+								Star @{repo.stars_count}
+							</button>
+						@end
+
+						@if is_repo_watcher
+							<button class="watch-button">
+								@include 'svgs/unwatch.html'
+								Unwatch @{watcher_count}
+							</button>
+						@else
+							<button class="watch-button">
+								@include 'svgs/watch.html'
+								Watch @{watcher_count}
+							</button>
+						@end
+					</div>
+				@end
 			</div>
-		@end
 
-		@if license_file_path.len > 0
-			<div>
-				<a href="@{license_file_path}">LICENSE</a>
-			</div>
-		@end
+			@include './layout/tree_path.html'
 
-		<hr/>
+			@if has_commits
+				.lang-stats-header {
+					.langs {
+						@for stat in repo.lang_stats
+							.lang-stat {
+								<span class='lang-stat-dot' style='background-color:@{stat.color}'>&nbsp;</span>
+								<b>@stat.name</b>
+								@{stat.pct_html()}
+							}
+						@end
+					}
 
-		@if is_repo_starred
-			<button class="star-button">
-				<svg enable-background="new 0 0 280.124 280.124" version="1.1" viewBox="0 0 280.12 280.12" xml:space="preserve" xmlns="http://www.w3.org/2000/svg">
-					<path d="m280.12 106.91-92.059-6.598-48.008-95.875-48.55 95.874-91.507 6.599 61.282 74.015-17.519 94.754 96.294-43.614 96.294 43.606-17.799-94.754c1e-3 -2e-3 61.572-74.007 61.572-74.007z" fill="#F4B459"/>
-					<polygon points="236.35 275.68 218.55 180.92 280.07 106.98 280.07 106.9 188.06 100.32 140.06 4.441 140.06 232.07" fill="#E3A753"/>
-				</svg>
-				Starred @{star_count}
-			</button>
-		@else
-			<button class="star-button">
-				<svg enable-background="new 0 0 243.317 243.317" version="1.1" viewBox="0 0 243.32 243.32" xml:space="preserve" xmlns="http://www.w3.org/2000/svg">
-					<path d="m242.95 93.714c-0.882-2.715-3.229-4.694-6.054-5.104l-74.98-10.9-33.53-67.941c-1.264-2.56-3.871-4.181-6.725-4.181-2.855 0-5.462 1.621-6.726 4.181l-33.53 67.941-74.982 10.9c-2.826 0.411-5.173 2.39-6.055 5.104-0.882 2.715-0.147 5.695 1.898 7.688l54.257 52.886-12.807 74.672c-0.482 2.814 0.674 5.658 2.983 7.335 2.309 1.678 5.371 1.9 7.898 0.571l67.064-35.254 67.063 35.254c1.097 0.577 2.296 0.861 3.489 0.861h0.021 1e-3c4.142 0 7.5-3.358 7.5-7.5 0-0.629-0.078-1.24-0.223-1.824l-12.713-74.117 54.254-52.885c2.044-1.991 2.78-4.972 1.897-7.687zm-69.445 52.585c-1.768 1.723-2.575 4.206-2.157 6.639l10.906 63.581-57.102-30.018c-2.185-1.149-4.795-1.149-6.979 0l-57.103 30.018 10.906-63.581c0.418-2.433-0.389-4.915-2.157-6.639l-46.199-45.031 63.847-9.281c2.443-0.355 4.555-1.889 5.647-4.103l28.55-57.849 28.55 57.849c1.092 2.213 3.204 3.748 5.646 4.103l63.844 9.281-46.199 45.031z"/>
-				</svg>
-				Star @{star_count}
-			</button>
-		@end
-	</div>
-
-	<script>
-		const TREE_BRANCH_PATH_TEMPLATE = "/@app.repo.user_name/@app.repo.name/tree/";
-		const branchSelectEl = document.querySelector(".branch-select");
-		branchSelectEl.addEventListener("change", (event) => {
-			window.location.href = TREE_BRANCH_PATH_TEMPLATE + event.target.value;
-		});
-
-		branchSelectEl.value = "@app.branch";
-	</script>
-</div>
-
-@if has_commits
-	.lang-stats-header {
-		.langs {
-			@for stat in app.repo.lang_stats
-				.lang-stat {
-					<span class='lang-stat-dot' style='background-color:@{stat.color}'>&nbsp;</span>
-					<b>@stat.name</b>
-					@{stat.pct_html()}
+					.lang-stats-bar {
+						@for stat in repo.lang_stats
+							<div style='flex:@{stat.pct}; background-color:@stat.color'></div>
+						@end
+					}
 				}
 			@end
-		}
 
-		.lang-stats-bar {
-			@for stat in app.repo.lang_stats
-				<div style='flex:@{stat.pct}; background-color:@stat.color'></div>
-			@end
-		}
-	}
-@end
+			@if has_commits
+				.files {
+					.last_commit {
+						<b>@last_commit.author</b>
+						span.last_commit_message {
+							@last_commit.message
+						}
+						<a href="/@repo.user_name/@repo.name/commit/@last_commit.hash" class="last_commit_hash">@last_commit.hash</a>
+						span.time {
+							@last_commit.relative()
+						}
+					}
 
-@if has_commits
-	.files {
-		.last_commit {
-			<b>@last_commit.author</b>
-			span.last_commit_message {
-				@last_commit.message
-			}
-			<a href="/@app.repo.user_name/@app.repo.name/commit/@last_commit.hash" class="last_commit_hash">@last_commit.hash</a>
-			span.time {
-				@last_commit.relative()
-			}
-		}
-
-		@if can_up
-			.file {
-				span.file-ico {
-					<svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="folder" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M464 128H272l-64-64H48C21.49 64 0 85.49 0 112v288c0 26.51 21.49 48 48 48h416c26.51 0 48-21.49 48-48V176c0-26.51-21.49-48-48-48z"></path></svg>
-				}
-				span.file-name {
-					<a href="@up">..</a>
-				}
-			}
-		@end
-		@for file in items
-			.file {
-				span.file-ico {
-					@if file.is_dir
-						<svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="folder" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M464 128H272l-64-64H48C21.49 64 0 85.49 0 112v288c0 26.51 21.49 48 48 48h416c26.51 0 48-21.49 48-48V176c0-26.51-21.49-48-48-48z"></path></svg>
-					@else
-						<svg aria-hidden="true" focusable="false" data-prefix="far" data-icon="file-alt" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M288 248v28c0 6.6-5.4 12-12 12H108c-6.6 0-12-5.4-12-12v-28c0-6.6 5.4-12 12-12h168c6.6 0 12 5.4 12 12zm-12 72H108c-6.6 0-12 5.4-12 12v28c0 6.6 5.4 12 12 12h168c6.6 0 12-5.4 12-12v-28c0-6.6-5.4-12-12-12zm108-188.1V464c0 26.5-21.5 48-48 48H48c-26.5 0-48-21.5-48-48V48C0 21.5 21.5 0 48 0h204.1C264.8 0 277 5.1 286 14.1L369.9 98c9 8.9 14.1 21.2 14.1 33.9zm-128-80V128h76.1L256 51.9zM336 464V176H232c-13.3 0-24-10.7-24-24V48H48v416h288z"></path></svg>
+					@if can_up
+						.file {
+							span.file-ico {
+								<svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="folder" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M464 128H272l-64-64H48C21.49 64 0 85.49 0 112v288c0 26.51 21.49 48 48 48h416c26.51 0 48-21.49 48-48V176c0-26.51-21.49-48-48-48z"></path></svg>
+							}
+							span.file-name {
+								<a href="@up">..</a>
+							}
+						}
+					@end
+					@for file in items
+						.file {
+							span.file-ico {
+								@if file.is_dir
+									<svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="folder" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="M464 128H272l-64-64H48C21.49 64 0 85.49 0 112v288c0 26.51 21.49 48 48 48h416c26.51 0 48-21.49 48-48V176c0-26.51-21.49-48-48-48z"></path></svg>
+								@else
+									<svg aria-hidden="true" focusable="false" data-prefix="far" data-icon="file-alt" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M288 248v28c0 6.6-5.4 12-12 12H108c-6.6 0-12-5.4-12-12v-28c0-6.6 5.4-12 12-12h168c6.6 0 12 5.4 12 12zm-12 72H108c-6.6 0-12 5.4-12 12v28c0 6.6 5.4 12 12 12h168c6.6 0 12-5.4 12-12v-28c0-6.6-5.4-12-12-12zm108-188.1V464c0 26.5-21.5 48-48 48H48c-26.5 0-48-21.5-48-48V48C0 21.5 21.5 0 48 0h204.1C264.8 0 277 5.1 286 14.1L369.9 98c9 8.9 14.1 21.2 14.1 33.9zm-128-80V128h76.1L256 51.9zM336 464V176H232c-13.3 0-24-10.7-24-24V48H48v416h288z"></path></svg>
+								@end
+							}
+							span.file-name {
+								<a href='/@repo.user_name/@repo.name/@file.url()'>@file.name</a>
+							}
+							span.file-msg {
+								<a href="/@repo.user_name/@repo.name/commit/@file.last_hash#@file.full_path()">@file.format_commit_message()</a>
+							}
+							span.file-time {
+								@file.pretty_last_time()
+							}
+						}
 					@end
 				}
-				span.file-name {
-					<a href='/@app.repo.user_name/@app.repo.name/@file.url()'>@file.name</a>
-				}
-				span.file-msg {
-					<a href="/@app.repo.user_name/@app.repo.name/commit/@file.last_hash#@file.full_path()">@file.format_commit_message()</a>
-				}
-				span.file-time {
-					@file.pretty_last_time()
-				}
-			}
-		@end
-	}
 
-	@if readme.len > 0
-		<div class="readme" id="readme">
-			@readme
+				@if readme.len > 0
+					<div class="readme" id="readme">
+						@readme
+					</div>
+				@end
+			@else
+				<p>No commits</p>
+			@end
+
 		</div>
-	@end
-@else
-	<p>No commits</p>
-@end
 
-<script>
-	const repoId = @app.repo.id;
-	// Make the entire row clickable
-	const fileEls = document.querySelectorAll(".file");
-
-	fileEls.forEach(fileEl => {
-		fileEl.addEventListener("click", () => {
-			window.location = fileEl.querySelector("a").href;
-		});
-	});
-
-	const starButtonEl = document.querySelector(".star-button");
-
-	async function starRepo(repoId) {
-		const url = "/api/v1/repos/" + repoId + "/star";
-		const response = await fetch(url, {
-			method: "POST"
-		});
-		const json = await response.json();
-
-		if (json.success) {
-			return json.result === "true";
-		} else {
-			throw new Error(json.message);
-		}
-	}
-
-	starButtonEl.addEventListener("click", () => {
-		starRepo(repoId)
-			.then((status) => {
-				location.reload()
-			})
-			.catch((error) => {
-				alert(error.toString());
-			})
-	});
-</script>
-
-@include 'footer.html'
+		@js '/js/tree.js'
+		@include 'layout/footer.html'
+	</body>
+</html>

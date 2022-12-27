@@ -1,22 +1,38 @@
-@include 'header.html'
+<!DOCTYPE html>
+<html>
+	<head>
+		@include 'layout/head.html'
+	</head>
+	<body>
+		@include 'layout/header.html'
 
-<h3>Branches</h3>
-.branches {
-	@for branch in branches
-		.branch {
-			.clog-block {
-				.clog {
-					.clog-msg {
-						<a href='/@app.repo.user_name/@app.repo.name/tree/@branch.name'>@branch.name</a>
+		<div class="content">
+			@include 'layout/repo_menu.html'
+
+			<h1>Branches</h1>
+
+			.branches {
+				@for branch in branches
+					.branch {
+						.clog-block {
+							.clog {
+								.clog-msg {
+									<a href='/@repo.user_name/@repo.name/tree/@branch.name'>@branch.name</a>
+								}
+
+								<span >@branch.author</span>
+
+								span.clog-time {
+									updated @branch.relative()
+								}
+							}
+						}
 					}
-					span.clog-author {
-						<span >@branch.author</span>
-					}
-					span.clog-time {
-						updated @branch.relative()
-					}
-				}
+				@end
 			}
-		}
-	@end
-}
+		</div>
+
+		@include 'layout/footer.html'
+	</body>
+</html>
+

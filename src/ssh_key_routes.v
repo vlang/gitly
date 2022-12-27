@@ -48,7 +48,7 @@ pub fn (mut app App) handle_add_ssh_key(username string) vweb.Result {
 		return app.user_ssh_keys_new(username)
 	}
 
-	return app.redirect('/$username/settings/ssh-keys')
+	return app.redirect('/${username}/settings/ssh-keys')
 }
 
 ['/:username/settings/ssh-keys/:id'; 'delete']

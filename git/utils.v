@@ -16,7 +16,7 @@ pub fn get_git_executable_path() ?string {
 }
 
 pub fn get_repository_primary_branch(path string) string {
-	git_result := os.execute('git -C $path symbolic-ref HEAD')
+	git_result := os.execute('git -C ${path} symbolic-ref HEAD')
 	git_exit_code := git_result.exit_code
 	git_output := git_result.output.trim(' \n')
 

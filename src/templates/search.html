@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		@include 'layout/head.html'
+	</head>
+	<body>
+		@include 'layout/header.html'
+
+		<div class="content">
+			<h1>Search</h1>
+
+			<div class="search-menu">
+				Type:
+				@if search_type == 'repos'
+					<span>repositories</span>
+					|
+					<a href="/search?query=@valid_query&type=users">users</a>
+				@else
+					<a href="/search?query=@valid_query&type=repos">repositories</a>
+					|
+					<span>users</span>
+				@end
+			</div>
+
+			@if search_type == 'repos'
+				@if repos.len > 0
+					<p class="search-info">Showing ${repos.len} available repository results</p>
+					@for repo in repos
+						<div class="list-item">
+							<a href="/@repo.user_name/@repo.name">
+								<h3>@repo.user_name/@repo.name</h3>
+							</a>
+							@if repo.description.len > 0
+								<p><i>@repo.description</i></p>
+							@end
+							<span class="search-repo-stars-count">${repo.stars_count}
+								@include 'svgs/unstar.html'
+							</span>
+						</div>
+					@end
+				@else
+					<p class="search-info">We couldn’t find any repositories matching "${valid_query}"</p>
+				@end
+			@end
+
+			@if search_type == 'users'
+				@if users.len > 0
+					<p class="search-info">Showing ${users.len} available user results</p>
+					@for user in users
+						<div class="list-item">
+							<div class='avatar'>
+								<a href="/@user.username">
+									<img src="@{app.prepare_user_avatar_url(user.avatar)}">
+								</a>
+							</div>
+
+							<a href="/@user.username">
+								<h3>@user.username</h3>
+							</a>
+							@if user.full_name.len > 0
+								<p>@user.full_name</p>
+							@end
+						</div>
+					@end
+				@else
+					<p class="search-info">We couldn’t find any users matching "${valid_query}"</p>
+				@end
+			@end
+		</div>
+
+		@include 'layout/footer.html'
+	</body>
+</html>

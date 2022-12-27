@@ -1,19 +1,37 @@
-@include 'header.html'
+<!DOCTYPE html>
+<html>
+	<head>
+		@include 'layout/head.html'
+	</head>
+	<body>
+		@include 'layout/header.html'
 
-<h3>Contributors</h3>
+		<div class="content">
+			@include 'layout/repo_menu.html'
 
-@if contributors.len > 0
-	.contributors-list {
-		@for contributor in contributors
-			.contributors-item {
-				@if contributor.is_registered
-					<a href="/@contributor.username"><span>@contributor.username</span></a>
-				@else
-					<span>@contributor.username</span>
-				@end
-			}
-		@end
-	}
-@else
-	<h2>No registered contributors</h2>
-@end
+			<h1>Contributors</h1>
+
+			@if contributors.len > 0
+				.contributors-list {
+					@for contributor in contributors
+						.contributors-item {
+							@if contributor.is_registered
+								<div class='avatar'>
+									<img src="@{app.prepare_user_avatar_url(app.user.avatar)}">
+								</div>
+								<a href="/@contributor.username"><h3>@contributor.username</h3></a>
+							@else
+								<h3>@contributor.username</h3>
+							@end
+						}
+					@end
+				}
+			@else
+				<h2>No registered contributors</h2>
+			@end
+		</div>
+
+		@include 'layout/footer.html'
+	</body>
+</html>
+

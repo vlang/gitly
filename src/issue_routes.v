@@ -4,14 +4,29 @@ import vweb
 import validation
 import api
 
-['/api/v1/:user/:repo_name/issues/count']
+struct ItemWithUser[T] {
+	item T
+	user User
+}
+
+type IssueWithUser = ItemWithUser[Issue]
+type CommentWithUser = ItemWithUser[Comment]
+
+['/api/v1/:username/:repo_name/issues/count']
 fn (mut app App) handle_issues_count(username string, repo_name string) vweb.Result {
-	// TODO: add auth checking module
-	if !app.exists_user_repo(username, repo_name) {
-		return app.not_found()
+	has_access := app.has_user_repo_read_access_by_repo_name(app.user.id, username, repo_name)
+
+	if !has_access {
+		return app.json_error('Not found')
 	}
 
-	count := app.get_repo_issue_count(app.repo.id)
+	repo := app.find_repo_by_name_and_username(repo_name, username)
+
+	if repo.id == 0 {
+		return app.json_error('Not found')
+	}
+
+	count := app.get_repo_issue_count(repo.id)
 
 	return app.json(api.ApiIssueCount{
 		success: true
@@ -19,17 +34,17 @@ fn (mut app App) handle_issues_count(username string, repo_name string) vweb.Res
 	})
 }
 
-['/:user/:repo/issues/new']
-pub fn (mut app App) new_issue(user string, repo string) vweb.Result {
-	if !app.exists_user_repo(user, repo) {
-		return app.not_found()
-	}
-
+['/:username/:repo_name/issues/new']
+pub fn (mut app App) new_issue(username string, repo_name string) vweb.Result {
 	if !app.logged_in {
 		return app.not_found()
 	}
 
-	app.show_menu = true
+	repo := app.find_repo_by_name_and_username(repo_name, username)
+
+	if repo.id == 0 {
+		return app.not_found()
+	}
 
 	return $vweb.html()
 }
@@ -39,15 +54,17 @@ pub fn (mut app App) handle_get_user_issues(username string) vweb.Result {
 	return app.user_issues(username, 0)
 }
 
-['/:user/:repo/issues'; post]
-pub fn (mut app App) handle_add_repo_issue(user string, repo string) vweb.Result {
-	if !app.exists_user_repo(user, repo) {
-		return app.not_found()
-	}
-
+['/:username/:repo_name/issues'; post]
+pub fn (mut app App) handle_add_repo_issue(username string, repo_name string) vweb.Result {
 	// TODO: use captcha instead of user restrictions
 	if !app.logged_in || (app.logged_in && app.user.posts_count >= posts_per_day) {
 		return app.redirect_to_index()
+	}
+
+	repo := app.find_repo_by_name_and_username(repo_name, username)
+
+	if repo.id == 0 {
+		return app.not_found()
 	}
 
 	title := app.form['title']
@@ -57,14 +74,14 @@ pub fn (mut app App) handle_add_repo_issue(user string, repo string) vweb.Result
 	is_text_empty := validation.is_string_empty(text)
 
 	if is_title_empty || is_text_empty {
-		return app.redirect('/$user/$repo/issues/new')
+		return app.redirect('/${username}/${repo_name}/issues/new')
 	}
 
 	app.increment_user_post(mut app.user)
 
-	app.add_issue(app.repo.id, app.user.id, title, text)
+	app.add_issue(repo.id, app.user.id, title, text)
 
-	app.increment_repo_issues(app.repo.id)
+	app.increment_repo_issues(repo.id)
 
 	has_first_issue_activity := app.has_activity(app.user.id, 'first_issue')
 
@@ -72,36 +89,41 @@ pub fn (mut app App) handle_add_repo_issue(user string, repo string) vweb.Result
 		app.add_activity(app.user.id, 'first_issue')
 	}
 
-	return app.redirect('/$user/$repo/issues')
+	return app.redirect('/${username}/${repo_name}/issues')
 }
 
-['/:user/:repo/issues']
-pub fn (mut app App) handle_get_repo_issues(user string, repo string) vweb.Result {
-	return app.issues(user, repo, 0)
+['/:username/:repo_name/issues']
+pub fn (mut app App) handle_get_repo_issues(username string, repo_name string) vweb.Result {
+	return app.issues(username, repo_name, 0)
 }
 
-['/:user/:repo/issues/:page']
-pub fn (mut app App) issues(user string, repo string, page int) vweb.Result {
-	if !app.exists_user_repo(user, repo) {
+['/:username/:repo_name/issues/:page']
+pub fn (mut app App) issues(username string, repo_name string, page int) vweb.Result {
+	repo := app.find_repo_by_name_and_username(repo_name, username)
+
+	if repo.id == 0 {
 		app.not_found()
 	}
 
-	app.show_menu = true
+	mut issues_with_users := []IssueWithUser{}
 
-	mut issues := app.find_repo_issues_as_page(app.repo.id, page)
+	for issue in app.find_repo_issues_as_page(repo.id, page) {
+		user := app.get_user_by_id(issue.author_id) or { continue }
+
+		issues_with_users << IssueWithUser{
+			item: issue
+			user: user
+		}
+	}
 
 	mut first := false
 	mut last := false
 
-	for index, issue in issues {
-		issues[index].author_name = app.find_username_by_id(issue.author_id)
-	}
-
-	if app.repo.open_issues_count > commits_per_page {
+	if repo.open_issues_count > commits_per_page {
 		offset := page * commits_per_page
-		delta := app.repo.open_issues_count - offset
+		delta := repo.open_issues_count - offset
 		if delta > 0 {
-			if delta == app.repo.open_issues_count && page == 0 {
+			if delta == repo.open_issues_count && page == 0 {
 				first = true
 			} else {
 				last = true
@@ -112,29 +134,33 @@ pub fn (mut app App) issues(user string, repo string, page int) vweb.Result {
 		first = true
 	}
 
-	mut last_site := 0
-
-	if page > 0 {
-		last_site = page - 1
-	}
-
-	next_site := page + 1
+	page_count := calculate_pages(repo.open_issues_count, commits_per_page)
+	prev_page, next_page := generate_prev_next_pages(page)
 
 	return $vweb.html()
 }
 
-['/:user/:repo/issue/:id']
-pub fn (mut app App) issue(user string, repo string, id string) vweb.Result {
-	if !app.exists_user_repo(user, repo) {
+['/:username/:repo_name/issue/:id']
+pub fn (mut app App) issue(username string, repo_name string, id string) vweb.Result {
+	repo := app.find_repo_by_name_and_username(repo_name, username)
+
+	if repo.id == 0 {
 		return app.not_found()
 	}
 
-	app.show_menu = true
+	issue := app.find_issue_by_id(id.int()) or { return app.not_found() }
+	issue_author := app.get_user_by_id(issue.author_id) or { return app.not_found() }
 
-	mut issue := app.find_issue_by_id(id.int()) or { return app.not_found() }
+	mut comments_with_users := []CommentWithUser{}
 
-	issue.author_name = app.find_username_by_id(issue.author_id)
-	comments := app.get_all_issue_comments(issue.id)
+	for comment in app.get_all_issue_comments(issue.id) {
+		user := app.get_user_by_id(comment.author_id) or { continue }
+
+		comments_with_users << CommentWithUser{
+			item: comment
+			user: user
+		}
+	}
 
 	return $vweb.html()
 }
@@ -149,20 +175,17 @@ pub fn (mut app App) user_issues(username string, page int) vweb.Result {
 		return app.not_found()
 	}
 
-	exists, u := app.check_username(username)
+	exists, user := app.check_username(username)
 
 	if !exists {
 		return app.not_found()
 	}
-
-	user := u
 
 	mut issues := app.find_user_issues(user.id)
 	mut first := false
 	mut last := false
 
 	for i, issue in issues {
-		issues[i].author_name = username
 		repo := app.find_repo_by_id(issue.repo_id)
 		issues[i].repo_author = repo.user_name
 		issues[i].repo_name = repo.name
@@ -181,6 +204,17 @@ pub fn (mut app App) user_issues(username string, page int) vweb.Result {
 	} else {
 		last = true
 		first = true
+	}
+
+	mut issues_with_users := []IssueWithUser{}
+
+	for issue in issues {
+		issue_author := app.get_user_by_id(issue.author_id) or { continue }
+
+		issues_with_users << IssueWithUser{
+			item: issue
+			user: issue_author
+		}
 	}
 
 	mut last_site := 0

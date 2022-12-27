@@ -1,38 +1,47 @@
-@include 'header.html'
+<!DOCTYPE html>
+<html>
+	<head>
+		@include 'layout/head.html'
+	</head>
+	<body>
+		@include 'layout/header.html'
 
-<h3>
-Register
-@if no_users
- an admin account
-@end
-</h3>
+		<div class="content">
+			.form-error {
+				@app.form_error
+			}
 
-.form-error {
-	@app.form_error
-}
+			<h1>
+				Register
+				@if no_users
+				 an admin account
+				@end
+			</h1>
 
-@if no_users
+			@if no_users
+				Welcome to Gitly! Looks like you've just set it up, you'll need to register
+				the main administrator account for this server.
+			@end
 
-Welcome to Gitly! Looks like you've just set it up, you'll need to register
-the main administrator account for this server.
-
-@end
-
-<div class="form">
-	<form method='post' action='/register'>
-		<div class="field">
-			<input type='text' name='username' placeholder='Username' required autofocus>
+			<div class="form">
+				<form method='post' action='/register'>
+					<div class="field">
+						<input type='text' name='username' placeholder='Username' required autofocus>
+					</div>
+					<div class="field">
+						<input type='password' name='password' placeholder='Password' required>
+					</div>
+					<div class="field">
+						<input type='email' name="email" placeholder='Email' required>
+					</div>
+					<div class="field">
+						<input type='submit' value='Register'>
+					</div>
+				</form>
+			</div>
 		</div>
-		<div class="field">
-			<input type='password' name='password' placeholder='Password' required>
-		</div>
-		<div class="field">
-			<input type='email' name="email" placeholder='Email' required>
-		</div>
-		<div class="field">
-			<input type='submit' value='Register'>
-		</div>
-	</form>
-</div>
 
-@include 'footer.html'
+		@js '/js/block-form.js'
+		@include 'layout/footer.html'
+	</body>
+</html>

@@ -17,7 +17,7 @@ pub fn (mut app App) set_user_admin_status(user_id int, status bool) {
 }
 
 fn hash_password_with_salt(password string, salt string) string {
-	salted_password := '$password$salt'
+	salted_password := '${password}${salt}'
 
 	return sha256.sum(salted_password.bytes()).hex().str()
 }
@@ -27,14 +27,14 @@ fn compare_password_with_hash(password string, salt string, hashed string) bool 
 }
 
 pub fn (mut app App) register_user(username string, password string, salt string, emails []string, github bool, is_admin bool) bool {
-	mut user := app.find_user_by_username(username) or { User{} }
+	mut user := app.get_user_by_username(username) or { User{} }
 
 	if user.id != 0 && user.is_registered {
-		app.info('User $username already exists')
+		app.info('User ${username} already exists')
 		return false
 	}
 
-	user = app.find_user_by_email(emails[0]) or { User{} }
+	user = app.get_user_by_email(emails[0]) or { User{} }
 
 	if user.id == 0 {
 		user = User{
@@ -45,12 +45,13 @@ pub fn (mut app App) register_user(username string, password string, salt string
 			is_registered: true
 			is_github: github
 			github_username: username
+			avatar: default_avatar_name
 			is_admin: is_admin
 		}
 
 		app.add_user(user)
 
-		mut u := app.find_user_by_username(user.username) or {
+		mut u := app.get_user_by_username(user.username) or {
 			app.info('User was not inserted')
 			return false
 		}
@@ -88,18 +89,18 @@ pub fn (mut app App) register_user(username string, password string, salt string
 }
 
 fn (mut app App) create_user_dir(username string) {
-	user_path := '$app.settings.repo_storage_path/$username'
+	user_path := '${app.config.repo_storage_path}/${username}'
 
 	os.mkdir(user_path) or {
-		app.info('Failed to create $user_path')
-		app.info('Error: $err')
+		app.info('Failed to create ${user_path}')
+		app.info('Error: ${err}')
 		return
 	}
 }
 
-pub fn (mut app App) update_user_avatar(data string, id int) {
+pub fn (mut app App) update_user_avatar(user_id int, filename_or_url string) {
 	sql app.db {
-		update User set avatar = data where id == id
+		update User set avatar = filename_or_url where id == user_id
 	}
 }
 
@@ -133,34 +134,21 @@ pub fn (mut app App) add_contributor(user_id int, repo_id int) {
 	}
 }
 
-pub fn (mut app App) find_username_by_id(id int) string {
+pub fn (app App) get_username_by_id(id int) ?string {
 	user := sql app.db {
 		select from User where id == id limit 1
+	}
+
+	if user.id == 0 {
+		return none
 	}
 
 	return user.username
 }
 
-pub fn (mut app App) find_user_by_username(value string) ?User {
-	users := sql app.db {
-		select from User where username == value
-	}
-
-	if users.len == 0 {
-		return error('User not found')
-	}
-
-	mut u := users[0]
-
-	emails := app.find_user_emails(u.id)
-	u.emails = emails
-
-	return u
-}
-
-pub fn (mut app App) find_user_by_id(id2 int) ?User {
+pub fn (app App) get_user_by_username(value string) ?User {
 	mut user := sql app.db {
-		select from User where id == id2
+		select from User where username == value limit 1
 	}
 
 	if user.id == 0 {
@@ -173,7 +161,22 @@ pub fn (mut app App) find_user_by_id(id2 int) ?User {
 	return user
 }
 
-pub fn (mut app App) find_user_by_github_username(name string) ?User {
+pub fn (app App) get_user_by_id(id int) ?User {
+	mut user := sql app.db {
+		select from User where id == id
+	}
+
+	if user.id == 0 {
+		return none
+	}
+
+	emails := app.find_user_emails(user.id)
+	user.emails = emails
+
+	return user
+}
+
+pub fn (mut app App) get_user_by_github_username(name string) ?User {
 	mut user := sql app.db {
 		select from User where github_username == name limit 1
 	}
@@ -188,19 +191,19 @@ pub fn (mut app App) find_user_by_github_username(name string) ?User {
 	return user
 }
 
-pub fn (mut app App) find_user_by_email(value string) ?User {
+pub fn (mut app App) get_user_by_email(value string) ?User {
 	emails := sql app.db {
 		select from Email where email == value
 	}
 
 	if emails.len != 1 {
-		return error('Email do not exist')
+		return none
 	}
 
-	return app.find_user_by_id(emails[0].user_id)
+	return app.get_user_by_id(emails[0].user_id)
 }
 
-pub fn (mut app App) find_user_emails(user_id int) []Email {
+pub fn (app App) find_user_emails(user_id int) []Email {
 	emails := sql app.db {
 		select from Email where user_id == user_id
 	}
@@ -216,7 +219,7 @@ pub fn (mut app App) find_repo_registered_contributor(id int) []User {
 	mut users := []User{cap: contributors.len}
 
 	for contributor in contributors {
-		user := app.find_user_by_id(contributor.user_id) or { continue }
+		user := app.get_user_by_id(contributor.user_id) or { continue }
 
 		users << user
 	}
@@ -224,19 +227,37 @@ pub fn (mut app App) find_repo_registered_contributor(id int) []User {
 	return users
 }
 
-pub fn (mut app App) get_all_registered_users() []User {
+pub fn (mut app App) get_all_registered_users_as_page(offset int) []User {
+	// FIXME: 30 -> admin_users_per_page
 	mut users := sql app.db {
-		select from User where is_registered == true
+		select from User where is_registered == true limit 30 offset offset
 	}
 
 	for i, user in users {
-		users[i].b_avatar = user.avatar != ''
-
-		if !users[i].b_avatar {
-			users[i].avatar = user.username[..1]
-		}
-
 		users[i].emails = app.find_user_emails(user.id)
+	}
+
+	return users
+}
+
+pub fn (mut app App) get_all_registered_user_count() int {
+	return sql app.db {
+		select count from User where is_registered == true
+	}
+}
+
+fn (app App) search_users(query string) []User {
+	repo_rows, _ := app.db.exec('select id, full_name, username, avatar from `User` where is_blocked is false and (username like "%${query}%" or full_name like "%${query}%")')
+
+	mut users := []User{}
+
+	for row in repo_rows {
+		users << User{
+			id: row.vals[0].int()
+			full_name: row.vals[1]
+			username: row.vals[2]
+			avatar: row.vals[3]
+		}
 	}
 
 	return users
@@ -295,7 +316,7 @@ pub fn (mut app App) update_user_login_attempts(user_id int, attempts int) {
 }
 
 pub fn (mut app App) check_user_blocked(user_id int) bool {
-	user := app.find_user_by_id(user_id) or { return false }
+	user := app.get_user_by_id(user_id) or { return false }
 
 	return user.is_blocked
 }
@@ -330,13 +351,7 @@ fn (mut app App) check_username(username string) (bool, User) {
 		return false, User{}
 	}
 
-	mut user := app.find_user_by_username(username) or { return false, User{} }
-
-	user.b_avatar = user.avatar != ''
-
-	if !user.b_avatar {
-		user.avatar = user.username[..1]
-	}
+	mut user := app.get_user_by_username(username) or { return false, User{} }
 
 	return user.is_registered, user
 }
@@ -372,13 +387,7 @@ pub fn (mut app App) get_user_from_cookies() ?User {
 
 	token := app.get_token(token_cookie) or { return none }
 
-	mut user := app.find_user_by_id(token.user_id) or { return none }
-
-	user.b_avatar = user.avatar != ''
-
-	if !user.b_avatar {
-		user.avatar = user.username[..1]
-	}
+	mut user := app.get_user_by_id(token.user_id) or { return none }
 
 	return user
 }

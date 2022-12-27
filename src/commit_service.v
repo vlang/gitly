@@ -9,7 +9,7 @@ fn (commit Commit) relative() string {
 }
 
 fn (commit Commit) get_changes(repo Repo) []Change {
-	git_changes := repo.git('show $commit.hash')
+	git_changes := repo.git('show ${commit.hash}')
 
 	mut change := Change{}
 	mut changes := []Change{}
@@ -49,7 +49,7 @@ fn (commit Commit) get_changes(repo Repo) []Change {
 					if line.bytes()[0] == `-` {
 						change.deletions++
 					}
-					change.message += '$line\n'
+					change.message += '${line}\n'
 				}
 			}
 		}
@@ -84,17 +84,9 @@ fn (mut app App) add_commit_if_not_exist(repo_id int, branch_id int, last_hash s
 	}
 }
 
-fn (mut app App) get_last_repo_commits(repo_id int) []Commit {
+fn (mut app App) find_repo_commits_as_page(repo_id int, branch_id int, offset int) []Commit {
 	return sql app.db {
-		select from Commit where repo_id == repo_id limit 10
-	}
-}
-
-fn (mut app App) find_repo_commits_as_page(repo_id int, branch_id int, page int) []Commit {
-	offs := page * commits_per_page
-
-	return sql app.db {
-		select from Commit where repo_id == repo_id && branch_id == branch_id order by created_at desc limit 35 offset offs
+		select from Commit where repo_id == repo_id && branch_id == branch_id order by created_at desc limit 35 offset offset
 	}
 }
 

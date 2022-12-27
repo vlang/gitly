@@ -1,4 +1,5 @@
 gitly
+bin/
 *.sqlite
 *.css
 *.css.map
@@ -9,7 +10,10 @@ logs/
 repos/
 archives/
 
+avatars/
+
 *.code-workspace
 .vscode
+.idea
 
 .DS_Store

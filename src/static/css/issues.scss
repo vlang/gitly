@@ -19,3 +19,31 @@
 .comment-post-submit {
 	margin-top: 5px;
 }
+
+.comment {
+	margin-left: 20px;
+	margin-top: 20px;
+}
+
+.form .input-comment {
+	margin-top: 10px;
+}
+
+.avatar-with-user-info {
+	display: flex;
+	align-items: center;
+
+	img {
+		height: 24px;
+		width: 24px;
+
+		margin-top: 5px;
+
+		border-radius: 100%;
+		border: 1px solid #24292e;
+	}
+
+	span {
+		margin-left: 10px;
+	}
+}

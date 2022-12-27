@@ -1,53 +1,69 @@
-@include 'header.html'
+<!DOCTYPE html>
+<html>
+	<head>
+		@include 'layout/head.html'
+	</head>
+	<body>
+		@include 'layout/header.html'
 
-<h3>Issues</h3>
+		<div class="content">
+			@include 'layout/repo_menu.html'
 
-<div>
-	@if app.logged_in
-		<a href='/@app.repo.user_name/@app.repo.name/issues/new'>New issue</a>
-	@end
-</div>
+			<h1>Issues</h1>
 
-</br>
+			<div>
+				@if app.logged_in
+					<a href='/@repo.user_name/@repo.name/issues/new'>New issue</a>
+				@end
+			</div>
 
-.commit-day {
-}
+			</br>
 
-.clog-block {
-	@for issue in issues
-		.clog {
-			.clog-msg {
-				<a href="/@app.repo.user_name/@app.repo.name/issue/@issue.id">@issue.title</a>
+			.commit-day {
 			}
-			span.clog-author {
-				<b>#@issue.id</b> opened @issue.relative_time()
-				by <a href="/@issue.author_name">@issue.author_name</a>
-			}
-			@if issue.comments_count > 0
-			.comments {
-				@if issue.comments_count == 1
-					@issue.comments_count comment
-				@else
-					@issue.comments_count comments
+
+			.clog-block {
+				@for issue_with_user in issues_with_users
+					.clog {
+						.clog-msg {
+							<a href="/@repo.user_name/@repo.name/issue/@issue_with_user.item.id">@issue_with_user.item.title</a>
+						}
+
+						<b>#@issue_with_user.item.id</b> opened @issue_with_user.item.relative_time()
+						by <a href="/@issue_with_user.user.username">@issue_with_user.user.username</a>
+
+						@if issue_with_user.item.comments_count > 0
+							.comments {
+								@if issue_with_user.item.comments_count == 1
+									@issue_with_user.item.comments_count comment
+								@else
+									@issue_with_user.item.comments_count comments
+								@end
+							}
+						@end
+					}
 				@end
 			}
+
+			@if issues_with_users.len > 0
+				<div class="buttons">
+					@if first
+						<a href="/@repo.user_name/@repo.name/issues/@prev_page" class="button disabled">Prev</a>
+					@else
+						<a href="/@repo.user_name/@repo.name/issues/@prev_page" class="button">Prev</a>/
+					@end
+
+					<span>@page of @page_count</span>
+
+					@if last
+						<a href="/@repo.user_name/@repo.name/issues/@next_page" class="button disabled">Next</a>
+					@else
+						<a href="/@repo.user_name/@repo.name/issues/@next_page" class="button">Next</a>
+					@end
+				</div>
 			@end
-		}
-	@end
-}
+		</div>
 
-<div class="buttons">
-	@if first
-		<a href="/@app.repo.user_name/@app.repo.name/issues/@last_site" class="button disabled">Prev</a>
-	@else
-		<a href="/@app.repo.user_name/@app.repo.name/issues/@last_site" class="button">Prev</a>/
-	@end
-
-	@if last
-		<a href="/@app.repo.user_name/@app.repo.name/issues/@next_site" class="button disabled">Next</a>
-	@else
-		<a href="/@app.repo.user_name/@app.repo.name/issues/@next_site" class="button">Next</a>
-	@end
-</div>
-
-@include 'footer.html'
+		@include 'layout/footer.html'
+	</body>
+</html>
