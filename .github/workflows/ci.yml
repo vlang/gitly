@@ -31,10 +31,10 @@ jobs:
           cd gitly
           v .
 
-      - name: Compile gitly with -autofree
-        run: |
-          cd gitly
-          v -autofree .
+#      - name: Compile gitly with -autofree
+#        run: |
+#          cd gitly
+#          v -autofree .
 
       - name: Compile gitly with -prod
         run: |
@@ -78,10 +78,10 @@ jobs:
           cd gitly
           v .
 
-      - name: Compile gitly with -autofree
-        run: |
-          cd gitly
-          v -autofree .
+#      - name: Compile gitly with -autofree
+#        run: |
+#          cd gitly
+#          v -autofree .
 
       - name: Compile gitly with -prod
         run: |
@@ -189,10 +189,10 @@ jobs:
           make
           sudo ./v symlink
 
-      - name: Compile gitly with -autofree
-        run: |
-          cd gitly
-          v -autofree .
+#      - name: Compile gitly with -autofree
+#        run: |
+#          cd gitly
+#          v -autofree .
 
       - name: Compile gitly
         run: |
