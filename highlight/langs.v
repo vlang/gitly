@@ -43,6 +43,7 @@ fn init_langs() []Lang {
 	langs_ << init_js()
 	langs_ << init_go()
 	langs_ << init_cpp()
+	langs_ << init_d()
 	langs_ << init_py()
 	langs_ << init_ts()
 	return langs_
