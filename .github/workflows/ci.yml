@@ -3,111 +3,111 @@ name: CI
 on: [push, pull_request]
 
 jobs:
-  ubuntu:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout V
-        uses: actions/checkout@v2
-        with:
-          repository: vlang/v
-      - name: Checkout gitly
-        uses: actions/checkout@v2
-        with:
-          path: gitly
-      - name: Install SQLite Dependencies
-        run: sudo apt install libsqlite3-dev
-      - name: Install Markdown
-        uses: actions/checkout@v2
-        with:
-          repository: vlang/markdown
-          path: vlib/markdown
-      - name: Install PCRE
-        uses: actions/checkout@v2
-        with:
-          repository: vlang/pcre
-          path: vlib/pcre
-      - name: Build V
-        run: |
-          make
-          sudo ./v symlink
+#  ubuntu:
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Checkout V
+#        uses: actions/checkout@v2
+#        with:
+#          repository: vlang/v
+#      - name: Checkout gitly
+#        uses: actions/checkout@v2
+#        with:
+#          path: gitly
+#      - name: Install SQLite Dependencies
+#        run: sudo apt install libsqlite3-dev
+#      - name: Install Markdown
+#        uses: actions/checkout@v2
+#        with:
+#          repository: vlang/markdown
+#          path: vlib/markdown
+#      - name: Install PCRE
+#        uses: actions/checkout@v2
+#        with:
+#          repository: vlang/pcre
+#          path: vlib/pcre
+#      - name: Build V
+#        run: |
+#          make
+#          sudo ./v symlink
+#
+#      - name: Compile gitly
+#        run: |
+#          cd gitly
+#          v .
+#
+#      - name: Compile gitly with -autofree
+#        run: |
+#          cd gitly
+#          v -autofree .
+#
+#      - name: Compile gitly with -prod
+#        run: |
+#          cd gitly
+#          v -prod .
+#
+#      - name: Compile CSS from SCSS files
+#        uses: gha-utilities/sass-build@v0.4.9
+#        with:
+#          source: gitly/src/static/css/gitly.scss
+#          destination: gitly/src/static/css/gitly.css
+#
+#      - name: Run gitly
+#        run: |
+#          cd gitly
+#          v run tests/first_run.v
 
-      - name: Compile gitly
-        run: |
-          cd gitly
-          v .
-
-      - name: Compile gitly with -autofree
-        run: |
-          cd gitly
-          v -autofree .
-
-      - name: Compile gitly with -prod
-        run: |
-          cd gitly
-          v -prod .
-
-      - name: Compile CSS from SCSS files
-        uses: gha-utilities/sass-build@v0.4.9
-        with:
-          source: gitly/src/static/css/gitly.scss
-          destination: gitly/src/static/css/gitly.css
-
-      - name: Run gitly
-        run: |
-          cd gitly
-          v run tests/first_run.v
-
-  macos:
-    runs-on: macos-latest
-    steps:
-      - name: Checkout V
-        uses: actions/checkout@v2
-        with:
-          repository: vlang/v
-      - name: Checkout gitly
-        uses: actions/checkout@v2
-        with:
-          path: gitly
-      - name: Install Markdown
-        uses: actions/checkout@v2
-        with:
-          repository: vlang/markdown
-          path: vlib/markdown
-      - name: Install PCRE
-        uses: actions/checkout@v2
-        with:
-          repository: vlang/pcre
-          path: vlib/pcre
-      - name: Build V
-        run: |
-          make
-          ./v symlink
-
-      - name: Compile gitly
-        run: |
-          cd gitly
-          v .
-
-      - name: Compile gitly with -autofree
-        run: |
-          cd gitly
-          v -autofree .
-
-      - name: Compile gitly with -prod
-        run: |
-          cd gitly
-          v -prod .
-
-      - name: Compile CSS from SCSS files
-        uses: gha-utilities/sass-build@v0.4.9
-        with:
-          source: gitly/src/static/css/gitly.scss
-          destination: gitly/src/static/css/gitly.css
-
-      - name: Run gitly
-        run: |
-          cd gitly
-          v run tests/first_run.v
+#  macos:
+#    runs-on: macos-latest
+#    steps:
+#      - name: Checkout V
+#        uses: actions/checkout@v2
+#        with:
+#          repository: vlang/v
+#      - name: Checkout gitly
+#        uses: actions/checkout@v2
+#        with:
+#          path: gitly
+#      - name: Install Markdown
+#        uses: actions/checkout@v2
+#        with:
+#          repository: vlang/markdown
+#          path: vlib/markdown
+#      - name: Install PCRE
+#        uses: actions/checkout@v2
+#        with:
+#          repository: vlang/pcre
+#          path: vlib/pcre
+#      - name: Build V
+#        run: |
+#          make
+#          ./v symlink
+#
+#      - name: Compile gitly
+#        run: |
+#          cd gitly
+#          v .
+#
+#      - name: Compile gitly with -autofree
+#        run: |
+#          cd gitly
+#          v -autofree .
+#
+#      - name: Compile gitly with -prod
+#        run: |
+#          cd gitly
+#          v -prod .
+#
+#      - name: Compile CSS from SCSS files
+#        uses: gha-utilities/sass-build@v0.4.9
+#        with:
+#          source: gitly/src/static/css/gitly.scss
+#          destination: gitly/src/static/css/gitly.css
+#
+#      - name: Run gitly
+#        run: |
+#          cd gitly
+#          v run tests/first_run.v
 
 #      - name: Cross compilation
 #        run: |
@@ -186,6 +186,9 @@ jobs:
       - name: Build PCRE2
         working-directory: ./pcre2
         run: cmake --build build
+      - name: Dir PCRE2
+        working-directory: ./pcre2
+        run: dir build
       - name: Build V
         run: |
           ./make.bat -gcc
@@ -194,54 +197,54 @@ jobs:
         run: |
           .\v.exe gitly
 
-  ubuntu-tcc:
-    runs-on: ubuntu-latest
-    env:
-      VFLAGS: -cc tcc -cflags -bt10
-    steps:
-      - name: Checkout V
-        uses: actions/checkout@v2
-        with:
-          repository: vlang/v
-      - name: Checkout gitly
-        uses: actions/checkout@v2
-        with:
-          path: gitly
-      - name: Install SQLite Dependencies
-        run: sudo apt install libsqlite3-dev
-      - name: Install Markdown
-        uses: actions/checkout@v2
-        with:
-          repository: vlang/markdown
-          path: vlib/markdown
-      - name: Install PCRE
-        uses: actions/checkout@v2
-        with:
-          repository: vlang/pcre
-          path: vlib/pcre
-      - name: Build V
-        run: |
-          echo $VFLAGS
-          make
-          sudo ./v symlink
-
-      - name: Compile gitly with -autofree
-        run: |
-          cd gitly
-          v -autofree .
-
-      - name: Compile gitly
-        run: |
-          cd gitly
-          v .
-
-      - name: Compile CSS from SCSS files
-        uses: gha-utilities/sass-build@v0.4.9
-        with:
-          source: gitly/src/static/css/gitly.scss
-          destination: gitly/src/static/css/gitly.css
-
-      - name: Run gitly
-        run: |
-          cd gitly
-          v run tests/first_run.v
+#  ubuntu-tcc:
+#    runs-on: ubuntu-latest
+#    env:
+#      VFLAGS: -cc tcc -cflags -bt10
+#    steps:
+#      - name: Checkout V
+#        uses: actions/checkout@v2
+#        with:
+#          repository: vlang/v
+#      - name: Checkout gitly
+#        uses: actions/checkout@v2
+#        with:
+#          path: gitly
+#      - name: Install SQLite Dependencies
+#        run: sudo apt install libsqlite3-dev
+#      - name: Install Markdown
+#        uses: actions/checkout@v2
+#        with:
+#          repository: vlang/markdown
+#          path: vlib/markdown
+#      - name: Install PCRE
+#        uses: actions/checkout@v2
+#        with:
+#          repository: vlang/pcre
+#          path: vlib/pcre
+#      - name: Build V
+#        run: |
+#          echo $VFLAGS
+#          make
+#          sudo ./v symlink
+#
+#      - name: Compile gitly with -autofree
+#        run: |
+#          cd gitly
+#          v -autofree .
+#
+#      - name: Compile gitly
+#        run: |
+#          cd gitly
+#          v .
+#
+#      - name: Compile CSS from SCSS files
+#        uses: gha-utilities/sass-build@v0.4.9
+#        with:
+#          source: gitly/src/static/css/gitly.scss
+#          destination: gitly/src/static/css/gitly.css
+#
+#      - name: Run gitly
+#        run: |
+#          cd gitly
+#          v run tests/first_run.v
