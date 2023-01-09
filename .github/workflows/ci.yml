@@ -170,13 +170,14 @@ jobs:
         working-directory: ./pcre
         run: cmake --build build
       - name: Dir PCRE
-        working-directory: ./pcre
-        run: dir build
+        working-directory: ./pcre/build
+        run: dir .
+      - name: Dir PCRE/win32
+        working-directory: ./pcre/build/Win32
+        run: dir .
       - name: Build V
         run: |
           ./make.bat -gcc
-      - name: Dir gitly
-        run: dir
       - name: Compile gitly
         run: |
           .\v.exe gitly -cflags -Ipcre/build
