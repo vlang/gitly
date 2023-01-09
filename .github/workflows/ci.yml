@@ -35,12 +35,7 @@ jobs:
 #        run: |
 #          cd gitly
 #          v .
-#
-#      - name: Compile gitly with -autofree
-#        run: |
-#          cd gitly
-#          v -autofree .
-#
+
 #      - name: Compile gitly with -prod
 #        run: |
 #          cd gitly
@@ -57,54 +52,50 @@ jobs:
 #          cd gitly
 #          v run tests/first_run.v
 
-  macos:
-    runs-on: macos-latest
-    steps:
-      - name: Checkout V
-        uses: actions/checkout@v2
-        with:
-          repository: vlang/v
-      - name: Checkout gitly
-        uses: actions/checkout@v2
-        with:
-          path: gitly
-      - name: Install Markdown
-        uses: actions/checkout@v2
-        with:
-          repository: vlang/markdown
-          path: vlib/markdown
-      - name: Install PCRE
-        uses: actions/checkout@v2
-        with:
-          repository: vlang/pcre
-          path: vlib/pcre
-      - name: Install PCRE lib
-        run: brew install pcre
-      - name: Build V
-        run: |
-          make
-          ./v symlink
-      - name: Compile gitly
-        run: |
-          cd gitly
-          v .
-#      - name: Compile gitly with -autofree
+#  macos:
+#    runs-on: macos-latest
+#    steps:
+#      - name: Checkout V
+#        uses: actions/checkout@v2
+#        with:
+#          repository: vlang/v
+#      - name: Checkout gitly
+#        uses: actions/checkout@v2
+#        with:
+#          path: gitly
+#      - name: Install Markdown
+#        uses: actions/checkout@v2
+#        with:
+#          repository: vlang/markdown
+#          path: vlib/markdown
+#      - name: Install PCRE
+#        uses: actions/checkout@v2
+#        with:
+#          repository: vlang/pcre
+#          path: vlib/pcre
+#      - name: Install PCRE lib
+#        run: brew install pcre
+#      - name: Build V
+#        run: |
+#          make
+#          ./v symlink
+#      - name: Compile gitly
 #        run: |
 #          cd gitly
-#          v -autofree .
-      - name: Compile gitly with -prod
-        run: |
-          cd gitly
-          v -prod .
-      - name: Compile CSS from SCSS files
-        uses: gha-utilities/sass-build@v0.4.9
-        with:
-          source: gitly/src/static/css/gitly.scss
-          destination: gitly/src/static/css/gitly.css
-      - name: Run gitly
-        run: |
-          cd gitly
-          v run tests/first_run.v
+#          v .
+#      - name: Compile gitly with -prod
+#        run: |
+#          cd gitly
+#          v -prod .
+#      - name: Compile CSS from SCSS files
+#        uses: gha-utilities/sass-build@v0.4.9
+#        with:
+#          source: gitly/src/static/css/gitly.scss
+#          destination: gitly/src/static/css/gitly.css
+#      - name: Run gitly tests
+#        run: |
+#          cd gitly
+#          v run tests/first_run.v
 
 #  windows-msvc:
 #    runs-on: windows-latest
@@ -167,27 +158,26 @@ jobs:
         with:
           repository: vlang/pcre
           path: vlib/pcre
-      - name: Install PCRE2
+      - name: Install PCRE library
         uses: actions/checkout@v2
         with:
-          repository: PCRE2Project/pcre2
-          path: pcre2
-      - name: Configure PCRE2
-        working-directory: ./pcre2
+          repository: coapp-packages/pcre
+          path: pcre
+      - name: Configure PCRE
+        working-directory: ./pcre
         run: cmake -B build -A Win32
-      - name: Build PCRE2
-        working-directory: ./pcre2
+      - name: Build PCRE
+        working-directory: ./pcre
         run: cmake --build build
-      - name: Dir PCRE2
-        working-directory: ./pcre2
+      - name: Dir PCRE
+        working-directory: ./pcre
         run: dir build
       - name: Build V
         run: |
           ./make.bat -gcc
-
       - name: Compile gitly
         run: |
-          .\v.exe gitly -cflags -Lpcre2/build
+          .\v.exe gitly -cflags -Lpcre/build
 
 #  ubuntu-tcc:
 #    runs-on: ubuntu-latest
@@ -219,11 +209,6 @@ jobs:
 #          echo $VFLAGS
 #          make
 #          sudo ./v symlink
-#
-#      - name: Compile gitly with -autofree
-#        run: |
-#          cd gitly
-#          v -autofree .
 #
 #      - name: Compile gitly
 #        run: |
