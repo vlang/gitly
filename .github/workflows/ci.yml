@@ -195,7 +195,7 @@ jobs:
 
       - name: Compile gitly
         run: |
-          .\v.exe gitly
+          .\v.exe gitly -cflags -Lpcre2/build
 
 #  ubuntu-tcc:
 #    runs-on: ubuntu-latest
