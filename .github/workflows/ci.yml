@@ -179,7 +179,7 @@ jobs:
         run: |
           ./make.bat -gcc
       - name: Compile gitly
-        run: .\v.exe gitly -cflags -Ipcre\build -cflags -Lpcre\build\Debug\pcred.lib -cflags -lpcred
+        run: .\v.exe gitly -cflags -Ipcre\build -cflags -Lpcre\build\Debug\pcred.lib
 
 #  ubuntu-tcc:
 #    runs-on: ubuntu-latest
