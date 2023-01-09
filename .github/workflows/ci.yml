@@ -175,9 +175,11 @@ jobs:
       - name: Build V
         run: |
           ./make.bat -gcc
+      - name: Dir gitly
+        run: dir
       - name: Compile gitly
         run: |
-          .\v.exe gitly -cflags -Lpcre/build
+          .\v.exe gitly -cflags -Ipcre/build
 
 #  ubuntu-tcc:
 #    runs-on: ubuntu-latest
