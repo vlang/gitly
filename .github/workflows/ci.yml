@@ -158,25 +158,18 @@ jobs:
         with:
           repository: vlang/pcre
           path: vlib/pcre
-      - name: Install PCRE library
-        uses: actions/checkout@v2
-        with:
-          repository: coapp-packages/pcre
-          path: pcre
-      - name: Configure PCRE
+      - name: Install PCRE lib
+        run: |
+          curl -L https://deac-riga.dl.sourceforge.net/project/gnuwin32/pcre/7.0/pcre-7.0-lib.zip -o pcre-7.0-lib.zip
+          unzip pcre-7.0-lib.zip -d pcre\
+      - name: Dir PCRE
         working-directory: ./pcre
-        run: cmake -B build -A Win32
-      - name: Build PCRE
-        working-directory: ./pcre
-        run: cmake --build build
-      - name: Dir PCRE/Debug
-        working-directory: ./pcre/build/Debug
         run: dir .
       - name: Build V
         run: |
           ./make.bat -gcc
       - name: Compile gitly
-        run: .\v.exe -cflags -Ipcre/build -cflags -Lpcre/build/Debug -cflags -lpcre gitly
+        run: .\v.exe -cflags -Ipcre/include -cflags -Lpcre/lib -cflags -lpcre.lib gitly
 
 #  ubuntu-tcc:
 #    runs-on: ubuntu-latest
