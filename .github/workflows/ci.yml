@@ -176,7 +176,7 @@ jobs:
         run: |
           ./make.bat -gcc
       - name: Compile gitly
-        run: .\v.exe gitly -cflags -Ipcre\build -cflags -Lpcre\build\Debug -cflags -lpcred.lib
+        run: .\v.exe gitly -cflags -Ipcre/build -cflags -Lpcre/build/Debug -cflags -lpcred.lib
 
 #  ubuntu-tcc:
 #    runs-on: ubuntu-latest
