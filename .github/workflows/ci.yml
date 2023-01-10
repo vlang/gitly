@@ -169,7 +169,7 @@ jobs:
         run: |
           ./make.bat -gcc
       - name: Compile gitly
-        run: .\v.exe -cflags -Ipcre/include -cflags -Lpcre/lib -cflags -lpcre.lib gitly
+        run: .\v.exe -cflags -Ipcre/include -cflags -Lpcre/lib -cflags -lpcre gitly
 
 #  ubuntu-tcc:
 #    runs-on: ubuntu-latest
