@@ -169,11 +169,8 @@ jobs:
       - name: Build PCRE
         working-directory: ./pcre
         run: cmake --build build
-      - name: Dir PCRE
-        working-directory: ./pcre/build
-        run: dir .
-      - name: Dir PCRE/win32
-        working-directory: ./pcre/build/Win32
+      - name: Dir PCRE/Debug
+        working-directory: ./pcre/build/Debug
         run: dir .
       - name: Build V
         run: |
