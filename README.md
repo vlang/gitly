@@ -23,12 +23,11 @@ The biggest missing features that will be implemented soon:
 - [ ] Pull requests
 
 ```sh
-cd src
 v .
 ./gitly
 ```
 
-If you want to use SCSS and have `sasscs` installed, run:
+If you want to use SCSS and have `sassc` installed, run:
 ```
 sassc src/static/css/gitly.scss > src/static/css/gitly.css
 ```
