@@ -31,7 +31,7 @@ v .
 If you don't want to install `sassc`, you can simply run
 
 ```
-curl https://gitly.org/gitly.css --output static/css/gitly.css
+curl --create-dirs --output static/css/gitly.css https://gitly.org/css/gitly.css
 ```
 
 
