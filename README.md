@@ -23,23 +23,21 @@ The biggest missing features that will be implemented soon:
 - [ ] Pull requests
 
 ```sh
-sassc static/css/gitly.scss > static/css/gitly.css
+cd src
 v .
 ./gitly
 ```
 
-If you don't want to install `sassc`, you can simply run
-
+If you want to use SCSS and have `sasscs` installed, run:
 ```
-curl --create-dirs --output static/css/gitly.css https://gitly.org/css/gitly.css
+sassc src/static/css/gitly.scss > src/static/css/gitly.css
 ```
-
 
 Required dependencies:
 * V 0.1.28.1 (https://vlang.io)
 * SQLite (Ubuntu/Debian: `libsqlite3-dev`)
 * Markdown (`v install markdown`)
-* sassc
+* sassc (optional)
 
 Gitly will support Postgres and MySQL in the future (once V ORM does).
 
