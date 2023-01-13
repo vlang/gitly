@@ -36,6 +36,11 @@ jobs:
           cd gitly
           v .
 
+      - name: Compile gitly with -autofree
+        run: |
+          cd gitly
+          v -autofree .
+
       - name: Compile gitly with -prod
         run: |
           cd gitly
@@ -81,6 +86,10 @@ jobs:
         run: |
           cd gitly
           v .
+      - name: Compile gitly with -autofree
+        run: |
+          cd gitly
+          v -autofree .
       - name: Compile gitly with -prod
         run: |
           cd gitly
@@ -192,6 +201,11 @@ jobs:
           echo $VFLAGS
           make
           sudo ./v symlink
+
+      - name: Compile gitly with -autofree
+        run: |
+          cd gitly
+          v -autofree .
 
       - name: Compile gitly
         run: |
