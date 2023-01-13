@@ -39,6 +39,7 @@ Required dependencies:
 * V 0.1.28.1 (https://vlang.io)
 * SQLite (Ubuntu/Debian: `libsqlite3-dev`)
 * Markdown (`v install markdown`)
+* PCRE (`v install pcre`)
 * sassc
 
 Gitly will support Postgres and MySQL in the future (once V ORM does).
