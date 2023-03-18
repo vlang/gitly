@@ -26,7 +26,7 @@ fn is_source(ext string) bool {
 	return true
 }
 
-pub fn extension_to_lang(ext string) ?Lang {
+pub fn extension_to_lang(ext string) !Lang {
 	ending := ext.split('.').last()
 	for lang in highlight.langs {
 		if ending in lang.lang_extensions {
