@@ -3,10 +3,6 @@
 module highlight
 
 const (
-	lang_path = 'langs'
-)
-
-const (
 	langs = init_langs()
 )
 
@@ -19,11 +15,6 @@ pub:
 	mline_comments []string
 	color          string
 	name           string
-}
-
-fn is_source(ext string) bool {
-	extension_to_lang(ext) or { return false }
-	return true
 }
 
 pub fn extension_to_lang(ext string) ?Lang {

@@ -73,22 +73,29 @@ fn (mut app App) handle_git_receive_pack(username string, git_repo_name string) 
 
 	app.check_git_http_access(username, repo_name) or { return app.ok('') }
 
-	git_response := repo.git_smart('receive-pack', body)
-
 	branch_name := git.parse_branch_name_from_receive_upload(body) or {
 		app.send_internal_error('Receive upload parsing error')
 
 		return app.ok('')
 	}
 
-	app.update_repo_after_push(repo.id, branch_name)
+	// get the latest commit hash before receiving updates
+	last_commit_hash := app.get_last_branch_commit_hash(repo.id, branch_name)
 
+	git_response := repo.git_smart('receive-pack', body)
 	app.set_git_content_type_headers(.receive)
+
+	app.update_repo_after_push(repo.id, branch_name, last_commit_hash) or {
+		app.send_internal_error(err.str())
+
+		return app.ok('')
+	}
 
 	return app.ok(git_response)
 }
 
 fn (mut app App) check_git_http_access(repository_owner string, repository_name string) ?bool {
+	// TODO: check repo access
 	has_valid_auth_header := app.check_basic_authorization_header()
 
 	if !has_valid_auth_header {

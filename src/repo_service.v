@@ -10,7 +10,6 @@ import validation
 
 // log_field_separator is declared as constant in case we need to change it later
 const (
-	max_git_res_size    = 1000
 	log_field_separator = '\x7F'
 	ignored_folder      = ['thirdparty']
 )
@@ -143,12 +142,6 @@ fn (mut app App) decrement_repo_stars(repo_id int) {
 	}
 }
 
-fn (mut app App) increment_file_views(file_id int) {
-	sql app.db {
-		update File set views_count = views_count + 1 where id == file_id
-	}
-}
-
 fn (mut app App) set_repo_webhook_secret(repo_id int, secret string) {
 	sql app.db {
 		update Repo set webhook_secret = secret where id == repo_id
@@ -207,23 +200,14 @@ fn (mut app App) user_has_repo(user_id int, repo_name string) bool {
 	return count >= 0
 }
 
-fn (mut app App) update_repo_from_fs(mut repo Repo) {
+fn (mut app App) update_repo_from_fs(mut repo Repo) ! {
 	repo_id := repo.id
 
 	app.db.exec('BEGIN TRANSACTION')
 
-	repo.analyse_lang(app)
-
-	app.info(repo.contributors_count.str())
-	app.fetch_branches(repo)
-
-	branches_output := repo.git('branch -a')
-
-	for branch_output in branches_output.split_into_lines() {
-		branch_name := git.parse_git_branch_output(branch_output)
-
-		app.update_repo_branch_from_fs(mut repo, branch_name)
-	}
+	app.create_branches_from_fs(repo)
+	app.create_commits_from_fs(mut repo, repo.primary_branch)!
+	app.create_files_from_fs(mut repo, repo.primary_branch, '.')
 
 	repo.contributors_count = app.get_count_repo_contributors(repo_id)
 	repo.branches_count = app.get_count_repo_branches(repo_id)
@@ -235,139 +219,106 @@ fn (mut app App) update_repo_from_fs(mut repo Repo) {
 		repo.releases_count++
 	}
 
-	app.save_repo(repo)
-	app.db.exec('END TRANSACTION')
-	app.info('Repo updated')
-}
-
-fn (mut app App) update_repo_branch_from_fs(mut repo Repo, branch_name string) {
-	repo_id := repo.id
-	branch := app.find_repo_branch_by_name(repo.id, branch_name)
-
-	if branch.id == 0 {
-		return
-	}
-
-	data := repo.git('--no-pager log ${branch_name} --abbrev-commit --abbrev=7 --pretty="%h${log_field_separator}%aE${log_field_separator}%cD${log_field_separator}%s${log_field_separator}%aN"')
-
-	for line in data.split_into_lines() {
-		args := line.split(log_field_separator)
-
-		if args.len > 3 {
-			commit_hash := args[0]
-			commit_author_email := args[1]
-			commit_message := args[3]
-			commit_author := args[4]
-			mut commit_author_id := 0
-
-			commit_date := time.parse_rfc2822(args[2]) or {
-				app.info('Error: ${err}')
-				return
-			}
-
-			user := app.get_user_by_email(commit_author_email) or { User{} }
-
-			if user.id > 0 {
-				app.add_contributor(user.id, repo_id)
-
-				commit_author_id = user.id
-			}
-
-			app.add_commit_if_not_exist(repo_id, branch.id, commit_hash, commit_author,
-				commit_author_id, commit_message, int(commit_date.unix))
-		}
-	}
-}
-
-fn (mut app App) update_repo_from_remote(mut repo Repo) {
-	repo_id := repo.id
-
-	repo.git('fetch --all')
-	repo.git('pull --all')
-
-	app.db.exec('BEGIN TRANSACTION')
-
-	repo.analyse_lang(app)
-
-	app.info(repo.contributors_count.str())
-	app.fetch_branches(repo)
-	app.fetch_tags(repo)
-
-	branches_output := repo.git('branch -a')
-
-	for branch_output in branches_output.split_into_lines() {
-		branch_name := git.parse_git_branch_output(branch_output)
-
-		app.update_repo_branch_from_fs(mut repo, branch_name)
-	}
-
-	for tag in app.get_all_repo_tags(repo_id) {
-		app.add_release(tag.id, repo_id, time.unix(tag.created_at), tag.message)
-
-		repo.releases_count++
-	}
-
-	repo.contributors_count = app.get_count_repo_contributors(repo_id)
-	repo.branches_count = app.get_count_repo_branches(repo_id)
+	app.analyse_lang(repo)
 
 	app.save_repo(repo)
 	app.db.exec('END TRANSACTION')
 	app.info('Repo updated')
 }
 
-fn (mut app App) update_repo_branch_data(mut repo Repo, branch_name string) {
-	repo_id := repo.id
-	branch := app.find_repo_branch_by_name(repo.id, branch_name)
-
-	if branch.id == 0 {
-		return
-	}
-
-	data := repo.git('--no-pager log ${branch_name} --abbrev-commit --abbrev=7 --pretty="%h${log_field_separator}%aE${log_field_separator}%cD${log_field_separator}%s${log_field_separator}%aN"')
-
-	for line in data.split_into_lines() {
-		args := line.split(log_field_separator)
-
-		if args.len > 3 {
-			commit_hash := args[0]
-			commit_author_email := args[1]
-			commit_message := args[3]
-			commit_author := args[4]
-			mut commit_author_id := 0
-
-			commit_date := time.parse_rfc2822(args[2]) or {
-				app.info('Error: ${err}')
-				return
-			}
-
-			user := app.get_user_by_email(commit_author_email) or { User{} }
-
-			if user.id > 0 {
-				app.add_contributor(user.id, repo_id)
-
-				commit_author_id = user.id
-			}
-
-			app.add_commit_if_not_exist(repo_id, branch.id, commit_hash, commit_author,
-				commit_author_id, commit_message, int(commit_date.unix))
-		}
-	}
-}
-
-// TODO: tags and other stuff
-fn (mut app App) update_repo_after_push(repo_id int, branch_name string) {
+fn (mut app App) update_repo_after_push(repo_id int, branch_name string, last_commit_hash string) ! {
+	// TODO: tags and other stuff
 	mut repo := app.find_repo_by_id(repo_id)
 
 	if repo.id == 0 {
 		return
 	}
 
-	app.update_repo_from_fs(mut repo)
-	app.delete_repository_files_in_branch(repo_id, branch_name)
+	app.db.exec('BEGIN TRANSACTION')
+
+	branch := app.find_repo_branch_by_name(repo.id, branch_name)
+	is_branch_updated_from_fs := branch.hash != ''
+
+	if !is_branch_updated_from_fs {
+		app.create_branch_if_not_exists(repo.id, branch_name)
+		app.create_files_from_fs(mut repo, branch_name, '.')
+	}
+	app.create_commits_from_fs(mut repo, branch_name)!
+
+	changes := repo.get_changes(last_commit_hash, branch_name)
+
+	for change in changes {
+		match change.status {
+			.added {
+				app.add_file_from_fs(repo, branch_name, change.original_path)!
+			}
+			.copied {
+				app.add_file_from_fs(repo, branch_name, change.destination_path)!
+			}
+			.deleted {
+				app.delete_file(repo.id, branch_name, change.original_path)
+			}
+			.modified, .type_changed {
+				app.delete_file(repo.id, branch_name, change.original_path)
+				app.add_file_from_fs(repo, branch_name, change.original_path)!
+			}
+			.renamed {
+				app.delete_file(repo.id, branch_name, change.original_path)
+				app.add_file_from_fs(repo, branch_name, change.destination_path)!
+			}
+			.unmerged {
+				return error('Unmerged: you must complete the merge before it can be committed')
+			}
+			else {
+				return error('Unknown status: git error')
+			}
+		}
+	}
+
+	app.analyse_lang(repo)
+
+	repo.contributors_count = app.get_count_repo_contributors(repo_id)
+	repo.branches_count = app.get_count_repo_branches(repo_id)
+
+	app.save_repo(repo)
+	app.db.exec('END TRANSACTION')
+	app.info('Repo updated from fs')
 }
 
-fn (r &Repo) analyse_lang(app &App) {
-	file_paths := r.get_all_file_paths()
+fn (app App) add_file_from_fs(repo &Repo, branch_name string, file_path string) ! {
+	if file_path == '' {
+		return error("File path can't be empty")
+	}
+
+	format := '%(objectmode) %(objecttype) %(objectname) %(objectsize) %(path)'
+	ls_output := repo.git('ls-tree --full-name --format="${format}" ${branch_name} ${file_path}')
+
+	if ls_output == '' {
+		return error('File not found')
+	}
+
+	file := repo.parse_ls(ls_output, branch_name) or {
+		return error('Failed to parse ${ls_output}')
+	}
+
+	sql app.db {
+		insert file into File
+	}
+}
+
+fn (app App) delete_file(repo_id int, branch_name string, file_path string) {
+	directory_path := os.dir(file_path)
+	file_name := os.base(file_path)
+
+	sql app.db {
+		delete from File where repo_id == repo_id && branch == branch_name && name == file_name
+		&& parent_path == directory_path
+	}
+}
+
+fn (app &App) analyse_lang(repo &Repo) {
+	repo_id := repo.id
+	file_paths := repo.get_all_file_paths()
 
 	mut all_size := 0
 	mut lang_stats := map[string]int{}
@@ -375,7 +326,7 @@ fn (r &Repo) analyse_lang(app &App) {
 
 	for file_path in file_paths {
 		lang := highlight.extension_to_lang(file_path.split('.').last()) or { continue }
-		file_content := r.read_file(r.primary_branch, file_path)
+		file_content := repo.read_file(repo.primary_branch, file_path)
 		lines := file_content.split_into_lines()
 		size := calc_lines_of_code(lines, lang)
 
@@ -407,7 +358,7 @@ fn (r &Repo) analyse_lang(app &App) {
 		}
 		lang_data := langs[lang]
 		d_lang_stats << LangStat{
-			repo_id: r.id
+			repo_id: repo_id
 			name: lang_data.name
 			pct: pct
 			color: lang_data.color
@@ -421,13 +372,13 @@ fn (r &Repo) analyse_lang(app &App) {
 	mut tmp_stats := []LangStat{}
 
 	for pct in tmp_a {
-		all_with_ptc := r.lang_stats.filter(it.pct == pct)
+		all_with_ptc := repo.lang_stats.filter(it.pct == pct)
 		for lang in all_with_ptc {
 			tmp_stats << lang
 		}
 	}
 
-	app.remove_repo_lang_stats(r.id)
+	app.remove_repo_lang_stats(repo_id)
 
 	for lang_stat in d_lang_stats {
 		app.add_lang_stat(lang_stat)
@@ -436,13 +387,14 @@ fn (r &Repo) analyse_lang(app &App) {
 
 fn calc_lines_of_code(lines []string, lang highlight.Lang) int {
 	mut size := 0
-	lcomment := lang.line_comments
 	mut mlcomment_start := ''
 	mut mlcomment_end := ''
+
 	if lang.mline_comments.len >= 2 {
 		mlcomment_start = lang.mline_comments[0]
 		mlcomment_end = lang.mline_comments[1]
 	}
+
 	mut in_comment := false
 	for line in lines {
 		tmp_line := line.trim_space()
@@ -453,22 +405,27 @@ fn calc_lines_of_code(lines []string, lang highlight.Lang) int {
 					continue
 				}
 			}
+
 			if tmp_line.contains(mlcomment_end) {
 				if in_comment {
 					in_comment = false
 				}
+
 				if tmp_line.ends_with(mlcomment_end) {
 					continue
 				}
 			}
+
 			if in_comment {
 				continue
 			}
-			if tmp_line.contains(lcomment) {
-				if tmp_line.starts_with(lcomment) {
+
+			if tmp_line.contains(lang.line_comments) {
+				if tmp_line.starts_with(lang.line_comments) {
 					continue
 				}
 			}
+
 			size++
 		}
 	}
@@ -493,7 +450,7 @@ fn (r &Repo) get_all_file_paths() []string {
 	return file_paths
 }
 
-// TODO: return ?string
+// TODO: return !string
 fn (r &Repo) git(command string) string {
 	if command.contains('&') || command.contains(';') {
 		return ''
@@ -504,7 +461,7 @@ fn (r &Repo) git(command string) string {
 	command_result := os.execute('git ${command_with_path}')
 	command_exit_code := command_result.exit_code
 	if command_exit_code != 0 {
-		println('git error ${command_with_path} with ${command_exit_code} exit code out=${command_result.output}')
+		eprintln('git error ${command_with_path} with ${command_exit_code} exit code out=${command_result.output}')
 
 		return ''
 	}
@@ -512,7 +469,7 @@ fn (r &Repo) git(command string) string {
 	return command_result.output.trim_space()
 }
 
-fn (r &Repo) parse_ls(ls_line string, branch string) ?File {
+fn (r &Repo) parse_ls(ls_line string, branch_name string) ?File {
 	ls_line_parts := ls_line.fields()
 	if ls_line_parts.len < 4 {
 		return none
@@ -521,7 +478,11 @@ fn (r &Repo) parse_ls(ls_line string, branch string) ?File {
 	item_type := ls_line_parts[1]
 	item_size := ls_line_parts[3]
 	item_path := ls_line_parts[4]
-	item_hash := r.git('log ${branch} -n 1 --format="%h" -- ${item_path}')
+	item_info := r.git('log ${branch_name} -n 1 --format="%h${log_field_separator}%s${log_field_separator}%at" -- ${item_path}')
+	item_info_parts := item_info.split(log_field_separator)
+	item_hash := item_info_parts[0]
+	last_msg := item_info_parts[1]
+	last_time := item_info_parts[2].int()
 
 	item_name := item_path.after('/')
 	if item_name == '' {
@@ -542,39 +503,25 @@ fn (r &Repo) parse_ls(ls_line string, branch string) ?File {
 		parent_path: parent_path
 		repo_id: r.id
 		last_hash: item_hash
-		branch: branch
+		last_msg: last_msg
+		last_time: last_time
+		branch: branch_name
 		is_dir: item_type == 'tree'
 		size: if item_type == 'blob' { item_size.int() } else { 0 }
 	}
 }
 
-// Fetches all files via `git ls-tree` and saves them in db
-fn (mut app App) cache_repository_items(mut r Repo, branch string, path string) []File {
-	if r.status == .caching {
-		app.info('`${r.name}` is being cached already')
-		return []
-	}
-
-	mut repository_ls := ''
-	if path == '.' {
-		r.status = .caching
-
-		defer {
-			r.status = .done
-		}
-	} else {
-		directory_path := if path == '' { path } else { '${path}/' }
-		format := '%(objectmode) %(objecttype) %(objectname) %(objectsize) %(path)'
-		repository_ls = r.git('ls-tree --full-name --format="${format}" ${branch} ${directory_path}')
-	}
+// create_files_from_fs fetches all files via `git ls-tree` and saves them in db
+fn (mut app App) create_files_from_fs(mut repo Repo, branch_name string, path string) {
+	directory_path := if path == '' { path } else { '${path}/' }
+	format := '%(objectmode) %(objecttype) %(objectname) %(objectsize) %(path)'
+	repository_ls := repo.git('ls-tree --full-name --format="${format}" ${branch_name} ${directory_path}')
 
 	// mode type name path
 	item_info_lines := repository_ls.split('\n')
 
 	mut dirs := []File{} // dirs first
 	mut files := []File{}
-
-	app.db.exec('BEGIN TRANSACTION')
 
 	for item_info in item_info_lines {
 		is_item_info_empty := validation.is_string_empty(item_info)
@@ -583,7 +530,7 @@ fn (mut app App) cache_repository_items(mut r Repo, branch string, path string) 
 			continue
 		}
 
-		file := r.parse_ls(item_info, branch) or {
+		file := repo.parse_ls(item_info, branch_name) or {
 			app.warn('failed to parse ${item_info}')
 			continue
 		}
@@ -592,45 +539,27 @@ fn (mut app App) cache_repository_items(mut r Repo, branch string, path string) 
 			dirs << file
 
 			app.add_file(file)
+			app.create_files_from_fs(mut repo, branch_name, file.full_path())
 		} else {
 			files << file
 		}
 	}
 
-	dirs << files
 	for file in files {
 		app.add_file(file)
 	}
-
-	app.db.exec('END TRANSACTION')
-
-	return dirs
 }
 
-// fetches last message and last time for each file
-// this is slow, so it's run in the background thread
-fn (mut app App) slow_fetch_files_info(mut repo Repo, branch string, path string) {
-	files := app.find_repository_items(repo.id, branch, path)
-
-	for i in 0 .. files.len {
-		if files[i].last_msg != '' {
-			app.warn('skipping ${files[i].name}')
-			continue
-		}
-
-		app.fetch_file_info(repo, files[i])
-	}
-}
-
-fn (r Repo) get_last_branch_commit_hash(branch_name string) string {
-	git_result := os.execute('git -C ${r.git_dir} log -n 1 ${branch_name} --pretty=format:"%h"')
-	git_output := git_result.output
-
-	if git_result.exit_code != 0 {
-		eprintln('git log error: ${git_output}')
+fn (app &App) get_last_branch_commit_hash(repo_id int, branch_name string) string {
+	branch := sql app.db {
+		select from Branch where repo_id == repo_id && name == branch_name limit 1
 	}
 
-	return git_output
+	if branch.id == 0 {
+		return ''
+	}
+
+	return branch.hash
 }
 
 fn (r Repo) git_advertise(service string) string {
@@ -694,26 +623,6 @@ fn (mut app App) generate_clone_url(repo Repo) string {
 	return 'https://${hostname}/${username}/${repo_name}.git'
 }
 
-fn first_line(s string) string {
-	pos := s.index('\n') or { return s }
-	return s[..pos]
-}
-
-fn (mut app App) fetch_file_info(r &Repo, file &File) {
-	logs := r.git('log -n1 --format=%B___%at___%H___%an ${file.branch} -- ${file.full_path()}')
-	vals := logs.split('___')
-	if vals.len < 3 {
-		return
-	}
-	last_msg := first_line(vals[0])
-	last_time := vals[1].int() // last_hash
-
-	file_id := file.id
-	sql app.db {
-		update File set last_msg = last_msg, last_time = last_time where id == file_id
-	}
-}
-
 fn (mut app App) update_repo_primary_branch(repo_id int, branch string) {
 	sql app.db {
 		update Repo set primary_branch = branch where id == repo_id
@@ -726,17 +635,25 @@ fn (mut r Repo) clone() {
 
 	if close_exit_code != 0 {
 		r.status = .clone_failed
-		println('git clone failed with exit code ${close_exit_code}')
+		eprintln('git clone failed with exit code ${close_exit_code}')
 		return
 	}
 
 	r.status = .clone_done
 }
 
-fn (r &Repo) read_file(branch string, path string) string {
+fn (r &Repo) read_file(branch_name string, path string) string {
 	valid_path := path.trim_string_left('/')
 
-	return r.git('--no-pager show ${branch}:${valid_path}')
+	return r.git('--no-pager show ${branch_name}:${valid_path}')
+}
+
+fn (r &Repo) get_changes(commit_from string, commit_to string) []git.DiffFile {
+	to := if commit_to.len == 0 { 'HEAD' } else { commit_to }
+
+	diff_output := r.git('--no-pager diff --name-status ${commit_from}..${to}')
+
+	return git.parse_diff_output(diff_output)
 }
 
 fn find_readme_file(items []File) ?File {

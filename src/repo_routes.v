@@ -158,22 +158,6 @@ pub fn (mut app App) handle_branch_tree(username string, repo_name string, branc
 	return app.tree(username, repo_name, branch_name, '')
 }
 
-['/:username/:repo_name/update']
-pub fn (mut app App) handle_repo_update(username string, repo_name string) vweb.Result {
-	mut repo := app.find_repo_by_name_and_username(repo_name, username)
-
-	if repo.id == 0 {
-		return app.not_found()
-	}
-
-	if app.user.is_admin {
-		app.update_repo_from_remote(mut repo)
-		app.slow_fetch_files_info(mut repo, 'master', '.')
-	}
-
-	return app.redirect_to_repository(username, repo_name)
-}
-
 ['/new']
 pub fn (mut app App) new() vweb.Result {
 	if !app.logged_in {
@@ -278,7 +262,7 @@ pub fn (mut app App) handle_new_repo(name string, clone_url string, description 
 
 	// Update only cloned repositories
 	if !is_clone_url_empty {
-		app.update_repo_from_fs(mut new_repo)
+		app.update_repo_from_fs(mut new_repo) or { app.error(err.str()) }
 	}
 
 	if no_redirect == '1' {
@@ -312,6 +296,7 @@ pub fn (mut app App) tree(username string, repo_name string, branch_name string,
 	repo_id := repo.id
 	log_prefix := '${username}/${repo_name}'
 
+	// FIXME: tags fetch every time
 	app.fetch_tags(repo)
 
 	app.current_path = '/${path}'
@@ -319,74 +304,38 @@ pub fn (mut app App) tree(username string, repo_name string, branch_name string,
 		return vweb.not_found()
 	}
 
-	path_parts := path.split('/')
-
 	app.path_split = [repo_name]
-	app.path_split << path_parts
-
+	app.path_split << path.split('/')
 	app.is_tree = true
 
 	app.increment_repo_views(repo.id)
 
-	mut up := '/'
+	up := generate_parent_path(app.req.url, path)
 	can_up := path != ''
-	if can_up {
-		if path.split('/').len == 1 {
-			up = '../..'
-		} else {
-			up = app.req.url.all_before_last('/')
-		}
-	}
 
 	if app.current_path.starts_with('/') {
 		app.current_path = app.current_path[1..]
 	}
 
-	mut items := app.find_repository_items(repo_id, branch_name, app.current_path)
 	branch := app.find_repo_branch_by_name(repo.id, branch_name)
+	is_branch_updated_from_fs := branch.hash != ''
 
-	app.info('${log_prefix}: ${items.len} items found in branch ${branch_name}')
+	if !is_branch_updated_from_fs {
+		app.create_commits_from_fs(mut repo, branch_name) or {
+			app.send_internal_error(err.str())
 
-	if items.len == 0 {
-		// No files in the db, fetch them from git and cache in db
-		app.info('${log_prefix}: caching items in repository with ${repo_id}')
+			return app.ok('')
+		}
 
-		items = app.cache_repository_items(mut repo, branch_name, app.current_path)
-		app.slow_fetch_files_info(mut repo, branch_name, app.current_path)
-	}
-
-	if items.any(it.last_msg == '') {
-		// If any of the files has a missing `last_msg`, we need to refetch it.
-		app.slow_fetch_files_info(mut repo, branch_name, app.current_path)
+		app.create_files_from_fs(mut repo, branch_name, '.')
 	}
 
 	// Fetch last commit message for this directory, printed at the top of the tree
-	mut last_commit := Commit{}
-	if can_up {
-		mut p := path
-		if p.ends_with('/') {
-			p = p[0..path.len - 1]
-		}
-		if !p.contains('/') {
-			p = '/${p}'
-		}
-		if dir := app.find_repo_file_by_path(repo.id, branch_name, p) {
-			println('hash=${dir.last_hash}')
-			last_commit = app.find_repo_commit_by_hash(repo.id, dir.last_hash)
-		}
-	} else {
-		last_commit = app.find_repo_last_commit(repo.id, branch.id)
-	}
+	last_commit := app.get_last_commit_for_path(repo_id, branch, path)
 
-	diff := int(time.ticks() - app.page_gen_start)
-	if diff == 0 {
-		app.page_gen_time = '<1ms'
-	} else {
-		app.page_gen_time = '${diff}ms'
-	}
+	mut items := app.find_repository_items(repo_id, branch_name, app.current_path)
 
-	// Update items after fetching info
-	items = app.find_repository_items(repo_id, branch_name, app.current_path)
+	app.info('${log_prefix}: ${items.len} items found in branch ${branch_name}')
 
 	dirs := items.filter(it.is_dir)
 	files := items.filter(!it.is_dir)
@@ -407,7 +356,6 @@ pub fn (mut app App) tree(username string, repo_name string, branch_name string,
 		readme_content := repo.read_file(branch_name, readme_path)
 		highlighted_readme, _, _ := highlight.highlight_text(readme_content, readme_path,
 			false)
-
 		readme = vweb.RawHtml(highlighted_readme)
 	}
 
@@ -418,10 +366,13 @@ pub fn (mut app App) tree(username string, repo_name string, branch_name string,
 		license_file_path = '/${username}/${repo_name}/blob/${branch_name}/LICENSE'
 	}
 
+	clone_url := app.generate_clone_url(repo)
 	watcher_count := app.get_count_repo_watchers(repo_id)
 	is_repo_starred := app.check_repo_starred(repo_id, app.user.id)
 	is_repo_watcher := app.check_repo_watcher_status(repo_id, app.user.id)
 	is_top_directory := app.current_path == ''
+
+	app.calculate_and_set_page_gen_time()
 
 	return $vweb.html()
 }
@@ -488,13 +439,13 @@ pub fn (mut app App) blob(username string, repo_name string, branch_name string,
 	app.path_split = [repo_name]
 	app.path_split << path_parts
 
-	if !app.contains_repo_branch(repo.id, branch_name) && branch_name != repo.primary_branch {
+	if !app.has_repo_branch(repo.id, branch_name) && branch_name != repo.primary_branch {
 		app.info('Branch ${branch_name} not found')
 		return app.not_found()
 	}
 
 	raw_url := '/${username}/${repo_name}/raw/${branch_name}/${path}'
-	file := app.find_repo_file_by_path(repo.id, branch_name, path) or { return app.not_found() }
+	file := app.get_repo_file_by_path(repo.id, branch_name, path) or { return app.not_found() }
 	is_markdown := file.name.to_lower().ends_with('.md')
 	plain_text := repo.read_file(branch_name, path)
 	highlighted_source, _, _ := highlight.highlight_text(plain_text, file.name, false)
@@ -517,4 +468,10 @@ pub fn (mut app App) handle_raw(username string, repo_name string, branch_name s
 	file_source := repo.git('--no-pager show ${branch_name}:${path}')
 
 	return app.ok(file_source)
+}
+
+fn (mut app App) calculate_and_set_page_gen_time() {
+	diff := int(time.ticks() - app.page_gen_start)
+
+	app.page_gen_time = if diff == 0 { '<1ms' } else { '${diff}ms' }
 }

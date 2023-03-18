@@ -1,6 +1,7 @@
 gitly
 bin/
 *.sqlite
+*.sqlite-journal
 *.css
 *.css.map
 .sass-cache/

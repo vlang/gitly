@@ -93,8 +93,9 @@ pub fn (mut app App) commit(username string, repo_name string, hash string) vweb
 		return app.ok(patch)
 	}
 
+	branch := app.find_repo_branch_by_name(repo.id, repo.primary_branch)
 	patch_url := '/${username}/${repo_name}/commit/${hash}.patch'
-	commit := app.find_repo_commit_by_hash(repo.id, hash)
+	commit := app.find_repo_commit_by_hash(repo.id, branch.id, hash)
 	changes := commit.get_changes(repo)
 
 	mut all_adds := 0
