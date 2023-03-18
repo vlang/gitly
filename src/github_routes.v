@@ -45,12 +45,7 @@ pub fn (mut app App) handle_oauth() vweb.Result {
 	}
 
 	mut token := access_response.body.find_between('access_token=', '&')
-	mut request := http.new_request(.get, 'https://api.github.com/user', '') or {
-		app.info(err.msg())
-
-		return app.redirect_to_index()
-	}
-
+	mut request := http.new_request(.get, 'https://api.github.com/user', '')
 	request.add_header(.authorization, 'token ${token}')
 
 	user_response := request.do() or {
