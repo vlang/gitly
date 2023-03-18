@@ -7,22 +7,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout V
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: vlang/v
       - name: Checkout gitly
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           path: gitly
       - name: Install SQLite Dependencies
         run: sudo apt install libsqlite3-dev
       - name: Install Markdown
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: vlang/markdown
           path: vlib/markdown
       - name: Install PCRE
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: vlang/pcre
           path: vlib/pcre
@@ -47,7 +47,7 @@ jobs:
           v -prod .
 
       - name: Compile CSS from SCSS files
-        uses: gha-utilities/sass-build@v0.4.9
+        uses: gha-utilities/sass-build@v0.4.11
         with:
           source: gitly/src/static/css/gitly.scss
           destination: gitly/src/static/css/gitly.css
@@ -61,20 +61,20 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Checkout V
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: vlang/v
       - name: Checkout gitly
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           path: gitly
       - name: Install Markdown
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: vlang/markdown
           path: vlib/markdown
       - name: Install PCRE
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: vlang/pcre
           path: vlib/pcre
@@ -95,7 +95,7 @@ jobs:
           cd gitly
           v -prod .
       - name: Compile CSS from SCSS files
-        uses: gha-utilities/sass-build@v0.4.9
+        uses: gha-utilities/sass-build@v0.4.11
         with:
           source: gitly/src/static/css/gitly.scss
           destination: gitly/src/static/css/gitly.css
@@ -110,11 +110,11 @@ jobs:
 #      VFLAGS: -cc msvc
 #    steps:
 #      - name: Checkout V
-#        uses: actions/checkout@v2
+#        uses: actions/checkout@v3
 #        with:
 #          repository: vlang/v
 #      - name: Checkout gitly2
-#        uses: actions/checkout@v2
+#        uses: actions/checkout@v3
 #        with:
 #          path: gitly
 #      - name: Install SQLite
@@ -122,12 +122,12 @@ jobs:
 #          .github\workflows\windows-install-sqlite.bat
 #          dir thirdparty\sqlite\
 #      - name: Install Markdown
-#        uses: actions/checkout@v2
+#        uses: actions/checkout@v3
 #        with:
 #          repository: vlang/markdown
 #          path: vlib/markdown
 #      - name: Install PCRE
-#        uses: actions/checkout@v2
+#        uses: actions/checkout@v3
 #        with:
 #          repository: vlang/pcre
 #          path: vlib/pcre
@@ -144,11 +144,11 @@ jobs:
       VFLAGS: -cc gcc
     steps:
       - name: Checkout V
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: vlang/v
       - name: Checkout gitly
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           path: gitly
       - name: Install SQLite
@@ -156,12 +156,12 @@ jobs:
           .github\workflows\windows-install-sqlite.bat
           dir thirdparty\sqlite\
       - name: Install Markdown
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: vlang/markdown
           path: vlib/markdown
       - name: Install PCRE
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: vlang/pcre
           path: vlib/pcre
@@ -177,22 +177,22 @@ jobs:
       VFLAGS: -cc tcc -cflags -bt10
     steps:
       - name: Checkout V
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: vlang/v
       - name: Checkout gitly
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           path: gitly
       - name: Install SQLite Dependencies
         run: sudo apt install libsqlite3-dev
       - name: Install Markdown
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: vlang/markdown
           path: vlib/markdown
       - name: Install PCRE
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: vlang/pcre
           path: vlib/pcre
@@ -213,7 +213,7 @@ jobs:
           v .
 
       - name: Compile CSS from SCSS files
-        uses: gha-utilities/sass-build@v0.4.9
+        uses: gha-utilities/sass-build@v0.4.11
         with:
           source: gitly/src/static/css/gitly.scss
           destination: gitly/src/static/css/gitly.css
