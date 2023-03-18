@@ -6,7 +6,7 @@ import vweb
 import time
 import os
 import log
-import sqlite
+import db.sqlite
 import api
 import config
 

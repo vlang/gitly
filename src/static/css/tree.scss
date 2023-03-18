@@ -152,6 +152,10 @@ h3 a {
 	img {
 		max-width: 100%;
 	}
+
+	li.task-list-item:has(> input.task-list-item-checkbox) {
+		list-style: none;
+	}
 }
 
 .issue-id-anchor {

@@ -21,6 +21,11 @@ jobs:
         with:
           repository: vlang/markdown
           path: vlib/markdown
+      - name: Install PCRE
+        uses: actions/checkout@v2
+        with:
+          repository: vlang/pcre
+          path: vlib/pcre
       - name: Build V
         run: |
           make
@@ -68,41 +73,36 @@ jobs:
         with:
           repository: vlang/markdown
           path: vlib/markdown
+      - name: Install PCRE
+        uses: actions/checkout@v2
+        with:
+          repository: vlang/pcre
+          path: vlib/pcre
       - name: Build V
         run: |
           make
           ./v symlink
-
       - name: Compile gitly
         run: |
           cd gitly
           v .
-
-#      - name: Compile gitly with -autofree
-#        run: |
-#          cd gitly
-#          v -autofree .
-
+      - name: Compile gitly with -autofree
+        run: |
+          cd gitly
+          v -autofree .
       - name: Compile gitly with -prod
         run: |
           cd gitly
           v -prod .
-
       - name: Compile CSS from SCSS files
         uses: gha-utilities/sass-build@v0.4.9
         with:
           source: gitly/src/static/css/gitly.scss
           destination: gitly/src/static/css/gitly.css
-
-      - name: Run gitly
+      - name: Run gitly tests
         run: |
           cd gitly
           v run tests/first_run.v
-
-#      - name: Cross compilation
-#        run: |
-#          cd gitly
-#          v -os linux .
 
 #  windows-msvc:
 #    runs-on: windows-latest
@@ -126,6 +126,11 @@ jobs:
 #        with:
 #          repository: vlang/markdown
 #          path: vlib/markdown
+#      - name: Install PCRE
+#        uses: actions/checkout@v2
+#        with:
+#          repository: vlang/pcre
+#          path: vlib/pcre
 #      - name: Build V
 #        run: |
 #          ./make.bat -msvc -skip-path
@@ -155,13 +160,16 @@ jobs:
         with:
           repository: vlang/markdown
           path: vlib/markdown
+      - name: Install PCRE
+        uses: actions/checkout@v2
+        with:
+          repository: vlang/pcre
+          path: vlib/pcre
       - name: Build V
         run: |
           ./make.bat -gcc
-
       - name: Compile gitly
-        run: |
-          .\v.exe gitly
+        run: .\v.exe gitly
 
   ubuntu-tcc:
     runs-on: ubuntu-latest
@@ -183,6 +191,11 @@ jobs:
         with:
           repository: vlang/markdown
           path: vlib/markdown
+      - name: Install PCRE
+        uses: actions/checkout@v2
+        with:
+          repository: vlang/pcre
+          path: vlib/pcre
       - name: Build V
         run: |
           echo $VFLAGS
