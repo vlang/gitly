@@ -12,7 +12,7 @@ https://gitly.org
 - Detailed language stats for each directory
 - "Top files" feature to give an overview of the project
 
-**This is pre-alpha software**
+**This is alpha software**
 
 The V web framework and Gitly are at an early stage of development. Lots of features are missing.
 The biggest missing features that will be implemented soon:
