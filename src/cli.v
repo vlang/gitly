@@ -4,7 +4,7 @@ module main
 
 import os
 
-pub fn (mut app App) command_fetcher() {
+pub fn (mut app App) command_fetcher() ! {
 	for {
 		line := os.get_line()
 
@@ -16,7 +16,7 @@ pub fn (mut app App) command_fetcher() {
 					'adduser' {
 						if args.len > 4 {
 							app.register_user(args[1], args[2], args[3], args[4..], false,
-								false)
+								false)!
 							println('Added user ${args[1]}')
 						} else {
 							error('Not enough arguments (3 required but only ${args.len} given)')

@@ -61,7 +61,7 @@ pub fn (mut app App) handle_update_repo_settings(username string, repo_name stri
 
 	if webhook_secret != '' && webhook_secret != repo.webhook_secret {
 		webhook := sha1.hexhash(webhook_secret)
-		app.set_repo_webhook_secret(repo.id, webhook)
+		app.set_repo_webhook_secret(repo.id, webhook) or { app.info(err.str()) }
 	}
 
 	return app.redirect_to_repository(username, repo_name)
@@ -111,7 +111,10 @@ pub fn (mut app App) handle_repo_move(username string, repo_name string, dest st
 			return app.repo_settings(username, repo_name)
 		}
 
-		app.move_repo_to_user(repo.id, dest_user.id, dest_user.username)
+		app.move_repo_to_user(repo.id, dest_user.id, dest_user.username) or {
+			app.error('There was an error while moving the repo')
+			return app.repo_settings(username, repo_name)
+		}
 
 		return app.redirect('/${dest_user.username}/${repo.name}')
 	} else {
@@ -167,8 +170,8 @@ pub fn (mut app App) handle_repo_update(username string, repo_name string) vweb.
 	}
 
 	if app.user.is_admin {
-		app.update_repo_from_remote(mut repo)
-		app.slow_fetch_files_info(mut repo, 'master', '.')
+		app.update_repo_from_remote(mut repo) or { app.info(err.str()) }
+		app.slow_fetch_files_info(mut repo, 'master', '.') or { app.info(err.str()) }
 	}
 
 	return app.redirect_to_repository(username, repo_name)
@@ -261,7 +264,10 @@ pub fn (mut app App) handle_new_repo(name string, clone_url string, description 
 		new_repo.clone()
 	}
 
-	app.add_repo(new_repo)
+	app.add_repo(new_repo) or {
+		app.error('There was an error while adding the repo')
+		return app.new()
+	}
 	new_repo = app.find_repo_by_name_and_user_id(new_repo.name, app.user.id)
 	repo_id := new_repo.id
 
@@ -272,13 +278,19 @@ pub fn (mut app App) handle_new_repo(name string, clone_url string, description 
 	}
 
 	primary_branch := git.get_repository_primary_branch(repo_path)
-	app.update_repo_primary_branch(repo_id, primary_branch)
+	app.update_repo_primary_branch(repo_id, primary_branch) or {
+		app.error('There was an error while adding the repo')
+		return app.new()
+	}
 
 	new_repo = app.find_repo_by_id(repo_id)
 
 	// Update only cloned repositories
 	if !is_clone_url_empty {
-		app.update_repo_from_fs(mut new_repo)
+		app.update_repo_from_fs(mut new_repo) or {
+			app.error('There was an error while cloning the repo')
+			return app.new()
+		}
 	}
 
 	if no_redirect == '1' {
@@ -288,7 +300,7 @@ pub fn (mut app App) handle_new_repo(name string, clone_url string, description 
 	has_first_repo_activity := app.has_activity(app.user.id, 'first_repo')
 
 	if !has_first_repo_activity {
-		app.add_activity(app.user.id, 'first_repo')
+		app.add_activity(app.user.id, 'first_repo') or { app.info(err.str()) }
 	}
 
 	return app.redirect('/${app.user.username}/repos')
@@ -312,7 +324,7 @@ pub fn (mut app App) tree(username string, repo_name string, branch_name string,
 	repo_id := repo.id
 	log_prefix := '${username}/${repo_name}'
 
-	app.fetch_tags(repo)
+	app.fetch_tags(repo) or { app.info(err.str()) }
 
 	app.current_path = '/${path}'
 	if app.current_path.contains('/favicon.svg') {
@@ -326,7 +338,7 @@ pub fn (mut app App) tree(username string, repo_name string, branch_name string,
 
 	app.is_tree = true
 
-	app.increment_repo_views(repo.id)
+	app.increment_repo_views(repo.id) or { app.info(err.str()) }
 
 	mut up := '/'
 	can_up := path != ''
@@ -351,13 +363,20 @@ pub fn (mut app App) tree(username string, repo_name string, branch_name string,
 		// No files in the db, fetch them from git and cache in db
 		app.info('${log_prefix}: caching items in repository with ${repo_id}')
 
-		items = app.cache_repository_items(mut repo, branch_name, app.current_path)
-		app.slow_fetch_files_info(mut repo, branch_name, app.current_path)
+		items = app.cache_repository_items(mut repo, branch_name, app.current_path) or {
+			app.info(err.str())
+			[]File{}
+		}
+		app.slow_fetch_files_info(mut repo, branch_name, app.current_path) or {
+			app.info(err.str())
+		}
 	}
 
 	if items.any(it.last_msg == '') {
 		// If any of the files has a missing `last_msg`, we need to refetch it.
-		app.slow_fetch_files_info(mut repo, branch_name, app.current_path)
+		app.slow_fetch_files_info(mut repo, branch_name, app.current_path) or {
+			app.info(err.str())
+		}
 	}
 
 	// Fetch last commit message for this directory, printed at the top of the tree
@@ -437,7 +456,9 @@ pub fn (mut app App) handle_api_repo_star(repo_id_str string) vweb.Result {
 	}
 
 	user_id := app.user.id
-	app.toggle_repo_star(repo_id, user_id)
+	app.toggle_repo_star(repo_id, user_id) or {
+		return app.json_error('There was an error while starring the repo')
+	}
 	is_repo_starred := app.check_repo_starred(repo_id, user_id)
 
 	return app.json_success(is_repo_starred)
@@ -454,7 +475,9 @@ pub fn (mut app App) handle_api_repo_watch(repo_id_str string) vweb.Result {
 	}
 
 	user_id := app.user.id
-	app.toggle_repo_watcher_status(repo_id, user_id)
+	app.toggle_repo_watcher_status(repo_id, user_id) or {
+		return app.json_error('There was an error while toggling to watch')
+	}
 	is_watching := app.check_repo_watcher_status(repo_id, user_id)
 
 	return app.json_success(is_watching)

@@ -4,7 +4,7 @@ module main
 
 import rand
 
-fn (mut app App) add_token(user_id int, ip string) string {
+fn (mut app App) add_token(user_id int, ip string) !string {
 	mut uuid := rand.uuid_v4()
 
 	token := Token{
@@ -15,25 +15,25 @@ fn (mut app App) add_token(user_id int, ip string) string {
 
 	sql app.db {
 		insert token into Token
-	}
+	}!
 
 	return uuid
 }
 
 fn (mut app App) get_token(value string) ?Token {
-	token := sql app.db {
+	tokens := sql app.db {
 		select from Token where value == value limit 1
-	}
+	} or { []Token{} }
 
-	if token.id == 0 {
+	if tokens.len == 0 {
 		return none
 	}
 
-	return token
+	return tokens.first()
 }
 
-fn (mut app App) delete_tokens(user_id int) {
+fn (mut app App) delete_tokens(user_id int) ! {
 	sql app.db {
 		delete from Token where user_id == user_id
-	}
+	}!
 }

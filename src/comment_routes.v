@@ -23,10 +23,14 @@ pub fn (mut app App) handle_add_comment(username string, repo_name string) vweb.
 		return app.issue(username, repo_name, issue_id)
 	}
 
-	app.add_issue_comment(app.user.id, issue_id.int(), text)
+	app.add_issue_comment(app.user.id, issue_id.int(), text) or {
+		app.error('There was an error while inserting the comment')
+
+		return app.issue(username, repo_name, issue_id)
+	}
 
 	// TODO: count comments
-	app.increment_issue_comments(issue_id.int())
+	app.increment_issue_comments(issue_id.int()) or { app.info(err.str()) }
 
 	return app.redirect('/${username}/${repo_name}/issue/${issue_id}')
 }

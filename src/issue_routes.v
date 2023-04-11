@@ -77,16 +77,14 @@ pub fn (mut app App) handle_add_repo_issue(username string, repo_name string) vw
 		return app.redirect('/${username}/${repo_name}/issues/new')
 	}
 
-	app.increment_user_post(mut app.user)
-
-	app.add_issue(repo.id, app.user.id, title, text)
-
-	app.increment_repo_issues(repo.id)
+	app.increment_user_post(mut app.user) or { app.info(err.str()) }
+	app.add_issue(repo.id, app.user.id, title, text) or { app.info(err.str()) }
+	app.increment_repo_issues(repo.id) or { app.info(err.str()) }
 
 	has_first_issue_activity := app.has_activity(app.user.id, 'first_issue')
 
 	if !has_first_issue_activity {
-		app.add_activity(app.user.id, 'first_issue')
+		app.add_activity(app.user.id, 'first_issue') or { app.info(err.str()) }
 	}
 
 	return app.redirect('/${username}/${repo_name}/issues')
