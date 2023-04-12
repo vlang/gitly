@@ -31,11 +31,14 @@ pub fn (mut app App) handle_login(username string, password string) vweb.Result 
 	}
 
 	if !compare_password_with_hash(password, user.salt, user.password) {
-		app.increment_user_login_attempts(user.id)
+		app.increment_user_login_attempts(user.id) or {
+			app.error('There was an error while logging in')
+			return app.login()
+		}
 
 		if user.login_attempts == max_login_attempts {
 			app.warn('User ${user.username} got blocked')
-			app.block_user(user.id)
+			app.block_user(user.id) or { app.info(err.str()) }
 		}
 
 		app.error('Wrong username/password')
@@ -47,8 +50,11 @@ pub fn (mut app App) handle_login(username string, password string) vweb.Result 
 		return app.redirect_to_login()
 	}
 
-	app.auth_user(user, app.ip())
-	app.add_security_log(user_id: user.id, kind: .logged_in)
+	app.auth_user(user, app.ip()) or {
+		app.error('There was an error while logging in')
+		return app.login()
+	}
+	app.add_security_log(user_id: user.id, kind: .logged_in) or { app.info(err.str()) }
 
 	return app.redirect('/${username}')
 }
@@ -138,7 +144,10 @@ pub fn (mut app App) handle_update_user_settings(username string) vweb.Result {
 	is_new_full_name := full_name != app.user.full_name
 
 	if is_new_full_name {
-		app.change_full_name(app.user.id, full_name)
+		app.change_full_name(app.user.id, full_name) or {
+			app.error('There was an error while updating the settings')
+			return app.user_settings(username)
+		}
 	}
 
 	if is_new_username {
@@ -150,8 +159,14 @@ pub fn (mut app App) handle_update_user_settings(username string) vweb.Result {
 			return app.user_settings(username)
 		}
 
-		app.change_username(app.user.id, new_username)
-		app.incement_namechanges(app.user.id)
+		app.change_username(app.user.id, new_username) or {
+			app.error('There was an error while updating the settings')
+			return app.user_settings(username)
+		}
+		app.incement_namechanges(app.user.id) or {
+			app.error('There was an error while updating the settings')
+			return app.user_settings(username)
+		}
 		app.rename_user_directory(username, new_username)
 	}
 
@@ -165,7 +180,8 @@ fn (mut app App) rename_user_directory(old_name string, new_name string) {
 }
 
 pub fn (mut app App) register() vweb.Result {
-	no_users := app.get_users_count() == 0
+	user_count := app.get_users_count() or { 0 }
+	no_users := user_count == 0
 
 	app.current_path = ''
 
@@ -174,7 +190,11 @@ pub fn (mut app App) register() vweb.Result {
 
 ['/register'; post]
 pub fn (mut app App) handle_register(username string, email string, password string, no_redirect string) vweb.Result {
-	no_users := app.get_users_count() == 0
+	user_count := app.get_users_count() or {
+		app.error('Failed to register')
+		return app.register()
+	}
+	no_users := user_count == 0
 
 	if username in ['login', 'register', 'new', 'new_post', 'oauth'] {
 		app.error('Username `${username}` is not available')
@@ -227,7 +247,14 @@ pub fn (mut app App) handle_register(username string, email string, password str
 		return app.register()
 	}
 
-	if !app.register_user(username, hashed_password, salt, [email], false, no_users) {
+	// TODO: refactor
+	is_registered := app.register_user(username, hashed_password, salt, [email], false,
+		no_users) or {
+		app.error('Failed to register')
+		return app.register()
+	}
+
+	if !is_registered {
 		app.error('Failed to register')
 		return app.register()
 	}
@@ -238,13 +265,16 @@ pub fn (mut app App) handle_register(username string, email string, password str
 	}
 
 	if no_users {
-		app.add_admin(user.id)
+		app.add_admin(user.id) or { app.info(err.str()) }
 	}
 
 	client_ip := app.ip()
 
-	app.auth_user(user, client_ip)
-	app.add_security_log(user_id: user.id, kind: .registered)
+	app.auth_user(user, client_ip) or {
+		app.error('Failed to register')
+		return app.register()
+	}
+	app.add_security_log(user_id: user.id, kind: .registered) or { app.info(err.str()) }
 
 	if no_redirect == '1' {
 		return app.text('ok')
@@ -285,7 +315,13 @@ pub fn (mut app App) handle_upload_avatar() vweb.Result {
 	avatar_filename := '${username}.${file_extension}'
 
 	app.write_user_avatar(avatar_filename, file_content)
-	app.update_user_avatar(app.user.id, avatar_filename)
+	app.update_user_avatar(app.user.id, avatar_filename) or {
+		response := api.ApiErrorResponse{
+			message: 'There was an error while updating the avatar'
+		}
+
+		return app.json(response)
+	}
 
 	avatar_file_path := app.build_avatar_file_path(avatar_filename)
 	avatar_file_url := app.build_avatar_file_url(avatar_filename)

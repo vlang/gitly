@@ -12,7 +12,9 @@ pub fn (mut app App) handle_oauth() vweb.Result {
 	state := app.query['state']
 
 	if code == '' {
-		app.add_security_log(user_id: app.user.id, kind: .empty_oauth_code)
+		app.add_security_log(user_id: app.user.id, kind: .empty_oauth_code) or {
+			app.info(err.str())
+		}
 		app.info('Code is empty')
 
 		return app.redirect_to_index()
@@ -25,7 +27,7 @@ pub fn (mut app App) handle_oauth() vweb.Result {
 			kind: .wrong_oauth_state
 			arg1: 'csrf=${csrf}'
 			arg2: 'state=${state}'
-		)
+		) or { app.info(err.str()) }
 
 		return app.redirect_to_index()
 	}
@@ -67,7 +69,7 @@ pub fn (mut app App) handle_oauth() vweb.Result {
 			user_id: app.user.id
 			kind: .empty_oauth_email
 			arg1: user_response.body
-		)
+		) or { app.info(err.str()) }
 		app.info('Email is empty')
 	}
 
@@ -79,19 +81,23 @@ pub fn (mut app App) handle_oauth() vweb.Result {
 			user_id: user.id
 			kind: .registered_via_github
 			arg1: user_response.body
-		)
+		) or { app.info(err.str()) }
 
-		app.register_user(github_user.username, '', '', [github_user.email], true, false)
+		app.register_user(github_user.username, '', '', [github_user.email], true, false) or {
+			app.info(err.msg())
+		}
 
 		user = app.get_user_by_github_username(github_user.username) or {
 			return app.redirect_to_index()
 		}
 
-		app.update_user_avatar(user.id, github_user.avatar)
+		app.update_user_avatar(user.id, github_user.avatar) or { app.info(err.msg()) }
 	}
 
-	app.auth_user(user, app.ip())
-	app.add_security_log(user_id: user.id, kind: .logged_in_via_github, arg1: user_response.body)
+	app.auth_user(user, app.ip()) or { app.info(err.msg()) }
+	app.add_security_log(user_id: user.id, kind: .logged_in_via_github, arg1: user_response.body) or {
+		app.info(err.str())
+	}
 
 	return app.redirect_to_index()
 }

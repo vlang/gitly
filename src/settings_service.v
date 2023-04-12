@@ -1,14 +1,26 @@
 module main
 
 fn (mut app App) load_settings() {
-	app.settings = sql app.db {
+	settings_result := sql app.db {
 		select from Settings limit 1
+	} or { [] }
+
+	app.settings = if settings_result.len == 0 {
+		Settings{}
+	} else {
+		settings_result.first()
 	}
 }
 
-fn (mut app App) update_settings(oauth_client_id string, oauth_client_secret string) {
-	old_settings := sql app.db {
+fn (mut app App) update_settings(oauth_client_id string, oauth_client_secret string) ! {
+	settings_result := sql app.db {
 		select from Settings limit 1
+	} or { [] }
+
+	old_settings := if settings_result.len == 0 {
+		Settings{}
+	} else {
+		settings_result.first()
 	}
 
 	github_oauth_client_id := if oauth_client_id != '' {
@@ -24,18 +36,18 @@ fn (mut app App) update_settings(oauth_client_id string, oauth_client_secret str
 	}
 
 	if old_settings.id == 0 {
-		settings := Settings{
+		new_settings := Settings{
 			oauth_client_id: github_oauth_client_id
 			oauth_client_secret: github_oauth_client_secret
 		}
 
 		sql app.db {
-			insert settings into Settings
-		}
+			insert new_settings into Settings
+		}!
 	} else {
 		sql app.db {
 			update Settings set oauth_client_id = github_oauth_client_id, oauth_client_secret = github_oauth_client_secret
 			where id == old_settings.id
-		}
+		}!
 	}
 }

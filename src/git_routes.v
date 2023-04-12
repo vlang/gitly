@@ -81,7 +81,11 @@ fn (mut app App) handle_git_receive_pack(username string, git_repo_name string) 
 		return app.ok('')
 	}
 
-	app.update_repo_after_push(repo.id, branch_name)
+	app.update_repo_after_push(repo.id, branch_name) or {
+		app.send_internal_error('There was an error while updating the repo')
+
+		return app.ok('')
+	}
 
 	app.set_git_content_type_headers(.receive)
 

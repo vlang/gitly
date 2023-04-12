@@ -21,7 +21,7 @@ pub fn (mut app App) handle_admin_update_settings(oauth_client_id string, oauth_
 		return app.redirect_to_index()
 	}
 
-	app.update_gitly_settings(oauth_client_id, oauth_client_secret)
+	app.update_gitly_settings(oauth_client_id, oauth_client_secret) or { app.info(err.str()) }
 
 	return app.redirect('/admin')
 }
@@ -36,7 +36,7 @@ pub fn (mut app App) handle_admin_edit_user(user_id string) vweb.Result {
 	is_blocked := 'is-blocked' in app.form
 	is_admin := 'is-admin' in app.form
 
-	app.edit_user(user_id.int(), clear_session, is_blocked, is_admin)
+	app.edit_user(user_id.int(), clear_session, is_blocked, is_admin) or { app.info(err.str()) }
 
 	return app.redirect('/admin')
 }

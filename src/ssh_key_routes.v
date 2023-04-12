@@ -2,6 +2,7 @@ module main
 
 import vweb
 import validation
+import api
 
 ['/:username/settings/ssh-keys']
 pub fn (mut app App) user_ssh_keys_list(username string) vweb.Result {
@@ -59,7 +60,13 @@ pub fn (mut app App) handle_remove_ssh_key(username string, id int) vweb.Result 
 		return app.redirect_to_index()
 	}
 
-	app.remove_ssh_key(app.user.id, id)
+	app.remove_ssh_key(app.user.id, id) or {
+		response := api.ApiErrorResponse{
+			message: 'There was an error while deleting the SSH key'
+		}
+
+		return app.json(response)
+	}
 
 	return app.ok('')
 }

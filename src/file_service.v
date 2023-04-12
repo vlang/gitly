@@ -53,10 +53,10 @@ fn calculate_lines_of_code(source string) (int, int) {
 	return loc, sloc
 }
 
-fn (mut app App) add_file(file File) {
+fn (mut app App) add_file(file File) ! {
 	sql app.db {
 		insert file into File
-	}
+	}!
 }
 
 fn (mut app App) find_repository_items(repo_id int, branch string, parent_path string) []File {
@@ -65,7 +65,7 @@ fn (mut app App) find_repository_items(repo_id int, branch string, parent_path s
 	items := sql app.db {
 		select from File where repo_id == repo_id && parent_path == valid_parent_path
 		&& branch == branch
-	}
+	} or { []File{} }
 
 	return items
 }
@@ -80,28 +80,28 @@ fn (mut app App) find_repo_file_by_path(repo_id int, item_branch string, path st
 
 	app.info('find file repo_id=${repo_id} parent_path = ${valid_parent_path} branch=${item_branch} name=${item_branch}')
 
-	file := sql app.db {
+	files := sql app.db {
 		select from File where repo_id == repo_id && parent_path == valid_parent_path
 		&& branch == item_branch && name == item_name limit 1
-	}
+	} or { []File{} }
 
-	if file.name == '' {
+	if files.len == 0 {
 		return none
 	}
 
-	return file
+	return files.first()
 }
 
-fn (mut app App) delete_repository_files(repository_id int) {
+fn (mut app App) delete_repository_files(repository_id int) ! {
 	sql app.db {
 		delete from File where repo_id == repository_id
-	}
+	}!
 }
 
-fn (mut app App) delete_repository_files_in_branch(repository_id int, branch_name string) {
+fn (mut app App) delete_repository_files_in_branch(repository_id int, branch_name string) ! {
 	sql app.db {
 		delete from File where repo_id == repository_id && branch == branch_name
-	}
+	}!
 }
 
 fn (mut app App) delete_repo_folder(path string) {

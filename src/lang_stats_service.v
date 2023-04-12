@@ -19,10 +19,10 @@ const (
 	]
 )
 
-fn (app App) add_lang_stat(lang_stat LangStat) {
+fn (app App) add_lang_stat(lang_stat LangStat) ! {
 	sql app.db {
 		insert lang_stat into LangStat
-	}
+	}!
 }
 
 pub fn (l &LangStat) pct_html() vweb.RawHtml {
@@ -39,11 +39,11 @@ pub fn (l &LangStat) pct_html() vweb.RawHtml {
 pub fn (app App) find_repo_lang_stats(repo_id int) []LangStat {
 	return sql app.db {
 		select from LangStat where repo_id == repo_id order by pct desc
-	}
+	} or { []LangStat{} }
 }
 
-fn (app App) remove_repo_lang_stats(repo_id int) {
+fn (app App) remove_repo_lang_stats(repo_id int) ! {
 	sql app.db {
 		delete from LangStat where repo_id == repo_id
-	}
+	}!
 }

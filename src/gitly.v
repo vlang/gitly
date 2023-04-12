@@ -51,10 +51,10 @@ fn main() {
 		return
 	}
 
-	vweb.run(new_app(), http_port)
+	vweb.run(new_app()!, http_port)
 }
 
-fn new_app() &App {
+fn new_app() !&App {
 	mut app := &App{
 		db: sqlite.connect('gitly.sqlite') or { panic(err) }
 		started_at: time.now().unix
@@ -62,7 +62,7 @@ fn new_app() &App {
 
 	set_rand_crypto_safe_seed()
 
-	app.create_tables()
+	app.create_tables()!
 
 	create_directory_if_not_exists('logs')
 
@@ -147,7 +147,8 @@ pub fn (mut app App) before_request() {
 
 ['/']
 pub fn (mut app App) index() vweb.Result {
-	no_users := app.get_users_count() == 0
+	user_count := app.get_users_count() or { 0 }
+	no_users := user_count == 0
 	if no_users {
 		return app.redirect('/register')
 	}
@@ -167,68 +168,68 @@ pub fn (mut app App) redirect_to_repository(username string, repo_name string) v
 	return app.redirect('/${username}/${repo_name}')
 }
 
-fn (mut app App) create_tables() {
+fn (mut app App) create_tables() ! {
 	sql app.db {
 		create table Repo
-	}
+	}!
 	// unix time default now
 	sql app.db {
 		create table File
-	} // missing ON CONFLIC REPLACE
+	}! // missing ON CONFLIC REPLACE
 	//"created_at int default (strftime('%s', 'now'))"
 	sql app.db {
 		create table Issue
-	}
+	}!
 	//"created_at int default (strftime('%s', 'now'))"
 	sql app.db {
 		create table Commit
-	}
+	}!
 	// author text default '' is to to avoid joins
 	sql app.db {
 		create table LangStat
-	}
+	}!
 	sql app.db {
 		create table User
-	}
+	}!
 	sql app.db {
 		create table Email
-	}
+	}!
 	sql app.db {
 		create table Contributor
-	}
+	}!
 	sql app.db {
 		create table Activity
-	}
+	}!
 	sql app.db {
 		create table Tag
-	}
+	}!
 	sql app.db {
 		create table Release
-	}
+	}!
 	sql app.db {
 		create table SshKey
-	}
+	}!
 	sql app.db {
 		create table Comment
-	}
+	}!
 	sql app.db {
 		create table Branch
-	}
+	}!
 	sql app.db {
 		create table Settings
-	}
+	}!
 	sql app.db {
 		create table Token
-	}
+	}!
 	sql app.db {
 		create table SecurityLog
-	}
+	}!
 	sql app.db {
 		create table Star
-	}
+	}!
 	sql app.db {
 		create table Watch
-	}
+	}!
 }
 
 fn (mut app App) json_success[T](result T) vweb.Result {
