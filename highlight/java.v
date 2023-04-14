@@ -1,7 +1,7 @@
 // Designed for Java 5.0+
 module highlight
 
-fn init_js() Lang {
+fn init_java() Lang {
 	return Lang{
 		name: 'Java'
 		lang_extensions: ['java']
