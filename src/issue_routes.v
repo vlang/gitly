@@ -146,7 +146,13 @@ pub fn (mut app App) issue(username string, repo_name string, id string) vweb.Re
 		return app.not_found()
 	}
 
+	// FIXME: https://github.com/vlang/gitly/issues/249
 	issue := app.find_issue_by_id(id.int()) or { return app.not_found() }
+
+	if issue.repo_id != repo.id {
+		return app.not_found()
+	}
+
 	issue_author := app.get_user_by_id(issue.author_id) or { return app.not_found() }
 
 	mut comments_with_users := []CommentWithUser{}
