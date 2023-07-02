@@ -23,7 +23,7 @@ pub fn highlight_text(st string, file_path string, commit bool) (string, int, in
 	mut res := []u8{cap: text.len}
 	mut lines := 0
 	mut sloc := 0
-	mut ss := byte(` `)
+	mut ss := u8(` `)
 	lc := lang.line_comments
 	mut mlc := ''
 	mut mlc_end := ''
