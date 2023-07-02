@@ -23,7 +23,7 @@ The biggest missing features that will be implemented soon:
 - [ ] Pull requests
 
 ```sh
-sassc static/css/gitly.scss > static/css/gitly.css
+sassc src/static/css/gitly.scss > src/static/css/gitly.css
 v .
 ./gitly
 ```
