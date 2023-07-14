@@ -26,7 +26,11 @@
 				</div>
 
 				<div class="profile-block__right">
-					<h1>Repositories</h1>
+					@if has_repos
+						<h3>Last repositories(<a href="/@user.username/repos">view all</a>)</h3>
+					@else
+						<h3>Last repositories</h3>
+					@end
 
 					@if repos.len > 0
 						@for repo in repos
@@ -46,14 +50,14 @@
 								@end
 							</div>
 						@end
-						@else
-							<h2>No repositories</h2>
-						@end
+					@else
+						<h2>No repositories</h2>
+					@end
 				</div>
 			</div>
 
 			<div class="profile-activities">
-				<h2>Contribution activity</h2>
+				<h3>Contribution activity</h3>
 
 				@for activity in activities
 					@if activity.name == 'joined'

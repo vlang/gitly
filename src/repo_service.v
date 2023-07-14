@@ -89,6 +89,18 @@ fn (mut app App) find_user_repos(user_id int) []Repo {
 	} or { []Repo{} }
 }
 
+fn (app App) get_user_last_repos(user_id int, max_count int) []Repo {
+	return sql app.db {
+		select from Repo where user_id == user_id order by created_at desc limit max_count
+	}
+}
+
+fn (app App) get_user_last_public_repos(user_id int, max_count int) []Repo {
+	return sql app.db {
+		select from Repo where user_id == user_id && is_public == true order by created_at desc limit max_count
+	}
+}
+
 fn (mut app App) find_user_public_repos(user_id int) []Repo {
 	return sql app.db {
 		select from Repo where user_id == user_id && is_public == true

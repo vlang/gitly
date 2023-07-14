@@ -7,6 +7,10 @@ import rand
 import validation
 import api
 
+const (
+	user_last_repo_count = 5
+)
+
 pub fn (mut app App) login() vweb.Result {
 	csrf := rand.string(30)
 	app.set_cookie(name: 'csrf', value: csrf)
@@ -76,10 +80,12 @@ pub fn (mut app App) user(username string) vweb.Result {
 
 	is_page_owner := username == app.user.username
 	repos := if is_page_owner {
-		app.find_user_repos(user.id)
+		app.get_user_last_repos(user.id, user_last_repo_count)
 	} else {
-		app.find_user_public_repos(user.id)
+		app.get_user_last_public_repos(user.id, user_last_repo_count)
 	}
+
+	has_repos := repos.len > 0
 
 	activities := app.find_activities(user.id)
 
