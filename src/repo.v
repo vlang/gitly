@@ -135,6 +135,10 @@ fn (app App) search_public_repos(query string) []Repo {
 
 	mut repos := []Repo{}
 
+	repo_rows:= app.db.exec('select id, name, user_id, description, stars_count from `Repo` where is_public is true and name like "%${query}%"') or {
+		return repos
+	}
+
 	for row in repo_rows {
 		user_id := row.vals[2].int()
 		user := app.get_user_by_id(user_id) or { User{} }
