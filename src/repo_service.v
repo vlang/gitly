@@ -96,7 +96,9 @@ fn (mut app App) find_user_public_repos(user_id int) []Repo {
 }
 
 fn (app App) search_public_repos(query string) []Repo {
-	repo_rows, _ := app.db.exec('select id, name, user_id, description, stars_count from `Repo` where is_public is true and name like "%${query}%"')
+	repo_rows := app.db.exec('select id, name, user_id, description, stars_count from `Repo` where is_public is true and name like "%${query}%"') or {
+		return []
+	}
 
 	mut repos := []Repo{}
 
@@ -216,7 +218,7 @@ fn (mut app App) user_has_repo(user_id int, repo_name string) bool {
 fn (mut app App) update_repo_from_fs(mut repo Repo) ! {
 	repo_id := repo.id
 
-	app.db.exec('BEGIN TRANSACTION')
+	app.db.exec('BEGIN TRANSACTION')!
 
 	repo.analyse_lang(app)!
 
@@ -242,7 +244,7 @@ fn (mut app App) update_repo_from_fs(mut repo Repo) ! {
 	}
 
 	app.save_repo(repo)!
-	app.db.exec('END TRANSACTION')
+	app.db.exec('END TRANSACTION')!
 	app.info('Repo updated')
 }
 
@@ -291,7 +293,7 @@ fn (mut app App) update_repo_from_remote(mut repo Repo) ! {
 	repo.git('fetch --all')
 	repo.git('pull --all')
 
-	app.db.exec('BEGIN TRANSACTION')
+	app.db.exec('BEGIN TRANSACTION')!
 
 	repo.analyse_lang(app)!
 
@@ -317,7 +319,7 @@ fn (mut app App) update_repo_from_remote(mut repo Repo) ! {
 	repo.branches_count = app.get_count_repo_branches(repo_id)
 
 	app.save_repo(repo)!
-	app.db.exec('END TRANSACTION')
+	app.db.exec('END TRANSACTION')!
 	app.info('Repo updated')
 }
 
@@ -580,7 +582,7 @@ fn (mut app App) cache_repository_items(mut r Repo, branch string, path string) 
 	mut dirs := []File{} // dirs first
 	mut files := []File{}
 
-	app.db.exec('BEGIN TRANSACTION')
+	app.db.exec('BEGIN TRANSACTION')!
 
 	for item_info in item_info_lines {
 		is_item_info_empty := validation.is_string_empty(item_info)
@@ -608,7 +610,7 @@ fn (mut app App) cache_repository_items(mut r Repo, branch string, path string) 
 		app.add_file(file)!
 	}
 
-	app.db.exec('END TRANSACTION')
+	app.db.exec('END TRANSACTION')!
 
 	return dirs
 }
