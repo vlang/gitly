@@ -6,6 +6,8 @@ const (
 	admin_users_per_page = 30
 )
 
+// TODO move to admin controller
+
 ['/admin/settings']
 pub fn (mut app App) admin_settings() vweb.Result {
 	if !app.is_admin() {
