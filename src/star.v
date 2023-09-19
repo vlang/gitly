@@ -1,5 +1,11 @@
 module main
 
+struct Star {
+	id      int [primary; sql: serial]
+	user_id int [unique: 'repo_star']
+	repo_id int [unique: 'repo_star']
+}
+
 fn (mut app App) add_star(repo_id int, user_id int) ! {
 	star := Star{
 		repo_id: repo_id

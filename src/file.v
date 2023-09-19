@@ -4,6 +4,23 @@ import time
 import math
 import os
 
+struct File {
+	id                 int    [primary; sql: serial]
+	repo_id            int    [unique: 'file']
+	name               string [unique: 'file']
+	parent_path        string [unique: 'file']
+	is_dir             bool
+	branch             string [unique: 'file']
+	contributors_count int
+	last_hash          string
+	size               int
+	views_count        int
+mut:
+	last_msg  string
+	last_time int
+	commit    Commit [skip]
+}
+
 fn (f File) url() string {
 	file_type := if f.is_dir { 'tree' } else { 'blob' }
 

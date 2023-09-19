@@ -4,6 +4,27 @@ module main
 
 import time
 
+struct Commit {
+mut:
+	id         int    [primary; sql: serial]
+	author_id  int
+	author     string
+	hash       string [unique: 'commit']
+	created_at int
+	repo_id    int    [unique: 'commit']
+	branch_id  int    [unique: 'commit']
+	message    string
+}
+
+struct Change {
+mut:
+	file      string
+	additions int
+	deletions int
+	diff      string
+	message   string
+}
+
 fn (commit Commit) relative() string {
 	return time.unix(commit.created_at).relative()
 }

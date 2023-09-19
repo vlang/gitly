@@ -4,6 +4,17 @@ module main
 
 import time
 
+struct Tag {
+	id      int [primary; sql: serial]
+	repo_id int [unique: 'tag']
+mut:
+	name       string [unique: 'tag']
+	hash       string
+	message    string
+	user_id    int
+	created_at int
+}
+
 fn (mut app App) fetch_tags(repo Repo) ! {
 	tags_output := repo.git('tag --format="%(refname:lstrip=2)${log_field_separator}%(objectname)${log_field_separator}%(subject)${log_field_separator}%(authoremail)${log_field_separator}%(creatordate:rfc)"')
 

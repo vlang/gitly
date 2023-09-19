@@ -6,6 +6,20 @@ import vweb
 import json
 import net.http
 
+struct OAuthRequest {
+	client_id     string
+	client_secret string
+	code          string
+	state         string
+}
+
+struct GitHubUser {
+	username string [json: 'login']
+	name     string
+	email    string
+	avatar   string [json: 'avatar_url']
+}
+
 ['/oauth']
 pub fn (mut app App) handle_oauth() vweb.Result {
 	code := app.query['code']

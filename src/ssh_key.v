@@ -2,6 +2,14 @@ module main
 
 import time
 
+struct SshKey {
+	id         int       [primary; sql: serial]
+	user_id    int       [unique: 'ssh_key']
+	title      string    [unique: 'ssh_key']
+	key        string
+	created_at time.Time
+}
+
 fn (mut app App) add_ssh_key(user_id int, title string, key string) ! {
 	ssh_keys := sql app.db {
 		select from SshKey where user_id == user_id && title == title limit 1

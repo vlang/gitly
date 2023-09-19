@@ -2,6 +2,14 @@ module main
 
 import time
 
+struct Activity {
+mut:
+	id         int       [primary; sql: serial]
+	user_id    int
+	name       string
+	created_at time.Time
+}
+
 fn (app App) add_activity(user_id int, name string) ! {
 	activity := Activity{
 		user_id: user_id
