@@ -14,11 +14,7 @@ pub fn (mut app App) releases_default(username string, repo_name string) vweb.Re
 
 ['/:username/:repo_name/releases/:page']
 pub fn (mut app App) releases(username string, repo_name string, page int) vweb.Result {
-	repo := app.find_repo_by_name_and_username(repo_name, username)
-
-	if repo.id == 0 {
-		return app.not_found()
-	}
+	repo := app.find_repo_by_name_and_username(repo_name, username) or { return app.not_found() }
 
 	repo_id := repo.id
 	mut releases := []Release{}

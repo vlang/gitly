@@ -10,6 +10,7 @@ import validation
 
 struct Repo {
 	id                 int       [primary; sql: serial]
+	git_repo           &git.Repo [skip] // libgit wrapper repo
 	git_dir            string
 	name               string
 	user_id            int
@@ -88,13 +89,13 @@ fn (mut app App) save_repo(repo Repo) ! {
 	}!
 }
 
-fn (app App) find_repo_by_name_and_user_id(repo_name string, user_id int) Repo {
+fn (app App) find_repo_by_name_and_user_id(repo_name string, user_id int) ?Repo {
 	repos := sql app.db {
 		select from Repo where name == repo_name && user_id == user_id limit 1
 	} or { []Repo{} }
 
 	if repos.len == 0 {
-		return Repo{}
+		return none
 	}
 
 	mut repo := repos.first()
@@ -103,8 +104,8 @@ fn (app App) find_repo_by_name_and_user_id(repo_name string, user_id int) Repo {
 	return repo
 }
 
-fn (app App) find_repo_by_name_and_username(repo_name string, username string) Repo {
-	user := app.get_user_by_username(username) or { return Repo{} }
+fn (app App) find_repo_by_name_and_username(repo_name string, username string) ?Repo {
+	user := app.get_user_by_username(username) or { return none }
 
 	return app.find_repo_by_name_and_user_id(repo_name, user.id)
 }
@@ -140,6 +141,7 @@ fn (app App) search_public_repos(query string) []Repo {
 
 		repos << Repo{
 			id: row.vals[0].int()
+			git_repo: unsafe { nil }
 			name: row.vals[1]
 			user_name: user.username
 			description: row.vals[3]
@@ -150,13 +152,13 @@ fn (app App) search_public_repos(query string) []Repo {
 	return repos
 }
 
-fn (app App) find_repo_by_id(repo_id int) Repo {
+fn (app App) find_repo_by_id(repo_id int) ?Repo {
 	repos := sql app.db {
 		select from Repo where id == repo_id
 	} or { []Repo{} }
 
 	if repos.len == 0 {
-		return Repo{}
+		return none
 	}
 
 	mut repo := repos.first()
@@ -396,11 +398,7 @@ fn (mut app App) update_repo_branch_data(mut repo Repo, branch_name string) ! {
 
 // TODO: tags and other stuff
 fn (mut app App) update_repo_after_push(repo_id int, branch_name string) ! {
-	mut repo := app.find_repo_by_id(repo_id)
-
-	if repo.id == 0 {
-		return
-	}
+	mut repo := app.find_repo_by_id(repo_id) or { return }
 
 	app.update_repo_from_fs(mut repo)!
 	app.delete_repository_files_in_branch(repo_id, branch_name)!
@@ -538,6 +536,7 @@ fn (r &Repo) git(command string) string {
 	if command.contains('&') || command.contains(';') {
 		return ''
 	}
+	println('git(): "${command}"')
 
 	command_with_path := '-C ${r.git_dir} ${command}'
 
@@ -776,7 +775,13 @@ fn (mut r Repo) clone() {
 fn (r &Repo) read_file(branch string, path string) string {
 	valid_path := path.trim_string_left('/')
 
-	return r.git('--no-pager show ${branch}:${valid_path}')
+	println('yEPP')
+	t := time.now()
+	// s := r.git('--no-pager show ${branch}:${valid_path}')
+	s := r.git_repo.show_file_blob(branch, path) or { '' }
+	println(time.since(t))
+	println(':)')
+	return s
 }
 
 fn find_readme_file(items []File) ?File {
@@ -819,11 +824,7 @@ fn (app App) has_user_repo_read_access(user_id int, repo_id int) bool {
 		return false
 	}
 
-	repo := app.find_repo_by_id(repo_id)
-
-	if repo.id == 0 {
-		return false
-	}
+	repo := app.find_repo_by_id(repo_id) or { return false }
 
 	if repo.is_public {
 		return true
@@ -840,14 +841,14 @@ fn (app App) has_user_repo_read_access(user_id int, repo_id int) bool {
 
 fn (app App) has_user_repo_read_access_by_repo_name(user_id int, repo_owner_name string, repo_name string) bool {
 	user := app.get_user_by_username(repo_owner_name) or { return false }
-	repo := app.find_repo_by_name_and_user_id(repo_name, user.id)
+	repo := app.find_repo_by_name_and_user_id(repo_name, user.id) or { return false }
 
 	return app.has_user_repo_read_access(user_id, repo.id)
 }
 
 fn (app App) check_repo_owner(username string, repo_name string) bool {
 	user := app.get_user_by_username(username) or { return false }
-	repo := app.find_repo_by_name_and_user_id(repo_name, user.id)
+	repo := app.find_repo_by_name_and_user_id(repo_name, user.id) or { return false }
 
 	return repo.user_id == user.id
 }

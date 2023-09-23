@@ -11,9 +11,7 @@ fn (mut app App) handle_branch_count(username string, repo_name string) vweb.Res
 		return app.json_error('Not found')
 	}
 
-	repo := app.find_repo_by_name_and_username(repo_name, username)
-
-	if repo.id == 0 {
+	repo := app.find_repo_by_name_and_username(repo_name, username) or {
 		return app.json_error('Not found')
 	}
 
@@ -27,13 +25,9 @@ fn (mut app App) handle_branch_count(username string, repo_name string) vweb.Res
 
 ['/:user/:repo/branches']
 pub fn (mut app App) branches(username string, repo_name string) vweb.Result {
-	repo := app.find_repo_by_name_and_username(repo_name, username)
-
-	if repo.id == 0 {
+	repo := app.find_repo_by_name_and_username(repo_name, username) or {
 		return app.json_error('Not found')
 	}
-
 	branches := app.get_all_repo_branches(repo.id)
-
 	return $vweb.html()
 }

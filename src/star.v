@@ -24,11 +24,9 @@ fn (mut app App) find_user_starred_repos(user_id int) []Repo {
 	mut repos := []Repo{}
 
 	for star in stars {
-		repo := app.find_repo_by_id(star.repo_id)
+		repo := app.find_repo_by_id(star.repo_id) or { continue }
 
-		if repo.id != 0 {
-			repos << repo
-		}
+		repos << repo
 	}
 
 	return repos

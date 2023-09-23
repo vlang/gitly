@@ -13,9 +13,7 @@ fn (mut app App) handle_commits_count(username string, repo_name string, branch_
 		return app.json_error('Not found')
 	}
 
-	repo := app.find_repo_by_name_and_username(repo_name, username)
-
-	if repo.id == 0 {
+	repo := app.find_repo_by_name_and_username(repo_name, username) or {
 		return app.json_error('Not found')
 	}
 
@@ -30,11 +28,7 @@ fn (mut app App) handle_commits_count(username string, repo_name string, branch_
 
 ['/:username/:repo_name/:branch_name/commits/:page']
 pub fn (mut app App) commits(username string, repo_name string, branch_name string, page int) vweb.Result {
-	repo := app.find_repo_by_name_and_username(repo_name, username)
-
-	if repo.id == 0 {
-		return app.not_found()
-	}
+	repo := app.find_repo_by_name_and_username(repo_name, username) or { return app.not_found() }
 
 	branch := app.find_repo_branch_by_name(repo.id, branch_name)
 	commits_count := app.get_repo_commit_count(repo.id, branch.id)
@@ -78,11 +72,7 @@ pub fn (mut app App) commits(username string, repo_name string, branch_name stri
 
 ['/:username/:repo_name/commit/:hash']
 pub fn (mut app App) commit(username string, repo_name string, hash string) vweb.Result {
-	repo := app.find_repo_by_name_and_username(repo_name, username)
-
-	if repo.id == 0 {
-		return app.not_found()
-	}
+	repo := app.find_repo_by_name_and_username(repo_name, username) or { return app.not_found() }
 
 	is_patch_request := hash.ends_with('.patch')
 

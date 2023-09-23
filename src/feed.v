@@ -25,7 +25,9 @@ fn (mut app App) build_user_feed_as_page(user_id int, offset int) []FeedItem {
 	commits := app.db.exec('
 		select author, hash, created_at, repo_id, branch_id, message from `Commit`
 			where repo_id in (${where_repo_ids}) order by created_at desc
-			limit ${feed_items_per_page} offset ${offset}') or { return [] }
+			limit ${feed_items_per_page} offset ${offset}') or {
+		return []
+	}
 	mut item_id := 0
 
 	for commit in commits {
@@ -37,7 +39,7 @@ fn (mut app App) build_user_feed_as_page(user_id int, offset int) []FeedItem {
 		branch_id := vals[4].int()
 		commit_message := vals[5]
 
-		repo := app.find_repo_by_id(repo_id)
+		repo := app.find_repo_by_id(repo_id) or { continue }
 		repo_owner := app.get_username_by_id(repo.user_id) or { '' }
 		branch := app.find_repo_branch_by_id(repo_id, branch_id)
 		created_at := time.unix(created_at_unix)
@@ -62,7 +64,9 @@ fn (mut app App) get_feed_items_count(user_id int) int {
 	repo_ids := app.find_watching_repo_ids(user_id)
 	where_repo_ids := repo_ids.map(it.str()).join(', ')
 
-	count_result := app.db.exec('select count(id) from `Commit` where repo_id in (${where_repo_ids})') or { return 0 }
+	count_result := app.db.exec('select count(id) from `Commit` where repo_id in (${where_repo_ids})') or {
+		return 0
+	}
 
 	return count_result.first().vals.first().int()
 }
