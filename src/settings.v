@@ -9,7 +9,6 @@ mut:
 	oauth_client_secret string
 }
 
-
 fn (mut app App) load_settings() {
 	settings_result := sql app.db {
 		select from Settings limit 1
