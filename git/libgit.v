@@ -8,6 +8,7 @@ module git
 #flag darwin -L/opt/homebrew/lib
 
 #flag darwin -lgit2
+#flag linux -lgit2
 
 #include "git2/types.h"
 #include "git2/common.h"
