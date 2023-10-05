@@ -773,7 +773,7 @@ fn (mut r Repo) clone() {
 }
 
 fn (r &Repo) read_file(branch string, path string) string {
-	valid_path := path.trim_string_left('/')
+	// valid_path := path.trim_string_left('/')
 
 	println('yEPP')
 	t := time.now()

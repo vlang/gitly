@@ -1,6 +1,6 @@
 module git
 
-import time
+// import time
 
 //#include "stdint.h"
 
@@ -207,7 +207,7 @@ pub fn (r &Repo) show_file_blob(branch string, file_path string) !string {
 			}
 
 			content := C.git_blob_rawcontent(blob)
-			size := C.git_blob_rawsize(blob)
+			// size := C.git_blob_rawsize(blob)
 
 			C.printf(c'Content of %s (from branch %s):\n', file_path.str, branch.str)
 			// C.fwrite(content, 1, size, C.stdout)

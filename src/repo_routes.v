@@ -156,7 +156,7 @@ pub fn (mut app App) handle_tree(username string, repo_name string) vweb.Result 
 
 ['/:username/:repo_name/tree/:branch_name']
 pub fn (mut app App) handle_branch_tree(username string, repo_name string, branch_name string) vweb.Result {
-	repo := app.find_repo_by_name_and_username(repo_name, username) or { return app.not_found() }
+	app.find_repo_by_name_and_username(repo_name, username) or { return app.not_found() }
 
 	return app.tree(username, repo_name, branch_name, '')
 }
@@ -199,7 +199,7 @@ pub fn (mut app App) handle_new_repo(name string, clone_url string, description 
 		app.error('The repository name is too long (should be fewer than ${max_repo_name_len} characters)')
 		return app.new()
 	}
-	repo := app.find_repo_by_name_and_username(name, app.user.username) or {
+	app.find_repo_by_name_and_username(name, app.user.username) or {
 		app.error('A repository with the name "${name}" already exists')
 		return app.new()
 	}

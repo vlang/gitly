@@ -17,7 +17,7 @@ mut:
 
 ['/:username/:repo_name/comments'; post]
 pub fn (mut app App) handle_add_comment(username string, repo_name string) vweb.Result {
-	repo := app.find_repo_by_name_and_username(repo_name, username) or { return app.not_found() }
+	app.find_repo_by_name_and_username(repo_name, username) or { return app.not_found() }
 	text := app.form['text']
 	issue_id := app.form['issue_id']
 	is_text_empty := validation.is_string_empty(text)
