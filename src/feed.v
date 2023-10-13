@@ -26,8 +26,9 @@ fn (mut app App) build_user_feed_as_page(user_id int, offset int) []FeedItem {
 		select author, hash, created_at, repo_id, branch_id, message from `Commit`
 			where repo_id in (${where_repo_ids}) order by created_at desc
 			limit ${feed_items_per_page} offset ${offset}') or {
-		return []
+		return feed
 	}
+
 	mut item_id := 0
 
 	for commit in commits {
