@@ -135,7 +135,7 @@ fn (app App) search_public_repos(query string) []Repo {
 
 	mut repos := []Repo{}
 
-	repo_rows:= app.db.exec('select id, name, user_id, description, stars_count from `Repo` where is_public is true and name like "%${query}%"') or {
+	repo_rows := app.db.exec('select id, name, user_id, description, stars_count from `Repo` where is_public is true and name like "%${query}%"') or {
 		return repos
 	}
 

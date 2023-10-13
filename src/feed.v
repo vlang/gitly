@@ -22,7 +22,7 @@ fn (mut app App) build_user_feed_as_page(user_id int, offset int) []FeedItem {
 	repo_ids := app.find_watching_repo_ids(user_id)
 	where_repo_ids := repo_ids.map(it.str()).join(', ')
 
-	commits:= app.db.exec('
+	commits := app.db.exec('
 		select author, hash, created_at, repo_id, branch_id, message from `Commit`
 			where repo_id in (${where_repo_ids}) order by created_at desc
 			limit ${feed_items_per_page} offset ${offset}') or {
