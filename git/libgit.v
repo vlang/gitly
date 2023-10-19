@@ -7,8 +7,7 @@ module git
 #flag darwin -I/opt/homebrew/include
 #flag darwin -L/opt/homebrew/lib
 
-#flag darwin -lgit2
-#flag linux -lgit2
+#flag -lgit2
 
 #include "git2/types.h"
 #include "git2/common.h"
@@ -45,6 +44,9 @@ struct C.git_object {}
 struct C.git_error {
 	message &char
 }
+
+[typedef]
+struct C.git_tree_entry {}
 
 fn C.git_commit_message(voidptr) &char
 fn C.git_reference_lookup(&&C.git_reference, &C.git_repository, &char)
