@@ -41,6 +41,13 @@ Required dependencies:
 * Markdown (`v install markdown`)
 * PCRE (`v install pcre`)
 * sassc
+* libgit2
+
+You can install libgit2 with:
+  * Ubuntu/Debian: `apt install libgit2-dev`
+  * FreeBSD: `pkg install libgit2`
+  * macOS: `brew install libgit2`
+
 
 Gitly will support Postgres and MySQL in the future (once V ORM does).
 
