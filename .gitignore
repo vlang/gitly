@@ -1,4 +1,5 @@
 gitly
+tests/first_run
 bin/
 *.sqlite
 *.css
@@ -17,3 +18,5 @@ avatars/
 .idea
 
 .DS_Store
+
+*~
