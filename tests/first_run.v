@@ -1,4 +1,5 @@
 import os
+import log
 import net.http
 import time
 import json
@@ -73,7 +74,7 @@ fn after() ! {
 }
 
 fn run_gitly() {
-	gitly_process := os.execute('./gitly &')
+	gitly_process := os.execute('./gitly.exe &')
 	if gitly_process.exit_code != 0 {
 		exit_with_message(gitly_process.str())
 	}
@@ -86,7 +87,7 @@ fn exit_with_message(message string) {
 }
 
 fn ilog(message string) {
-	println('${time.now().format_ss_milli()} | ${message}')
+	log.info(message)
 }
 
 fn cd_executable_dir() ! {
@@ -98,7 +99,7 @@ fn cd_executable_dir() ! {
 }
 
 fn kill_gitly_processes() {
-	os.execute('pkill -9 gitly')
+	os.execute('pkill -9 gitly.exe')
 }
 
 fn remove_database_if_exists() ! {
@@ -119,8 +120,8 @@ fn remove_repos_dir_if_exists() ! {
 
 fn compile_gitly() {
 	ilog('Compile gitly')
-
-	os.execute('v .')
+	os.execute('v -o gitly.exe .')
+	ilog('Compiled gitly.exe, size: ${os.file_size('gitly.exe')}')
 }
 
 fn wait_gitly() {
