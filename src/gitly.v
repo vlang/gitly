@@ -44,17 +44,9 @@ mut:
 
 fn C.sqlite3_config(int)
 
-fn main() {
+fn new_app() !&App {
 	C.sqlite3_config(3)
 
-	if os.args.contains('ci_run') {
-		return
-	}
-
-	vweb.run(new_app()!, http_port)
-}
-
-fn new_app() !&App {
 	mut app := &App{
 		db: sqlite.connect('gitly.sqlite') or { panic(err) }
 		started_at: time.now().unix
