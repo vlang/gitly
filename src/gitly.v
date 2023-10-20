@@ -12,7 +12,6 @@ import config
 
 const (
 	commits_per_page   = 35
-	http_port          = os.getenv_opt('GITLY_PORT') or { '8080' }.int()
 	expire_length      = 200
 	posts_per_day      = 5
 	max_username_len   = 40
