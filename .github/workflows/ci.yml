@@ -14,8 +14,8 @@ jobs:
         uses: actions/checkout@v3
         with:
           path: gitly
-      - name: Install SQLite Dependencies
-        run: sudo apt install libsqlite3-dev
+      - name: Install Dependencies
+        run: sudo apt install libsqlite3-dev libgit2-dev
       - name: Install Markdown
         uses: actions/checkout@v3
         with:
@@ -78,6 +78,8 @@ jobs:
         with:
           repository: vlang/pcre
           path: vlib/pcre
+      - name: Install libgit2
+        run: brew install libgit2
       - name: Build V
         run: |
           make
@@ -184,8 +186,8 @@ jobs:
         uses: actions/checkout@v3
         with:
           path: gitly
-      - name: Install SQLite Dependencies
-        run: sudo apt install libsqlite3-dev
+      - name: Install Dependencies
+        run: sudo apt install libsqlite3-dev libgit2-dev
       - name: Install Markdown
         uses: actions/checkout@v3
         with:
