@@ -36,7 +36,7 @@ curl https://gitly.org/css/gitly.css --output static/css/gitly.css
 
 
 Required dependencies:
-* V 0.1.28.1 (https://vlang.io)
+* V 0.4.2 93ff40a (https://vlang.io)
 * SQLite (Ubuntu/Debian: `libsqlite3-dev`)
 * Markdown (`v install markdown`)
 * PCRE (`v install pcre`)
