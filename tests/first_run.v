@@ -152,7 +152,7 @@ fn test_index_page() {
 }
 
 // returns headers and token
-fn register_user(username string, password string, email string) ?(http.Header, string) {
+fn register_user(username string, password string, email string) !(http.Header, string) {
 	response := http.post(prepare_url('register'), 'username=${username}&password=${password}&email=${email}&no_redirect=1') or {
 		return err
 	}
