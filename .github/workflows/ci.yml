@@ -52,7 +52,12 @@ jobs:
           source: gitly/src/static/css/gitly.scss
           destination: gitly/src/static/css/gitly.css
 
-      - name: Run gitly
+      - name: Run all tests
+        run: |
+          cd gitly
+          v -d use_openssl test .
+
+      - name: Run tests/first_run.v
         run: |
           cd gitly
           v -g run tests/first_run.v
@@ -101,7 +106,11 @@ jobs:
         with:
           source: gitly/src/static/css/gitly.scss
           destination: gitly/src/static/css/gitly.css
-      - name: Run gitly tests
+      - name: Run all tests
+        run: |
+          cd gitly
+          v -d use_openssl test .
+      - name: Run tests/first_run.v
         run: |
           cd gitly
           v -g run tests/first_run.v
@@ -220,7 +229,12 @@ jobs:
           source: gitly/src/static/css/gitly.scss
           destination: gitly/src/static/css/gitly.css
 
-      - name: Run gitly
+      - name: Run all tests
+        run: |
+          cd gitly
+          v -d use_openssl test .
+
+      - name: Run tests/first_run.v
         run: |
           cd gitly
           v -g run tests/first_run.v
