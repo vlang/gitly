@@ -55,7 +55,7 @@ jobs:
       - name: Run gitly
         run: |
           cd gitly
-          v run tests/first_run.v
+          v -g run tests/first_run.v
 
   macos:
     runs-on: macos-latest
@@ -104,7 +104,7 @@ jobs:
       - name: Run gitly tests
         run: |
           cd gitly
-          v run tests/first_run.v
+          v -g run tests/first_run.v
 
 #  windows-msvc:
 #    runs-on: windows-latest
@@ -223,4 +223,4 @@ jobs:
       - name: Run gitly
         run: |
           cd gitly
-          v run tests/first_run.v
+          v -g run tests/first_run.v
