@@ -120,7 +120,9 @@ fn remove_repos_dir_if_exists() ! {
 
 fn compile_gitly() {
 	ilog('Compile gitly')
-	os.execute('v -o gitly.exe .')
+	// TODO: gitly segfaults with mbedtls (some interference with libgit2 initialisation) on Ubuntu 20.04. Investigate why exactly and fix it.
+	// Note that using `-d use_openssl` prevents tcc from working, so the compilation will be much slower:
+	os.execute('v -d use_libbacktrace -cg -keepc -d use_openssl -o gitly.exe .')
 	ilog('Compiled gitly.exe, size: ${os.file_size('gitly.exe')}')
 }
 
