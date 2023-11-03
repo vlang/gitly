@@ -63,7 +63,7 @@ pub fn highlight_text(st string, file_path string, commit bool) (string, int, in
 			if in_comment {
 				res << '<i>'.bytes()
 			}
-			if !in_comment && !in_line_comment && runes[pos + 1] != '\n'.bytes()[0] {
+			if !in_comment && !in_line_comment && runes[pos + 1] != `\n` {
 				sloc++
 			}
 			continue
@@ -74,7 +74,7 @@ pub fn highlight_text(st string, file_path string, commit bool) (string, int, in
 		}
 		if in_comment {
 			res << write(c)
-			if c == mlc_end.bytes()[0] && is_line_comment(runes, pos, mlc_end) {
+			if c == mlc_end[0] && is_line_comment(runes, pos, mlc_end) {
 				in_comment = false
 				res << runes[pos + 1]
 				pos++
@@ -88,7 +88,7 @@ pub fn highlight_text(st string, file_path string, commit bool) (string, int, in
 		}
 		if in_string {
 			res << write(c)
-			if runes[pos - 1] == `\\` && ss == '"'.bytes()[0] {
+			if runes[pos - 1] == `\\` && ss == `"` {
 				continue
 			}
 			if c == ss {
@@ -135,11 +135,11 @@ pub fn highlight_text(st string, file_path string, commit bool) (string, int, in
 	return res.bytestr(), lines, sloc
 }
 
-fn write(c byte) []u8 {
+fn write(c u8) []u8 {
 	mut tmp := []u8{}
-	if c == '<'.bytes()[0] {
+	if c == `<` {
 		tmp << '&lt;'.bytes()
-	} else if c == '>'.bytes()[0] {
+	} else if c == `>` {
 		tmp << '&gt;'.bytes()
 	} else {
 		tmp << c
@@ -147,17 +147,17 @@ fn write(c byte) []u8 {
 	return tmp
 }
 
-fn is_letter(c byte, lang Lang) bool {
+fn is_letter(c u8, lang Lang) bool {
 	name := lang.name.to_lower()
-	if (name == 'cpp' || name == 'c' || name == 'd' || name == 'swift') && c == '#'.bytes()[0] {
+	if (name == 'cpp' || name == 'c' || name == 'd' || name == 'swift') && c == `#` {
 		return true
 	}
 	return c.is_letter() || c == `_`
 }
 
-fn is_string_token(c byte, lang Lang) bool {
+fn is_string_token(c u8, lang Lang) bool {
 	for val in lang.string_start {
-		if c == val.bytes()[0] {
+		if c == val[0] {
 			return true
 		}
 	}
@@ -165,8 +165,8 @@ fn is_string_token(c byte, lang Lang) bool {
 }
 
 fn is_line_comment(s []u8, pos int, lc string) bool {
-	for i in 0 .. lc.len {
-		if s[pos + i] != lc.bytes()[i] {
+	for i, b in lc {
+		if s[pos + i] != b {
 			return false
 		}
 	}
@@ -176,7 +176,7 @@ fn is_line_comment(s []u8, pos int, lc string) bool {
 fn is_single_line(s string) bool {
 	mut cnt := 0
 	for i in 0 .. s.len {
-		if s.bytes()[i] == '\n'.bytes()[0] {
+		if s[i] == `\n` {
 			cnt++
 			if cnt > 1 {
 				return false
