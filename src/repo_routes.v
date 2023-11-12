@@ -191,7 +191,7 @@ pub fn (mut app App) handle_new_repo(name string, clone_url string, description 
 	if !app.logged_in {
 		return app.redirect_to_login()
 	}
-	if app.get_count_user_repos(app.user.id) >= max_user_repos {
+	if !app.is_admin() && app.get_count_user_repos(app.user.id) >= max_user_repos {
 		app.error('You have reached the limit for the number of repositories')
 		return app.new()
 	}
@@ -199,7 +199,7 @@ pub fn (mut app App) handle_new_repo(name string, clone_url string, description 
 		app.error('The repository name is too long (should be fewer than ${max_repo_name_len} characters)')
 		return app.new()
 	}
-	app.find_repo_by_name_and_username(name, app.user.username) or {
+	if repo := app.find_repo_by_name_and_username(name, app.user.username) {
 		app.error('A repository with the name "${name}" already exists')
 		return app.new()
 	}
@@ -224,8 +224,8 @@ pub fn (mut app App) handle_new_repo(name string, clone_url string, description 
 		}
 	}
 	repo_path := os.join_path(app.config.repo_storage_path, app.user.username, name)
-	mut new_repo := Repo{
-		git_repo: unsafe { nil }
+	mut new_repo := &Repo{
+		git_repo: git.new_repo(repo_path)
 		name: name
 		description: description
 		git_dir: repo_path
@@ -239,30 +239,37 @@ pub fn (mut app App) handle_new_repo(name string, clone_url string, description 
 		os.mkdir(new_repo.git_dir) or { panic(err) }
 		new_repo.git('init --bare')
 	} else {
-		new_repo.clone()
+		println('GO CLONING:')
+		// t := time.now()
+
+		spawn app.foo(mut new_repo)
+		// new_repo.clone()
+		// println(time.since(t))
 	}
 	app.add_repo(new_repo) or {
 		app.error('There was an error while adding the repo')
 		return app.new()
 	}
-	new_repo = app.find_repo_by_name_and_user_id(new_repo.name, app.user.id) or {
+	new_repo2 := app.find_repo_by_name_and_user_id(new_repo.name, app.user.id) or {
 		app.info('Repo was not inserted')
 		return app.redirect('/new')
 	}
-	repo_id := new_repo.id
+	repo_id := new_repo2.id
 	primary_branch := git.get_repository_primary_branch(repo_path)
 	app.update_repo_primary_branch(repo_id, primary_branch) or {
 		app.error('There was an error while adding the repo')
 		return app.new()
 	}
-	new_repo = app.find_repo_by_id(repo_id) or { return app.new() }
+	new_repo3 := app.find_repo_by_id(repo_id) or { return app.new() }
 	// Update only cloned repositories
+	/*
 	if !is_clone_url_empty {
 		app.update_repo_from_fs(mut new_repo) or {
 			app.error('There was an error while cloning the repo')
 			return app.new()
 		}
 	}
+	*/
 	if no_redirect == '1' {
 		return app.text('ok')
 	}
@@ -271,6 +278,13 @@ pub fn (mut app App) handle_new_repo(name string, clone_url string, description 
 		app.add_activity(app.user.id, 'first_repo') or { app.info(err.str()) }
 	}
 	return app.redirect('/${app.user.username}/repos')
+}
+
+pub fn (mut app App) foo(mut new_repo Repo) {
+	new_repo.clone()
+	println('CLONING DONE')
+	app.update_repo_from_fs(mut new_repo) or {}
+	// git.clone(valid_clone_url, repo_path)
 }
 
 ['/:user/:repository/tree/:branch_name/:path...']
@@ -289,7 +303,8 @@ pub fn (mut app App) tree(username string, repo_name string, branch_name string,
 	repo_id := repo.id
 	log_prefix := '${username}/${repo_name}'
 
-	app.fetch_tags(repo) or { app.info(err.str()) }
+	// XTODO
+	// app.fetch_tags(repo) or { app.info(err.str()) }
 
 	app.current_path = '/${path}'
 	if app.current_path.contains('/favicon.svg') {

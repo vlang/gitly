@@ -10,7 +10,6 @@ import validation
 
 struct Repo {
 	id                 int       [primary; sql: serial]
-	git_repo           &git.Repo [skip] // libgit wrapper repo
 	git_dir            string
 	name               string
 	user_id            int
@@ -21,24 +20,26 @@ struct Repo {
 	is_public          bool
 	users_contributed  []string  [skip]
 	users_authorized   []string  [skip]
-	topics_count       int       [skip]
+	nr_topics          int       [skip]
 	views_count        int
 	latest_update_hash string    [skip]
 	latest_activity    time.Time [skip]
 mut:
-	webhook_secret     string
-	tags_count         int
-	open_issues_count  int
-	open_prs_count     int
-	releases_count     int
-	branches_count     int
-	stars_count        int
-	lang_stats         []LangStat        [skip]
-	created_at         int
-	contributors_count int
-	labels             []Label           [skip]
-	status             RepoStatus        [skip]
-	msg_cache          map[string]string [skip]
+	git_repo        &git.Repo         [skip] // libgit wrapper repo
+	webhook_secret  string
+	tags_count      int
+	nr_open_issues  int               [orm: 'open_issues_count']
+	nr_open_prs     int               [orm: 'open_prs_count']
+	nr_releases     int               [orm: 'releases_count']
+	nr_branches     int               [orm: 'branches_count']
+	nr_tags         int
+	nr_stars        int               [orm: 'stars_count']
+	lang_stats      []LangStat        [skip]
+	created_at      int
+	nr_contributors int
+	labels          []Label           [skip]
+	status          RepoStatus        [skip]
+	msg_cache       map[string]string [skip]
 }
 
 // log_field_separator is declared as constant in case we need to change it later
@@ -74,32 +75,37 @@ fn (mut app App) save_repo(repo Repo) ! {
 	webhook_secret := repo.webhook_secret
 	tags_count := repo.tags_count
 	is_public := if repo.is_public { 1 } else { 0 }
-	open_issues_count := repo.open_issues_count
-	open_prs_count := repo.open_prs_count
-	branches_count := repo.branches_count
-	releases_count := repo.releases_count
-	stars_count := repo.stars_count
-	contributors_count := repo.contributors_count
+	open_issues_count := repo.nr_open_issues
+	open_prs_count := repo.nr_open_prs
+	branches_count := repo.nr_branches
+	releases_count := repo.nr_releases
+	stars_count := repo.nr_stars
+	contributors_count := repo.nr_contributors
+
+	// XTODO sql update all fields automatically
+	// repo.update()
 
 	sql app.db {
 		update Repo set description = desc, views_count = views_count, is_public = is_public,
-		webhook_secret = webhook_secret, tags_count = tags_count, open_issues_count = open_issues_count,
-		open_prs_count = open_prs_count, releases_count = releases_count, contributors_count = contributors_count,
-		stars_count = stars_count, branches_count = branches_count where id == id
+		webhook_secret = webhook_secret, tags_count = tags_count, nr_open_issues = open_issues_count,
+		nr_open_prs = open_prs_count, nr_releases = releases_count, nr_contributors = contributors_count,
+		nr_stars = stars_count, nr_branches = branches_count where id == id
 	}!
 }
 
 fn (app App) find_repo_by_name_and_user_id(repo_name string, user_id int) ?Repo {
 	repos := sql app.db {
 		select from Repo where name == repo_name && user_id == user_id limit 1
-	} or { []Repo{} }
+	} or { return none }
 
 	if repos.len == 0 {
 		return none
 	}
 
-	mut repo := repos.first()
+	mut repo := repos[0]
 	repo.lang_stats = app.find_repo_lang_stats(repo.id)
+	println('GIT DIR = ${repo.git_dir}')
+	repo.git_repo = git.new_repo(repo.git_dir)
 
 	return repo
 }
@@ -145,7 +151,7 @@ fn (app App) search_public_repos(query string) []Repo {
 			name: row.vals[1]
 			user_name: user.username
 			description: row.vals[3]
-			stars_count: row.vals[4].int()
+			nr_stars: row.vals[4].int()
 		}
 	}
 
@@ -175,13 +181,13 @@ fn (mut app App) increment_repo_views(repo_id int) ! {
 
 fn (mut app App) increment_repo_stars(repo_id int) ! {
 	sql app.db {
-		update Repo set stars_count = stars_count + 1 where id == repo_id
+		update Repo set nr_stars = nr_stars + 1 where id == repo_id
 	}!
 }
 
 fn (mut app App) decrement_repo_stars(repo_id int) ! {
 	sql app.db {
-		update Repo set stars_count = stars_count - 1 where id == repo_id
+		update Repo set nr_stars = nr_stars - 1 where id == repo_id
 	}!
 }
 
@@ -199,7 +205,7 @@ fn (mut app App) set_repo_webhook_secret(repo_id int, secret string) ! {
 
 fn (mut app App) increment_repo_issues(repo_id int) ! {
 	sql app.db {
-		update Repo set open_issues_count = open_issues_count + 1 where id == repo_id
+		update Repo set nr_open_issues = nr_open_issues + 1 where id == repo_id
 	}!
 }
 
@@ -254,9 +260,9 @@ fn (mut app App) update_repo_from_fs(mut repo Repo) ! {
 
 	app.db.exec('BEGIN TRANSACTION')!
 
-	repo.analyse_lang(app)!
+	repo.analyze_lang(app)!
 
-	app.info(repo.contributors_count.str())
+	app.info(repo.nr_contributors.str())
 	app.fetch_branches(repo)!
 
 	branches_output := repo.git('branch -a')
@@ -267,14 +273,14 @@ fn (mut app App) update_repo_from_fs(mut repo Repo) ! {
 		app.update_repo_branch_from_fs(mut repo, branch_name)!
 	}
 
-	repo.contributors_count = app.get_count_repo_contributors(repo_id)!
-	repo.branches_count = app.get_count_repo_branches(repo_id)
+	repo.nr_contributors = app.get_count_repo_contributors(repo_id)!
+	repo.nr_branches = app.get_count_repo_branches(repo_id)
 
 	// TODO: TEMPORARY - UNTIL WE GET PERSISTENT RELEASE INFO
 	for tag in app.get_all_repo_tags(repo_id) {
 		app.add_release(tag.id, repo_id, time.unix(tag.created_at), tag.message)!
 
-		repo.releases_count++
+		repo.nr_releases++
 	}
 
 	app.save_repo(repo)!
@@ -329,9 +335,9 @@ fn (mut app App) update_repo_from_remote(mut repo Repo) ! {
 
 	app.db.exec('BEGIN TRANSACTION')!
 
-	repo.analyse_lang(app)!
+	repo.analyze_lang(app)!
 
-	app.info(repo.contributors_count.str())
+	app.info(repo.nr_contributors.str())
 	app.fetch_branches(repo)!
 	app.fetch_tags(repo)!
 
@@ -345,12 +351,11 @@ fn (mut app App) update_repo_from_remote(mut repo Repo) ! {
 
 	for tag in app.get_all_repo_tags(repo_id) {
 		app.add_release(tag.id, repo_id, time.unix(tag.created_at), tag.message)!
-
-		repo.releases_count++
+		repo.nr_releases++
 	}
 
-	repo.contributors_count = app.get_count_repo_contributors(repo_id)!
-	repo.branches_count = app.get_count_repo_branches(repo_id)
+	repo.nr_contributors = app.get_count_repo_contributors(repo_id)!
+	repo.nr_branches = app.get_count_repo_branches(repo_id)
 
 	app.save_repo(repo)!
 	app.db.exec('END TRANSACTION')!
@@ -404,7 +409,7 @@ fn (mut app App) update_repo_after_push(repo_id int, branch_name string) ! {
 	app.delete_repository_files_in_branch(repo_id, branch_name)!
 }
 
-fn (r &Repo) analyse_lang(app &App) ! {
+fn (r &Repo) analyze_lang(app &App) ! {
 	file_paths := r.get_all_file_paths()
 
 	mut all_size := 0
@@ -760,6 +765,15 @@ fn (mut app App) update_repo_primary_branch(repo_id int, branch string) ! {
 }
 
 fn (mut r Repo) clone() {
+	if r.git_repo != unsafe { nil } {
+		r.git_repo.clone(r.clone_url, r.git_dir)
+	} else {
+		println('nil')
+	}
+
+	/*
+	cmd := 'git clone --bare "${r.clone_url}" ${r.git_dir}'
+	println('CLONE() ${cmd}')
 	clone_result := os.execute('git clone --bare "${r.clone_url}" ${r.git_dir}')
 	close_exit_code := clone_result.exit_code
 
@@ -768,6 +782,7 @@ fn (mut r Repo) clone() {
 		println('git clone failed with exit code ${close_exit_code}')
 		return
 	}
+	*/
 
 	r.status = .clone_done
 }
@@ -775,10 +790,14 @@ fn (mut r Repo) clone() {
 fn (r &Repo) read_file(branch string, path string) string {
 	// valid_path := path.trim_string_left('/')
 
-	println('yEPP')
+	println('yEPP path=${valid_path}')
+	if r.git_repo == unsafe { nil } {
+		return 'nil'
+	}
 	t := time.now()
 	// s := r.git('--no-pager show ${branch}:${valid_path}')
-	s := r.git_repo.show_file_blob(branch, path) or { '' }
+
+	s := r.git_repo.show_file_blob(branch, valid_path) or { '' }
 	println(time.since(t))
 	println(':)')
 	return s

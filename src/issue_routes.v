@@ -84,11 +84,11 @@ pub fn (mut app App) issues(username string, repo_name string, page int) vweb.Re
 	}
 	mut first := false
 	mut last := false
-	if repo.open_issues_count > commits_per_page {
+	if repo.nr_open_issues > commits_per_page {
 		offset := page * commits_per_page
-		delta := repo.open_issues_count - offset
+		delta := repo.nr_open_issues - offset
 		if delta > 0 {
-			if delta == repo.open_issues_count && page == 0 {
+			if delta == repo.nr_open_issues && page == 0 {
 				first = true
 			} else {
 				last = true
@@ -98,7 +98,7 @@ pub fn (mut app App) issues(username string, repo_name string, page int) vweb.Re
 		last = true
 		first = true
 	}
-	page_count := calculate_pages(repo.open_issues_count, commits_per_page)
+	page_count := calculate_pages(repo.nr_open_issues, commits_per_page)
 	prev_page, next_page := generate_prev_next_pages(page)
 	return $vweb.html()
 }

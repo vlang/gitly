@@ -63,12 +63,12 @@
 						@if is_repo_starred
 							<button class="star-button">
 								@include 'svgs/unstar.html'
-								Starred @{repo.stars_count}
+								Starred @{repo.nr_stars}
 							</button>
 						@else
 							<button class="star-button">
 								@include 'svgs/star.html'
-								Star @{repo.stars_count}
+								Star @{repo.nr_stars}
 							</button>
 						@end
 

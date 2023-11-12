@@ -12,31 +12,35 @@ fn get_declension_form(count int, first_form string, second_form string) string 
 
 fn (mut app App) format_commits_count(repo Repo, branch_name string) vweb.RawHtml {
 	branch := app.find_repo_branch_by_name(repo.id, branch_name)
-	commits_count := app.get_repo_commit_count(repo.id, branch.id)
+	nr_commits := app.get_repo_commit_count(repo.id, branch.id)
 
-	return get_declension_form(commits_count, 'Commit', 'Commits')
+	return get_declension_form(nr_commits, 'Commit', 'Commits')
 }
 
-fn (r &Repo) format_branches_count() vweb.RawHtml {
-	return get_declension_form(r.branches_count, 'Branch', 'Branches')
+fn (r &Repo) format_nr_branches() vweb.RawHtml {
+	return get_declension_form(r.nr_branches, 'Branch', 'Branches')
 }
 
-fn (r &Repo) format_open_prs_count() vweb.RawHtml {
-	return get_declension_form(r.open_prs_count, 'Pull request', 'Pull requests')
+fn (r &Repo) format_nr_tags() vweb.RawHtml {
+	return get_declension_form(r.nr_tags, 'Branch', 'Branches')
 }
 
-fn (r &Repo) format_open_issues_count() vweb.RawHtml {
-	return get_declension_form(r.open_issues_count, 'Issue', 'Issues')
+fn (r &Repo) format_nr_open_prs() vweb.RawHtml {
+	return get_declension_form(r.nr_open_prs, 'Pull request', 'Pull requests')
 }
 
-fn (r &Repo) format_contributors_count() vweb.RawHtml {
-	return get_declension_form(r.contributors_count, 'Contributor', 'Contributors')
+fn (r &Repo) format_nr_open_issues() vweb.RawHtml {
+	return get_declension_form(r.nr_open_issues, 'Issue', 'Issues')
 }
 
-fn (r &Repo) format_topics_count() vweb.RawHtml {
-	return get_declension_form(r.topics_count, 'Discussion', 'discussions')
+fn (r &Repo) format_nr_contributors() vweb.RawHtml {
+	return get_declension_form(r.nr_contributors, 'Contributor', 'Contributors')
 }
 
-fn (r &Repo) format_releases_count() vweb.RawHtml {
-	return get_declension_form(r.releases_count, 'Release', 'Releases')
+fn (r &Repo) format_nr_topics() vweb.RawHtml {
+	return get_declension_form(r.nr_topics, 'Discussion', 'discussions')
+}
+
+fn (r &Repo) format_nr_releases() vweb.RawHtml {
+	return get_declension_form(r.nr_releases, 'Release', 'Releases')
 }
