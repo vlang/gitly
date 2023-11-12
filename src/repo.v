@@ -788,9 +788,9 @@ fn (mut r Repo) clone() {
 }
 
 fn (r &Repo) read_file(branch string, path string) string {
-	// valid_path := path.trim_string_left('/')
+	valid_path := path.trim_string_left('/')
 
-	println('yEPP path=${valid_path}')
+	println('read_file() path=${valid_path}')
 	if r.git_repo == unsafe { nil } {
 		return 'nil'
 	}
