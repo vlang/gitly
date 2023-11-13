@@ -3,7 +3,7 @@ name: CI
 on: [push, pull_request]
 
 jobs:
-  ubuntu:
+  ubuntu-gcc:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout V
@@ -34,17 +34,17 @@ jobs:
       - name: Compile gitly
         run: |
           cd gitly
-          v .
+          v -cc gcc .
 
       - name: Compile gitly with -autofree
         run: |
           cd gitly
-          v -autofree .
+          v -cc gcc -autofree .
 
       - name: Compile gitly with -prod
         run: |
           cd gitly
-          v -prod .
+          v -cc gcc -prod .
 
       - name: Compile CSS from SCSS files
         uses: gha-utilities/sass-build@v0.4.11
@@ -55,14 +55,14 @@ jobs:
       - name: Run all tests
         run: |
           cd gitly
-          v -d use_openssl test .
+          v -cc gcc -d use_openssl test .
 
       - name: Run tests/first_run.v
         run: |
           cd gitly
-          v -g run tests/first_run.v
+          v -cc gcc -g run tests/first_run.v
 
-  macos:
+  macos-clang:
     runs-on: macos-latest
     steps:
       - name: Checkout V
@@ -92,15 +92,15 @@ jobs:
       - name: Compile gitly
         run: |
           cd gitly
-          v .
+          v -cc clang .
       - name: Compile gitly with -autofree
         run: |
           cd gitly
-          v -autofree .
+          v -cc clang -autofree .
       - name: Compile gitly with -prod
         run: |
           cd gitly
-          v -prod .
+          v -cc clang -prod .
       - name: Compile CSS from SCSS files
         uses: gha-utilities/sass-build@v0.4.11
         with:
@@ -109,11 +109,11 @@ jobs:
       - name: Run all tests
         run: |
           cd gitly
-          v -d use_openssl test .
+          v -cc clang -d use_openssl test .
       - name: Run tests/first_run.v
         run: |
           cd gitly
-          v -g run tests/first_run.v
+          v -cc clang -g run tests/first_run.v
 
 #  windows-msvc:
 #    runs-on: windows-latest
@@ -180,12 +180,12 @@ jobs:
         run: |
           ./make.bat -gcc
       - name: Compile gitly
-        run: .\v.exe gitly
+        run: .\v.exe -cc gcc gitly
 
   ubuntu-tcc:
     runs-on: ubuntu-latest
     env:
-      VFLAGS: -cc tcc -cflags -bt10
+      VFLAGS: -cc tcc -d no_backtrace -d no_segfault_handler
     steps:
       - name: Checkout V
         uses: actions/checkout@v3

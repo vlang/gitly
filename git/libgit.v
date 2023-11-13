@@ -7,6 +7,9 @@ module git
 #flag darwin -I/opt/homebrew/include
 #flag darwin -L/opt/homebrew/lib
 
+#flag linux -I/usr/local/include
+#flag linux -L/usr/local/lib
+
 #flag -lgit2
 
 #include "git2/types.h"
@@ -47,6 +50,7 @@ struct C.git_error {
 
 [typedef]
 struct C.git_tree_entry {}
+
 struct C.git_clone_options {
 mut:
 	bare int
