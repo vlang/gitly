@@ -3,7 +3,7 @@
 module main
 
 struct Settings {
-	id int [primary; sql: serial]
+	id int @[primary; sql: serial]
 mut:
 	oauth_client_id     string
 	oauth_client_secret string

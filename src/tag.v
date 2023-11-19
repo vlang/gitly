@@ -5,10 +5,10 @@ module main
 import time
 
 struct Tag {
-	id      int [primary; sql: serial]
-	repo_id int [unique: 'tag']
+	id      int @[primary; sql: serial]
+	repo_id int @[unique: 'tag']
 mut:
-	name       string [unique: 'tag']
+	name       string @[unique: 'tag']
 	hash       string
 	message    string
 	user_id    int

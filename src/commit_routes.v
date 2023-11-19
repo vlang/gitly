@@ -5,7 +5,7 @@ import highlight
 import time
 import api
 
-['/api/v1/:user/:repo_name/:branch_name/commits/count']
+@['/api/v1/:user/:repo_name/:branch_name/commits/count']
 fn (mut app App) handle_commits_count(username string, repo_name string, branch_name string) vweb.Result {
 	has_access := app.has_user_repo_read_access_by_repo_name(app.user.id, username, repo_name)
 
@@ -26,7 +26,7 @@ fn (mut app App) handle_commits_count(username string, repo_name string, branch_
 	})
 }
 
-['/:username/:repo_name/:branch_name/commits/:page']
+@['/:username/:repo_name/:branch_name/commits/:page']
 pub fn (mut app App) commits(username string, repo_name string, branch_name string, page int) vweb.Result {
 	repo := app.find_repo_by_name_and_username(repo_name, username) or { return app.not_found() }
 
@@ -70,7 +70,7 @@ pub fn (mut app App) commits(username string, repo_name string, branch_name stri
 	return $vweb.html()
 }
 
-['/:username/:repo_name/commit/:hash']
+@['/:username/:repo_name/commit/:hash']
 pub fn (mut app App) commit(username string, repo_name string, hash string) vweb.Result {
 	repo := app.find_repo_by_name_and_username(repo_name, username) or { return app.not_found() }
 

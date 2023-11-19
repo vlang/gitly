@@ -18,7 +18,7 @@ pub fn (mut app App) login() vweb.Result {
 	return $vweb.html()
 }
 
-['/login'; post]
+@['/login'; post]
 pub fn (mut app App) handle_login(username string, password string) vweb.Result {
 	if username == '' || password == '' {
 		return app.redirect_to_login()
@@ -59,14 +59,14 @@ pub fn (mut app App) handle_login(username string, password string) vweb.Result 
 	return app.redirect('/${username}')
 }
 
-['/logout']
+@['/logout']
 pub fn (mut app App) handle_logout() vweb.Result {
 	app.set_cookie(name: 'token', value: '')
 
 	return app.redirect_to_index()
 }
 
-['/:username']
+@['/:username']
 pub fn (mut app App) user(username string) vweb.Result {
 	exists, user := app.check_username(username)
 
@@ -86,7 +86,7 @@ pub fn (mut app App) user(username string) vweb.Result {
 	return $vweb.html()
 }
 
-['/:username/settings']
+@['/:username/settings']
 pub fn (mut app App) user_settings(username string) vweb.Result {
 	is_users_settings := username == app.user.username
 
@@ -97,7 +97,7 @@ pub fn (mut app App) user_settings(username string) vweb.Result {
 	return $vweb.html()
 }
 
-['/:username/settings'; post]
+@['/:username/settings'; post]
 pub fn (mut app App) handle_update_user_settings(username string) vweb.Result {
 	is_users_settings := username == app.user.username
 
@@ -188,7 +188,7 @@ pub fn (mut app App) register() vweb.Result {
 	return $vweb.html()
 }
 
-['/register'; post]
+@['/register'; post]
 pub fn (mut app App) handle_register(username string, email string, password string, no_redirect string) vweb.Result {
 	user_count := app.get_users_count() or {
 		app.error('Failed to register')
@@ -283,7 +283,7 @@ pub fn (mut app App) handle_register(username string, email string, password str
 	return app.redirect('/' + username)
 }
 
-['/api/v1/users/avatar'; post]
+@['/api/v1/users/avatar'; post]
 pub fn (mut app App) handle_upload_avatar() vweb.Result {
 	if !app.logged_in {
 		return app.not_found()

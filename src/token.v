@@ -5,7 +5,7 @@ module main
 import rand
 
 struct Token {
-	id      int    [primary; sql: serial]
+	id      int    @[primary; sql: serial]
 	user_id int
 	value   string
 	ip      string

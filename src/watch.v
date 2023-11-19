@@ -1,9 +1,9 @@
 module main
 
 struct Watch {
-	id      int [primary; sql: serial]
-	user_id int [unique: 'repo_watch']
-	repo_id int [unique: 'repo_watch']
+	id      int @[primary; sql: serial]
+	user_id int @[unique: 'repo_watch']
+	repo_id int @[unique: 'repo_watch']
 }
 
 fn (mut app App) watch_repo(repo_id int, user_id int) ! {

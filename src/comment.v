@@ -8,14 +8,14 @@ import time
 
 struct Comment {
 mut:
-	id         int    [primary; sql: serial]
+	id         int    @[primary; sql: serial]
 	author_id  int
 	issue_id   int
 	created_at int
 	text       string
 }
 
-['/:username/:repo_name/comments'; post]
+@['/:username/:repo_name/comments'; post]
 pub fn (mut app App) handle_add_comment(username string, repo_name string) vweb.Result {
 	app.find_repo_by_name_and_username(repo_name, username) or { return app.not_found() }
 	text := app.form['text']

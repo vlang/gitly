@@ -80,7 +80,7 @@ fn run_gitly() {
 	}
 }
 
-[noreturn]
+@[noreturn]
 fn exit_with_message(message string) {
 	println(message)
 	exit(1)

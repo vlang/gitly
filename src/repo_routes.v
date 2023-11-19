@@ -8,7 +8,7 @@ import time
 import validation
 import git
 
-['/:username/repos']
+@['/:username/repos']
 pub fn (mut app App) user_repos(username string) vweb.Result {
 	exists, user := app.check_username(username)
 
@@ -25,7 +25,7 @@ pub fn (mut app App) user_repos(username string) vweb.Result {
 	return $vweb.html()
 }
 
-['/:username/stars']
+@['/:username/stars']
 pub fn (mut app App) user_stars(username string) vweb.Result {
 	exists, user := app.check_username(username)
 
@@ -38,7 +38,7 @@ pub fn (mut app App) user_stars(username string) vweb.Result {
 	return $vweb.html()
 }
 
-['/:username/:repo_name/settings']
+@['/:username/:repo_name/settings']
 pub fn (mut app App) repo_settings(username string, repo_name string) vweb.Result {
 	repo := app.find_repo_by_name_and_username(repo_name, username) or {
 		return app.redirect_to_repository(username, repo_name)
@@ -52,7 +52,7 @@ pub fn (mut app App) repo_settings(username string, repo_name string) vweb.Resul
 	return $vweb.html()
 }
 
-['/:username/:repo_name/settings'; post]
+@['/:username/:repo_name/settings'; post]
 pub fn (mut app App) handle_update_repo_settings(username string, repo_name string, webhook_secret string) vweb.Result {
 	repo := app.find_repo_by_name_and_username(repo_name, username) or {
 		return app.redirect_to_repository(username, repo_name)
@@ -71,7 +71,7 @@ pub fn (mut app App) handle_update_repo_settings(username string, repo_name stri
 	return app.redirect_to_repository(username, repo_name)
 }
 
-['/:user/:repo_name/delete'; post]
+@['/:user/:repo_name/delete'; post]
 pub fn (mut app App) handle_repo_delete(username string, repo_name string) vweb.Result {
 	repo := app.find_repo_by_name_and_username(repo_name, username) or {
 		return app.redirect_to_repository(username, repo_name)
@@ -92,7 +92,7 @@ pub fn (mut app App) handle_repo_delete(username string, repo_name string) vweb.
 	return app.redirect_to_index()
 }
 
-['/:username/:repo_name/move'; post]
+@['/:username/:repo_name/move'; post]
 pub fn (mut app App) handle_repo_move(username string, repo_name string, dest string, verify string) vweb.Result {
 	repo := app.find_repo_by_name_and_username(repo_name, username) or {
 		return app.redirect_to_index()
@@ -134,7 +134,7 @@ pub fn (mut app App) handle_repo_move(username string, repo_name string, dest st
 	return app.redirect_to_index()
 }
 
-['/:username/:repo_name']
+@['/:username/:repo_name']
 pub fn (mut app App) handle_tree(username string, repo_name string) vweb.Result {
 	match repo_name {
 		'repos' {
@@ -154,14 +154,14 @@ pub fn (mut app App) handle_tree(username string, repo_name string) vweb.Result 
 	return app.tree(username, repo_name, repo.primary_branch, '')
 }
 
-['/:username/:repo_name/tree/:branch_name']
+@['/:username/:repo_name/tree/:branch_name']
 pub fn (mut app App) handle_branch_tree(username string, repo_name string, branch_name string) vweb.Result {
 	app.find_repo_by_name_and_username(repo_name, username) or { return app.not_found() }
 
 	return app.tree(username, repo_name, branch_name, '')
 }
 
-['/:username/:repo_name/update']
+@['/:username/:repo_name/update']
 pub fn (mut app App) handle_repo_update(username string, repo_name string) vweb.Result {
 	mut repo := app.find_repo_by_name_and_username(repo_name, username) or {
 		return app.not_found()
@@ -175,7 +175,7 @@ pub fn (mut app App) handle_repo_update(username string, repo_name string) vweb.
 	return app.redirect_to_repository(username, repo_name)
 }
 
-['/new']
+@['/new']
 pub fn (mut app App) new() vweb.Result {
 	if !app.logged_in {
 		return app.redirect_to_login()
@@ -183,7 +183,7 @@ pub fn (mut app App) new() vweb.Result {
 	return $vweb.html()
 }
 
-['/new'; post]
+@['/new'; post]
 pub fn (mut app App) handle_new_repo(name string, clone_url string, description string, no_redirect string) vweb.Result {
 	mut valid_clone_url := clone_url
 	is_clone_url_empty := validation.is_string_empty(clone_url)
@@ -287,7 +287,7 @@ pub fn (mut app App) foo(mut new_repo Repo) {
 	// git.clone(valid_clone_url, repo_path)
 }
 
-['/:user/:repository/tree/:branch_name/:path...']
+@['/:user/:repository/tree/:branch_name/:path...']
 pub fn (mut app App) tree(username string, repo_name string, branch_name string, path string) vweb.Result {
 	mut repo := app.find_repo_by_name_and_username(repo_name, username) or {
 		return app.not_found()
@@ -425,7 +425,7 @@ pub fn (mut app App) tree(username string, repo_name string, branch_name string,
 	return $vweb.html()
 }
 
-['/api/v1/repos/:repo_id/star'; 'post']
+@['/api/v1/repos/:repo_id/star'; 'post']
 pub fn (mut app App) handle_api_repo_star(repo_id_str string) vweb.Result {
 	repo_id := repo_id_str.int()
 
@@ -444,7 +444,7 @@ pub fn (mut app App) handle_api_repo_star(repo_id_str string) vweb.Result {
 	return app.json_success(is_repo_starred)
 }
 
-['/api/v1/repos/:repo_id/watch'; 'post']
+@['/api/v1/repos/:repo_id/watch'; 'post']
 pub fn (mut app App) handle_api_repo_watch(repo_id_str string) vweb.Result {
 	repo_id := repo_id_str.int()
 
@@ -463,7 +463,7 @@ pub fn (mut app App) handle_api_repo_watch(repo_id_str string) vweb.Result {
 	return app.json_success(is_watching)
 }
 
-['/:username/:repo_name/contributors']
+@['/:username/:repo_name/contributors']
 pub fn (mut app App) contributors(username string, repo_name string) vweb.Result {
 	repo := app.find_repo_by_name_and_username(repo_name, username) or { return app.not_found() }
 
@@ -472,7 +472,7 @@ pub fn (mut app App) contributors(username string, repo_name string) vweb.Result
 	return $vweb.html()
 }
 
-['/:username/:repo_name/blob/:branch_name/:path...']
+@['/:username/:repo_name/blob/:branch_name/:path...']
 pub fn (mut app App) blob(username string, repo_name string, branch_name string, path string) vweb.Result {
 	repo := app.find_repo_by_name_and_username(repo_name, username) or { return app.not_found() }
 
@@ -499,7 +499,7 @@ pub fn (mut app App) blob(username string, repo_name string, branch_name string,
 	return $vweb.html()
 }
 
-['/:user/:repository/raw/:branch_name/:path...']
+@['/:user/:repository/raw/:branch_name/:path...']
 pub fn (mut app App) handle_raw(username string, repo_name string, branch_name string, path string) vweb.Result {
 	user := app.get_user_by_username(username) or { return app.not_found() }
 	repo := app.find_repo_by_name_and_user_id(repo_name, user.id) or { return app.not_found() }

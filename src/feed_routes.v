@@ -2,12 +2,12 @@ module main
 
 import vweb
 
-['/:username/feed']
+@['/:username/feed']
 pub fn (mut app App) user_feed_default(username string) vweb.Result {
 	return app.user_feed(username, 0)
 }
 
-['/:username/feed/:page']
+@['/:username/feed/:page']
 pub fn (mut app App) user_feed(username string, page int) vweb.Result {
 	exists, user := app.check_username(username)
 

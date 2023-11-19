@@ -4,7 +4,7 @@ import vweb
 import validation
 import api
 
-['/:username/settings/ssh-keys']
+@['/:username/settings/ssh-keys']
 pub fn (mut app App) user_ssh_keys_list(username string) vweb.Result {
 	is_users_settings := username == app.user.username
 
@@ -17,7 +17,7 @@ pub fn (mut app App) user_ssh_keys_list(username string) vweb.Result {
 	return $vweb.html()
 }
 
-['/:username/settings/ssh-keys'; 'post']
+@['/:username/settings/ssh-keys'; 'post']
 pub fn (mut app App) handle_add_ssh_key(username string) vweb.Result {
 	is_users_settings := username == app.user.username
 
@@ -52,7 +52,7 @@ pub fn (mut app App) handle_add_ssh_key(username string) vweb.Result {
 	return app.redirect('/${username}/settings/ssh-keys')
 }
 
-['/:username/settings/ssh-keys/:id'; 'delete']
+@['/:username/settings/ssh-keys/:id'; 'delete']
 pub fn (mut app App) handle_remove_ssh_key(username string, id int) vweb.Result {
 	is_users_settings := username == app.user.username
 
@@ -71,7 +71,7 @@ pub fn (mut app App) handle_remove_ssh_key(username string, id int) vweb.Result 
 	return app.ok('')
 }
 
-['/:username/settings/ssh-keys/new']
+@['/:username/settings/ssh-keys/new']
 pub fn (mut app App) user_ssh_keys_new(username string) vweb.Result {
 	is_users_settings := username == app.user.username
 

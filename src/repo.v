@@ -9,37 +9,37 @@ import highlight
 import validation
 
 struct Repo {
-	id                 int       [primary; sql: serial]
+	id                 int       @[primary; sql: serial]
 	git_dir            string
 	name               string
 	user_id            int
 	user_name          string
-	clone_url          string    [skip]
+	clone_url          string    @[skip]
 	primary_branch     string
 	description        string
 	is_public          bool
-	users_contributed  []string  [skip]
-	users_authorized   []string  [skip]
-	nr_topics          int       [skip]
+	users_contributed  []string  @[skip]
+	users_authorized   []string  @[skip]
+	nr_topics          int       @[skip]
 	views_count        int
-	latest_update_hash string    [skip]
-	latest_activity    time.Time [skip]
+	latest_update_hash string    @[skip]
+	latest_activity    time.Time @[skip]
 mut:
-	git_repo        &git.Repo         [skip] // libgit wrapper repo
+	git_repo        &git.Repo         @[skip] // libgit wrapper repo
 	webhook_secret  string
 	tags_count      int
-	nr_open_issues  int               [orm: 'open_issues_count']
-	nr_open_prs     int               [orm: 'open_prs_count']
-	nr_releases     int               [orm: 'releases_count']
-	nr_branches     int               [orm: 'branches_count']
+	nr_open_issues  int               @[orm: 'open_issues_count']
+	nr_open_prs     int               @[orm: 'open_prs_count']
+	nr_releases     int               @[orm: 'releases_count']
+	nr_branches     int               @[orm: 'branches_count']
 	nr_tags         int
-	nr_stars        int               [orm: 'stars_count']
-	lang_stats      []LangStat        [skip]
+	nr_stars        int               @[orm: 'stars_count']
+	lang_stats      []LangStat        @[skip]
 	created_at      int
 	nr_contributors int
-	labels          []Label           [skip]
-	status          RepoStatus        [skip]
-	msg_cache       map[string]string [skip]
+	labels          []Label           @[skip]
+	status          RepoStatus        @[skip]
+	msg_cache       map[string]string @[skip]
 }
 
 // log_field_separator is declared as constant in case we need to change it later

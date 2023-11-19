@@ -3,7 +3,7 @@ module main
 import vweb
 import os
 
-['/:username/:repo_name/tag/:tag/:format']
+@['/:username/:repo_name/tag/:tag/:format']
 pub fn (mut app App) handle_download_tag_archive(username string, repo_name string, tag string, format string) vweb.Result {
 	// access checking will be implemented in another module
 	user := app.get_user_by_username(username) or { return app.not_found() }

@@ -24,13 +24,13 @@ const (
 
 struct App {
 	vweb.Context
-	started_at i64 [vweb_global]
+	started_at i64 @[vweb_global]
 pub mut:
 	db sqlite.DB
 mut:
-	version       string        [vweb_global]
-	logger        log.Log       [vweb_global]
-	config        config.Config [vweb_global]
+	version       string        @[vweb_global]
+	logger        log.Log       @[vweb_global]
+	config        config.Config @[vweb_global]
 	settings      Settings
 	current_path  string
 	page_gen_time string
@@ -136,7 +136,7 @@ pub fn (mut app App) before_request() {
 	}
 }
 
-['/']
+@['/']
 pub fn (mut app App) index() vweb.Result {
 	user_count := app.get_users_count() or { 0 }
 	no_users := user_count == 0

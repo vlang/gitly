@@ -8,7 +8,7 @@ const (
 
 // TODO move to admin controller
 
-['/admin/settings']
+@['/admin/settings']
 pub fn (mut app App) admin_settings() vweb.Result {
 	if !app.is_admin() {
 		return app.redirect_to_index()
@@ -17,7 +17,7 @@ pub fn (mut app App) admin_settings() vweb.Result {
 	return $vweb.html()
 }
 
-['/admin/settings'; post]
+@['/admin/settings'; post]
 pub fn (mut app App) handle_admin_update_settings(oauth_client_id string, oauth_client_secret string) vweb.Result {
 	if !app.is_admin() {
 		return app.redirect_to_index()
@@ -28,7 +28,7 @@ pub fn (mut app App) handle_admin_update_settings(oauth_client_id string, oauth_
 	return app.redirect('/admin')
 }
 
-['/admin/users/:user'; post]
+@['/admin/users/:user'; post]
 pub fn (mut app App) handle_admin_edit_user(user_id string) vweb.Result {
 	if !app.is_admin() {
 		return app.redirect_to_index()
@@ -43,12 +43,12 @@ pub fn (mut app App) handle_admin_edit_user(user_id string) vweb.Result {
 	return app.redirect('/admin')
 }
 
-['/admin/users']
+@['/admin/users']
 pub fn (mut app App) admin_users_default() vweb.Result {
 	return app.admin_users(0)
 }
 
-['/admin/users/:page']
+@['/admin/users/:page']
 pub fn (mut app App) admin_users(page int) vweb.Result {
 	if !app.is_admin() {
 		return app.redirect_to_index()
@@ -65,7 +65,7 @@ pub fn (mut app App) admin_users(page int) vweb.Result {
 	return $vweb.html()
 }
 
-['/admin/statistics']
+@['/admin/statistics']
 pub fn (mut app App) admin_statistics() vweb.Result {
 	if !app.is_admin() {
 		return app.redirect_to_index()

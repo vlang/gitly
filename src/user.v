@@ -5,9 +5,9 @@ import time
 import os
 
 struct User {
-	id              int       [primary; sql: serial]
+	id              int       @[primary; sql: serial]
 	full_name       string
-	username        string    [unique]
+	username        string    @[unique]
 	github_username string
 	password        string
 	salt            string
@@ -16,7 +16,7 @@ struct User {
 	is_registered   bool
 	is_blocked      bool
 	is_admin        bool
-	oauth_state     string    [skip]
+	oauth_state     string    @[skip]
 mut:
 	// for github oauth XSRF protection
 	namechanges_count    int
@@ -24,20 +24,20 @@ mut:
 	posts_count          int
 	last_post_time       int
 	avatar               string
-	emails               []Email [skip]
+	emails               []Email @[skip]
 	login_attempts       int
 }
 
 struct Email {
-	id      int    [primary; sql: serial]
+	id      int    @[primary; sql: serial]
 	user_id int
-	email   string [unique]
+	email   string @[unique]
 }
 
 struct Contributor {
-	id      int [primary; sql: serial]
-	user_id int [unique: 'contributor']
-	repo_id int [unique: 'contributor']
+	id      int @[primary; sql: serial]
+	user_id int @[unique: 'contributor']
+	repo_id int @[unique: 'contributor']
 }
 
 pub fn (mut app App) set_user_block_status(user_id int, status bool) ! {

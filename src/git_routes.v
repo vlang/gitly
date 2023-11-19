@@ -6,7 +6,7 @@ import vweb
 import git
 import compress.deflate
 
-['/:username/:repo_name/info/refs']
+@['/:username/:repo_name/info/refs']
 fn (mut app App) handle_git_info(username string, git_repo_name string) vweb.Result {
 	repo_name := git.remove_git_extension_if_exists(git_repo_name)
 	user := app.get_user_by_username(username) or { return app.not_found() }
@@ -33,7 +33,7 @@ fn (mut app App) handle_git_info(username string, git_repo_name string) vweb.Res
 	return app.ok(git_response)
 }
 
-['/:user/:repo_name/git-upload-pack'; post]
+@['/:user/:repo_name/git-upload-pack'; post]
 fn (mut app App) handle_git_upload_pack(username string, git_repo_name string) vweb.Result {
 	body := app.parse_body()
 	repo_name := git.remove_git_extension_if_exists(git_repo_name)
@@ -52,7 +52,7 @@ fn (mut app App) handle_git_upload_pack(username string, git_repo_name string) v
 	return app.ok(git_response)
 }
 
-['/:user/:repo_name/git-receive-pack'; post]
+@['/:user/:repo_name/git-receive-pack'; post]
 fn (mut app App) handle_git_receive_pack(username string, git_repo_name string) vweb.Result {
 	body := app.parse_body()
 	repo_name := git.remove_git_extension_if_exists(git_repo_name)

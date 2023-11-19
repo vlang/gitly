@@ -14,13 +14,13 @@ struct OAuthRequest {
 }
 
 struct GitHubUser {
-	username string [json: 'login']
+	username string @[json: 'login']
 	name     string
 	email    string
-	avatar   string [json: 'avatar_url']
+	avatar   string @[json: 'avatar_url']
 }
 
-['/oauth']
+@['/oauth']
 pub fn (mut app App) handle_oauth() vweb.Result {
 	code := app.query['code']
 	state := app.query['state']

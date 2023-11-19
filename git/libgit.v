@@ -48,7 +48,7 @@ struct C.git_error {
 	message &char
 }
 
-[typedef]
+@[typedef]
 struct C.git_tree_entry {}
 
 struct C.git_clone_options {
@@ -100,7 +100,7 @@ fn (r Repo) str() string {
 	return 'Repo{ path:${r.path} }'
 }
 
-[params]
+@[params]
 struct LogParams {
 	n      int
 	dir    string // -C "dir"

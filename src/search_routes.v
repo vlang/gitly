@@ -3,7 +3,7 @@ module main
 import vweb
 import regex
 
-['/search']
+@['/search']
 pub fn (mut app App) search() vweb.Result {
 	query := app.query['query']
 	search_type := if 'type' in app.query { app.query['type'] } else { 'repos' }

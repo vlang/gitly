@@ -5,21 +5,21 @@ module main
 import time
 
 struct Issue {
-	id int [primary; sql: serial]
+	id int @[primary; sql: serial]
 mut:
 	author_id      int
 	repo_id        int
 	is_pr          bool
-	assigned       []int       [skip]
-	labels         []int       [skip]
+	assigned       []int       @[skip]
+	labels         []int       @[skip]
 	comments_count int
 	title          string
 	text           string
 	created_at     int
-	status         IssueStatus [skip]
-	linked_issues  []int       [skip]
-	repo_author    string      [skip]
-	repo_name      string      [skip]
+	status         IssueStatus @[skip]
+	linked_issues  []int       @[skip]
+	repo_author    string      @[skip]
+	repo_name      string      @[skip]
 }
 
 enum IssueStatus {
