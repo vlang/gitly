@@ -199,7 +199,7 @@ pub fn (mut app App) handle_new_repo(name string, clone_url string, description 
 		app.error('The repository name is too long (should be fewer than ${max_repo_name_len} characters)')
 		return app.new()
 	}
-	if repo := app.find_repo_by_name_and_username(name, app.user.username) {
+	if _ := app.find_repo_by_name_and_username(name, app.user.username) {
 		app.error('A repository with the name "${name}" already exists')
 		return app.new()
 	}
@@ -260,7 +260,7 @@ pub fn (mut app App) handle_new_repo(name string, clone_url string, description 
 		app.error('There was an error while adding the repo')
 		return app.new()
 	}
-	new_repo3 := app.find_repo_by_id(repo_id) or { return app.new() }
+	app.find_repo_by_id(repo_id) or { return app.new() }
 	// Update only cloned repositories
 	/*
 	if !is_clone_url_empty {
