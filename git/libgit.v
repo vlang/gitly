@@ -91,7 +91,7 @@ fn shutdown() {
 }
 
 pub struct Repo {
-	obj &C.git_repository
+	obj &C.git_repository = unsafe { nil }
 
 	path string
 }
