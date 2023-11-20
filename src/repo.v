@@ -25,7 +25,7 @@ struct Repo {
 	latest_update_hash string    @[skip]
 	latest_activity    time.Time @[skip]
 mut:
-	git_repo        &git.Repo         @[skip] // libgit wrapper repo
+	git_repo        &git.Repo = unsafe { nil }         @[skip] // libgit wrapper repo
 	webhook_secret  string
 	tags_count      int
 	nr_open_issues  int               @[orm: 'open_issues_count']
