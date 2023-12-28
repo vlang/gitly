@@ -22,7 +22,7 @@ fn (r &Repo) format_nr_branches() vweb.RawHtml {
 }
 
 fn (r &Repo) format_nr_tags() vweb.RawHtml {
-	return get_declension_form(r.nr_tags, 'Branch', 'Branches')
+	return get_declension_form(r.nr_tags, 'Tag', 'Tags')
 }
 
 fn (r &Repo) format_nr_open_prs() vweb.RawHtml {
@@ -38,7 +38,7 @@ fn (r &Repo) format_nr_contributors() vweb.RawHtml {
 }
 
 fn (r &Repo) format_nr_topics() vweb.RawHtml {
-	return get_declension_form(r.nr_topics, 'Discussion', 'discussions')
+	return get_declension_form(r.nr_topics, 'Discussion', 'Discussions')
 }
 
 fn (r &Repo) format_nr_releases() vweb.RawHtml {
