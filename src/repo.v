@@ -71,10 +71,10 @@ fn (f ArchiveFormat) str() string {
 fn (mut app App) save_repo(repo Repo) ! {
 	id := repo.id
 	desc := repo.description
-	views_count := repo.views_count
-	webhook_secret := repo.webhook_secret
-	tags_count := repo.tags_count
-	is_public := if repo.is_public { 1 } else { 0 }
+	views_count_ := repo.views_count
+	webhook_secret_ := repo.webhook_secret
+	tags_count_ := repo.tags_count
+	is_public_ := if repo.is_public { 1 } else { 0 }
 	open_issues_count := repo.nr_open_issues
 	open_prs_count := repo.nr_open_prs
 	branches_count := repo.nr_branches
@@ -86,8 +86,8 @@ fn (mut app App) save_repo(repo Repo) ! {
 	// repo.update()
 
 	sql app.db {
-		update Repo set description = desc, views_count = views_count, is_public = is_public,
-		webhook_secret = webhook_secret, tags_count = tags_count, nr_open_issues = open_issues_count,
+		update Repo set description = desc, views_count = views_count_, is_public = is_public_,
+		webhook_secret = webhook_secret_, tags_count = tags_count_, nr_open_issues = open_issues_count,
 		nr_open_prs = open_prs_count, nr_releases = releases_count, nr_contributors = contributors_count,
 		nr_stars = stars_count, nr_branches = branches_count where id == id
 	}!
@@ -242,9 +242,9 @@ fn (mut app App) delete_repository(id int, path string, name string) ! {
 	app.info('Removed repo folder (${id}, ${name})')
 }
 
-fn (mut app App) move_repo_to_user(repo_id int, user_id int, user_name string) ! {
+fn (mut app App) move_repo_to_user(repo_id int, user_id_ int, user_name_ string) ! {
 	sql app.db {
-		update Repo set user_id = user_id, user_name = user_name where id == repo_id
+		update Repo set user_id = user_id_, user_name = user_name_ where id == repo_id
 	}!
 }
 
@@ -749,12 +749,12 @@ fn (mut app App) fetch_file_info(r &Repo, file &File) ! {
 	if vals.len < 3 {
 		return
 	}
-	last_msg := first_line(vals[0])
-	last_time := vals[1].int() // last_hash
+	last_msg_ := first_line(vals[0])
+	last_time_ := vals[1].int() // last_hash
 
 	file_id := file.id
 	sql app.db {
-		update File set last_msg = last_msg, last_time = last_time where id == file_id
+		update File set last_msg = last_msg_, last_time = last_time_ where id == file_id
 	}!
 }
 
