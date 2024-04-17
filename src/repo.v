@@ -43,11 +43,9 @@ mut:
 }
 
 // log_field_separator is declared as constant in case we need to change it later
-const (
-	max_git_res_size    = 1000
-	log_field_separator = '\x7F'
-	ignored_folder      = ['thirdparty']
-)
+const max_git_res_size = 1000
+const log_field_separator = '\x7F'
+const ignored_folder = ['thirdparty']
 
 enum RepoStatus {
 	done

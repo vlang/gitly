@@ -13,9 +13,7 @@ struct FeedItem {
 	message     string
 }
 
-const (
-	feed_items_per_page = 30
-)
+const feed_items_per_page = 30
 
 fn (mut app App) build_user_feed_as_page(user_id int, offset int) []FeedItem {
 	mut feed := []FeedItem{}
