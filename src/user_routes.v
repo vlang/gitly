@@ -132,7 +132,7 @@ pub fn (mut app App) handle_update_user_settings(username string) vweb.Result {
 	}
 
 	is_first_namechange := app.user.last_namechange_time == 0
-	can_change_usernane := app.user.last_namechange_time + namechange_period <= time.now().unix
+	can_change_usernane := app.user.last_namechange_time + namechange_period <= time.now().unix()
 
 	if !(is_first_namechange || can_change_usernane) {
 		app.error('You need to wait until you can change the name again')

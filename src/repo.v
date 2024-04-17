@@ -322,7 +322,7 @@ fn (mut app App) update_repo_branch_from_fs(mut repo Repo, branch_name string) !
 			}
 
 			app.add_commit_if_not_exist(repo_id, branch.id, commit_hash, commit_author,
-				commit_author_id, commit_message, int(commit_date.unix))!
+				commit_author_id, commit_message, int(commit_date.unix()))!
 		}
 	}
 }
@@ -396,7 +396,7 @@ fn (mut app App) update_repo_branch_data(mut repo Repo, branch_name string) ! {
 			}
 
 			app.add_commit_if_not_exist(repo_id, branch.id, commit_hash, commit_author,
-				commit_author_id, commit_message, int(commit_date.unix))!
+				commit_author_id, commit_message, int(commit_date.unix()))!
 		}
 	}
 }

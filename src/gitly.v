@@ -48,7 +48,7 @@ fn new_app() !&App {
 
 	mut app := &App{
 		db: sqlite.connect('gitly.sqlite') or { panic(err) }
-		started_at: time.now().unix
+		started_at: time.now().unix()
 	}
 
 	set_rand_crypto_safe_seed()
