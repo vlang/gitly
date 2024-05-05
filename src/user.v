@@ -326,8 +326,8 @@ pub fn (mut app App) increment_user_post(mut user User) ! {
 
 	u := *user
 	id := u.id
-	now := int(time.now().unix)
-	lastplus := int(time.unix(u.last_post_time).add_days(1).unix)
+	now := int(time.now().unix())
+	lastplus := int(time.unix(u.last_post_time).add_days(1).unix())
 
 	if now >= lastplus {
 		user.last_post_time = now
@@ -376,7 +376,7 @@ fn (mut app App) change_full_name(user_id int, full_name string) ! {
 }
 
 fn (mut app App) incement_namechanges(user_id int) ! {
-	now := int(time.now().unix)
+	now := int(time.now().unix())
 
 	sql app.db {
 		update User set namechanges_count = namechanges_count + 1, last_namechange_time = now

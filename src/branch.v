@@ -43,7 +43,7 @@ fn (mut app App) fetch_branch(repo Repo, branch_name string) ! {
 	}
 
 	app.create_branch_or_update(repo.id, branch_name, user.username, last_commit_hash,
-		int(committed_at.unix))!
+		int(committed_at.unix()))!
 }
 
 fn (mut app App) create_branch_or_update(repository_id int, branch_name string, author string, hash string, date int) ! {

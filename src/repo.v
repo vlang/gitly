@@ -43,11 +43,9 @@ mut:
 }
 
 // log_field_separator is declared as constant in case we need to change it later
-const (
-	max_git_res_size    = 1000
-	log_field_separator = '\x7F'
-	ignored_folder      = ['thirdparty']
-)
+const max_git_res_size = 1000
+const log_field_separator = '\x7F'
+const ignored_folder = ['thirdparty']
 
 enum RepoStatus {
 	done
@@ -256,6 +254,7 @@ fn (mut app App) user_has_repo(user_id int, repo_name string) bool {
 }
 
 fn (mut app App) update_repo_from_fs(mut repo Repo) ! {
+	println('UPDATE REPO FROM FS')
 	repo_id := repo.id
 
 	app.db.exec('BEGIN TRANSACTION')!
@@ -266,6 +265,7 @@ fn (mut app App) update_repo_from_fs(mut repo Repo) ! {
 	app.fetch_branches(repo)!
 
 	branches_output := repo.git('branch -a')
+	println('b output=${branches_output}')
 
 	for branch_output in branches_output.split_into_lines() {
 		branch_name := git.parse_git_branch_output(branch_output)
@@ -297,6 +297,8 @@ fn (mut app App) update_repo_branch_from_fs(mut repo Repo, branch_name string) !
 	}
 
 	data := repo.git('--no-pager log ${branch_name} --abbrev-commit --abbrev=7 --pretty="%h${log_field_separator}%aE${log_field_separator}%cD${log_field_separator}%s${log_field_separator}%aN"')
+	println('DATA=')
+	println(data)
 
 	for line in data.split_into_lines() {
 		args := line.split(log_field_separator)
@@ -322,7 +324,7 @@ fn (mut app App) update_repo_branch_from_fs(mut repo Repo, branch_name string) !
 			}
 
 			app.add_commit_if_not_exist(repo_id, branch.id, commit_hash, commit_author,
-				commit_author_id, commit_message, int(commit_date.unix))!
+				commit_author_id, commit_message, int(commit_date.unix()))!
 		}
 	}
 }
@@ -396,7 +398,7 @@ fn (mut app App) update_repo_branch_data(mut repo Repo, branch_name string) ! {
 			}
 
 			app.add_commit_if_not_exist(repo_id, branch.id, commit_hash, commit_author,
-				commit_author_id, commit_message, int(commit_date.unix))!
+				commit_author_id, commit_message, int(commit_date.unix()))!
 		}
 	}
 }
@@ -765,6 +767,7 @@ fn (mut app App) update_repo_primary_branch(repo_id int, branch string) ! {
 }
 
 fn (mut r Repo) clone() {
+	println('R CLONE')
 	if r.git_repo != unsafe { nil } {
 		r.git_repo.clone(r.clone_url, r.git_dir)
 	} else {

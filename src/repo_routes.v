@@ -136,6 +136,7 @@ pub fn (mut app App) handle_repo_move(username string, repo_name string, dest st
 
 @['/:username/:repo_name']
 pub fn (mut app App) handle_tree(username string, repo_name string) vweb.Result {
+	println('handle tree()')
 	match repo_name {
 		'repos' {
 			return app.user_repos(username)
@@ -287,7 +288,7 @@ pub fn (mut app App) foo(mut new_repo Repo) {
 	// git.clone(valid_clone_url, repo_path)
 }
 
-@['/:user/:repository/tree/:branch_name/:path...']
+@['/:username/:repo_name/tree/:branch_name/:path...']
 pub fn (mut app App) tree(username string, repo_name string, branch_name string, path string) vweb.Result {
 	mut repo := app.find_repo_by_name_and_username(repo_name, username) or {
 		return app.not_found()
@@ -338,6 +339,7 @@ pub fn (mut app App) tree(username string, repo_name string, branch_name string,
 	branch := app.find_repo_branch_by_name(repo.id, branch_name)
 
 	app.info('${log_prefix}: ${items.len} items found in branch ${branch_name}')
+	println(items)
 
 	if items.len == 0 {
 		// No files in the db, fetch them from git and cache in db
@@ -354,6 +356,7 @@ pub fn (mut app App) tree(username string, repo_name string, branch_name string,
 
 	if items.any(it.last_msg == '') {
 		// If any of the files has a missing `last_msg`, we need to refetch it.
+		println('no last msg')
 		app.slow_fetch_files_info(mut repo, branch_name, app.current_path) or {
 			app.info(err.str())
 		}
@@ -386,6 +389,8 @@ pub fn (mut app App) tree(username string, repo_name string, branch_name string,
 
 	// Update items after fetching info
 	items = app.find_repository_items(repo_id, branch_name, app.current_path)
+	println('new items')
+	println(items)
 
 	dirs := items.filter(it.is_dir)
 	files := items.filter(!it.is_dir)

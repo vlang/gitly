@@ -6,12 +6,7 @@ import vweb
 import json
 import net.http
 
-struct OAuthRequest {
-	client_id     string
-	client_secret string
-	code          string
-	state         string
-}
+import veb.oauth
 
 struct GitHubUser {
 	username string @[json: 'login']
@@ -46,7 +41,7 @@ pub fn (mut app App) handle_oauth() vweb.Result {
 		return app.redirect_to_index()
 	}
 
-	oauth_request := OAuthRequest{
+	oauth_request := oauth.Request{
 		client_id: app.settings.oauth_client_id
 		client_secret: app.settings.oauth_client_secret
 		code: code

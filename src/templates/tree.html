@@ -109,7 +109,7 @@
 				}
 			@end
 
-			@if has_commits
+			@if true || has_commits
 				.files {
 					.last_commit {
 						<b>@last_commit.author</b>
@@ -132,6 +132,7 @@
 							}
 						}
 					@end
+					<B>START</B>
 					@for file in items
 						.file {
 							span.file-ico {

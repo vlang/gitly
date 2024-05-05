@@ -36,7 +36,7 @@ fn (mut app App) fetch_tags(repo Repo) ! {
 		}
 
 		app.insert_tag_into_db(repo.id, tag_name, commit_hash, commit_message, user.id,
-			int(commit_date.unix))!
+			int(commit_date.unix()))!
 	}
 }
 

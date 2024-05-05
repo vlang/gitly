@@ -39,7 +39,7 @@ fn (mut app App) add_issue(repo_id int, author_id int, title string, text string
 		text: text
 		repo_id: repo_id
 		author_id: author_id
-		created_at: int(time.now().unix)
+		created_at: int(time.now().unix())
 	}
 
 	sql app.db {
