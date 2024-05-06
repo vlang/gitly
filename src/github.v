@@ -5,8 +5,7 @@ module main
 import vweb
 import json
 import net.http
-
-import veb.oauth
+import veb.auth as oauth
 
 struct GitHubUser {
 	username string @[json: 'login']
