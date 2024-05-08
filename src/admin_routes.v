@@ -2,9 +2,7 @@ module main
 
 import vweb
 
-const (
-	admin_users_per_page = 30
-)
+const admin_users_per_page = 30
 
 // TODO move to admin controller
 

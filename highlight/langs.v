@@ -2,13 +2,9 @@
 // Use of this source code is governed by a GPL license that can be found in the LICENSE file.
 module highlight
 
-const (
-	lang_path = 'langs'
-)
+const lang_path = 'langs'
 
-const (
-	langs = init_langs()
-)
+const langs = init_langs()
 
 pub struct Lang {
 	keywords        []string

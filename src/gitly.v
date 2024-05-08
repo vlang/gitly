@@ -10,17 +10,15 @@ import db.sqlite
 import api
 import config
 
-const (
-	commits_per_page   = 35
-	expire_length      = 200
-	posts_per_day      = 5
-	max_username_len   = 40
-	max_login_attempts = 5
-	max_user_repos     = 10
-	max_repo_name_len  = 100
-	max_namechanges    = 3
-	namechange_period  = time.hour * 24
-)
+const commits_per_page = 35
+const expire_length = 200
+const posts_per_day = 5
+const max_username_len = 40
+const max_login_attempts = 5
+const max_user_repos = 10
+const max_repo_name_len = 100
+const max_namechanges = 3
+const namechange_period = time.hour * 24
 
 struct App {
 	vweb.Context
