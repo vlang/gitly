@@ -10,7 +10,7 @@
 			<div class="profile-block-container">
 				<div class="profile-block__left">
 					<div class="profile-avatar" onclick="selectAvatar()">
-						<img src="@{app.prepare_user_avatar_url(user.avatar)}">
+						<img src="../../@{app.prepare_user_avatar_url(user.avatar)}">
 					</div>
 
 					@if user.full_name.len > 0
