@@ -10,12 +10,12 @@
 			<h1>New repository</h1>
 
 			<div class='form-error'>
-				@app.form_error
+				@ctx.form_error
 			</div>
 
 			<div class="form">
 				<form method='post'>
-					@app.config.hostname/@app.user.username/
+					@app.config.hostname/@ctx.user.username/
 					<input type='text' name='name'required autofocus maxlength=@max_repo_name_len>
 
 					<div class='field'>

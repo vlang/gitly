@@ -4,7 +4,7 @@ import time
 
 struct Activity {
 mut:
-	id         int       @[primary; sql: serial]
+	id         int @[primary; sql: serial]
 	user_id    int
 	name       string
 	created_at time.Time
@@ -12,8 +12,8 @@ mut:
 
 fn (app App) add_activity(user_id int, name string) ! {
 	activity := Activity{
-		user_id: user_id
-		name: name
+		user_id:    user_id
+		name:       name
 		created_at: time.now()
 	}
 

@@ -2,13 +2,13 @@ module highlight
 
 fn init_ts() Lang {
 	return Lang{
-		name: 'TypeScript'
+		name:            'TypeScript'
 		lang_extensions: ['ts', 'tsx']
-		line_comments: '//'
-		mline_comments: ['/*', '*/']
-		string_start: ['"', "'"]
-		color: '#2b7489'
-		keywords: [
+		line_comments:   '//'
+		mline_comments:  ['/*', '*/']
+		string_start:    ['"', "'"]
+		color:           '#2b7489'
+		keywords:        [
 			'any',
 			'as',
 			'boolean',

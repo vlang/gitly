@@ -10,20 +10,20 @@
 			@include '../layout/repo_menu.html'
 
 			.form-error {
-				@app.form_error
+				@ctx.form_error
 			}
 
-			<form action="/@app.user.username/@repo.name/settings" method="post">
+			<form action="/@ctx.user.username/@repo.name/settings" method="post">
 				<input type="password" name="webhook_secret" value="@repo.webhook_secret" placeholder="WebhookSecret">
 				<input type="submit" value="Update repo">
 			</form>
 
-			<form action="/@app.user.username/@repo.name/delete" method="post">
+			<form action="/@ctx.user.username/@repo.name/delete" method="post">
 				<input type="text" name="verify" placeholder="Type your repo path username/reponame" required>
 				<input type="submit" value="Delete repo">
 			</form>
 
-			<form action="/@app.user.username/@repo.name/move" method="post">
+			<form action="/@ctx.user.username/@repo.name/move" method="post">
 				<input type="text" name="dest" placeholder="Destination username" required>
 				<input type="text" name="verify" placeholder="Type your repo path username/reponame" required>
 				<input type="submit" value="Move repo">

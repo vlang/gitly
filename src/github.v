@@ -2,10 +2,11 @@
 // Use of this source code is governed by a GPL license that can be found in the LICENSE file.
 module main
 
-import vweb
+import veb
 import json
 import net.http
-import veb.auth as oauth
+// import veb.auth as oauth
+import veb.oauth
 
 struct GitHubUser {
 	username string @[json: 'login']
@@ -15,43 +16,43 @@ struct GitHubUser {
 }
 
 @['/oauth']
-pub fn (mut app App) handle_oauth() vweb.Result {
-	code := app.query['code']
-	state := app.query['state']
+pub fn (mut app App) handle_oauth() veb.Result {
+	code := ctx.query['code']
+	state := ctx.query['state']
 
 	if code == '' {
-		app.add_security_log(user_id: app.user.id, kind: .empty_oauth_code) or {
+		app.add_security_log(user_id: ctx.user.id, kind: .empty_oauth_code) or {
 			app.info(err.str())
 		}
 		app.info('Code is empty')
 
-		return app.redirect_to_index()
+		return ctx.redirect_to_index()
 	}
 
-	csrf := app.get_cookie('csrf') or { return app.redirect_to_index() }
+	csrf := ctx.get_cookie('csrf') or { return ctx.redirect_to_index() }
 	if csrf != state || csrf == '' {
 		app.add_security_log(
-			user_id: app.user.id
-			kind: .wrong_oauth_state
-			arg1: 'csrf=${csrf}'
-			arg2: 'state=${state}'
+			user_id: ctx.user.id
+			kind:    .wrong_oauth_state
+			arg1:    'csrf=${csrf}'
+			arg2:    'state=${state}'
 		) or { app.info(err.str()) }
 
-		return app.redirect_to_index()
+		return ctx.redirect_to_index()
 	}
 
 	oauth_request := oauth.Request{
-		client_id: app.settings.oauth_client_id
+		client_id:     app.settings.oauth_client_id
 		client_secret: app.settings.oauth_client_secret
-		code: code
-		state: csrf
+		code:          code
+		state:         csrf
 	}
 
 	js := json.encode(oauth_request)
 	access_response := http.post_json('https://github.com/login/oauth/access_token', js) or {
 		app.info(err.msg())
 
-		return app.redirect_to_index()
+		return ctx.redirect_to_index()
 	}
 
 	mut token := access_response.body.find_between('access_token=', '&')
@@ -61,22 +62,22 @@ pub fn (mut app App) handle_oauth() vweb.Result {
 	user_response := request.do() or {
 		app.info(err.msg())
 
-		return app.redirect_to_index()
+		return ctx.redirect_to_index()
 	}
 
 	if user_response.status_code != 200 {
 		app.info(user_response.status_code.str())
 		app.info(user_response.body)
-		return app.text('Received ${user_response.status_code} error while attempting to contact GitHub')
+		return ctx.text('Received ${user_response.status_code} error while attempting to contact GitHub')
 	}
 
-	github_user := json.decode(GitHubUser, user_response.body) or { return app.redirect_to_index() }
+	github_user := json.decode(GitHubUser, user_response.body) or { return ctx.redirect_to_index() }
 
 	if github_user.email.trim_space().len == 0 {
 		app.add_security_log(
-			user_id: app.user.id
-			kind: .empty_oauth_email
-			arg1: user_response.body
+			user_id: ctx.user.id
+			kind:    .empty_oauth_email
+			arg1:    user_response.body
 		) or { app.info(err.str()) }
 		app.info('Email is empty')
 	}
@@ -87,8 +88,8 @@ pub fn (mut app App) handle_oauth() vweb.Result {
 		// Register a new user via github
 		app.add_security_log(
 			user_id: user.id
-			kind: .registered_via_github
-			arg1: user_response.body
+			kind:    .registered_via_github
+			arg1:    user_response.body
 		) or { app.info(err.str()) }
 
 		app.register_user(github_user.username, '', '', [github_user.email], true, false) or {
@@ -96,16 +97,16 @@ pub fn (mut app App) handle_oauth() vweb.Result {
 		}
 
 		user = app.get_user_by_github_username(github_user.username) or {
-			return app.redirect_to_index()
+			return ctx.redirect_to_index()
 		}
 
 		app.update_user_avatar(user.id, github_user.avatar) or { app.info(err.msg()) }
 	}
 
-	app.auth_user(user, app.ip()) or { app.info(err.msg()) }
+	app.auth_user(mut ctx, user, ctx.ip()) or { app.info(err.msg()) }
 	app.add_security_log(user_id: user.id, kind: .logged_in_via_github, arg1: user_response.body) or {
 		app.info(err.str())
 	}
 
-	return app.redirect_to_index()
+	return ctx.redirect_to_index()
 }

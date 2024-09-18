@@ -6,20 +6,20 @@ struct Release {
 	id      int @[primary; sql: serial]
 	repo_id int @[unique: 'release']
 mut:
-	tag_id   int       @[unique: 'release']
+	tag_id   int @[unique: 'release']
 	notes    string
-	tag_name string    @[skip]
-	tag_hash string    @[skip]
-	user     string    @[skip]
+	tag_name string @[skip]
+	tag_hash string @[skip]
+	user     string @[skip]
 	date     time.Time
 }
 
 pub fn (mut app App) add_release(tag_id int, repo_id int, date time.Time, notes string) ! {
 	release := Release{
-		tag_id: tag_id
+		tag_id:  tag_id
 		repo_id: repo_id
-		notes: notes
-		date: date
+		notes:   notes
+		date:    date
 	}
 
 	sql app.db {

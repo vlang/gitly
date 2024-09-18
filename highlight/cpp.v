@@ -2,13 +2,13 @@ module highlight
 
 fn init_cpp() Lang {
 	return Lang{
-		name: 'C++'
+		name:            'C++'
 		lang_extensions: ['cpp', 'cc', 'hh', 'h']
-		line_comments: '//'
-		mline_comments: ['/*', '*/']
-		string_start: ['"', "'"]
-		color: '#f34b7d'
-		keywords: [
+		line_comments:   '//'
+		mline_comments:  ['/*', '*/']
+		string_start:    ['"', "'"]
+		color:           '#f34b7d'
+		keywords:        [
 			'int',
 			'float',
 			'while',

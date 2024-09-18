@@ -40,6 +40,6 @@ pub fn (mut app App) update_gitly_settings(oauth_client_id string, oauth_client_
 	app.load_settings()
 }
 
-fn (mut app App) is_admin() bool {
-	return app.logged_in && app.user.is_admin
+fn (mut ctx Context) is_admin() bool {
+	return ctx.logged_in && ctx.user.is_admin
 }

@@ -7,7 +7,7 @@
 		@include 'layout/header.html'
 
 		.form-error {
-			@app.form_error
+			@ctx.form_error
 		}
 
 		<div class="content">
@@ -34,7 +34,7 @@
 				</div>
 			@end
 
-			@if app.logged_in
+			@if ctx.logged_in
 				<form method='post' class='form vertical-form comment-post-form' action='/@repo.user_name/@repo.name/comments'>
 					<textarea type='text' class='input-comment' name='text' placeholder='Leave a comment' required></textarea>
 					<input type='hidden' name='issue_id' value='@issue.id'>

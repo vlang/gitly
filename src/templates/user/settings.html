@@ -7,22 +7,22 @@
 		@include '../layout/header.html'
 
 		.form-error {
-			@app.form_error
+			@ctx.form_error
 		}
 
 		<div class="content">
 			<h1>User settings</h1>
 
-			<a href="/${app.user.username}/settings">Public profile</a>
+			<a href="/${ctx.user.username}/settings">Public profile</a>
 			|
-			<a href="/${app.user.username}/settings/ssh-keys">SSH keys</a>
+			<a href="/${ctx.user.username}/settings/ssh-keys">SSH keys</a>
 
-			<form class="form" action="/@app.user.username/settings" method="post">
+			<form class="form" action="/@ctx.user.username/settings" method="post">
 				<div class="field">
-					<input type="text" name="full_name" value="@app.user.full_name" placeholder="Full name">
+					<input type="text" name="full_name" value="@ctx.user.full_name" placeholder="Full name">
 				</div>
 				<div class="field">
-					<input type="text" name="name" value="@app.user.username" placeholder="Username">
+					<input type="text" name="name" value="@ctx.user.username" placeholder="Username">
 				</div>
 				<div class="field">
 					<input type="submit" value="Save settings">

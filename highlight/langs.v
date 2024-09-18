@@ -2,13 +2,9 @@
 // Use of this source code is governed by a GPL license that can be found in the LICENSE file.
 module highlight
 
-const (
-	lang_path = 'langs'
-)
+const lang_path = 'langs'
 
-const (
-	langs = init_langs()
-)
+const langs = init_langs()
 
 pub struct Lang {
 	keywords        []string
@@ -28,7 +24,7 @@ fn is_source(ext string) bool {
 
 pub fn extension_to_lang(ext string) !Lang {
 	ending := ext.split('.').last()
-	for lang in highlight.langs {
+	for lang in langs {
 		if ending in lang.lang_extensions {
 			return lang
 		}

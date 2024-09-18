@@ -2,13 +2,13 @@ module highlight
 
 fn init_d() Lang {
 	return Lang{
-		name: 'D'
+		name:            'D'
 		lang_extensions: ['d']
-		line_comments: '//'
-		mline_comments: ['/*', '*/', '/+', '+/']
-		string_start: ['"', "'"]
-		color: '#ba595e'
-		keywords: [
+		line_comments:   '//'
+		mline_comments:  ['/*', '*/', '/+', '+/']
+		string_start:    ['"', "'"]
+		color:           '#ba595e'
+		keywords:        [
 			'abstract',
 			'alias',
 			'align',

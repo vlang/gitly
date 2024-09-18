@@ -2,9 +2,7 @@
 // Use of this source code is governed by a GPL license that can be found in the LICENSE file.
 module highlight
 
-const (
-	tab = '    ' //        '
-)
+const tab = '    ' //        '
 
 // returns HTML code, number of lines, number of lines with source code
 pub fn highlight_text(st string, file_path string, commit bool) (string, int, int) {
@@ -69,7 +67,7 @@ pub fn highlight_text(st string, file_path string, commit bool) (string, int, in
 			continue
 		}
 		if c == `\t` {
-			res << highlight.tab.bytes()
+			res << tab.bytes()
 			continue
 		}
 		if in_comment {

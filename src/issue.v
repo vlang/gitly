@@ -10,8 +10,8 @@ mut:
 	author_id      int
 	repo_id        int
 	is_pr          bool
-	assigned       []int       @[skip]
-	labels         []int       @[skip]
+	assigned       []int @[skip]
+	labels         []int @[skip]
 	comments_count int
 	title          string
 	text           string
@@ -35,10 +35,10 @@ struct Label {
 
 fn (mut app App) add_issue(repo_id int, author_id int, title string, text string) ! {
 	issue := Issue{
-		title: title
-		text: text
-		repo_id: repo_id
-		author_id: author_id
+		title:      title
+		text:       text
+		repo_id:    repo_id
+		author_id:  author_id
 		created_at: int(time.now().unix())
 	}
 

@@ -50,11 +50,11 @@ fn (mut app App) insert_tag_into_db(repo_id int, tag_name string, commit_hash st
 	}
 
 	new_tag := Tag{
-		repo_id: repo_id
-		name: tag_name
-		hash: commit_hash
-		message: commit_message
-		user_id: user_id
+		repo_id:    repo_id
+		name:       tag_name
+		hash:       commit_hash
+		message:    commit_message
+		user_id:    user_id
 		created_at: date
 	}
 

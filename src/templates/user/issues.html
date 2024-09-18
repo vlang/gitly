@@ -45,15 +45,15 @@
 				<div class="buttons">
 					<br>
 					@if first
-						<a href="/@app.user.username/issues/@last_site" class="button disabled">Prev</a>
+						<a href="/@ctx.user.username/issues/@last_site" class="button disabled">Prev</a>
 					@else
-						<a href="/@app.user.username/issues/@last_site" class="button">Prev</a>/
+						<a href="/@ctx.user.username/issues/@last_site" class="button">Prev</a>/
 					@end
 
 					@if last
-						<a href="/@app.user.username/issues/@next_site" class="button disabled">Next</a>
+						<a href="/@ctx.user.username/issues/@next_site" class="button disabled">Next</a>
 					@else
-						<a href="/@app.user.username/issues/@next_site" class="button">Next</a>
+						<a href="/@ctx.user.username/issues/@next_site" class="button">Next</a>
 					@end
 				</div>
 			@else

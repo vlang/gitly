@@ -7,18 +7,18 @@
 		@include '../../../layout/header.html'
 
 		.form-error {
-			@app.form_error
+			@ctx.form_error
 		}
 
 		<div class="content">
 			<h1>SSH keys</h1>
 
-			<a href="/${app.user.username}/settings">Public profile</a>
+			<a href="/${ctx.user.username}/settings">Public profile</a>
 			|
-			<a href="/${app.user.username}/settings/ssh-keys">SSH keys</a>
+			<a href="/${ctx.user.username}/settings/ssh-keys">SSH keys</a>
 
 			<div class="new-ssh-key-block">
-				<a href="/${app.user.username}/settings/ssh-keys/new">
+				<a href="/${ctx.user.username}/settings/ssh-keys/new">
 					<button>New SSH key</button>
 				</a>
 			</div>
@@ -30,7 +30,7 @@
 					<div class="ssh-key">
 						<h3>@ssh_key.title</h3>
 						<p>@ssh_key.created_at.relative()</p>
-						<button class="ssh-key-remove" data-id="@ssh_key.id" data-username="@app.user.username" data-title="@ssh_key.title">Remove</button>
+						<button class="ssh-key-remove" data-id="@ssh_key.id" data-username="@ctx.user.username" data-title="@ssh_key.title">Remove</button>
 					</div>
 				@end
 			@end

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a GPL license that can be found in the LICENSE file.
 module main
 
-import vweb
+import veb
 import time
 import os
 import log
@@ -10,33 +10,37 @@ import db.sqlite
 import api
 import config
 
-const (
-	commits_per_page   = 35
-	expire_length      = 200
-	posts_per_day      = 5
-	max_username_len   = 40
-	max_login_attempts = 5
-	max_user_repos     = 10
-	max_repo_name_len  = 100
-	max_namechanges    = 3
-	namechange_period  = time.hour * 24
-)
+const commits_per_page = 35
+const expire_length = 200
+const posts_per_day = 5
+const max_username_len = 40
+const max_login_attempts = 5
+const max_user_repos = 10
+const max_repo_name_len = 100
+const max_namechanges = 3
+const namechange_period = time.hour * 24
 
-struct App {
-	vweb.Context
-	started_at i64 @[vweb_global]
+@[heap]
+pub struct App {
+	veb.StaticHandler
+	started_at i64
 pub mut:
 	db sqlite.DB
 mut:
-	version       string        @[vweb_global]
-	logger        log.Log       @[vweb_global]
-	config        config.Config @[vweb_global]
-	settings      Settings
+	version  string
+	logger   log.Log
+	config   config.Config
+	settings Settings
+}
+
+pub struct Context {
+	veb.Context
+mut:
+	user          User
 	current_path  string
 	page_gen_time string
 	is_tree       bool
 	logged_in     bool
-	user          User
 	path_split    []string
 	branch        string
 }
@@ -47,7 +51,7 @@ fn new_app() !&App {
 	C.sqlite3_config(3)
 
 	mut app := &App{
-		db: sqlite.connect('gitly.sqlite') or { panic(err) }
+		db:         sqlite.connect('gitly.sqlite') or { panic(err) }
 		started_at: time.now().unix()
 	}
 
@@ -72,8 +76,8 @@ fn new_app() !&App {
 
 	app.version = version
 
-	app.handle_static('src/static', true)
-	app.handle_static('avatars', false)
+	app.handle_static('src/static', true)!
+	app.handle_static('avatars', false)!
 
 	app.load_settings()
 
@@ -123,40 +127,40 @@ pub fn (mut app App) debug(msg string) {
 pub fn (mut app App) init_server() {
 }
 
-pub fn (mut app App) before_request() {
-	app.logged_in = app.is_logged_in()
+pub fn (mut app App) before_request(mut ctx Context) {
+	ctx.logged_in = app.is_logged_in()
 
 	app.load_settings()
 
-	if app.logged_in {
-		app.user = app.get_user_from_cookies() or {
-			app.logged_in = false
+	if ctx.logged_in {
+		ctx.user = app.get_user_from_cookies() or {
+			ctx.logged_in = false
 			User{}
 		}
 	}
 }
 
 @['/']
-pub fn (mut app App) index() vweb.Result {
+pub fn (mut app App) index() veb.Result {
 	user_count := app.get_users_count() or { 0 }
 	no_users := user_count == 0
 	if no_users {
-		return app.redirect('/register')
+		return ctx.redirect('/register')
 	}
 
-	return $vweb.html()
+	return $veb.html()
 }
 
-pub fn (mut app App) redirect_to_index() vweb.Result {
-	return app.redirect('/')
+pub fn (mut ctx Context) redirect_to_index() veb.Result {
+	return ctx.redirect('/')
 }
 
-pub fn (mut app App) redirect_to_login() vweb.Result {
-	return app.redirect('/login')
+pub fn (mut ctx Context) redirect_to_login() veb.Result {
+	return ctx.redirect('/login')
 }
 
-pub fn (mut app App) redirect_to_repository(username string, repo_name string) vweb.Result {
-	return app.redirect('/${username}/${repo_name}')
+pub fn (mut ctx Context) redirect_to_repository(username string, repo_name string) veb.Result {
+	return ctx.redirect('/${username}/${repo_name}')
 }
 
 fn (mut app App) create_tables() ! {
@@ -223,25 +227,25 @@ fn (mut app App) create_tables() ! {
 	}!
 }
 
-fn (mut app App) json_success[T](result T) vweb.Result {
+fn (mut ctx Context) json_success[T](result T) veb.Result {
 	response := api.ApiSuccessResponse[T]{
 		success: true
-		result: result
+		result:  result
 	}
 
-	return app.json(response)
+	return ctx.json(response)
 }
 
-fn (mut app App) json_error(message string) vweb.Result {
-	return app.json(api.ApiErrorResponse{
+fn (mut ctx Context) json_error(message string) veb.Result {
+	return ctx.json(api.ApiErrorResponse{
 		success: false
 		message: message
 	})
 }
 
 // maybe it should be implemented with another static server, in dev
-fn (mut app App) send_file(filname string, content string) vweb.Result {
-	app.add_header('Content-Disposition', 'attachment; filename="${filname}"')
+fn (mut app App) send_file(filname string, content string) veb.Result {
+	ctx.set_header(.content_disposition, 'attachment; filename="${filname}"')
 
-	return app.ok(content)
+	return ctx.ok(content)
 }

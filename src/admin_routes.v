@@ -1,57 +1,55 @@
 module main
 
-import vweb
+import veb
 
-const (
-	admin_users_per_page = 30
-)
+const admin_users_per_page = 30
 
 // TODO move to admin controller
 
 @['/admin/settings']
-pub fn (mut app App) admin_settings() vweb.Result {
-	if !app.is_admin() {
-		return app.redirect_to_index()
+pub fn (mut app App) admin_settings() veb.Result {
+	if !ctx.is_admin() {
+		return ctx.redirect_to_index()
 	}
 
-	return $vweb.html()
+	return $veb.html()
 }
 
 @['/admin/settings'; post]
-pub fn (mut app App) handle_admin_update_settings(oauth_client_id string, oauth_client_secret string) vweb.Result {
-	if !app.is_admin() {
-		return app.redirect_to_index()
+pub fn (mut app App) handle_admin_update_settings(oauth_client_id string, oauth_client_secret string) veb.Result {
+	if !ctx.is_admin() {
+		return ctx.redirect_to_index()
 	}
 
 	app.update_gitly_settings(oauth_client_id, oauth_client_secret) or { app.info(err.str()) }
 
-	return app.redirect('/admin')
+	return ctx.redirect('/admin')
 }
 
 @['/admin/users/:user'; post]
-pub fn (mut app App) handle_admin_edit_user(user_id string) vweb.Result {
-	if !app.is_admin() {
-		return app.redirect_to_index()
+pub fn (mut app App) handle_admin_edit_user(user_id string) veb.Result {
+	if !ctx.is_admin() {
+		return ctx.redirect_to_index()
 	}
 
-	clear_session := 'stop-session' in app.form
-	is_blocked := 'is-blocked' in app.form
-	is_admin := 'is-admin' in app.form
+	clear_session := 'stop-session' in ctx.form
+	is_blocked := 'is-blocked' in ctx.form
+	is_admin := 'is-admin' in ctx.form
 
 	app.edit_user(user_id.int(), clear_session, is_blocked, is_admin) or { app.info(err.str()) }
 
-	return app.redirect('/admin')
+	return ctx.redirect('/admin')
 }
 
 @['/admin/users']
-pub fn (mut app App) admin_users_default() vweb.Result {
+pub fn (mut app App) admin_users_default() veb.Result {
 	return app.admin_users(0)
 }
 
 @['/admin/users/:page']
-pub fn (mut app App) admin_users(page int) vweb.Result {
-	if !app.is_admin() {
-		return app.redirect_to_index()
+pub fn (mut app App) admin_users(page int) veb.Result {
+	if !ctx.is_admin() {
+		return ctx.redirect_to_index()
 	}
 
 	user_count := app.get_all_registered_user_count()
@@ -62,14 +60,13 @@ pub fn (mut app App) admin_users(page int) vweb.Result {
 	is_last_page := check_last_page(user_count, offset, admin_users_per_page)
 	prev_page, next_page := generate_prev_next_pages(page)
 
-	return $vweb.html()
+	return $veb.html()
 }
 
 @['/admin/statistics']
-pub fn (mut app App) admin_statistics() vweb.Result {
-	if !app.is_admin() {
-		return app.redirect_to_index()
+pub fn (mut app App) admin_statistics() veb.Result {
+	if !ctx.is_admin() {
+		return ctx.redirect_to_index()
 	}
-
-	return $vweb.html()
+	return $veb.html()
 }

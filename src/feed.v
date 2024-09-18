@@ -43,13 +43,13 @@ fn (mut app App) build_user_feed_as_page(user_id int, offset int) []FeedItem {
 		created_at := time.unix(created_at_unix)
 
 		item := FeedItem{
-			id: item_id++
+			id:          item_id++
 			author_name: author_name
-			created_at: created_at
-			repo_name: repo.name
-			repo_owner: repo_owner
+			created_at:  created_at
+			repo_name:   repo.name
+			repo_owner:  repo_owner
 			branch_name: branch.name
-			message: '${commit_message} (${commit_hash})'
+			message:     '${commit_message} (${commit_hash})'
 		}
 
 		feed << item

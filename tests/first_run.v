@@ -188,7 +188,7 @@ fn test_login_with_token(username string, token string) {
 	ilog('Try to login in with `${username}` user token')
 
 	login_result := http.fetch(
-		method: .get
+		method:  .get
 		cookies: {
 			'token': token
 		}
@@ -206,11 +206,11 @@ fn test_create_repo(token string, name string, clone_url string) {
 	repo_visibility := 'public'
 
 	response := http.fetch(
-		method: .post
+		method:  .post
 		cookies: {
 			'token': token
 		}
-		url: prepare_url('new')
+		url:  prepare_url('new')
 		data: 'name=${name}&description=${description}&clone_url=${clone_url}&repo_visibility=${repo_visibility}&no_redirect=1'
 	) or { exit_with_message(err.str()) }
 
@@ -220,7 +220,7 @@ fn test_create_repo(token string, name string, clone_url string) {
 
 fn get_repo_commit_count(token string, username string, repo_name string, branch_name string) int {
 	response := http.fetch(
-		method: .get
+		method:  .get
 		cookies: {
 			'token': token
 		}
@@ -236,7 +236,7 @@ fn get_repo_commit_count(token string, username string, repo_name string, branch
 
 fn get_repo_issue_count(token string, username string, repo_name string) int {
 	response := http.fetch(
-		method: .get
+		method:  .get
 		cookies: {
 			'token': token
 		}
@@ -252,7 +252,7 @@ fn get_repo_issue_count(token string, username string, repo_name string) int {
 
 fn get_repo_branch_count(token string, username string, repo_name string) int {
 	response := http.fetch(
-		method: .get
+		method:  .get
 		cookies: {
 			'token': token
 		}

@@ -6,13 +6,13 @@ import time
 
 struct Commit {
 mut:
-	id         int    @[primary; sql: serial]
+	id         int @[primary; sql: serial]
 	author_id  int
 	author     string
 	hash       string @[unique: 'commit']
 	created_at int
-	repo_id    int    @[unique: 'commit']
-	branch_id  int    @[unique: 'commit']
+	repo_id    int @[unique: 'commit']
+	branch_id  int @[unique: 'commit']
 	message    string
 }
 
@@ -91,13 +91,13 @@ fn (mut app App) add_commit_if_not_exist(repo_id int, branch_id int, last_hash s
 	}
 
 	new_commit := Commit{
-		author_id: author_id
-		author: author
-		hash: last_hash
+		author_id:  author_id
+		author:     author
+		hash:       last_hash
 		created_at: date
-		repo_id: repo_id
-		branch_id: branch_id
-		message: message
+		repo_id:    repo_id
+		branch_id:  branch_id
+		message:    message
 	}
 
 	sql app.db {

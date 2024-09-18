@@ -5,9 +5,9 @@ import time
 import os
 
 struct User {
-	id              int       @[primary; sql: serial]
+	id              int @[primary; sql: serial]
 	full_name       string
-	username        string    @[unique]
+	username        string @[unique]
 	github_username string
 	password        string
 	salt            string
@@ -16,7 +16,7 @@ struct User {
 	is_registered   bool
 	is_blocked      bool
 	is_admin        bool
-	oauth_state     string    @[skip]
+	oauth_state     string @[skip]
 mut:
 	// for github oauth XSRF protection
 	namechanges_count    int
@@ -29,7 +29,7 @@ mut:
 }
 
 struct Email {
-	id      int    @[primary; sql: serial]
+	id      int @[primary; sql: serial]
 	user_id int
 	email   string @[unique]
 }
@@ -74,15 +74,15 @@ pub fn (mut app App) register_user(username string, password string, salt string
 
 	if user.id == 0 {
 		user = User{
-			username: username
-			password: password
-			salt: salt
-			created_at: time.now()
-			is_registered: true
-			is_github: github
+			username:        username
+			password:        password
+			salt:            salt
+			created_at:      time.now()
+			is_registered:   true
+			is_github:       github
 			github_username: username
-			avatar: default_avatar_name
-			is_admin: is_admin
+			avatar:          default_avatar_name
+			is_admin:        is_admin
 		}
 
 		app.add_user(user)!
@@ -149,7 +149,7 @@ pub fn (mut app App) add_user(user User) ! {
 pub fn (mut app App) add_email(user_id int, email string) ! {
 	user_email := Email{
 		user_id: user_id
-		email: email
+		email:   email
 	}
 
 	sql app.db {
@@ -254,15 +254,12 @@ pub fn (mut app App) find_repo_registered_contributor(id int) []User {
 	contributors := sql app.db {
 		select from Contributor where repo_id == id
 	} or { [] }
-
 	mut users := []User{cap: contributors.len}
-
 	for contributor in contributors {
 		user := app.get_user_by_id(contributor.user_id) or { continue }
 
 		users << user
 	}
-
 	return users
 }
 
@@ -271,11 +268,9 @@ pub fn (mut app App) get_all_registered_users_as_page(offset int) []User {
 	mut users := sql app.db {
 		select from User where is_registered == true limit 30 offset offset
 	} or { [] }
-
 	for i, user in users {
 		users[i].emails = app.find_user_emails(user.id)
 	}
-
 	return users
 }
 
@@ -292,10 +287,10 @@ fn (app App) search_users(query string) []User {
 	mut users := []User{}
 	for row in repo_rows {
 		users << User{
-			id: row.vals[0].int()
+			id:        row.vals[0].int()
 			full_name: row.vals[1]
-			username: row.vals[2]
-			avatar: row.vals[3]
+			username:  row.vals[2]
+			avatar:    row.vals[3]
 		}
 	}
 	return users
@@ -317,7 +312,6 @@ pub fn (mut app App) contains_contributor(user_id int, repo_id int) bool {
 	contributors := sql app.db {
 		select from Contributor where repo_id == repo_id && user_id == user_id
 	} or { [] }
-
 	return contributors.len > 0
 }
 
@@ -355,7 +349,6 @@ pub fn (mut app App) update_user_login_attempts(user_id int, attempts int) ! {
 
 pub fn (mut app App) check_user_blocked(user_id int) bool {
 	user := app.get_user_by_id(user_id) or { return false }
-
 	return user.is_blocked
 }
 
@@ -377,7 +370,6 @@ fn (mut app App) change_full_name(user_id int, full_name string) ! {
 
 fn (mut app App) incement_namechanges(user_id int) ! {
 	now := int(time.now().unix())
-
 	sql app.db {
 		update User set namechanges_count = namechanges_count + 1, last_namechange_time = now
 		where id == user_id
@@ -388,44 +380,31 @@ fn (mut app App) check_username(username string) (bool, User) {
 	if username.len == 0 {
 		return false, User{}
 	}
-
 	mut user := app.get_user_by_username(username) or { return false, User{} }
-
 	return user.is_registered, user
 }
 
-pub fn (mut app App) auth_user(user User, ip string) ! {
+pub fn (mut app App) auth_user(mut ctx Context, user User, ip string) ! {
 	token := app.add_token(user.id, ip)!
-
 	app.update_user_login_attempts(user.id, 0)!
-
 	expire_date := time.now().add_days(200)
-
-	app.set_cookie(name: 'token', value: token, expires: expire_date)
+	ctx.set_cookie(name: 'token', value: token, expires: expire_date)
 }
 
-pub fn (mut app App) is_logged_in() bool {
-	token_cookie := app.get_cookie('token') or { return false }
-
+pub fn (mut app App) is_logged_in(ctx &Context) bool {
+	token_cookie := ctx.get_cookie('token') or { return false }
 	token := app.get_token(token_cookie) or { return false }
-
 	is_user_blocked := app.check_user_blocked(token.user_id)
-
 	if is_user_blocked {
 		app.handle_logout()
-
 		return false
 	}
-
 	return true
 }
 
-pub fn (mut app App) get_user_from_cookies() ?User {
-	token_cookie := app.get_cookie('token') or { return none }
-
+pub fn (mut app App) get_user_from_cookies(ctx &Context) ?User {
+	token_cookie := ctx.get_cookie('token') or { return none }
 	token := app.get_token(token_cookie) or { return none }
-
 	mut user := app.get_user_by_id(token.user_id) or { return none }
-
 	return user
 }

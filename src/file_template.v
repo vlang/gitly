@@ -1,6 +1,6 @@
 module main
 
-import vweb
+import veb
 import regex
 
 fn replace_issue_id(re regex.RE, in_txt string, _ int, _ int) string {
@@ -9,7 +9,7 @@ fn replace_issue_id(re regex.RE, in_txt string, _ int, _ int) string {
 	return in_txt.replace(issue_id, '<a class="issue-id-anchor" href="#">${issue_id}</a>')
 }
 
-fn (f File) format_commit_message() vweb.RawHtml {
+fn (f File) format_commit_message() veb.RawHtml {
 	id_query := r'(#\d+)'
 	mut re := regex.regex_opt(id_query) or { panic(err) }
 

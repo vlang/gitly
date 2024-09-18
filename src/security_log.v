@@ -14,7 +14,7 @@ enum SecurityLogKind {
 }
 
 struct SecurityLog {
-	id         int    @[primary; sql: serial]
+	id         int @[primary; sql: serial]
 	user_id    int
 	kind_id    int
 	ip         string
@@ -29,7 +29,7 @@ fn (mut app App) add_security_log(log SecurityLog) ! {
 	new_log := SecurityLog{
 		...log
 		kind_id: int(log.kind)
-		ip: app.ip()
+		// ip:      ip // ctx.ip() XTODO
 	}
 
 	sql app.db {

@@ -1,21 +1,21 @@
 module main
 
-import vweb
+import veb
 
 @['/:username/feed']
-pub fn (mut app App) user_feed_default(username string) vweb.Result {
+pub fn (mut app App) user_feed_default(username string) veb.Result {
 	return app.user_feed(username, 0)
 }
 
 @['/:username/feed/:page']
-pub fn (mut app App) user_feed(username string, page int) vweb.Result {
+pub fn (mut app App) user_feed(username string, page int) veb.Result {
 	exists, user := app.check_username(username)
 
-	if !exists || app.user.username != user.username {
-		return app.not_found()
+	if !exists || ctx.user.username != user.username {
+		return ctx.not_found()
 	}
 
-	user_id := app.user.id
+	user_id := ctx.user.id
 	item_count := app.get_feed_items_count(user_id)
 	offset := feed_items_per_page * page
 	page_count := calculate_pages(item_count, feed_items_per_page)
@@ -37,5 +37,5 @@ pub fn (mut app App) user_feed(username string, page int) vweb.Result {
 		}
 	}
 
-	return $vweb.html()
+	return $veb.html()
 }

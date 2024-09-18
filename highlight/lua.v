@@ -2,13 +2,13 @@ module highlight
 
 fn init_lua() Lang {
 	return Lang{
-		name: 'Lua'
+		name:            'Lua'
 		lang_extensions: ['lua']
-		line_comments: '--'
-		mline_comments: ['--[[', ']]']
-		string_start: ['"', "'"]
-		color: '#00007d'
-		keywords: [
+		line_comments:   '--'
+		mline_comments:  ['--[[', ']]']
+		string_start:    ['"', "'"]
+		color:           '#00007d'
+		keywords:        [
 			'and',
 			'break',
 			'do',

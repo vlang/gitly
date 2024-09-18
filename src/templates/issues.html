@@ -12,7 +12,7 @@
 			<h1>Issues</h1>
 
 			<div>
-				@if app.logged_in
+				@if ctx.logged_in
 					<a href='/@repo.user_name/@repo.name/issues/new'>New issue</a>
 				@end
 			</div>

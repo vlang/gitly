@@ -1,6 +1,6 @@
 module main
 
-import vweb
+import veb
 
 struct LangStat {
 	id          int    @[primary; sql: serial]
@@ -11,22 +11,20 @@ struct LangStat {
 	color       string
 }
 
-const (
-	test_lang_stats = [
-		LangStat{
-			name: 'V'
-			pct: 989
-			lines_count: 96657
-			color: '#5d87bd'
-		},
-		LangStat{
-			name: 'JavaScript'
-			lines_count: 1131
-			color: '#f1e05a'
-			pct: 11
-		},
-	]
-)
+const test_lang_stats = [
+	LangStat{
+		name:        'V'
+		pct:         989
+		lines_count: 96657
+		color:       '#5d87bd'
+	},
+	LangStat{
+		name:        'JavaScript'
+		lines_count: 1131
+		color:       '#f1e05a'
+		pct:         11
+	},
+]
 
 fn (app App) add_lang_stat(lang_stat LangStat) ! {
 	sql app.db {
@@ -34,7 +32,7 @@ fn (app App) add_lang_stat(lang_stat LangStat) ! {
 	}!
 }
 
-pub fn (l &LangStat) pct_html() vweb.RawHtml {
+pub fn (l &LangStat) pct_html() veb.RawHtml {
 	x := f64(l.pct) / 10.0
 	sloc := if l.lines_count < 1000 {
 		l.lines_count.str()

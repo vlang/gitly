@@ -168,7 +168,7 @@ pub fn new_repo(path string) &Repo {
 	println('ff ${ret}')
 	// git_reference_free(head_ref);
 	return &Repo{
-		obj: repo_obj
+		obj:  repo_obj
 		path: path
 	}
 }

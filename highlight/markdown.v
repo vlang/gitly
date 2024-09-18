@@ -3,73 +3,71 @@ module highlight
 import markdown
 import pcre
 
-const (
-	allowed_tags       = [
-		'a',
-		'abbr',
-		'b',
-		'blockquote',
-		'body',
-		'br',
-		'center',
-		'code',
-		'dd',
-		'details',
-		'div',
-		'dl',
-		'dt',
-		'em',
-		'font',
-		'h1',
-		'h2',
-		'h3',
-		'h4',
-		'h5',
-		'h6',
-		'hr',
-		'i',
-		'img',
-		'kbd',
-		'label',
-		'li',
-		'ol',
-		'p',
-		'pre',
-		'small',
-		'source',
-		'span',
-		'strong',
-		'sub',
-		'summary',
-		'sup',
-		'table',
-		'tbody',
-		'tr',
-		'td',
-		'th',
-		'thead',
-		'ul',
-		'u',
-		'video',
-	]
-	allowed_attributes = [
-		'align',
-		'color',
-		'controls',
-		'height',
-		'href',
-		'id',
-		'src',
-		'style',
-		'target',
-		'title',
-		'type',
-		'width',
-	]
-	unallowed_schemas  = [
-		'javascript:',
-	]
-)
+const allowed_tags = [
+	'a',
+	'abbr',
+	'b',
+	'blockquote',
+	'body',
+	'br',
+	'center',
+	'code',
+	'dd',
+	'details',
+	'div',
+	'dl',
+	'dt',
+	'em',
+	'font',
+	'h1',
+	'h2',
+	'h3',
+	'h4',
+	'h5',
+	'h6',
+	'hr',
+	'i',
+	'img',
+	'kbd',
+	'label',
+	'li',
+	'ol',
+	'p',
+	'pre',
+	'small',
+	'source',
+	'span',
+	'strong',
+	'sub',
+	'summary',
+	'sup',
+	'table',
+	'tbody',
+	'tr',
+	'td',
+	'th',
+	'thead',
+	'ul',
+	'u',
+	'video',
+]
+const allowed_attributes = [
+	'align',
+	'color',
+	'controls',
+	'height',
+	'href',
+	'id',
+	'src',
+	'style',
+	'target',
+	'title',
+	'type',
+	'width',
+]
+const unallowed_schemas = [
+	'javascript:',
+]
 
 pub fn convert_markdown_to_html(code string) string {
 	markdown_code := sanitize_markdown_code(code)
@@ -121,7 +119,7 @@ fn sanitize_html_tags_with_re(re string, code string) string {
 		tag_name := tag_parts[0].trim_space().to_lower()
 		tag_attributes := tag_parts[1].trim_space()
 		tag_content := tag_parts[2].trim_space()
-		is_allowed_tag := highlight.allowed_tags.contains(tag_name)
+		is_allowed_tag := allowed_tags.contains(tag_name)
 
 		if !is_allowed_tag {
 			result = result.replace(tag, '')
@@ -174,8 +172,8 @@ fn sanitize_html_attributes(attributes string) string {
 		attribute_name := attribute_parts[0].trim_space().to_lower()
 		attribute_value := attribute_parts[1].trim_space()
 
-		is_allowed_attribute := highlight.allowed_attributes.contains(attribute_name)
-		is_unallowed_schemas := highlight.unallowed_schemas.any(attribute_value.starts_with(it))
+		is_allowed_attribute := allowed_attributes.contains(attribute_name)
+		is_unallowed_schemas := unallowed_schemas.any(attribute_value.starts_with(it))
 
 		if !is_allowed_attribute || is_unallowed_schemas {
 			result = result.replace(attribute, '')

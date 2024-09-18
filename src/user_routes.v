@@ -2,123 +2,109 @@ module main
 
 import time
 import os
-import vweb
+import veb
 import rand
 import validation
 import api
 
-pub fn (mut app App) login() vweb.Result {
+pub fn (mut app App) login() veb.Result {
 	csrf := rand.string(30)
-	app.set_cookie(name: 'csrf', value: csrf)
+	ctx.set_cookie(name: 'csrf', value: csrf)
 
 	if app.is_logged_in() {
-		return app.not_found()
+		return ctx.not_found()
 	}
 
-	return $vweb.html()
+	return $veb.html()
 }
 
 @['/login'; post]
-pub fn (mut app App) handle_login(username string, password string) vweb.Result {
+pub fn (mut app App) handle_login(username string, password string) veb.Result {
 	if username == '' || password == '' {
-		return app.redirect_to_login()
+		return ctx.redirect_to_login()
 	}
-
-	user := app.get_user_by_username(username) or { return app.redirect_to_login() }
-
+	user := app.get_user_by_username(username) or { return ctx.redirect_to_login() }
 	if user.is_blocked {
-		return app.redirect_to_login()
+		return ctx.redirect_to_login()
 	}
-
 	if !compare_password_with_hash(password, user.salt, user.password) {
 		app.increment_user_login_attempts(user.id) or {
-			app.error('There was an error while logging in')
+			ctx.error('There was an error while logging in')
 			return app.login()
 		}
-
 		if user.login_attempts == max_login_attempts {
 			app.warn('User ${user.username} got blocked')
 			app.block_user(user.id) or { app.info(err.str()) }
 		}
-
-		app.error('Wrong username/password')
-
+		ctx.error('Wrong username/password')
 		return app.login()
 	}
-
 	if !user.is_registered {
-		return app.redirect_to_login()
+		return ctx.redirect_to_login()
 	}
-
-	app.auth_user(user, app.ip()) or {
-		app.error('There was an error while logging in')
+	app.auth_user(mut ctx, user, ctx.ip()) or {
+		ctx.error('There was an error while logging in')
 		return app.login()
 	}
 	app.add_security_log(user_id: user.id, kind: .logged_in) or { app.info(err.str()) }
-
-	return app.redirect('/${username}')
+	return ctx.redirect('/${username}')
 }
 
 @['/logout']
-pub fn (mut app App) handle_logout() vweb.Result {
-	app.set_cookie(name: 'token', value: '')
-
-	return app.redirect_to_index()
+pub fn (mut app App) handle_logout() veb.Result {
+	ctx.set_cookie(name: 'token', value: '')
+	return ctx.redirect_to_index()
 }
 
 @['/:username']
-pub fn (mut app App) user(username string) vweb.Result {
+pub fn (mut app App) user(username string) veb.Result {
 	exists, user := app.check_username(username)
-
 	if !exists {
-		return app.not_found()
+		return ctx.not_found()
 	}
-
-	is_page_owner := username == app.user.username
+	is_page_owner := username == ctx.user.username
 	repos := if is_page_owner {
 		app.find_user_repos(user.id)
 	} else {
 		app.find_user_public_repos(user.id)
 	}
-
 	activities := app.find_activities(user.id)
-
-	return $vweb.html()
+	return $veb.html()
 }
 
 @['/:username/settings']
-pub fn (mut app App) user_settings(username string) vweb.Result {
-	is_users_settings := username == app.user.username
+pub fn (mut app App) user_settings(username string) veb.Result {
+	is_users_settings := username == ctx.user.username
 
-	if !app.logged_in || !is_users_settings {
-		return app.redirect_to_index()
+	if !ctx.logged_in || !is_users_settings {
+		return ctx.redirect_to_index()
 	}
 
-	return $vweb.html()
+	return $veb.html()
 }
 
 @['/:username/settings'; post]
-pub fn (mut app App) handle_update_user_settings(username string) vweb.Result {
-	is_users_settings := username == app.user.username
+pub fn (mut app App) handle_update_user_settings(username string) veb.Result {
+	is_users_settings := username == ctx.user.username
 
-	if !app.logged_in || !is_users_settings {
-		return app.redirect_to_index()
+	if !ctx.logged_in || !is_users_settings {
+		return ctx.redirect_to_index()
 	}
 
 	// TODO: uneven parameters count (2) in `handle_update_user_settings`, compared to the vweb route `['/:user/settings', 'post']` (1)
-	new_username := app.form['name']
-	full_name := app.form['full_name']
+	new_username := ctx.form['name']
+	full_name := ctx.form['full_name']
 
 	is_username_empty := validation.is_string_empty(new_username)
 
 	if is_username_empty {
-		app.error('New name is empty')
+		ctx.error('New name is empty')
 
 		return app.user_settings(username)
 	}
 
-	if app.user.namechanges_count > max_namechanges {
-		app.error('You can not change your username, limit reached')
+	if ctx.user.namechanges_count > max_namechanges {
+		ctx.error('You can not change your username, limit reached')
 
 		return app.user_settings(username)
 	}
@@ -126,26 +112,26 @@ pub fn (mut app App) handle_update_user_settings(username string) vweb.Result {
 	is_username_valid := validation.is_username_valid(new_username)
 
 	if !is_username_valid {
-		app.error('New username is not valid')
+		ctx.error('New username is not valid')
 
 		return app.user_settings(username)
 	}
 
-	is_first_namechange := app.user.last_namechange_time == 0
-	can_change_usernane := app.user.last_namechange_time + namechange_period <= time.now().unix()
+	is_first_namechange := ctx.user.last_namechange_time == 0
+	can_change_usernane := ctx.user.last_namechange_time + namechange_period <= time.now().unix()
 
 	if !(is_first_namechange || can_change_usernane) {
-		app.error('You need to wait until you can change the name again')
+		ctx.error('You need to wait until you can change the name again')
 
 		return app.user_settings(username)
 	}
 
 	is_new_username := new_username != username
-	is_new_full_name := full_name != app.user.full_name
+	is_new_full_name := full_name != ctx.user.full_name
 
 	if is_new_full_name {
-		app.change_full_name(app.user.id, full_name) or {
-			app.error('There was an error while updating the settings')
+		app.change_full_name(ctx.user.id, full_name) or {
+			ctx.error('There was an error while updating the settings')
 			return app.user_settings(username)
 		}
 	}
@@ -154,23 +140,23 @@ pub fn (mut app App) handle_update_user_settings(username string) vweb.Result {
 		user := app.get_user_by_username(new_username) or { User{} }
 
 		if user.id != 0 {
-			app.error('Name already exists')
+			ctx.error('Name already exists')
 
 			return app.user_settings(username)
 		}
 
-		app.change_username(app.user.id, new_username) or {
-			app.error('There was an error while updating the settings')
+		app.change_username(ctx.user.id, new_username) or {
+			ctx.error('There was an error while updating the settings')
 			return app.user_settings(username)
 		}
-		app.incement_namechanges(app.user.id) or {
-			app.error('There was an error while updating the settings')
+		app.incement_namechanges(ctx.user.id) or {
+			ctx.error('There was an error while updating the settings')
 			return app.user_settings(username)
 		}
 		app.rename_user_directory(username, new_username)
 	}
 
-	return app.redirect('/${new_username}')
+	return ctx.redirect('/${new_username}')
 }
 
 fn (mut app App) rename_user_directory(old_name string, new_name string) {
@@ -179,48 +165,48 @@ fn (mut app App) rename_user_directory(old_name string, new_name string) {
 	}
 }
 
-pub fn (mut app App) register() vweb.Result {
+pub fn (mut app App) register() veb.Result {
 	user_count := app.get_users_count() or { 0 }
 	no_users := user_count == 0
 
-	app.current_path = ''
+	ctx.current_path = ''
 
-	return $vweb.html()
+	return $veb.html()
 }
 
 @['/register'; post]
-pub fn (mut app App) handle_register(username string, email string, password string, no_redirect string) vweb.Result {
+pub fn (mut app App) handle_register(username string, email string, password string, no_redirect string) veb.Result {
 	user_count := app.get_users_count() or {
-		app.error('Failed to register')
+		ctx.error('Failed to register')
 		return app.register()
 	}
 	no_users := user_count == 0
 
 	if username in ['login', 'register', 'new', 'new_post', 'oauth'] {
-		app.error('Username `${username}` is not available')
+		ctx.error('Username `${username}` is not available')
 		return app.register()
 	}
 
 	user_chars := username.bytes()
 
 	if user_chars.len > max_username_len {
-		app.error('Username is too long (max. ${max_username_len})')
+		ctx.error('Username is too long (max. ${max_username_len})')
 		return app.register()
 	}
 
 	if username.contains('--') {
-		app.error('Username cannot contain two hyphens')
+		ctx.error('Username cannot contain two hyphens')
 		return app.register()
 	}
 
 	if user_chars[0] == `-` || user_chars.last() == `-` {
-		app.error('Username cannot begin or end with a hyphen')
+		ctx.error('Username cannot begin or end with a hyphen')
 		return app.register()
 	}
 
 	for ch in user_chars {
 		if !ch.is_letter() && !ch.is_digit() && ch != `-` {
-			app.error('Username cannot contain special characters')
+			ctx.error('Username cannot contain special characters')
 			return app.register()
 		}
 	}
@@ -228,13 +214,13 @@ pub fn (mut app App) handle_register(username string, email string, password str
 	is_username_valid := validation.is_username_valid(username)
 
 	if !is_username_valid {
-		app.error('Username is not valid')
+		ctx.error('Username is not valid')
 
 		return app.register()
 	}
 
 	if password == '' {
-		app.error('Password cannot be empty')
+		ctx.error('Password cannot be empty')
 
 		return app.register()
 	}
@@ -243,24 +229,24 @@ pub fn (mut app App) handle_register(username string, email string, password str
 	hashed_password := hash_password_with_salt(password, salt)
 
 	if username == '' || email == '' {
-		app.error('Username or Email cannot be emtpy')
+		ctx.error('Username or Email cannot be emtpy')
 		return app.register()
 	}
 
 	// TODO: refactor
 	is_registered := app.register_user(username, hashed_password, salt, [email], false,
 		no_users) or {
-		app.error('Failed to register')
+		ctx.error('Failed to register')
 		return app.register()
 	}
 
 	if !is_registered {
-		app.error('Failed to register')
+		ctx.error('Failed to register')
 		return app.register()
 	}
 
 	user := app.get_user_by_username(username) or {
-		app.error('User already exists')
+		ctx.error('User already exists')
 		return app.register()
 	}
 
@@ -268,28 +254,28 @@ pub fn (mut app App) handle_register(username string, email string, password str
 		app.add_admin(user.id) or { app.info(err.str()) }
 	}
 
-	client_ip := app.ip()
+	client_ip := ctx.ip()
 
-	app.auth_user(user, client_ip) or {
-		app.error('Failed to register')
+	app.auth_user(mut ctx, user, client_ip) or {
+		ctx.error('Failed to register')
 		return app.register()
 	}
 	app.add_security_log(user_id: user.id, kind: .registered) or { app.info(err.str()) }
 
 	if no_redirect == '1' {
-		return app.text('ok')
+		return ctx.text('ok')
 	}
 
-	return app.redirect('/' + username)
+	return ctx.redirect('/' + username)
 }
 
 @['/api/v1/users/avatar'; post]
-pub fn (mut app App) handle_upload_avatar() vweb.Result {
-	if !app.logged_in {
-		return app.not_found()
+pub fn (mut app App) handle_upload_avatar() veb.Result {
+	if !ctx.logged_in {
+		return ctx.not_found()
 	}
 
-	avatar := app.Context.files['file'].first()
+	avatar := ctx.files['file'].first()
 	file_content_type := avatar.content_type
 	file_content := avatar.data
 
@@ -298,7 +284,7 @@ pub fn (mut app App) handle_upload_avatar() vweb.Result {
 			message: err.str()
 		}
 
-		return app.json(response)
+		return ctx.json(response)
 	}
 
 	is_content_size_valid := validate_avatar_file_size(file_content)
@@ -308,29 +294,29 @@ pub fn (mut app App) handle_upload_avatar() vweb.Result {
 			message: 'This file is too large to be uploaded'
 		}
 
-		return app.json(response)
+		return ctx.json(response)
 	}
 
-	username := app.user.username
+	username := ctx.user.username
 	avatar_filename := '${username}.${file_extension}'
 
 	app.write_user_avatar(avatar_filename, file_content)
-	app.update_user_avatar(app.user.id, avatar_filename) or {
+	app.update_user_avatar(ctx.user.id, avatar_filename) or {
 		response := api.ApiErrorResponse{
 			message: 'There was an error while updating the avatar'
 		}
 
-		return app.json(response)
+		return ctx.json(response)
 	}
 
 	avatar_file_path := app.build_avatar_file_path(avatar_filename)
 	avatar_file_url := app.build_avatar_file_url(avatar_filename)
 
-	app.serve_static(avatar_file_url, avatar_file_path)
+	app.serve_static(avatar_file_url, avatar_file_path) or { panic(err) }
 
 	response := api.ApiResponse{
 		success: true
 	}
 
-	return app.json(response)
+	return ctx.json(response)
 }

@@ -9,32 +9,32 @@ import highlight
 import validation
 
 struct Repo {
-	id                 int       @[primary; sql: serial]
+	id                 int @[primary; sql: serial]
 	git_dir            string
 	name               string
 	user_id            int
 	user_name          string
-	clone_url          string    @[skip]
+	clone_url          string @[skip]
 	primary_branch     string
 	description        string
 	is_public          bool
-	users_contributed  []string  @[skip]
-	users_authorized   []string  @[skip]
-	nr_topics          int       @[skip]
+	users_contributed  []string @[skip]
+	users_authorized   []string @[skip]
+	nr_topics          int      @[skip]
 	views_count        int
 	latest_update_hash string    @[skip]
 	latest_activity    time.Time @[skip]
 mut:
-	git_repo        &git.Repo = unsafe { nil }         @[skip] // libgit wrapper repo
+	git_repo        &git.Repo = unsafe { nil } @[skip] // libgit wrapper repo
 	webhook_secret  string
 	tags_count      int
-	nr_open_issues  int               @[orm: 'open_issues_count']
-	nr_open_prs     int               @[orm: 'open_prs_count']
-	nr_releases     int               @[orm: 'releases_count']
-	nr_branches     int               @[orm: 'branches_count']
+	nr_open_issues  int @[orm: 'open_issues_count']
+	nr_open_prs     int @[orm: 'open_prs_count']
+	nr_releases     int @[orm: 'releases_count']
+	nr_branches     int @[orm: 'branches_count']
 	nr_tags         int
-	nr_stars        int               @[orm: 'stars_count']
-	lang_stats      []LangStat        @[skip]
+	nr_stars        int        @[orm: 'stars_count']
+	lang_stats      []LangStat @[skip]
 	created_at      int
 	nr_contributors int
 	labels          []Label           @[skip]
@@ -144,12 +144,12 @@ fn (app App) search_public_repos(query string) []Repo {
 		user := app.get_user_by_id(user_id) or { User{} }
 
 		repos << Repo{
-			id: row.vals[0].int()
-			git_repo: unsafe { nil }
-			name: row.vals[1]
-			user_name: user.username
+			id:          row.vals[0].int()
+			git_repo:    unsafe { nil }
+			name:        row.vals[1]
+			user_name:   user.username
 			description: row.vals[3]
-			nr_stars: row.vals[4].int()
+			nr_stars:    row.vals[4].int()
 		}
 	}
 
@@ -452,10 +452,10 @@ fn (r &Repo) analyze_lang(app &App) ! {
 		}
 		lang_data := langs[lang]
 		d_lang_stats << LangStat{
-			repo_id: r.id
-			name: lang_data.name
-			pct: pct
-			color: lang_data.color
+			repo_id:     r.id
+			name:        lang_data.name
+			pct:         pct
+			color:       lang_data.color
 			lines_count: amount
 		}
 	}
@@ -584,13 +584,13 @@ fn (r &Repo) parse_ls(ls_line string, branch string) ?File {
 	}
 
 	return File{
-		name: item_name
+		name:        item_name
 		parent_path: parent_path
-		repo_id: r.id
-		last_hash: item_hash
-		branch: branch
-		is_dir: item_type == 'tree'
-		size: if item_type == 'blob' { item_size.int() } else { 0 }
+		repo_id:     r.id
+		last_hash:   item_hash
+		branch:      branch
+		is_dir:      item_type == 'tree'
+		size:        if item_type == 'blob' { item_size.int() } else { 0 }
 	}
 }
 
@@ -833,44 +833,35 @@ fn find_readme_file(items []File) ?File {
 
 fn find_license_file(items []File) ?File {
 	files := items.filter(it.name.to_lower() == 'license')
-
 	if files.len == 0 {
 		return none
 	}
-
 	return files[0]
 }
 
-fn (app App) has_user_repo_read_access(user_id int, repo_id int) bool {
-	if !app.logged_in {
+fn (app &App) has_user_repo_read_access(ctx Context, user_id int, repo_id int) bool {
+	if !ctx.logged_in {
 		return false
 	}
-
 	repo := app.find_repo_by_id(repo_id) or { return false }
-
 	if repo.is_public {
 		return true
 	}
-
 	is_repo_owner := repo.user_id == user_id
-
 	if is_repo_owner {
 		return true
 	}
-
 	return false
 }
 
-fn (app App) has_user_repo_read_access_by_repo_name(user_id int, repo_owner_name string, repo_name string) bool {
+fn (app &App) has_user_repo_read_access_by_repo_name(ctx Context, user_id int, repo_owner_name string, repo_name string) bool {
 	user := app.get_user_by_username(repo_owner_name) or { return false }
 	repo := app.find_repo_by_name_and_user_id(repo_name, user.id) or { return false }
-
-	return app.has_user_repo_read_access(user_id, repo.id)
+	return app.has_user_repo_read_access(ctx, user_id, repo.id)
 }
 
-fn (app App) check_repo_owner(username string, repo_name string) bool {
+fn (app &App) check_repo_owner(username string, repo_name string) bool {
 	user := app.get_user_by_username(username) or { return false }
 	repo := app.find_repo_by_name_and_user_id(repo_name, user.id) or { return false }
-
 	return repo.user_id == user.id
 }

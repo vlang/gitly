@@ -51,7 +51,7 @@ pub fn check_git_repo_url(url string) bool {
 	headers.add_custom('User-Agent', 'git/2.30.0') or {}
 	headers.add_custom('Git-Protocol', 'version=2') or {}
 	config := http.FetchConfig{
-		url: refs_url
+		url:    refs_url
 		header: headers
 	}
 	response := http.fetch(config) or { return false }

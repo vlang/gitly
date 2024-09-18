@@ -1,34 +1,35 @@
 module main
 
-import vweb
+import veb
 import highlight
 import time
 import api
 
 @['/api/v1/:user/:repo_name/:branch_name/commits/count']
-fn (mut app App) handle_commits_count(username string, repo_name string, branch_name string) vweb.Result {
-	has_access := app.has_user_repo_read_access_by_repo_name(app.user.id, username, repo_name)
+fn (mut app App) handle_commits_count(username string, repo_name string, branch_name string) veb.Result {
+	has_access := app.has_user_repo_read_access_by_repo_name(ctx, ctx.user.id, username,
+		repo_name)
 
 	if !has_access {
-		return app.json_error('Not found')
+		return ctx.json_error('Not found')
 	}
 
 	repo := app.find_repo_by_name_and_username(repo_name, username) or {
-		return app.json_error('Not found')
+		return ctx.json_error('Not found')
 	}
 
 	branch := app.find_repo_branch_by_name(repo.id, branch_name)
 	count := app.get_repo_commit_count(repo.id, branch.id)
 
-	return app.json(api.ApiCommitCount{
+	return ctx.json(api.ApiCommitCount{
 		success: true
-		result: count
+		result:  count
 	})
 }
 
 @['/:username/:repo_name/:branch_name/commits/:page']
-pub fn (mut app App) commits(username string, repo_name string, branch_name string, page int) vweb.Result {
-	repo := app.find_repo_by_name_and_username(repo_name, username) or { return app.not_found() }
+pub fn (mut app App) commits(username string, repo_name string, branch_name string, page int) veb.Result {
+	repo := app.find_repo_by_name_and_username(repo_name, username) or { return ctx.not_found() }
 
 	branch := app.find_repo_branch_by_name(repo.id, branch_name)
 	commits_count := app.get_repo_commit_count(repo.id, branch.id)
@@ -67,20 +68,20 @@ pub fn (mut app App) commits(username string, repo_name string, branch_name stri
 		}
 	}
 
-	return $vweb.html()
+	return $veb.html()
 }
 
 @['/:username/:repo_name/commit/:hash']
-pub fn (mut app App) commit(username string, repo_name string, hash string) vweb.Result {
-	repo := app.find_repo_by_name_and_username(repo_name, username) or { return app.not_found() }
+pub fn (mut app App) commit(username string, repo_name string, hash string) veb.Result {
+	repo := app.find_repo_by_name_and_username(repo_name, username) or { return ctx.not_found() }
 
 	is_patch_request := hash.ends_with('.patch')
 
 	if is_patch_request {
 		commit_hash := hash.trim_string_right('.patch')
-		patch := repo.get_commit_patch(commit_hash) or { return app.not_found() }
+		patch := repo.get_commit_patch(commit_hash) or { return ctx.not_found() }
 
-		return app.ok(patch)
+		return ctx.ok(patch)
 	}
 
 	patch_url := '/${username}/${repo_name}/commit/${hash}.patch'
@@ -89,13 +90,13 @@ pub fn (mut app App) commit(username string, repo_name string, hash string) vweb
 
 	mut all_adds := 0
 	mut all_dels := 0
-	mut sources := map[string]vweb.RawHtml{}
+	mut sources := map[string]veb.RawHtml{}
 	for change in changes {
 		all_adds += change.additions
 		all_dels += change.deletions
 		src, _, _ := highlight.highlight_text(change.message, change.file, true)
-		sources[change.file] = vweb.RawHtml(src)
+		sources[change.file] = veb.RawHtml(src)
 	}
 
-	return $vweb.html()
+	return $veb.html()
 }

@@ -1,12 +1,12 @@
 module main
 
-import vweb
+import veb
 import regex
 
 @['/search']
-pub fn (mut app App) search() vweb.Result {
-	query := app.query['query']
-	search_type := if 'type' in app.query { app.query['type'] } else { 'repos' }
+pub fn (mut app App) search() veb.Result {
+	query := ctx.query['query']
+	search_type := if 'type' in ctx.query { ctx.query['type'] } else { 'repos' }
 	sanitize_query := r'[a-zA-z0-9]+'
 	mut re := regex.regex_opt(sanitize_query) or { panic(err) }
 
@@ -24,5 +24,5 @@ pub fn (mut app App) search() vweb.Result {
 		[]User{}
 	}
 
-	return $vweb.html()
+	return $veb.html()
 }

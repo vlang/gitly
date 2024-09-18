@@ -5,7 +5,7 @@ module main
 import rand
 
 struct Token {
-	id      int    @[primary; sql: serial]
+	id      int @[primary; sql: serial]
 	user_id int
 	value   string
 	ip      string
@@ -16,8 +16,8 @@ fn (mut app App) add_token(user_id int, ip string) !string {
 
 	token := Token{
 		user_id: user_id
-		value: uuid
-		ip: ip
+		value:   uuid
+		ip:      ip
 	}
 
 	sql app.db {
@@ -31,11 +31,9 @@ fn (mut app App) get_token(value string) ?Token {
 	tokens := sql app.db {
 		select from Token where value == value limit 1
 	} or { []Token{} }
-
 	if tokens.len == 0 {
 		return none
 	}
-
 	return tokens.first()
 }
 

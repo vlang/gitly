@@ -1,10 +1,10 @@
 module main
 
-import vweb
+import veb
 
 @['/settings/security']
-fn (mut app App) security() vweb.Result {
-	logs := app.get_all_user_security_logs(app.user.id)
+fn (mut app App) security() veb.Result {
+	logs := app.get_all_user_security_logs(ctx.user.id)
 
-	return $vweb.html()
+	return $veb.html()
 }

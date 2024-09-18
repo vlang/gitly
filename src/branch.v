@@ -60,10 +60,10 @@ fn (mut app App) create_branch_or_update(repository_id int, branch_name string, 
 
 	new_branch := Branch{
 		repo_id: repository_id
-		name: branch_name
-		author: author
-		hash: hash
-		date: date
+		name:    branch_name
+		author:  author
+		hash:    hash
+		date:    date
 	}
 
 	sql app.db {

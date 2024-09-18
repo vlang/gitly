@@ -2,13 +2,13 @@ module highlight
 
 fn init_go() Lang {
 	return Lang{
-		name: 'Go'
+		name:            'Go'
 		lang_extensions: ['go']
-		line_comments: '//'
-		mline_comments: ['/*', '*/']
-		string_start: ['"', '`']
-		color: '#00add8'
-		keywords: [
+		line_comments:   '//'
+		mline_comments:  ['/*', '*/']
+		string_start:    ['"', '`']
+		color:           '#00add8'
+		keywords:        [
 			'break',
 			'chan',
 			'const',
