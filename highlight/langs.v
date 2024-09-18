@@ -33,7 +33,7 @@ pub fn extension_to_lang(ext string) !Lang {
 }
 
 fn init_langs() []Lang {
-	mut langs_ := []Lang{cap: 10}
+	mut langs_ := []Lang{cap: 16}
 	langs_ << init_c()
 	langs_ << init_v()
 	langs_ << init_js()
@@ -41,6 +41,7 @@ fn init_langs() []Lang {
 	langs_ << init_go()
 	langs_ << init_cpp()
 	langs_ << init_d()
+	langs_ << init_java()
 	langs_ << init_py()
 	langs_ << init_ts()
 	return langs_
