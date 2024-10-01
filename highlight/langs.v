@@ -44,5 +44,6 @@ fn init_langs() []Lang {
 	langs_ << init_java()
 	langs_ << init_py()
 	langs_ << init_ts()
+	langs_ << init_rust()
 	return langs_
 }
