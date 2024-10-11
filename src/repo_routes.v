@@ -9,7 +9,7 @@ import validation
 import git
 
 @['/:username/repos']
-pub fn (mut app App) user_repos(username string) veb.Result {
+pub fn (mut app App) user_repos(username string, mut ctx Context) veb.Result {
 	exists, user := app.check_username(username)
 
 	if !exists {
@@ -39,7 +39,7 @@ pub fn (mut app App) user_stars(username string) veb.Result {
 }
 
 @['/:username/:repo_name/settings']
-pub fn (mut app App) repo_settings(username string, repo_name string) veb.Result {
+pub fn (mut app App) repo_settings(username string, repo_name string, mut ctx Context) veb.Result {
 	repo := app.find_repo_by_name_and_username(repo_name, username) or {
 		return ctx.redirect_to_repository(username, repo_name)
 	}
@@ -142,10 +142,10 @@ pub fn (mut app App) handle_tree(username string, repo_name string) veb.Result {
 			return app.user_repos(username, mut ctx)
 		}
 		'issues' {
-			return app.handle_get_user_issues(username, mut ctx)
+			return app.handle_get_user_issues(mut ctx, username)
 		}
 		'settings' {
-			return app.user_settings(username)
+			return app.user_settings(mut ctx, username)
 		}
 		else {}
 	}

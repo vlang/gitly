@@ -4,7 +4,7 @@ import veb
 import os
 
 @['/:username/:repo_name/tag/:tag/:format']
-pub fn (mut app App) handle_download_tag_archive(username string, repo_name string, tag string, format string) veb.Result {
+pub fn (mut app App) handle_download_tag_archive(mut ctx Context,username string, repo_name string, tag string, format string) veb.Result {
 	// access checking will be implemented in another module
 	user := app.get_user_by_username(username) or { return ctx.not_found() }
 	repo := app.find_repo_by_name_and_user_id(repo_name, user.id) or { return ctx.not_found() }
@@ -22,5 +22,5 @@ pub fn (mut app App) handle_download_tag_archive(username string, repo_name stri
 
 	archive_content := os.read_file(archive_path) or { return ctx.not_found() }
 
-	return app.send_file(snapshot_name, archive_content)
+	return app.send_file(mut ctx,snapshot_name, archive_content)
 }

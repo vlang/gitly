@@ -73,7 +73,7 @@ pub fn (mut app App) user(username string) veb.Result {
 }
 
 @['/:username/settings']
-pub fn (mut app App) user_settings(username string) veb.Result {
+pub fn (mut app App) user_settings(mut ctx Context, username string) veb.Result {
 	is_users_settings := username == ctx.user.username
 
 	if !ctx.logged_in || !is_users_settings {
@@ -100,13 +100,13 @@ pub fn (mut app App) handle_update_user_settings(username string) veb.Result {
 	if is_username_empty {
 		ctx.error('New name is empty')
 
-		return app.user_settings(username)
+		return app.user_settings(mut ctx, username)
 	}
 
 	if ctx.user.namechanges_count > max_namechanges {
 		ctx.error('You can not change your username, limit reached')
 
-		return app.user_settings(username)
+		return app.user_settings(mut ctx, username)
 	}
 
 	is_username_valid := validation.is_username_valid(new_username)
@@ -114,7 +114,7 @@ pub fn (mut app App) handle_update_user_settings(username string) veb.Result {
 	if !is_username_valid {
 		ctx.error('New username is not valid')
 
-		return app.user_settings(username)
+		return app.user_settings(mut ctx, username)
 	}
 
 	is_first_namechange := ctx.user.last_namechange_time == 0
@@ -123,7 +123,7 @@ pub fn (mut app App) handle_update_user_settings(username string) veb.Result {
 	if !(is_first_namechange || can_change_usernane) {
 		ctx.error('You need to wait until you can change the name again')
 
-		return app.user_settings(username)
+		return app.user_settings(mut ctx, username)
 	}
 
 	is_new_username := new_username != username
@@ -132,7 +132,7 @@ pub fn (mut app App) handle_update_user_settings(username string) veb.Result {
 	if is_new_full_name {
 		app.change_full_name(ctx.user.id, full_name) or {
 			ctx.error('There was an error while updating the settings')
-			return app.user_settings(username)
+			return app.user_settings(mut ctx, username)
 		}
 	}
 
@@ -142,16 +142,16 @@ pub fn (mut app App) handle_update_user_settings(username string) veb.Result {
 		if user.id != 0 {
 			ctx.error('Name already exists')
 
-			return app.user_settings(username)
+			return app.user_settings(mut ctx, username)
 		}
 
 		app.change_username(ctx.user.id, new_username) or {
 			ctx.error('There was an error while updating the settings')
-			return app.user_settings(username)
+			return app.user_settings(mut ctx, username)
 		}
 		app.incement_namechanges(ctx.user.id) or {
 			ctx.error('There was an error while updating the settings')
-			return app.user_settings(username)
+			return app.user_settings(mut ctx, username)
 		}
 		app.rename_user_directory(username, new_username)
 	}

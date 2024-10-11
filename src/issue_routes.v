@@ -39,7 +39,7 @@ pub fn (mut app App) new_issue(username string, repo_name string) veb.Result {
 }
 
 @['/:username/issues']
-pub fn (mut app App) handle_get_user_issues(username string) veb.Result {
+pub fn (mut app App) handle_get_user_issues(mut ctx Context, username string) veb.Result {
 	return app.user_issues(username, 0)
 }
 

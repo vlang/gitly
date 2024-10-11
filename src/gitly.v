@@ -244,7 +244,7 @@ fn (mut ctx Context) json_error(message string) veb.Result {
 }
 
 // maybe it should be implemented with another static server, in dev
-fn (mut app App) send_file(filname string, content string) veb.Result {
+fn (mut app App) send_file(mut ctx Context, filname string, content string) veb.Result {
 	ctx.set_header(.content_disposition, 'attachment; filename="${filname}"')
 
 	return ctx.ok(content)
