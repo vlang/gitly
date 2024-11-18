@@ -128,12 +128,12 @@ pub fn (mut app App) init_server() {
 }
 
 pub fn (mut app App) before_request(mut ctx Context) {
-	ctx.logged_in = app.is_logged_in()
+	ctx.logged_in = app.is_logged_in(mut ctx)
 
 	app.load_settings()
 
 	if ctx.logged_in {
-		ctx.user = app.get_user_from_cookies() or {
+		ctx.user = app.get_user_from_cookies(ctx) or {
 			ctx.logged_in = false
 			User{}
 		}

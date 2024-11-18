@@ -192,7 +192,7 @@ fn test_login_with_token(username string, token string) {
 		cookies: {
 			'token': token
 		}
-		url: prepare_url(username)
+		url:     prepare_url(username)
 	) or { exit_with_message(err.str()) }
 
 	ilog('Ensure that after login, there is a signed in as `${username}` message')
@@ -210,8 +210,8 @@ fn test_create_repo(token string, name string, clone_url string) {
 		cookies: {
 			'token': token
 		}
-		url:  prepare_url('new')
-		data: 'name=${name}&description=${description}&clone_url=${clone_url}&repo_visibility=${repo_visibility}&no_redirect=1'
+		url:     prepare_url('new')
+		data:    'name=${name}&description=${description}&clone_url=${clone_url}&repo_visibility=${repo_visibility}&no_redirect=1'
 	) or { exit_with_message(err.str()) }
 
 	assert response.status_code == 200
@@ -224,7 +224,7 @@ fn get_repo_commit_count(token string, username string, repo_name string, branch
 		cookies: {
 			'token': token
 		}
-		url: prepare_url('api/v1/${username}/${repo_name}/${branch_name}/commits/count')
+		url:     prepare_url('api/v1/${username}/${repo_name}/${branch_name}/commits/count')
 	) or { exit_with_message(err.str()) }
 
 	response_json := json.decode(api.ApiCommitCount, response.body) or {
@@ -240,7 +240,7 @@ fn get_repo_issue_count(token string, username string, repo_name string) int {
 		cookies: {
 			'token': token
 		}
-		url: prepare_url('api/v1/${username}/${repo_name}/issues/count')
+		url:     prepare_url('api/v1/${username}/${repo_name}/issues/count')
 	) or { exit_with_message(err.str()) }
 
 	response_json := json.decode(api.ApiIssueCount, response.body) or {
@@ -256,7 +256,7 @@ fn get_repo_branch_count(token string, username string, repo_name string) int {
 		cookies: {
 			'token': token
 		}
-		url: prepare_url('api/v1/${username}/${repo_name}/branches/count')
+		url:     prepare_url('api/v1/${username}/${repo_name}/branches/count')
 	) or { exit_with_message(err.str()) }
 
 	response_json := json.decode(api.ApiBranchCount, response.body) or {

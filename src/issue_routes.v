@@ -39,12 +39,12 @@ pub fn (mut app App) new_issue(username string, repo_name string) veb.Result {
 }
 
 @['/:username/issues']
-pub fn (mut app App) handle_get_user_issues(username string) veb.Result {
-	return app.user_issues(username, 0)
+pub fn (mut app App) handle_get_user_issues(mut ctx Context, username string) veb.Result {
+	return app.user_issues(mut ctx, username, 0)
 }
 
 @['/:username/:repo_name/issues'; post]
-pub fn (mut app App) handle_add_repo_issue(username string, repo_name string) veb.Result {
+pub fn (mut app App) handle_add_repo_issue(mut ctx Context, username string, repo_name string) veb.Result {
 	// TODO: use captcha instead of user restrictions
 	if !ctx.logged_in || (ctx.logged_in && ctx.user.posts_count >= posts_per_day) {
 		return ctx.redirect_to_index()
@@ -68,12 +68,12 @@ pub fn (mut app App) handle_add_repo_issue(username string, repo_name string) ve
 }
 
 @['/:username/:repo_name/issues']
-pub fn (mut app App) handle_get_repo_issues(username string, repo_name string) veb.Result {
-	return app.issues(username, repo_name, 0)
+pub fn (mut app App) handle_get_repo_issues(mut ctx Context, username string, repo_name string) veb.Result {
+	return app.issues(mut ctx, username, repo_name, 0)
 }
 
 @['/:username/:repo_name/issues/:page']
-pub fn (mut app App) issues(username string, repo_name string, page int) veb.Result {
+pub fn (mut app App) issues(mut ctx Context, username string, repo_name string, page int) veb.Result {
 	repo := app.find_repo_by_name_and_username(repo_name, username) or { return ctx.not_found() }
 	mut issues_with_users := []IssueWithUser{}
 	for issue in app.find_repo_issues_as_page(repo.id, page) {
@@ -105,7 +105,7 @@ pub fn (mut app App) issues(username string, repo_name string, page int) veb.Res
 }
 
 @['/:username/:repo_name/issue/:id']
-pub fn (mut app App) issue(username string, repo_name string, id string) veb.Result {
+pub fn (mut app App) issue(mut ctx Context, username string, repo_name string, id string) veb.Result {
 	repo := app.find_repo_by_name_and_username(repo_name, username) or { return ctx.not_found() }
 	issue := app.find_issue_by_id(id.int()) or { return ctx.not_found() }
 	issue_author := app.get_user_by_id(issue.author_id) or { return ctx.not_found() }
@@ -121,7 +121,7 @@ pub fn (mut app App) issue(username string, repo_name string, id string) veb.Res
 }
 
 @['/:username/issues/:page']
-pub fn (mut app App) user_issues(username string, page int) veb.Result {
+pub fn (mut app App) user_issues(mut ctx Context, username string, page int) veb.Result {
 	if !ctx.logged_in {
 		return ctx.not_found()
 	}

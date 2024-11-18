@@ -1,7 +1,11 @@
 import os
 import veb
 
-const http_port = os.getenv_opt('GITLY_PORT') or { '8080' }.int()
+const http_port = get_port()
+
+fn get_port() int {
+	return os.getenv_opt('GITLY_PORT') or { '8080' }.int()
+}
 
 fn main() {
 	if os.args.contains('ci_run') {

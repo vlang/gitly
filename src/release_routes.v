@@ -6,12 +6,12 @@ import time
 const releases_per_page = 20
 
 @['/:username/:repo_name/releases']
-pub fn (mut app App) releases_default(username string, repo_name string) veb.Result {
-	return app.releases(username, repo_name, 0)
+pub fn (mut app App) releases_default(mut ctx Context, username string, repo_name string) veb.Result {
+	return app.releases(mut ctx, username, repo_name, 0)
 }
 
 @['/:username/:repo_name/releases/:page']
-pub fn (mut app App) releases(username string, repo_name string, page int) veb.Result {
+pub fn (mut app App) releases(mut ctx Context, username string, repo_name string, page int) veb.Result {
 	repo := app.find_repo_by_name_and_username(repo_name, username) or { return ctx.not_found() }
 
 	repo_id := repo.id

@@ -22,5 +22,5 @@ pub fn (mut app App) handle_download_tag_archive(username string, repo_name stri
 
 	archive_content := os.read_file(archive_path) or { return ctx.not_found() }
 
-	return app.send_file(snapshot_name, archive_content)
+	return app.send_file(mut ctx, snapshot_name, archive_content)
 }

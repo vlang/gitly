@@ -3,13 +3,13 @@ module highlight
 
 fn init_java() Lang {
 	return Lang{
-		name: 'Java'
+		name:            'Java'
 		lang_extensions: ['java']
-		line_comments: '//'
-		mline_comments: ['/*', '*/']
-		string_start: ['"', "'"]
-		color: '#f1e05a'
-		keywords: [
+		line_comments:   '//'
+		mline_comments:  ['/*', '*/']
+		string_start:    ['"', "'"]
+		color:           '#f1e05a'
+		keywords:        [
 			'abstract',
 			'continue',
 			'for',

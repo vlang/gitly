@@ -86,7 +86,7 @@ pub fn (mut app App) handle_repo_delete(username string, repo_name string) veb.R
 		spawn app.delete_repository(repo.id, repo.git_dir, repo.name)
 	} else {
 		ctx.error('Verification failed')
-		return app.repo_settings(username, repo_name, mut ctx)
+		return app.repo_settings(mut ctx, username, repo_name)
 	}
 
 	return ctx.redirect_to_index()
@@ -106,64 +106,64 @@ pub fn (mut app App) handle_repo_move(username string, repo_name string, dest st
 	if dest != '' && verify == '${username}/${repo_name}' {
 		dest_user := app.get_user_by_username(dest) or {
 			ctx.error('Unknown user ${dest}')
-			return app.repo_settings(username, repo_name, mut ctx)
+			return app.repo_settings(mut ctx, username, repo_name)
 		}
 
 		if app.user_has_repo(dest_user.id, repo.name) {
 			ctx.error('User already owns repo ${repo.name}')
-			return app.repo_settings(username, repo_name, mut ctx)
+			return app.repo_settings(mut ctx, username, repo_name)
 		}
 
 		if app.get_count_user_repos(dest_user.id) >= max_user_repos {
 			ctx.error('User already reached the repo limit')
-			return app.repo_settings(username, repo_name, mut ctx)
+			return app.repo_settings(mut ctx, username, repo_name)
 		}
 
 		app.move_repo_to_user(repo.id, dest_user.id, dest_user.username) or {
 			ctx.error('There was an error while moving the repo')
-			return app.repo_settings(username, repo_name, mut ctx)
+			return app.repo_settings(mut ctx, username, repo_name)
 		}
 
 		return ctx.redirect('/${dest_user.username}/${repo.name}')
 	} else {
 		ctx.error('Verification failed')
 
-		return app.repo_settings(username, repo_name, mut ctx)
+		return app.repo_settings(mut ctx, username, repo_name)
 	}
 
 	return ctx.redirect_to_index()
 }
 
 @['/:username/:repo_name']
-pub fn (mut app App) handle_tree(username string, repo_name string) veb.Result {
+pub fn (mut app App) handle_tree(mut ctx Context, username string, repo_name string) veb.Result {
 	println('handle tree()')
 	match repo_name {
 		'repos' {
-			return app.user_repos(username, mut ctx)
+			return app.user_repos(mut ctx, username)
 		}
 		'issues' {
-			return app.handle_get_user_issues(username, mut ctx)
+			return app.handle_get_user_issues(mut ctx, username)
 		}
 		'settings' {
-			return app.user_settings(username)
+			return app.user_settings(mut ctx, username)
 		}
 		else {}
 	}
 
 	repo := app.find_repo_by_name_and_username(repo_name, username) or { return ctx.not_found() }
 
-	return app.tree(username, repo_name, repo.primary_branch, '')
+	return app.tree(mut ctx, username, repo_name, repo.primary_branch, '')
 }
 
 @['/:username/:repo_name/tree/:branch_name']
-pub fn (mut app App) handle_branch_tree(username string, repo_name string, branch_name string) veb.Result {
+pub fn (mut app App) handle_branch_tree(mut ctx Context, username string, repo_name string, branch_name string) veb.Result {
 	app.find_repo_by_name_and_username(repo_name, username) or { return ctx.not_found() }
 
-	return app.tree(username, repo_name, branch_name, '')
+	return app.tree(mut ctx, username, repo_name, branch_name, '')
 }
 
 @['/:username/:repo_name/update']
-pub fn (mut app App) handle_repo_update(username string, repo_name string) veb.Result {
+pub fn (mut app App) handle_repo_update(mut ctx Context, username string, repo_name string) veb.Result {
 	mut repo := app.find_repo_by_name_and_username(repo_name, username) or {
 		return ctx.not_found()
 	}
@@ -185,7 +185,7 @@ pub fn (mut app App) new() veb.Result {
 }
 
 @['/new'; post]
-pub fn (mut app App) handle_new_repo(name string, clone_url string, description string, no_redirect string) veb.Result {
+pub fn (mut app App) handle_new_repo(mut ctx Context, name string, clone_url string, description string, no_redirect string) veb.Result {
 	mut valid_clone_url := clone_url
 	is_clone_url_empty := validation.is_string_empty(clone_url)
 	is_public := ctx.form['repo_visibility'] == 'public'
@@ -194,24 +194,24 @@ pub fn (mut app App) handle_new_repo(name string, clone_url string, description 
 	}
 	if !ctx.is_admin() && app.get_count_user_repos(ctx.user.id) >= max_user_repos {
 		ctx.error('You have reached the limit for the number of repositories')
-		return app.new()
+		return app.new(mut ctx)
 	}
 	if name.len > max_repo_name_len {
 		ctx.error('The repository name is too long (should be fewer than ${max_repo_name_len} characters)')
-		return app.new()
+		return app.new(mut ctx)
 	}
 	if _ := app.find_repo_by_name_and_username(name, ctx.user.username) {
 		ctx.error('A repository with the name "${name}" already exists')
-		return app.new()
+		return app.new(mut ctx)
 	}
 	if name.contains(' ') {
 		ctx.error('Repository name cannot contain spaces')
-		return app.new()
+		return app.new(mut ctx)
 	}
 	is_repo_name_valid := validation.is_repository_name_valid(name)
 	if !is_repo_name_valid {
 		ctx.error('The repository name is not valid')
-		return app.new()
+		return app.new(mut ctx)
 	}
 	has_clone_url_https_prefix := clone_url.starts_with('https://')
 	if !is_clone_url_empty {
@@ -221,7 +221,7 @@ pub fn (mut app App) handle_new_repo(name string, clone_url string, description 
 		is_git_repo := git.check_git_repo_url(valid_clone_url)
 		if !is_git_repo {
 			ctx.error('The repository URL does not contain any git repository or the server does not respond')
-			return app.new()
+			return app.new(mut ctx)
 		}
 	}
 	repo_path := os.join_path(app.config.repo_storage_path, ctx.user.username, name)
@@ -249,7 +249,7 @@ pub fn (mut app App) handle_new_repo(name string, clone_url string, description 
 	}
 	app.add_repo(new_repo) or {
 		ctx.error('There was an error while adding the repo')
-		return app.new()
+		return app.new(mut ctx)
 	}
 	new_repo2 := app.find_repo_by_name_and_user_id(new_repo.name, ctx.user.id) or {
 		app.info('Repo was not inserted')
@@ -259,15 +259,15 @@ pub fn (mut app App) handle_new_repo(name string, clone_url string, description 
 	primary_branch := git.get_repository_primary_branch(repo_path)
 	app.update_repo_primary_branch(repo_id, primary_branch) or {
 		ctx.error('There was an error while adding the repo')
-		return app.new()
+		return app.new(mut ctx)
 	}
-	app.find_repo_by_id(repo_id) or { return app.new() }
+	app.find_repo_by_id(repo_id) or { return app.new(mut ctx) }
 	// Update only cloned repositories
 	/*
 	if !is_clone_url_empty {
 		app.update_repo_from_fs(mut new_repo) or {
 			ctx.error('There was an error while cloning the repo')
-			return app.new()
+			return app.new(mut ctx)
 		}
 	}
 	*/
@@ -289,7 +289,7 @@ pub fn (mut app App) foo(mut new_repo Repo) {
 }
 
 @['/:username/:repo_name/tree/:branch_name/:path...']
-pub fn (mut app App) tree(username string, repo_name string, branch_name string, path string) veb.Result {
+pub fn (mut app App) tree(mut ctx Context, username string, repo_name string, branch_name string, path string) veb.Result {
 	mut repo := app.find_repo_by_name_and_username(repo_name, username) or {
 		return ctx.not_found()
 	}
@@ -431,7 +431,7 @@ pub fn (mut app App) tree(username string, repo_name string, branch_name string,
 }
 
 @['/api/v1/repos/:repo_id/star'; 'post']
-pub fn (mut app App) handle_api_repo_star(repo_id_str string) veb.Result {
+pub fn (mut app App) handle_api_repo_star(mut ctx Context, repo_id_str string) veb.Result {
 	repo_id := repo_id_str.int()
 
 	has_access := app.has_user_repo_read_access(ctx, ctx.user.id, repo_id)
@@ -450,7 +450,7 @@ pub fn (mut app App) handle_api_repo_star(repo_id_str string) veb.Result {
 }
 
 @['/api/v1/repos/:repo_id/watch'; 'post']
-pub fn (mut app App) handle_api_repo_watch(repo_id_str string) veb.Result {
+pub fn (mut app App) handle_api_repo_watch(mut ctx Context, repo_id_str string) veb.Result {
 	repo_id := repo_id_str.int()
 
 	has_access := app.has_user_repo_read_access(ctx, ctx.user.id, repo_id)
@@ -469,7 +469,7 @@ pub fn (mut app App) handle_api_repo_watch(repo_id_str string) veb.Result {
 }
 
 @['/:username/:repo_name/contributors']
-pub fn (mut app App) contributors(username string, repo_name string) veb.Result {
+pub fn (mut app App) contributors(mut ctx Context, username string, repo_name string) veb.Result {
 	repo := app.find_repo_by_name_and_username(repo_name, username) or { return ctx.not_found() }
 
 	contributors := app.find_repo_registered_contributor(repo.id)
@@ -478,7 +478,7 @@ pub fn (mut app App) contributors(username string, repo_name string) veb.Result 
 }
 
 @['/:username/:repo_name/blob/:branch_name/:path...']
-pub fn (mut app App) blob(username string, repo_name string, branch_name string, path string) veb.Result {
+pub fn (mut app App) blob(mut ctx Context, username string, repo_name string, branch_name string, path string) veb.Result {
 	repo := app.find_repo_by_name_and_username(repo_name, username) or { return ctx.not_found() }
 
 	mut path_parts := path.split('/')
@@ -505,7 +505,7 @@ pub fn (mut app App) blob(username string, repo_name string, branch_name string,
 }
 
 @['/:user/:repository/raw/:branch_name/:path...']
-pub fn (mut app App) handle_raw(username string, repo_name string, branch_name string, path string) veb.Result {
+pub fn (mut app App) handle_raw(mut ctx Context, username string, repo_name string, branch_name string, path string) veb.Result {
 	user := app.get_user_by_username(username) or { return ctx.not_found() }
 	repo := app.find_repo_by_name_and_user_id(repo_name, user.id) or { return ctx.not_found() }
 

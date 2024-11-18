@@ -7,7 +7,7 @@ const admin_users_per_page = 30
 // TODO move to admin controller
 
 @['/admin/settings']
-pub fn (mut app App) admin_settings() veb.Result {
+pub fn (mut app App) admin_settings(mut ctx Context) veb.Result {
 	if !ctx.is_admin() {
 		return ctx.redirect_to_index()
 	}
@@ -42,12 +42,12 @@ pub fn (mut app App) handle_admin_edit_user(user_id string) veb.Result {
 }
 
 @['/admin/users']
-pub fn (mut app App) admin_users_default() veb.Result {
-	return app.admin_users(0)
+pub fn (mut app App) admin_users_default(mut ctx Context) veb.Result {
+	return app.admin_users(mut ctx, 0)
 }
 
 @['/admin/users/:page']
-pub fn (mut app App) admin_users(page int) veb.Result {
+pub fn (mut app App) admin_users(mut ctx Context, page int) veb.Result {
 	if !ctx.is_admin() {
 		return ctx.redirect_to_index()
 	}

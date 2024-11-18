@@ -3,12 +3,12 @@ module main
 import veb
 
 @['/:username/feed']
-pub fn (mut app App) user_feed_default(username string) veb.Result {
-	return app.user_feed(username, 0)
+pub fn (mut app App) user_feed_default(mut ctx Context, username string) veb.Result {
+	return app.user_feed(mut ctx, username, 0)
 }
 
 @['/:username/feed/:page']
-pub fn (mut app App) user_feed(username string, page int) veb.Result {
+pub fn (mut app App) user_feed(mut ctx Context, username string, page int) veb.Result {
 	exists, user := app.check_username(username)
 
 	if !exists || ctx.user.username != user.username {
