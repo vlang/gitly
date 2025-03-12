@@ -77,6 +77,9 @@ fn new_app() !&App {
 	app.version = version
 
 	app.handle_static('src/static', true)!
+	if !os.exists('avatars') {
+		os.mkdir('avatars')!
+	}
 	app.handle_static('avatars', false)!
 
 	app.load_settings()

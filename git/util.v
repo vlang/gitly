@@ -85,9 +85,11 @@ pub fn remove_git_extension_if_exists(git_repository_name string) string {
 	return git_repository_name.trim_string_right('.git')
 }
 
+/*
 fn get_branch_name_from_reference(value string) string {
 	branch_query := r'refs/heads/(.*)'
 	mut re := regex.regex_opt(branch_query) or { panic(err) }
 	re.match_string(value)
 	return re.get_group_by_id(value, 0)
 }
+*/

@@ -27,6 +27,11 @@ fn C.git_repository_open(repo voidptr, path &char) int
 fn C.git_libgit2_features()
 fn C.git_commit_lookup(voidptr, voidptr, &C.git_oid) int
 
+fn C.git_repository_free(repo &C.git_repository)
+fn C.git_repository_head(out &&C.git_reference, repo &C.git_repository) int
+
+fn C.git_reference_free(ref &C.git_reference)
+
 struct C.git_repository {}
 
 struct C.git_commit {}
@@ -179,6 +184,41 @@ pub fn (r &Repo) current_branch() string {
 	symbolic_ref := C.git_reference_symbolic_target(head_ref)
 	branch := unsafe { cstring_to_vstring(symbolic_ref) }
 	return branch.after('refs/heads/')
+}
+
+pub fn (repo &Repo) primary_branch() string {
+	err := C.git_repository_open(&repo.obj, repo.path.str)
+	if err != 0 {
+		return ''
+	}
+	defer {
+		C.git_repository_free(repo.obj)
+	}
+
+	// Get HEAD reference
+	head_ref := &C.git_reference(unsafe { nil })
+	err_head := C.git_repository_head(&head_ref, repo.obj)
+	if err_head != 0 {
+		return ''
+	}
+	defer {
+		C.git_reference_free(head_ref)
+	}
+
+	// Get symbolic target
+	symbolic_ref := C.git_reference_symbolic_target(head_ref)
+	if symbolic_ref == unsafe { nil } {
+		return ''
+	}
+
+	// Convert to V string and extract branch name
+	branch := unsafe { cstring_to_vstring(symbolic_ref) }
+	return get_branch_name_from_reference(branch)
+}
+
+// Assuming this helper function exists elsewhere in your code
+fn get_branch_name_from_reference(ref string) string {
+	return ref.after('refs/heads/')
 }
 
 pub fn (r &Repo) show_file_blob(branch string, file_path string) !string {
