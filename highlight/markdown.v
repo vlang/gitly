@@ -112,7 +112,7 @@ fn sanitize_html_tags_with_re(re string, code string) string {
 		matched := tags_re.match_str(result, last_found_index, 0) or { break }
 		tag := matched.get(0) or { continue }
 
-		matched_start_index := result.index_after(tag, last_found_index)
+		matched_start_index := result.index_after_(tag, last_found_index)
 		last_found_index = matched_start_index + tag.len
 
 		tag_parts := matched.get_all()
@@ -165,7 +165,7 @@ fn sanitize_html_attributes(attributes string) string {
 		matched := attributes_re.match_str(result, last_found_index, 0) or { break }
 		attribute := matched.get(0) or { break }
 
-		matched_start_index := result.index_after(attribute, last_found_index)
+		matched_start_index := result.index_after_(attribute, last_found_index)
 		last_found_index += matched_start_index + attribute.len
 
 		attribute_parts := matched.get_all()

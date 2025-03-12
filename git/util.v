@@ -3,7 +3,6 @@ module git
 import strings
 import net.http
 import os
-import regex
 
 pub fn parse_branch_name_from_receive_upload(upload string) ?string {
 	upload_lines := upload.split_into_lines()
@@ -69,16 +68,6 @@ pub fn get_git_executable_path() ?string {
 		return none
 	}
 	return which_output.trim(' \n')
-}
-
-pub fn get_repository_primary_branch(path string) string {
-	git_result := os.execute('git -C ${path} symbolic-ref HEAD')
-	git_exit_code := git_result.exit_code
-	git_output := git_result.output.trim(' \n')
-	if git_exit_code != 0 {
-		return ''
-	}
-	return get_branch_name_from_reference(git_output)
 }
 
 pub fn remove_git_extension_if_exists(git_repository_name string) string {

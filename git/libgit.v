@@ -216,7 +216,6 @@ pub fn (repo &Repo) primary_branch() string {
 	return get_branch_name_from_reference(branch)
 }
 
-// Assuming this helper function exists elsewhere in your code
 fn get_branch_name_from_reference(ref string) string {
 	return ref.after('refs/heads/')
 }
