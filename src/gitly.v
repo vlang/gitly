@@ -23,6 +23,7 @@ const namechange_period = time.hour * 24
 @[heap]
 pub struct App {
 	veb.StaticHandler
+	veb.Middleware[Context]
 	started_at i64
 pub mut:
 	db sqlite.DB
@@ -131,6 +132,7 @@ pub fn (mut app App) init_server() {
 }
 
 pub fn (mut app App) before_request(mut ctx Context) {
+	url := ctx.req.url
 	ctx.logged_in = app.is_logged_in(mut ctx)
 
 	app.load_settings()
@@ -141,6 +143,7 @@ pub fn (mut app App) before_request(mut ctx Context) {
 			User{}
 		}
 	}
+	dump(url)
 }
 
 @['/']

@@ -12,7 +12,7 @@ pub fn (mut app App) login(mut ctx Context) veb.Result {
 	ctx.set_cookie(name: 'csrf', value: csrf)
 
 	if app.is_logged_in(mut ctx) {
-		return ctx.not_found()
+		return ctx.redirect("/" + ctx.user.username)
 	}
 
 	return $veb.html()
