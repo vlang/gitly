@@ -11,7 +11,7 @@ pub fn (mut app App) login(mut ctx Context) veb.Result {
 	csrf := rand.string(30)
 	ctx.set_cookie(name: 'csrf', value: csrf)
 
-	if !app.is_logged_in(mut ctx) {
+	if app.is_logged_in(mut ctx) {
 		return ctx.not_found()
 	}
 
