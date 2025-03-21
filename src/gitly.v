@@ -23,6 +23,7 @@ const namechange_period = time.hour * 24
 @[heap]
 pub struct App {
 	veb.StaticHandler
+	veb.Middleware[Context]
 	started_at i64
 pub mut:
 	db sqlite.DB
