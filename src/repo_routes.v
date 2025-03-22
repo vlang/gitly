@@ -151,8 +151,9 @@ pub fn (mut app App) handle_tree(mut ctx Context, username string, repo_name str
 	}
 
 	repo := app.find_repo_by_name_and_username(repo_name, username) or { return ctx.not_found() }
-
+	dump(repo)
 	return app.tree(mut ctx, username, repo_name, repo.primary_branch, '')
+	// return app.tree(mut ctx, username, repo_name, repo.primary_branch, repo.git_dir)
 }
 
 @['/:username/:repo_name/tree/:branch_name']
@@ -258,6 +259,8 @@ pub fn (mut app App) handle_new_repo(mut ctx Context, name string, clone_url str
 	repo_id := new_repo2.id
 	// primary_branch := git.get_repository_primary_branch(repo_path)
 	primary_branch := new_repo2.git_repo.primary_branch()
+	dump(primary_branch)
+	dump(repo_id)
 	app.update_repo_primary_branch(repo_id, primary_branch) or {
 		ctx.error('There was an error while adding the repo')
 		return app.new(mut ctx)
@@ -279,6 +282,8 @@ pub fn (mut app App) handle_new_repo(mut ctx Context, name string, clone_url str
 	if !has_first_repo_activity {
 		app.add_activity(ctx.user.id, 'first_repo') or { app.info(err.str()) }
 	}
+	// dump(new_repo)
+	// dump(new_repo2)
 	return ctx.redirect('/${ctx.user.username}/repos')
 }
 
@@ -309,6 +314,9 @@ pub fn (mut app App) tree(mut ctx Context, username string, repo_name string, br
 	// app.fetch_tags(repo) or { app.info(err.str()) }
 
 	ctx.current_path = '/${path}'
+	// if ctx.current_path.starts_with('.') {
+	// 	ctx.current_path = ctx.current_path[1..]
+	// }
 	if ctx.current_path.contains('/favicon.svg') {
 		return ctx.not_found()
 	}
@@ -331,10 +339,12 @@ pub fn (mut app App) tree(mut ctx Context, username string, repo_name string, br
 			up = ctx.req.url.all_before_last('/')
 		}
 	}
+	dump(up)
 
 	if ctx.current_path.starts_with('/') {
 		ctx.current_path = ctx.current_path[1..]
 	}
+	// dump(ctx)
 
 	mut items := app.find_repository_items(repo_id, branch_name, ctx.current_path)
 	branch := app.find_repo_branch_by_name(repo.id, branch_name)
