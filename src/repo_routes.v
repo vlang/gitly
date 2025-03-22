@@ -237,6 +237,7 @@ pub fn (mut app App) handle_new_repo(mut ctx Context, name string, clone_url str
 		clone_url:      valid_clone_url
 		is_public:      is_public
 	}
+	dump(new_repo)
 	if is_clone_url_empty {
 		os.mkdir(new_repo.git_dir) or { panic(err) }
 		new_repo.git('init --bare')
@@ -258,9 +259,10 @@ pub fn (mut app App) handle_new_repo(mut ctx Context, name string, clone_url str
 	}
 	repo_id := new_repo2.id
 	// primary_branch := git.get_repository_primary_branch(repo_path)
-	primary_branch := new_repo2.git_repo.primary_branch()
+	// dump(new_repo2)
+	primary_branch := new_repo2.primary_branch
 	dump(primary_branch)
-	dump(repo_id)
+	// dump(repo_id)
 	app.update_repo_primary_branch(repo_id, primary_branch) or {
 		ctx.error('There was an error while adding the repo')
 		return app.new(mut ctx)
