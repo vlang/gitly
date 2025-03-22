@@ -151,7 +151,6 @@ pub fn (mut app App) handle_tree(mut ctx Context, username string, repo_name str
 	}
 
 	repo := app.find_repo_by_name_and_username(repo_name, username) or { return ctx.not_found() }
-	dump(repo)
 	return app.tree(mut ctx, username, repo_name, repo.primary_branch, '')
 	// return app.tree(mut ctx, username, repo_name, repo.primary_branch, repo.git_dir)
 }
@@ -237,7 +236,6 @@ pub fn (mut app App) handle_new_repo(mut ctx Context, name string, clone_url str
 		clone_url:      valid_clone_url
 		is_public:      is_public
 	}
-	dump(new_repo)
 	if is_clone_url_empty {
 		os.mkdir(new_repo.git_dir) or { panic(err) }
 		new_repo.git('init --bare')
@@ -259,10 +257,7 @@ pub fn (mut app App) handle_new_repo(mut ctx Context, name string, clone_url str
 	}
 	repo_id := new_repo2.id
 	// primary_branch := git.get_repository_primary_branch(repo_path)
-	// dump(new_repo2)
 	primary_branch := new_repo2.primary_branch
-	dump(primary_branch)
-	// dump(repo_id)
 	app.update_repo_primary_branch(repo_id, primary_branch) or {
 		ctx.error('There was an error while adding the repo')
 		return app.new(mut ctx)
@@ -284,8 +279,6 @@ pub fn (mut app App) handle_new_repo(mut ctx Context, name string, clone_url str
 	if !has_first_repo_activity {
 		app.add_activity(ctx.user.id, 'first_repo') or { app.info(err.str()) }
 	}
-	// dump(new_repo)
-	// dump(new_repo2)
 	return ctx.redirect('/${ctx.user.username}/repos')
 }
 
@@ -341,12 +334,10 @@ pub fn (mut app App) tree(mut ctx Context, username string, repo_name string, br
 			up = ctx.req.url.all_before_last('/')
 		}
 	}
-	dump(up)
 
 	if ctx.current_path.starts_with('/') {
 		ctx.current_path = ctx.current_path[1..]
 	}
-	// dump(ctx)
 
 	mut items := app.find_repository_items(repo_id, branch_name, ctx.current_path)
 	branch := app.find_repo_branch_by_name(repo.id, branch_name)
