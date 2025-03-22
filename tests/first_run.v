@@ -230,6 +230,7 @@ fn get_repo_commit_count(token string, username string, repo_name string, branch
 	response_json := json.decode(api.ApiCommitCount, response.body) or {
 		exit_with_message(err.str())
 	}
+	dump(response_json.result)
 
 	return response_json.result
 }
