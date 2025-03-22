@@ -151,8 +151,8 @@ pub fn (mut app App) handle_tree(mut ctx Context, username string, repo_name str
 	}
 
 	repo := app.find_repo_by_name_and_username(repo_name, username) or { return ctx.not_found() }
+
 	return app.tree(mut ctx, username, repo_name, repo.primary_branch, '')
-	// return app.tree(mut ctx, username, repo_name, repo.primary_branch, repo.git_dir)
 }
 
 @['/:username/:repo_name/tree/:branch_name']
@@ -309,9 +309,6 @@ pub fn (mut app App) tree(mut ctx Context, username string, repo_name string, br
 	// app.fetch_tags(repo) or { app.info(err.str()) }
 
 	ctx.current_path = '/${path}'
-	// if ctx.current_path.starts_with('.') {
-	// 	ctx.current_path = ctx.current_path[1..]
-	// }
 	if ctx.current_path.contains('/favicon.svg') {
 		return ctx.not_found()
 	}
