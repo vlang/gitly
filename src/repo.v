@@ -832,7 +832,11 @@ fn find_readme_file(items []File) ?File {
 }
 
 fn find_license_file(items []File) ?File {
-	files := items.filter(it.name.to_lower() == 'license')
+	// List of common license file names
+	license_common_files := ['license', 'license.md', 'license.txt', 'licence', 'licence.md', 'licence.txt']
+
+	files := items.filter(license_common_files.contains(it.name.to_lower()))
+
 	if files.len == 0 {
 		return none
 	}

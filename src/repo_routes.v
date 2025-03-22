@@ -418,9 +418,9 @@ pub fn (mut app App) tree(mut ctx Context, username string, repo_name string, br
 
 	license_file := find_license_file(items) or { File{} }
 	mut license_file_path := ''
-
+	println(license_file)
 	if license_file.id != 0 {
-		license_file_path = '/${username}/${repo_name}/blob/${branch_name}/LICENSE'
+		license_file_path = '/${username}/${repo_name}/blob/${branch_name}/${license_file.name}'
 	}
 
 	watcher_count := app.get_count_repo_watchers(repo_id)
