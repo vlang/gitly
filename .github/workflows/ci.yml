@@ -178,7 +178,7 @@ jobs:
           path: vlib/pcre
       - name: Install libgit2
         run: |
-          curl -L https://raw.githubusercontent.com/libgit2/libgit2/refs/heads/main/include/git2/types.h -o types.h
+          curl -L https://raw.githubusercontent.com/libgit2/libgit2/refs/heads/main/include/git2/types.h -o .\libgit2\types.h
       - name: Build V
         run: |
           ./make.bat -gcc
