@@ -242,7 +242,7 @@ pub fn (mut app App) handle_new_repo(mut ctx Context, name string, clone_url str
 		os.mkdir(new_repo.git_dir) or { panic(err) }
 		new_repo.git('init --bare')
 	} else {
-		println('GO CLONING:')
+		app.debug("cloning")
 		// t := time.now()
 
 		spawn app.foo(mut new_repo)
@@ -261,6 +261,7 @@ pub fn (mut app App) handle_new_repo(mut ctx Context, name string, clone_url str
 	// $dbg;
 	// primary_branch := git.get_repository_primary_branch(repo_path)
 	primary_branch := new_repo2.primary_branch
+	// app.debug("new_repo2: ${new_repo2}")
 	app.update_repo_primary_branch(repo_id, primary_branch) or {
 		ctx.error('There was an error while adding the repo')
 		return app.new(mut ctx)
@@ -286,9 +287,8 @@ pub fn (mut app App) handle_new_repo(mut ctx Context, name string, clone_url str
 }
 
 pub fn (mut app App) foo(mut new_repo Repo) {
-	// $dbg;
 	new_repo.clone()
-	println('CLONING DONE')
+	app.debug("cloning done")
 	app.update_repo_from_fs(mut new_repo) or {}
 	// git.clone(valid_clone_url, repo_path)
 }
