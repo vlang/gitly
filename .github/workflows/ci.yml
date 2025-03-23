@@ -176,6 +176,9 @@ jobs:
         with:
           repository: vlang/pcre
           path: vlib/pcre
+      - name: Install libgit2
+        run: |
+          .github\workflows\windows-install-libgit2.bat
       - name: Build V
         run: |
           ./make.bat -gcc
