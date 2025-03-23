@@ -166,6 +166,7 @@ jobs:
         run: |
           mkdir git2
           curl -L https://raw.githubusercontent.com/libgit2/libgit2/refs/heads/main/include/git2/types.h -o git2\types.h
+          curl -L https://raw.githubusercontent.com/libgit2/libgit2/refs/heads/main/include/git2.h -o git2.h
           dir git2
           dir 
       - name: Install SQLite
