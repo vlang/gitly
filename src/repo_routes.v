@@ -225,9 +225,11 @@ pub fn (mut app App) handle_new_repo(mut ctx Context, name string, clone_url str
 		}
 	}
 	repo_path := os.join_path(app.config.repo_storage_path, ctx.user.username, name)
+	id := app.get_count_repo() + 1
 	mut new_repo := &Repo{
 		git_repo:       git.new_repo(repo_path)
 		name:           name
+		id: 			id
 		description:    description
 		git_dir:        repo_path
 		user_id:        ctx.user.id
@@ -256,6 +258,7 @@ pub fn (mut app App) handle_new_repo(mut ctx Context, name string, clone_url str
 		return ctx.redirect('/new')
 	}
 	repo_id := new_repo2.id
+	// $dbg;
 	// primary_branch := git.get_repository_primary_branch(repo_path)
 	primary_branch := new_repo2.primary_branch
 	app.update_repo_primary_branch(repo_id, primary_branch) or {
@@ -283,6 +286,7 @@ pub fn (mut app App) handle_new_repo(mut ctx Context, name string, clone_url str
 }
 
 pub fn (mut app App) foo(mut new_repo Repo) {
+	// $dbg;
 	new_repo.clone()
 	println('CLONING DONE')
 	app.update_repo_from_fs(mut new_repo) or {}
