@@ -262,6 +262,7 @@ pub fn (mut app App) handle_new_repo(mut ctx Context, name string, clone_url str
 	// primary_branch := git.get_repository_primary_branch(repo_path)
 	primary_branch := new_repo2.primary_branch
 	// app.debug("new_repo2: ${new_repo2}")
+
 	app.update_repo_primary_branch(repo_id, primary_branch) or {
 		ctx.error('There was an error while adding the repo')
 		return app.new(mut ctx)
