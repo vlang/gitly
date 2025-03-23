@@ -164,8 +164,9 @@ jobs:
           path: gitly
       - name: Install libgit2
         run: |
-          dir gitly
-          curl -L https://raw.githubusercontent.com/libgit2/libgit2/refs/heads/main/include/git2/types.h -o gitly\types.h
+          mkdir git2
+          curl -L https://raw.githubusercontent.com/libgit2/libgit2/refs/heads/main/include/git2/types.h -o git2\types.h
+          dir git2
           dir 
       - name: Install SQLite
         run: |
