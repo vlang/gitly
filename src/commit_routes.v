@@ -6,7 +6,7 @@ import time
 import api
 
 @['/api/v1/:user/:repo_name/:branch_name/commits/count']
-fn (mut app App) handle_commits_count(username string, repo_name string, branch_name string) veb.Result {
+fn (mut app App) handle_commits_count(mut ctx Context, username string, repo_name string, branch_name string) veb.Result {
 	has_access := app.has_user_repo_read_access_by_repo_name(ctx, ctx.user.id, username,
 		repo_name)
 
@@ -18,8 +18,11 @@ fn (mut app App) handle_commits_count(username string, repo_name string, branch_
 		return ctx.json_error('Not found')
 	}
 
+
 	branch := app.find_repo_branch_by_name(repo.id, branch_name)
 	count := app.get_repo_commit_count(repo.id, branch.id)
+
+	// app.debug("${branch} ${count}" )
 
 	return ctx.json(api.ApiCommitCount{
 		success: true
@@ -28,7 +31,7 @@ fn (mut app App) handle_commits_count(username string, repo_name string, branch_
 }
 
 @['/:username/:repo_name/:branch_name/commits/:page']
-pub fn (mut app App) commits(username string, repo_name string, branch_name string, page int) veb.Result {
+pub fn (mut app App) commits(mut ctx Context, username string, repo_name string, branch_name string, page int) veb.Result {
 	repo := app.find_repo_by_name_and_username(repo_name, username) or { return ctx.not_found() }
 
 	branch := app.find_repo_branch_by_name(repo.id, branch_name)
@@ -72,7 +75,7 @@ pub fn (mut app App) commits(username string, repo_name string, branch_name stri
 }
 
 @['/:username/:repo_name/commit/:hash']
-pub fn (mut app App) commit(username string, repo_name string, hash string) veb.Result {
+pub fn (mut app App) commit(mut ctx Context, username string, repo_name string, hash string) veb.Result {
 	repo := app.find_repo_by_name_and_username(repo_name, username) or { return ctx.not_found() }
 
 	is_patch_request := hash.ends_with('.patch')
