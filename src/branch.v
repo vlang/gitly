@@ -51,6 +51,8 @@ fn (mut app App) create_branch_or_update(repository_id int, branch_name string, 
 		select from Branch where repo_id == repository_id && name == branch_name limit 1
 	} or { []Branch{} }
 
+	// app.debug("branches: ${branches}")
+
 	if branches.len != 0 {
 		branch := branches.first()
 		app.update_branch(branch.id, author, hash, date)!
@@ -65,6 +67,8 @@ fn (mut app App) create_branch_or_update(repository_id int, branch_name string, 
 		hash:    hash
 		date:    date
 	}
+
+	app.debug("inserting branch: ${new_branch}")
 
 	sql app.db {
 		insert new_branch into Branch

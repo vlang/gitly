@@ -42,9 +42,13 @@ fn main() {
 	assert get_repo_branch_count(token, test_username, 'test1') == 0
 
 	test_create_repo(token, 'test2', test_github_repo_url)
+	// wait while repo is cloning
+	time.sleep(3 * time.second)
+	// get repo
 	assert get_repo_commit_count(token, test_username, 'test2', test_github_repo_primary_branch) > 0
 	assert get_repo_issue_count(token, test_username, 'test2') == 0
 	assert get_repo_branch_count(token, test_username, 'test2') > 0
+	ilog("all tests passed!")
 
 	after()!
 }
@@ -230,6 +234,7 @@ fn get_repo_commit_count(token string, username string, repo_name string, branch
 	response_json := json.decode(api.ApiCommitCount, response.body) or {
 		exit_with_message(err.str())
 	}
+	dump(response_json.result)
 
 	return response_json.result
 }

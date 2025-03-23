@@ -207,6 +207,12 @@ fn (mut app App) increment_repo_issues(repo_id int) ! {
 	}!
 }
 
+fn (mut app App) get_count_repo() int {
+	return sql app.db {
+		select count from Repo
+	} or {0}
+}
+
 fn (mut app App) add_repo(repo Repo) ! {
 	sql app.db {
 		insert repo into Repo
@@ -288,6 +294,7 @@ fn (mut app App) update_repo_from_fs(mut repo Repo) ! {
 	app.info('Repo updated')
 }
 
+// fn (mut app App) update_repo_branch_from_fs(mut ctx Context, mut repo Repo, branch_name string) ! {
 fn (mut app App) update_repo_branch_from_fs(mut repo Repo, branch_name string) ! {
 	repo_id := repo.id
 	branch := app.find_repo_branch_by_name(repo.id, branch_name)
@@ -295,10 +302,11 @@ fn (mut app App) update_repo_branch_from_fs(mut repo Repo, branch_name string) !
 	if branch.id == 0 {
 		return
 	}
+	// $dbg;
 
 	data := repo.git('--no-pager log ${branch_name} --abbrev-commit --abbrev=7 --pretty="%h${log_field_separator}%aE${log_field_separator}%cD${log_field_separator}%s${log_field_separator}%aN"')
-	println('DATA=')
-	println(data)
+	// println('DATA=')
+	// println(data)
 
 	for line in data.split_into_lines() {
 		args := line.split(log_field_separator)
@@ -322,6 +330,8 @@ fn (mut app App) update_repo_branch_from_fs(mut repo Repo, branch_name string) !
 
 				commit_author_id = user.id
 			}
+
+			// $dbg;
 
 			app.add_commit_if_not_exist(repo_id, branch.id, commit_hash, commit_author,
 				commit_author_id, commit_message, int(commit_date.unix()))!
@@ -397,6 +407,7 @@ fn (mut app App) update_repo_branch_data(mut repo Repo, branch_name string) ! {
 				commit_author_id = user.id
 			}
 
+			// $dbg;
 			app.add_commit_if_not_exist(repo_id, branch.id, commit_hash, commit_author,
 				commit_author_id, commit_message, int(commit_date.unix()))!
 		}
