@@ -9,6 +9,7 @@ import api
 fn (mut app App) handle_commits_count(mut ctx Context, username string, repo_name string, branch_name string) veb.Result {
 	has_access := app.has_user_repo_read_access_by_repo_name(ctx, ctx.user.id, username,
 		repo_name)
+	app.info("${username} ${repo_name} ${branch_name}")
 
 	if !has_access {
 		return ctx.json_error('Not found')
@@ -18,8 +19,12 @@ fn (mut app App) handle_commits_count(mut ctx Context, username string, repo_nam
 		return ctx.json_error('Not found')
 	}
 
+	app.info("${repo}")
+
 	branch := app.find_repo_branch_by_name(repo.id, branch_name)
 	count := app.get_repo_commit_count(repo.id, branch.id)
+
+	app.info("${branch} ${count}" )
 
 	return ctx.json(api.ApiCommitCount{
 		success: true
