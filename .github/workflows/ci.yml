@@ -173,6 +173,17 @@ jobs:
           dir C:\
           dir D:\
           gcc -v -E
+      - name: Checkout libgit2
+        uses: actions/checkout@v3
+        with:
+          repository: libgit2/libgit2
+          path: thirdparty\libgit2
+      - name: build libgit2
+        run: |
+          mkdir thirdparty\libgit2\build
+          cd thirdparty\libgit2\build
+          cmake ..
+          cmake --build .
       - name: Install SQLite
         run: |
           .github\workflows\windows-install-sqlite.bat
