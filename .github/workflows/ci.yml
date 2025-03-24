@@ -187,7 +187,9 @@ jobs:
         run: |
           ./make.bat -gcc
       - name: Compile gitly
-        run: .\v.exe -cc gcc gitly
+        run:
+          dir
+          .\v.exe -cc gcc gitly
 
   ubuntu-tcc:
     runs-on: ubuntu-latest
