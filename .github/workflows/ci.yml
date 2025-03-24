@@ -184,6 +184,8 @@ jobs:
           cd thirdparty\libgit2\build
           cmake ..
           cmake --build .
+          cp thirdparty\libgit2\build\Debug\git2.dll D:\a\gitly\
+          cp thirdparty\libgit2\build\Debug\git2.dll D:\a\gitly\gitly\
       - name: Install SQLite
         run: |
           .github\workflows\windows-install-sqlite.bat
