@@ -10,9 +10,9 @@ module git
 #flag linux -I/usr/local/include
 #flag linux -L/usr/local/lib
 
-#flag -lgit2
+// #flag -lgit2
 
-#flag windows -Igit/
+// #flag windows -Igit/
 
 #include "git2/types.h"
 #include "git2/common.h"
