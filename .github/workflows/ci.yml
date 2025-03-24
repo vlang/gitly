@@ -214,7 +214,7 @@ jobs:
       - name: Compile gitly
         run: |
           dir
-          .\v.exe -cflags "-Igitly/libgit2/include" -cflags "-Igitly/libgit2" -cc gcc  gitly
+          .\v.exe -cflags "-L." -cflags "-Igitly/libgit2/include" -cflags "-Igitly/libgit2" -cc gcc  gitly
 
   ubuntu-tcc:
     runs-on: ubuntu-latest
