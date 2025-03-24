@@ -188,6 +188,7 @@ jobs:
           cp .\Debug\git2.dll D:\a\gitly\gitly\
           cd ..\..\..
           dir
+          setx PATH "%PATH%;D:\a\gitly\gitly"
       - name: Install SQLite
         run: |
           .github\workflows\windows-install-sqlite.bat
