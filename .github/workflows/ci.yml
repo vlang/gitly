@@ -187,9 +187,8 @@ jobs:
           cp .\Debug\git2.dll D:\a\gitly\
           cp .\Debug\git2.dll D:\a\gitly\gitly\
           cp .\Debug\git2.dll D:\a\gitly\gitly\gitly
-          cp .\Debug\git.exe D:\a\gitly\gitly
+          cp .\Debug\git2.exe D:\a\gitly\gitly
           dir
-          cp x64\Debug\git2.exe D:\a\gitly\gitly
           dir
           cd ..\..\..
           dir
