@@ -186,9 +186,11 @@ jobs:
           cmake --build .
           cp .\Debug\git2.dll D:\a\gitly\
           cp .\Debug\git2.dll D:\a\gitly\gitly\
+          cp .\Debug\git2.dll D:\a\gitly\gitly\gitly
           cd ..\..\..
           dir
           setx PATH "%PATH%;D:\a\gitly\gitly"
+          setx PATH "%PATH%;D:\a\gitly\gitly\gitly"
       - name: Install SQLite
         run: |
           .github\workflows\windows-install-sqlite.bat
