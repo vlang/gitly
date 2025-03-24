@@ -172,6 +172,7 @@ jobs:
           dir gitly
           dir C:\
           dir D:\
+          gcc -v -E
       - name: Install SQLite
         run: |
           .github\workflows\windows-install-sqlite.bat
