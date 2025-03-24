@@ -162,6 +162,22 @@ jobs:
         uses: actions/checkout@v3
         with:
           path: gitly
+      - name: Checkout libgit2
+        uses: actions/checkout@v3
+        with:
+          repository: libgit2/libgit2
+          path: thirdparty\libgit2
+      - name: build libgit2
+        run: |
+          mkdir thirdparty\libgit2\build
+          cd thirdparty\libgit2\build
+          cmake ..
+          cmake --build .
+          cp .\Debug\git2.dll D:\a\gitly\gitly\
+          cp .\Debug\git2.exe D:\a\gitly\gitly
+          dir
+          cd ..\..\..
+          dir
       - name: Install SQLite
         run: |
           .github\workflows\windows-install-sqlite.bat
@@ -180,7 +196,9 @@ jobs:
         run: |
           ./make.bat -gcc
       - name: Compile gitly
-        run: .\v.exe -cc gcc gitly
+        run: |
+          dir
+          .\v.exe -cflags "-L." -cflags "-Igitly/libgit2/include" -cflags "-Igitly/libgit2" -cc gcc  gitly
 
   ubuntu-tcc:
     runs-on: ubuntu-latest
