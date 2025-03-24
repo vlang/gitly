@@ -187,7 +187,7 @@ jobs:
         run: |
           ./make.bat -gcc
       - name: Compile gitly
-        run:
+        run: |
           dir
           .\v.exe -cc gcc gitly
 
