@@ -170,6 +170,8 @@ jobs:
           dir git2
           dir 
           dir gitly
+          dir C:\
+          dir D:\
       - name: Install SQLite
         run: |
           .github\workflows\windows-install-sqlite.bat
