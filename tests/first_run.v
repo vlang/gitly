@@ -57,6 +57,9 @@ fn main() {
 	// test_issues_page(test_username)
 	test_stars_page(test_username)
 	test_settings_page(test_username)
+	test_commits_page(test_username, repo_name, test_github_repo_primary_branch)
+	test_branches_page(test_username, repo_name)
+	// test_api_branches_count(test_username, repo_name)
 	ilog("all tests passed!")
 
 	after()!
@@ -223,6 +226,37 @@ fn test_contributors_page(username string, repo_name string) {
 	contributors_page_result := http.get(prepare_url("${username}/${repo_name}/contributors")) or { exit_with_message(err.str()) }
 
 	assert contributors_page_result.status_code == 200
+}
+
+fn test_commits_page(username string, repo_name string, branch_name string) {
+	ilog('Testing the new commits /${username}/${repo_name}/${branch_name}/commits/1 page is up')
+	// Doesn't work with commits/[no 1]
+	commits_page_result := http.get(prepare_url("${username}/${repo_name}/${branch_name}/commits/1")) or { exit_with_message(err.str()) }
+
+	assert commits_page_result.status_code == 200
+}
+
+fn test_branches_page(username string, repo_name string) {
+	ilog('Testing the new branches /${username}/${repo_name}/branches page is up')
+	branches_page_result := http.get(prepare_url("${username}/${repo_name}/branches")) or { exit_with_message(err.str()) }
+
+	assert branches_page_result.status_code == 200
+}
+
+fn test_api_branches_count(username string, repo_name string) {
+	ilog('Testing if api/v1/${username}/${repo_name}/branches/count works')
+	api_branches_count_result := http.get(prepare_url("api/v1/${username}/${repo_name}/branches/count")) or { exit_with_message(err.str()) }
+	// api_branches_count_result := http.fetch(
+	// 	method:  .get
+	// 	url:     prepare_url("api/v1/${username}/${repo_name}/branches/count")
+	// ) or { exit_with_message(err.str()) }
+
+	assert api_branches_count_result.status_code == 200
+
+	response_json := json.decode(api.ApiBranchCount, api_branches_count_result.body) or {
+		exit_with_message(err.str())
+	}
+	assert response_json.result > 0
 }
 
 // fn test_issues_page(username string) {
