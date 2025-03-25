@@ -52,6 +52,7 @@ fn main() {
 	test_repo_page(test_username, repo_name)
 	test_branch_page(test_username, repo_name, test_github_repo_primary_branch)
 	test_repos_page(test_username)
+	test_repo_settings_page(test_username, repo_name)
 	ilog("all tests passed!")
 
 	after()!
@@ -211,6 +212,17 @@ fn test_repos_page(username string) {
 	repos_page_result := http.get(prepare_url("${username}/repos")) or { exit_with_message(err.str()) }
 
 	assert repos_page_result.status_code == 200
+}
+
+fn test_repo_settings_page(username string, repo_name string) {
+	test_endpoint_page("${username}/${repo_name}/settings", 'settings')
+}
+
+fn test_endpoint_page(endpoint string, pagename string) {
+	ilog('Testing the new ${pagename} /${endpoint} page is up')	
+	endpoint_result := http.get(prepare_url("${endpoint}")) or { exit_with_message(err.str()) }
+
+	assert endpoint_result.status_code == 200
 }
 
 fn test_login_with_token(username string, token string) {
