@@ -53,6 +53,10 @@ fn main() {
 	test_branch_page(test_username, repo_name, test_github_repo_primary_branch)
 	test_repos_page(test_username)
 	test_repo_settings_page(test_username, repo_name)
+	test_contributors_page(test_username, repo_name)
+	// test_issues_page(test_username)
+	test_stars_page(test_username)
+	test_settings_page(test_username)
 	ilog("all tests passed!")
 
 	after()!
@@ -212,6 +216,31 @@ fn test_repos_page(username string) {
 	repos_page_result := http.get(prepare_url("${username}/repos")) or { exit_with_message(err.str()) }
 
 	assert repos_page_result.status_code == 200
+}
+
+fn test_contributors_page(username string, repo_name string) {
+	ilog('Testing the new contributors /${username}/${repo_name}/contributors page is up')
+	contributors_page_result := http.get(prepare_url("${username}/${repo_name}/contributors")) or { exit_with_message(err.str()) }
+
+	assert contributors_page_result.status_code == 200
+}
+
+// fn test_issues_page(username string) {
+// 	test_endpoint_page("${username}/issues", 'issues')
+// }
+
+fn test_stars_page(username string) {
+	ilog("Testing the new stars /${username}/stars page is up")
+	stars_page_result := http.get(prepare_url("${username}/stars")) or { exit_with_message(err.str()) }
+
+	assert stars_page_result.status_code == 200
+}
+
+fn test_settings_page(username string) {
+	ilog('Testing the new settings /${username}/settings page is up')
+	settings_page_result := http.get(prepare_url("${username}/settings")) or { exit_with_message(err.str()) }
+
+	assert settings_page_result.status_code == 200
 }
 
 fn test_repo_settings_page(username string, repo_name string) {
