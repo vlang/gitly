@@ -41,16 +41,18 @@ fn main() {
 	assert get_repo_issue_count(token, test_username, 'test1') == 0
 	assert get_repo_branch_count(token, test_username, 'test1') == 0
 
-	test_create_repo(token, 'test2', test_github_repo_url)
+	repo_name := 'test2'
+	test_create_repo(token, repo_name, test_github_repo_url)
 	// wait while repo is cloning
-	time.sleep(3 * time.second)
+	time.sleep(5 * time.second)
 	// get repo
-	assert get_repo_commit_count(token, test_username, 'test2', test_github_repo_primary_branch) > 0
-	assert get_repo_issue_count(token, test_username, 'test2') == 0
-	assert get_repo_branch_count(token, test_username, 'test2') > 0
+	assert get_repo_commit_count(token, test_username, repo_name, test_github_repo_primary_branch) > 0
+	assert get_repo_issue_count(token, test_username, repo_name) == 0
+	assert get_repo_branch_count(token, test_username, repo_name) > 0
+	test_repo_page(test_username, repo_name)
 	ilog("all tests passed!")
 
-	after()!
+	// after()!
 }
 
 fn before() ! {
@@ -186,6 +188,13 @@ fn test_user_page(username string) {
 	user_page_result := http.get(prepare_url(username)) or { exit_with_message(err.str()) }
 
 	assert user_page_result.body.contains('<h3>${username}</h3>')
+}
+
+fn test_repo_page(username string, repo_name string) {
+	ilog('Testing the new repo /${username}/${repo_name} page is up')
+	repo_page_result := http.get(prepare_url("${username}/${repo_name}")) or { exit_with_message(err.str()) }
+
+	assert repo_page_result.status_code == 200
 }
 
 fn test_login_with_token(username string, token string) {
