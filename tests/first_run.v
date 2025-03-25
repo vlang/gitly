@@ -50,6 +50,8 @@ fn main() {
 	assert get_repo_issue_count(token, test_username, repo_name) == 0
 	assert get_repo_branch_count(token, test_username, repo_name) > 0
 	test_repo_page(test_username, repo_name)
+	test_branch_page(test_username, repo_name, test_github_repo_primary_branch)
+	test_repos_page(test_username)
 	ilog("all tests passed!")
 
 	after()!
@@ -195,6 +197,20 @@ fn test_repo_page(username string, repo_name string) {
 	repo_page_result := http.get(prepare_url("${username}/${repo_name}")) or { exit_with_message(err.str()) }
 
 	assert repo_page_result.status_code == 200
+}
+
+fn test_branch_page(username string, repo_name string, branch_name string) {
+	ilog('Testing the new branch /${username}/${repo_name}/tree/${branch_name} page is up')
+	branch_page_result := http.get(prepare_url("${username}/${repo_name}/tree/${branch_name}")) or { exit_with_message(err.str()) }
+
+	assert branch_page_result.status_code == 200
+}
+
+fn test_repos_page(username string) {
+	ilog('Testing the new repos /${username}/repos page is up')
+	repos_page_result := http.get(prepare_url("${username}/repos")) or { exit_with_message(err.str()) }
+
+	assert repos_page_result.status_code == 200
 }
 
 fn test_login_with_token(username string, token string) {
