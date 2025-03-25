@@ -52,7 +52,7 @@ fn main() {
 	test_repo_page(test_username, repo_name)
 	ilog("all tests passed!")
 
-	// after()!
+	after()!
 }
 
 fn before() ! {
