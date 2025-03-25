@@ -35,6 +35,7 @@ fn main() {
 	test_user_page(test_username)
 	test_login_with_token(test_username, token)
 	test_static_served()
+	test_oauth_page()
 
 	test_create_repo(token, 'test1', '')
 	assert get_repo_commit_count(token, test_username, 'test1', default_branch) == 0
@@ -59,6 +60,8 @@ fn main() {
 	test_settings_page(test_username)
 	test_commits_page(test_username, repo_name, test_github_repo_primary_branch)
 	test_branches_page(test_username, repo_name)
+	test_repo_tree(test_username, repo_name, test_github_repo_primary_branch, 'c')
+	// test_refs_page(test_username, repo_name)
 	// test_api_branches_count(test_username, repo_name)
 	ilog("all tests passed!")
 
@@ -259,6 +262,26 @@ fn test_api_branches_count(username string, repo_name string) {
 	assert response_json.result > 0
 }
 
+fn test_refs_page(username string, repo_name string) {
+	ilog('Testing the new refs /${username}/${repo_name}/info/refs page is up')
+	refs_page_result := http.get(prepare_url("${username}/${repo_name}/info/refs")) or { exit_with_message(err.str()) }
+
+	assert refs_page_result.status_code == 200
+}
+
+fn test_oauth_page() {
+	ilog('Testing the new oauth /oauth page is up')
+	oauth_page_result := http.get(prepare_url("oauth")) or { exit_with_message(err.str()) }
+
+	assert oauth_page_result.status_code == 200
+}
+
+fn test_repo_tree(username string, repo_name string, branch_name string, path string) {
+	ilog('Testing the new tree /${username}/${repo_name}/tree/${branch_name}/${path} page is up')
+	repo_tree_result := http.get(prepare_url("${username}/${repo_name}/tree/${branch_name}/${path}")) or { exit_with_message(err.str()) }
+
+	assert repo_tree_result.status_code == 200
+}
 // fn test_issues_page(username string) {
 // 	test_endpoint_page("${username}/issues", 'issues')
 // }
