@@ -86,6 +86,8 @@ fn (mut app App) add_commit_if_not_exist(repo_id int, branch_id int, last_hash s
 		select from Commit where repo_id == repo_id && branch_id == branch_id && hash == last_hash limit 1
 	} or { []Commit{} }
 
+	// $dbg;
+
 	if commits.len > 0 {
 		return
 	}
@@ -100,6 +102,7 @@ fn (mut app App) add_commit_if_not_exist(repo_id int, branch_id int, last_hash s
 		message:    message
 	}
 
+	// $dbg;
 	sql app.db {
 		insert new_commit into Commit
 	}!
