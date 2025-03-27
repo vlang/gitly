@@ -75,9 +75,9 @@ fn (mut app App) create_branch_or_update(repository_id int, branch_name string, 
 	}!
 }
 
-fn (mut app App) update_branch(branch_id int, author string, hash string, date int) ! {
+fn (mut app App) update_branch(branch_id int, author_ string, hash_ string, date_ int) ! {
 	sql app.db {
-		update Branch set author = author, hash = hash, date = date where id == branch_id
+		update Branch set author = author_, hash = hash_, date = date_ where id == branch_id
 	}!
 }
 

@@ -352,19 +352,19 @@ pub fn (mut app App) check_user_blocked(user_id int) bool {
 	return user.is_blocked
 }
 
-fn (mut app App) change_username(user_id int, username string) ! {
+fn (mut app App) change_username(user_id int, username_ string) ! {
 	sql app.db {
-		update User set username = username where id == user_id
+		update User set username = username_ where id == user_id
 	}!
 
 	sql app.db {
-		update Repo set user_name = username where user_id == user_id
+		update Repo set user_name = username_ where user_id == user_id
 	}!
 }
 
-fn (mut app App) change_full_name(user_id int, full_name string) ! {
+fn (mut app App) change_full_name(user_id int, full_name_ string) ! {
 	sql app.db {
-		update User set full_name = full_name where id == user_id
+		update User set full_name = full_name_ where id == user_id
 	}!
 }
 
