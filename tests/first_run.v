@@ -35,19 +35,34 @@ fn main() {
 	test_user_page(test_username)
 	test_login_with_token(test_username, token)
 	test_static_served()
+	test_oauth_page()
 
 	test_create_repo(token, 'test1', '')
 	assert get_repo_commit_count(token, test_username, 'test1', default_branch) == 0
 	assert get_repo_issue_count(token, test_username, 'test1') == 0
 	assert get_repo_branch_count(token, test_username, 'test1') == 0
 
-	test_create_repo(token, 'test2', test_github_repo_url)
+	repo_name := 'test2'
+	test_create_repo(token, repo_name, test_github_repo_url)
 	// wait while repo is cloning
-	time.sleep(3 * time.second)
+	time.sleep(5 * time.second)
 	// get repo
-	assert get_repo_commit_count(token, test_username, 'test2', test_github_repo_primary_branch) > 0
-	assert get_repo_issue_count(token, test_username, 'test2') == 0
-	assert get_repo_branch_count(token, test_username, 'test2') > 0
+	assert get_repo_commit_count(token, test_username, repo_name, test_github_repo_primary_branch) > 0
+	assert get_repo_issue_count(token, test_username, repo_name) == 0
+	assert get_repo_branch_count(token, test_username, repo_name) > 0
+	test_repo_page(test_username, repo_name)
+	test_branch_page(test_username, repo_name, test_github_repo_primary_branch)
+	test_repos_page(test_username)
+	test_repo_settings_page(test_username, repo_name)
+	test_contributors_page(test_username, repo_name)
+	// test_issues_page(test_username)
+	test_stars_page(test_username)
+	test_settings_page(test_username)
+	test_commits_page(test_username, repo_name, test_github_repo_primary_branch)
+	test_branches_page(test_username, repo_name)
+	test_repo_tree(test_username, repo_name, test_github_repo_primary_branch, 'c')
+	// test_refs_page(test_username, repo_name)
+	// test_api_branches_count(test_username, repo_name)
 	ilog("all tests passed!")
 
 	after()!
@@ -186,6 +201,114 @@ fn test_user_page(username string) {
 	user_page_result := http.get(prepare_url(username)) or { exit_with_message(err.str()) }
 
 	assert user_page_result.body.contains('<h3>${username}</h3>')
+}
+
+fn test_repo_page(username string, repo_name string) {
+	ilog('Testing the new repo /${username}/${repo_name} page is up')
+	repo_page_result := http.get(prepare_url("${username}/${repo_name}")) or { exit_with_message(err.str()) }
+
+	assert repo_page_result.status_code == 200
+}
+
+fn test_branch_page(username string, repo_name string, branch_name string) {
+	ilog('Testing the new branch /${username}/${repo_name}/tree/${branch_name} page is up')
+	branch_page_result := http.get(prepare_url("${username}/${repo_name}/tree/${branch_name}")) or { exit_with_message(err.str()) }
+
+	assert branch_page_result.status_code == 200
+}
+
+fn test_repos_page(username string) {
+	ilog('Testing the new repos /${username}/repos page is up')
+	repos_page_result := http.get(prepare_url("${username}/repos")) or { exit_with_message(err.str()) }
+
+	assert repos_page_result.status_code == 200
+}
+
+fn test_contributors_page(username string, repo_name string) {
+	ilog('Testing the new contributors /${username}/${repo_name}/contributors page is up')
+	contributors_page_result := http.get(prepare_url("${username}/${repo_name}/contributors")) or { exit_with_message(err.str()) }
+
+	assert contributors_page_result.status_code == 200
+}
+
+fn test_commits_page(username string, repo_name string, branch_name string) {
+	ilog('Testing the new commits /${username}/${repo_name}/${branch_name}/commits/1 page is up')
+	// Doesn't work with commits/[no 1]
+	commits_page_result := http.get(prepare_url("${username}/${repo_name}/${branch_name}/commits/1")) or { exit_with_message(err.str()) }
+
+	assert commits_page_result.status_code == 200
+}
+
+fn test_branches_page(username string, repo_name string) {
+	ilog('Testing the new branches /${username}/${repo_name}/branches page is up')
+	branches_page_result := http.get(prepare_url("${username}/${repo_name}/branches")) or { exit_with_message(err.str()) }
+
+	assert branches_page_result.status_code == 200
+}
+
+fn test_api_branches_count(username string, repo_name string) {
+	ilog('Testing if api/v1/${username}/${repo_name}/branches/count works')
+	api_branches_count_result := http.get(prepare_url("api/v1/${username}/${repo_name}/branches/count")) or { exit_with_message(err.str()) }
+	// api_branches_count_result := http.fetch(
+	// 	method:  .get
+	// 	url:     prepare_url("api/v1/${username}/${repo_name}/branches/count")
+	// ) or { exit_with_message(err.str()) }
+
+	assert api_branches_count_result.status_code == 200
+
+	response_json := json.decode(api.ApiBranchCount, api_branches_count_result.body) or {
+		exit_with_message(err.str())
+	}
+	assert response_json.result > 0
+}
+
+fn test_refs_page(username string, repo_name string) {
+	ilog('Testing the new refs /${username}/${repo_name}/info/refs page is up')
+	refs_page_result := http.get(prepare_url("${username}/${repo_name}/info/refs")) or { exit_with_message(err.str()) }
+
+	assert refs_page_result.status_code == 200
+}
+
+fn test_oauth_page() {
+	ilog('Testing the new oauth /oauth page is up')
+	oauth_page_result := http.get(prepare_url("oauth")) or { exit_with_message(err.str()) }
+
+	assert oauth_page_result.status_code == 200
+}
+
+fn test_repo_tree(username string, repo_name string, branch_name string, path string) {
+	ilog('Testing the new tree /${username}/${repo_name}/tree/${branch_name}/${path} page is up')
+	repo_tree_result := http.get(prepare_url("${username}/${repo_name}/tree/${branch_name}/${path}")) or { exit_with_message(err.str()) }
+
+	assert repo_tree_result.status_code == 200
+}
+// fn test_issues_page(username string) {
+// 	test_endpoint_page("${username}/issues", 'issues')
+// }
+
+fn test_stars_page(username string) {
+	ilog("Testing the new stars /${username}/stars page is up")
+	stars_page_result := http.get(prepare_url("${username}/stars")) or { exit_with_message(err.str()) }
+
+	assert stars_page_result.status_code == 200
+}
+
+fn test_settings_page(username string) {
+	ilog('Testing the new settings /${username}/settings page is up')
+	settings_page_result := http.get(prepare_url("${username}/settings")) or { exit_with_message(err.str()) }
+
+	assert settings_page_result.status_code == 200
+}
+
+fn test_repo_settings_page(username string, repo_name string) {
+	test_endpoint_page("${username}/${repo_name}/settings", 'settings')
+}
+
+fn test_endpoint_page(endpoint string, pagename string) {
+	ilog('Testing the new ${pagename} /${endpoint} page is up')	
+	endpoint_result := http.get(prepare_url("${endpoint}")) or { exit_with_message(err.str()) }
+
+	assert endpoint_result.status_code == 200
 }
 
 fn test_login_with_token(username string, token string) {
