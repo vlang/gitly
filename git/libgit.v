@@ -254,12 +254,16 @@ pub fn (r &Repo) show_file_blob(branch string, file_path string) !string {
 	// Iterate through the tree entries to find the file
 	entry_count := C.git_tree_entrycount(tree)
 	// println('number of entires ${entry_count}')
+	dump(entry_count)
 	for i := 0; i < entry_count; i++ {
 		entry := C.git_tree_entry_byindex(tree, i)
 		entry_name := C.git_tree_entry_name(entry)
 		C.printf(c'%s\n', entry_name)
+		dump(entry_name)
+		dump(file_path)
 
 		if unsafe { C.strcmp(entry_name, file_path.str) } == 0 {
+			// dump(file_path)
 			// Found the file
 			if C.git_blob_lookup(&blob, r.obj, C.git_tree_entry_id(entry)) != 0 {
 				C.printf(c'Failed to lookup blob: %s\n', C.git_error_last().message)
@@ -273,7 +277,7 @@ pub fn (r &Repo) show_file_blob(branch string, file_path string) !string {
 			// C.fwrite(content, 1, size, C.stdout)
 
 			text := unsafe { cstring_to_vstring(content) }
-			// dump(text)
+			dump(text)
 			C.git_blob_free(blob)
 			return text
 		}
