@@ -223,6 +223,8 @@ fn get_branch_name_from_reference(ref string) string {
 }
 
 pub fn (r &Repo) show_file_blob(branch string, file_path string) !string {
+	dump(branch)
+	dump(file_path)
 	mut blob := &C.git_blob(unsafe { nil })
 	mut branch_ref := &C.git_reference(unsafe { nil })
 	if C.git_branch_lookup(&branch_ref, r.obj, branch.str, C.GIT_BRANCH_LOCAL) != 0 {
@@ -230,11 +232,14 @@ pub fn (r &Repo) show_file_blob(branch string, file_path string) !string {
 		return error('sdf')
 	}
 
+	dump(branch_ref)
+
 	mut treeish := &C.git_object(unsafe { nil })
 	if C.git_reference_peel(&treeish, branch_ref, C.GIT_OBJECT_COMMIT) != 0 {
 		C.printf(c'Failed to peel reference to commit: %s\n', C.git_error_last().message)
 		return error('sdf')
 	}
+	dump(treeish)
 
 	commit := &C.git_commit(treeish)
 	C.git_commit_tree(&treeish, commit)
@@ -244,6 +249,7 @@ pub fn (r &Repo) show_file_blob(branch string, file_path string) !string {
 	}
 
 	tree := unsafe { &C.git_tree(treeish) }
+	// dump(tree)
 
 	// Iterate through the tree entries to find the file
 	entry_count := C.git_tree_entrycount(tree)
@@ -267,6 +273,7 @@ pub fn (r &Repo) show_file_blob(branch string, file_path string) !string {
 			// C.fwrite(content, 1, size, C.stdout)
 
 			text := unsafe { cstring_to_vstring(content) }
+			// dump(text)
 			C.git_blob_free(blob)
 			return text
 		}

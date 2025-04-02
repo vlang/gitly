@@ -812,6 +812,7 @@ fn (r &Repo) read_file(branch string, path string) string {
 	// s := r.git('--no-pager show ${branch}:${valid_path}')
 
 	s := r.git_repo.show_file_blob(branch, valid_path) or { '' }
+	dump(s)
 	println(time.since(t))
 	println(':)')
 	return s
