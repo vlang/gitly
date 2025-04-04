@@ -809,10 +809,11 @@ fn (r &Repo) read_file(branch string, path string) string {
 		return 'nil'
 	}
 	t := time.now()
-	// s := r.git('--no-pager show ${branch}:${valid_path}')
+	// works. Uncommented:
+	s := r.git('--no-pager show ${branch}:${valid_path}')
 
-	s := r.git_repo.show_file_blob(branch, valid_path) or { '' }
-	dump(s)
+	// doesn't work, commented out:
+	// s := r.git_repo.show_file_blob(branch, valid_path) or { '' }
 	println(time.since(t))
 	println(':)')
 	return s

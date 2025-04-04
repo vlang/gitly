@@ -345,7 +345,7 @@ pub fn (mut app App) tree(mut ctx Context, username string, repo_name string, br
 	branch := app.find_repo_branch_by_name(repo.id, branch_name)
 
 	app.info('${log_prefix}: ${items.len} items found in branch ${branch_name}')
-	println(items)
+	// println(items)
 
 	if items.len == 0 {
 		// No files in the db, fetch them from git and cache in db
@@ -404,6 +404,7 @@ pub fn (mut app App) tree(mut ctx Context, username string, repo_name string, br
 	items = []
 	items << dirs
 	items << files
+	// app.debug('${items.len} items')
 
 	commits_count := app.get_repo_commit_count(repo.id, branch.id)
 	has_commits := commits_count > 0
@@ -485,10 +486,12 @@ pub fn (mut app App) contributors(mut ctx Context, username string, repo_name st
 
 @['/:username/:repo_name/blob/:branch_name/:path...']
 pub fn (mut app App) blob(mut ctx Context, username string, repo_name string, branch_name string, path string) veb.Result {
+	// app.debug("app.blob(): path: ${path}")
 	repo := app.find_repo_by_name_and_username(repo_name, username) or { return ctx.not_found() }
 
 	mut path_parts := path.split('/')
 	path_parts.pop()
+	// app.debug("app.blob(): path_parts: ${path_parts}")
 
 	ctx.current_path = path
 	ctx.path_split = [repo_name]
@@ -500,12 +503,9 @@ pub fn (mut app App) blob(mut ctx Context, username string, repo_name string, br
 	}
 
 	raw_url := '/${username}/${repo_name}/raw/${branch_name}/${path}'
-	file := app.find_repo_file_by_path(repo.id, branch_name, path) or { return ctx.not_found() }
-	// dump(file)
+	file := app.find_repo_file_by_path(repo.id, branch_name, ctx.current_path) or { return ctx.not_found() }
 	is_markdown := file.name.to_lower().ends_with('.md')
-	plain_text := repo.read_file(branch_name, path)
-	// dump(repo)
-	// dump(plain_text)
+	plain_text := repo.read_file(branch_name, ctx.current_path)
 	highlighted_source, _, _ := highlight.highlight_text(plain_text, file.name, false)
 	source := veb.RawHtml(highlighted_source)
 	loc, sloc := calculate_lines_of_code(plain_text)
