@@ -230,7 +230,6 @@ pub fn (r &Repo) show_file_blob(branch string, file_path string) !string {
 		return error('sdf')
 	}
 
-
 	mut treeish := &C.git_object(unsafe { nil })
 	if C.git_reference_peel(&treeish, branch_ref, C.GIT_OBJECT_COMMIT) != 0 {
 		C.printf(c'Failed to peel reference to commit: %s\n', C.git_error_last().message)
