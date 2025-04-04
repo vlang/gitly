@@ -503,9 +503,9 @@ pub fn (mut app App) blob(mut ctx Context, username string, repo_name string, br
 	}
 
 	raw_url := '/${username}/${repo_name}/raw/${branch_name}/${path}'
-	file := app.find_repo_file_by_path(repo.id, branch_name, ctx.current_path) or { return ctx.not_found() }
+	file := app.find_repo_file_by_path(repo.id, branch_name, path) or { return ctx.not_found() }
 	is_markdown := file.name.to_lower().ends_with('.md')
-	plain_text := repo.read_file(branch_name, ctx.current_path)
+	plain_text := repo.read_file(branch_name, path)
 	highlighted_source, _, _ := highlight.highlight_text(plain_text, file.name, false)
 	source := veb.RawHtml(highlighted_source)
 	loc, sloc := calculate_lines_of_code(plain_text)

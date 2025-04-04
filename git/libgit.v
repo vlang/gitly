@@ -249,7 +249,6 @@ pub fn (r &Repo) show_file_blob(branch string, file_path string) !string {
 	// Iterate through the tree entries to find the file
 	entry_count := C.git_tree_entrycount(tree)
 	// println('number of entires ${entry_count}')
-	dump(entry_count)
 	for i := 0; i < entry_count; i++ {
 		entry := C.git_tree_entry_byindex(tree, i)
 		entry_name := C.git_tree_entry_name(entry)
