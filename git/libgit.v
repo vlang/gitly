@@ -89,6 +89,10 @@ fn C.git_blob_free(&C.git_blob)
 fn C.git_clone(&&C.git_repository, &char, &char, &C.git_clone_options) int
 fn C.git_clone_options_init(&C.git_clone_options, int)
 
+fn C.git_object_lookup_bypath(&&C.git_object, &C.git_object, &char, int) int
+fn C.git_object_peel(&&C.git_object, &C.git_object, int) int
+fn C.git_object_id(&C.git_object) &C.git_oid
+
 fn init() {
 	C.git_libgit2_init()
 }
@@ -242,7 +246,35 @@ pub fn (r &Repo) show_file_blob(branch string, file_path string) !string {
 		C.printf(c'Failed to get commit tree\n')
 		return error('sdf')
 	}
+	// create file object
+	mut file_obj := &C.git_object(unsafe { nil })
 
+	// get file object
+	if C.git_object_lookup_bypath(&file_obj, treeish, file_path.str, 3) != 0 {
+		C.printf(c'Failed to lookup file: %s\n', C.git_error_last().message)
+		return error('sdf')
+	}
+
+	// get file oid
+	mut oid := C.git_object_id(file_obj)
+
+	// get blob object
+	if C.git_blob_lookup(&blob, r.obj, oid) != 0 {
+		C.printf(c'Failed to lookup blob: %s\n', C.git_error_last().message)
+		return error('sdf')
+	}
+
+	// get blob content
+	content := C.git_blob_rawcontent(blob)
+	// size := C.git_blob_rawsize(blob)
+
+	C.printf(c'Content of %s (from branch %s):\n', file_path.str, branch.str)
+
+	text := unsafe { cstring_to_vstring(content) }
+	C.git_blob_free(blob)
+	return text
+
+	/*
 	tree := unsafe { &C.git_tree(treeish) }
 
 	// Iterate through the tree entries to find the file
@@ -272,6 +304,7 @@ pub fn (r &Repo) show_file_blob(branch string, file_path string) !string {
 		}
 	}
 	return ''
+	*/
 }
 
 pub fn clone(url string, path string) {
