@@ -61,6 +61,8 @@ fn main() {
 	test_commits_page(test_username, repo_name, test_github_repo_primary_branch)
 	test_branches_page(test_username, repo_name)
 	test_repo_tree(test_username, repo_name, test_github_repo_primary_branch, 'c')
+	// this makes sure that the blob (and the tree?) is ready
+	test_repo_tree(test_username, repo_name, test_github_repo_primary_branch, 'examples')
 	test_blob_page(test_username, repo_name, test_github_repo_primary_branch, 'examples/hello.v')
 	// test_refs_page(test_username, repo_name)
 	// test_api_branches_count(test_username, repo_name)
@@ -302,11 +304,11 @@ fn test_settings_page(username string) {
 }
 
 fn test_blob_page(username string, repo_name string, branch_name string, path string) {
-	ilog('Testing the new blob /${username}/${repo_name}/blob/${branch_name}/${path} page is up')
-	// blob_page_result := http.get(prepare_url("${username}/${repo_name}/blob/${branch_name}/${path}")) or { exit_with_message(err.str()) }
+	url := "${username}/${repo_name}/blob/${branch_name}/${path}"
+	ilog('Testing the new blob /${url} page is up')
 	blob_page_result := http.fetch(
 		method:  .get
-		url:     prepare_url("${username}/${repo_name}/blob/${branch_name}/${path}")
+		url:     prepare_url(url)
 	) or { exit_with_message(err.str()) }
 
 	assert blob_page_result.status_code == 200
