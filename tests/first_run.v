@@ -61,6 +61,9 @@ fn main() {
 	test_commits_page(test_username, repo_name, test_github_repo_primary_branch)
 	test_branches_page(test_username, repo_name)
 	test_repo_tree(test_username, repo_name, test_github_repo_primary_branch, 'c')
+	// this makes sure that the blob (and the tree?) is ready
+	test_repo_tree(test_username, repo_name, test_github_repo_primary_branch, 'examples')
+	test_blob_page(test_username, repo_name, test_github_repo_primary_branch, 'examples/hello.v')
 	// test_refs_page(test_username, repo_name)
 	// test_api_branches_count(test_username, repo_name)
 	ilog("all tests passed!")
@@ -298,6 +301,18 @@ fn test_settings_page(username string) {
 	settings_page_result := http.get(prepare_url("${username}/settings")) or { exit_with_message(err.str()) }
 
 	assert settings_page_result.status_code == 200
+}
+
+fn test_blob_page(username string, repo_name string, branch_name string, path string) {
+	url := "${username}/${repo_name}/blob/${branch_name}/${path}"
+	ilog('Testing the new blob /${url} page is up')
+	blob_page_result := http.fetch(
+		method:  .get
+		url:     prepare_url(url)
+	) or { exit_with_message(err.str()) }
+
+	assert blob_page_result.status_code == 200
+	assert blob_page_result.body.str().contains('m := r.match_str')
 }
 
 fn test_repo_settings_page(username string, repo_name string) {
