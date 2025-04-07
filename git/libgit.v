@@ -250,7 +250,7 @@ pub fn (r &Repo) show_file_blob(branch string, file_path string) !string {
 	mut file_obj := &C.git_object(unsafe { nil })
 
 	// get file object
-	if C.git_object_lookup_bypath(&file_obj, treeish, file_path.str, 3) != 0 {
+	if C.git_object_lookup_bypath(&file_obj, treeish, file_path.str, C.GIT_OBJECT_BLOB) != 0 {
 		C.printf(c'Failed to lookup file: %s\n', C.git_error_last().message)
 		return error('sdf')
 	}
