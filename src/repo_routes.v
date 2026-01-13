@@ -186,6 +186,7 @@ pub fn (mut app App) new() veb.Result {
 
 @['/new'; post]
 pub fn (mut app App) handle_new_repo(mut ctx Context, name string, clone_url string, description string, no_redirect string) veb.Result {
+	println("NEW POST")
 	mut valid_clone_url := clone_url
 	is_clone_url_empty := validation.is_string_empty(clone_url)
 	is_public := ctx.form['repo_visibility'] == 'public'
@@ -200,30 +201,37 @@ pub fn (mut app App) handle_new_repo(mut ctx Context, name string, clone_url str
 		ctx.error('The repository name is too long (should be fewer than ${max_repo_name_len} characters)')
 		return app.new(mut ctx)
 	}
+	println(1)
 	if _ := app.find_repo_by_name_and_username(name, ctx.user.username) {
 		ctx.error('A repository with the name "${name}" already exists')
 		return app.new(mut ctx)
 	}
+	println(2)
 	if name.contains(' ') {
 		ctx.error('Repository name cannot contain spaces')
 		return app.new(mut ctx)
 	}
+	println(3)
 	is_repo_name_valid := validation.is_repository_name_valid(name)
 	if !is_repo_name_valid {
 		ctx.error('The repository name is not valid')
 		return app.new(mut ctx)
 	}
+	println(4)
 	has_clone_url_https_prefix := clone_url.starts_with('https://')
 	if !is_clone_url_empty {
 		if !has_clone_url_https_prefix {
 			valid_clone_url = 'https://' + clone_url
 		}
+		println('checking')
 		is_git_repo := git.check_git_repo_url(valid_clone_url)
+		println('done')
 		if !is_git_repo {
 			ctx.error('The repository URL does not contain any git repository or the server does not respond')
 			return app.new(mut ctx)
 		}
 	}
+	println("OK")
 	repo_path := os.join_path(app.config.repo_storage_path, ctx.user.username, name)
 	id := app.get_count_repo() + 1
 	mut new_repo := &Repo{

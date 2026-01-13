@@ -181,6 +181,7 @@ pub fn (mut app App) handle_register(mut ctx Context, username string, email str
 		return app.register(mut ctx)
 	}
 	no_users := user_count == 0
+	println('USERNAME=$username')
 
 	if username in ['login', 'register', 'new', 'new_post', 'oauth'] {
 		ctx.error('Username `${username}` is not available')

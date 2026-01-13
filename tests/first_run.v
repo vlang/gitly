@@ -4,6 +4,7 @@ import net.http
 import time
 import json
 import api
+import term
 
 const gitly_url = 'http://127.0.0.1:8080'
 

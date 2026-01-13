@@ -53,7 +53,9 @@ pub fn check_git_repo_url(url string) bool {
 		url:    refs_url
 		header: headers
 	}
+	println('URL=$refs_url $config')
 	response := http.fetch(config) or { return false }
+	println('response=$response')
 	if response.status_code != 200 {
 		return false
 	}

@@ -3,6 +3,7 @@ module main
 import time
 import math
 import os
+import veb
 
 pub fn (mut app App) running_since() string {
 	duration := time.now().unix() - app.started_at
@@ -55,3 +56,15 @@ fn check_first_page(page int) bool {
 fn check_last_page(total int, offset int, per_page int) bool {
 	return (total - offset) < per_page
 }
+
+const is_dev = true
+ 
+fn css2(s string) veb.RawHtml {
+	if is_dev {
+	return '<link href="http://localhost:8000/${s}" rel="stylesheet" type="text/css">'
+	}
+	else {
+	return '<link href="/static/${s}" rel="stylesheet" type="text/css">'
+	}
+}
+
