@@ -2,216 +2,280 @@
 	position: fixed;
 	left: 5px;
 	top: 300px;
-
-	a {
-	display: block;
-	}
+	a { display: block; }
 }
 
-.repo-wrapper {
-	display: grid;
-	gap: 10px;
-	grid-template-areas: "branch branch . about";
+/* --- Main Layout Containers --- */
+
+.repo-header {
+	margin-bottom: 20px;
 }
 
+/* 1. The Tab Bar (Issues, Contributors, etc.) */
 .repo-stats {
+	display: flex;
+	border-bottom: 1px solid #e1e4e8;
+	margin-bottom: 20px;
+	margin-top: 10px;
+
 	a.menu {
-		display: inline-block;
+		display: flex;
+		align-items: center;
+		padding: 8px 16px;
+		color: #24292e !important;
+		font-size: 14px;
+		border-bottom: 2px solid transparent;
+		transition: border-bottom 0.2s;
 
-		@include mobile {
-			display: block;
-			width: 100%;
-		}
-
-		padding: 10px 10px 10px 0;
-		color: black !important;
-
-		&:hover,
-		&:hover * {
-			color: $link-color !important;
+		&:hover {
+			border-bottom: 2px solid #d1d5da;
 			text-decoration: none;
 		}
-	}
 
-	span {
-		position: relative;
-		top: 2px;
-	}
+		/* Active state simulation */
+		&.active {
+			border-bottom: 2px solid #f9826c;
+			font-weight: 600;
+		}
 
-	svg {
-		position: relative;
-		top: 2px;
-		height: 14px;
+		svg {
+			margin-right: 8px;
+			fill: #959da5;
+		}
+
+		b {
+			margin-left: 5px;
+			background: rgba(209, 213, 218, 0.5);
+			padding: 0 6px;
+			border-radius: 20px;
+			font-size: 12px;
+		}
 	}
 }
 
-.repo-about {
-	grid-area: about;
-
-	padding: 10px;
+/* 2. The Control Bar (Branch, Code, Stars, Watch) */
+.repo-wrapper {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 15px;
+	flex-wrap: wrap;
+	gap: 10px;
 }
 
 .branch-specific-container {
-	padding: 10px 10px 0 0;
-	grid-area: branch;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
 
-	.branch-select {
-		border: 1px solid $gray;
-		border-radius: $medium-radius;
-		padding: 5px;
-		outline: none;
-	}
+/* Branch Select Dropdown */
+.branch-select {
+	appearance: none;
+	background-color: #fafbfc;
+	border: 1px solid rgba(27, 31, 35, 0.15);
+	border-radius: 6px;
+	color: #24292e;
+	cursor: pointer;
+	font-size: 14px;
+	font-weight: 500;
+	line-height: 20px;
+	padding: 5px 35px 5px 12px;
+	background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+	background-repeat: no-repeat;
+	background-position: right 8px center;
+	background-size: 10px;
+}
 
+/* Commits Link */
 .branch-specific-item {
-	display: inline;
-	margin-left: 10px;
-
 	a {
-		width: 14%;
-		text-align: center;
-		color: black !important;
+		color: #586069 !important;
+		font-size: 13px !important;
+		font-weight: 600;
+		display: flex;
+		align-items: center;
+
+		&:hover {
+			color: #0366d6 !important;
+			text-decoration: none;
+		}
 
 		svg {
-			position: relative;
-			top: 2px;
-			height: 14px;
+			margin-right: 4px;
+			fill: #959da5;
 		}
 	}
-	}
 }
 
-.repo-clone {
-	margin-top: 10px;
-}
-
-.star-button, .watch-button {
-	margin-top: 10px;
-	min-width: 80px;
-
-	svg {
-		display: block;
-		height: 20px;
-		width: 20px;
-		padding-top: 4px;
-		margin: 0 auto;
-	}
-}
-
-.tree-path {
-	margin-top: 5px;
-}
-
-.tree-path a,
-h3 a {
-	display: inline-block;
-	font-size: 18px !important;
-}
-
-.readme {
-	border: 1px solid #dfdfdf;
-	border-radius: 3px;
-
-	padding: 20px 30px 20px 30px;
-	margin-top: 10px;
-
-	> * {
-		margin: 10px 0;
-	}
-
-	code {
-		border: 1px solid $black;
-		border-radius: $small-radius;
-		padding: 5px;
-	}
-
-	h1 {
-		font-size: 2em;
-		border-bottom: 1px solid #dfdfdf;
-	}
-
-	h2 {
-		font-size: 1.75em;
-	}
-
-	h3 {
-		font-size: 1.5em;
-	}
-
-	h4 {
-		font-size: 1.25em;
-	}
-
-	h5 {
-		font-size: 1em;
-	}
-
-	h6 {
-		font-size: 0.75em;
-	}
-
-	img {
-		max-width: 100%;
-	}
-
-	li.task-list-item:has(> input.task-list-item-checkbox) {
-		list-style: none;
-	}
-}
-
-.issue-id-anchor {
-	color: $link-color !important;
-}
+/* --- Action Buttons (Code, Star, Watch) --- */
 
 .repo-code-container {
 	position: relative;
-	display: inline-block;
-
-	margin-left: 10px;
 }
 
+/* Green Code Button */
 .repo-code-button {
-	width: 70px;
-	padding: 5px;
+	background-color: #2ea44f;
+	color: white;
+	padding: 5px 16px;
+	font-size: 14px;
+	font-weight: 600;
+	border: 1px solid rgba(27, 31, 35, 0.15);
+	border-radius: 6px;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: background-color 0.2s;
 
-	background-color: #238636;
-	border-radius: $small-radius;
-	color: $white;
+	&:hover {
+		background-color: #2c974b;
+	}
 
-	text-align: center;
+	&::after {
+		content: "";
+		display: inline-block;
+		width: 0;
+		height: 0;
+		margin-left: 5px;
+		vertical-align: middle;
+		border-top: 4px solid;
+		border-right: 4px solid transparent;
+		border-left: 4px solid transparent;
+	}
 }
 
+/* Clone Dropdown */
 .repo-clone-dropdown {
-	background-color: $black;
-	border-radius: $medium-radius;
-	padding: 10px;
-	position: absolute;
-
 	display: none;
-	width: 400px;
+	position: absolute;
+	top: 100%;
+	right: 0;
+	margin-top: 4px;
+	padding: 16px;
+	background-color: #fff;
+	border: 1px solid #e1e4e8;
+	border-radius: 6px;
+	box-shadow: 0 8px 24px rgba(149, 157, 165, 0.2);
+	z-index: 100;
+	width: 300px;
+	color: #24292e;
+	font-size: 13px;
 
-	color: $white;
+	.clone-input-group {
+		display: flex;
+		margin-top: 8px;
 
-	z-index: 1;
+		input {
+			flex: 1;
+			font-family: monospace;
+			font-size: 12px;
+			padding: 5px;
+			border: 1px solid #e1e4e8;
+			border-radius: 4px 0 0 4px;
+			border-right: none;
+			background: #fafbfc;
+		}
 
-	input {
-		color: $white;
+		button {
+			border-radius: 0 4px 4px 0;
+			background: #f6f8fa;
+			border: 1px solid #e1e4e8;
+			font-size: 12px;
+			padding: 5px 10px;
+			cursor: pointer;
 
-		width: 328px;
-	}
-
-	.copy-clone-url-button {
-		background-color: #fff;
-	}
-
-	.copy-clone-url-button:hover {
-		background-color: #1a7be9;
+			&:hover {
+				background-color: #f3f4f6;
+			}
+		}
 	}
 }
 
 .repo-code-container:hover .repo-clone-dropdown {
-  display: block;
+	display: block;
 }
 
-.clone-input-group {
-	margin-top: 10px;
+/* Repo About / Actions Section */
+.repo-about {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+
+	h2, p, div:not(.button-container) {
+		/* Hide original text elements if purely for structure,
+           or style them if they contain description */
+		display: none;
+	}
+
+	/* Show buttons explicitly */
+	button {
+		display: inline-flex;
+		width: auto !important; /* Override global 50% */
+	}
+}
+
+/* Common style for Star/Watch buttons */
+.star-button, .watch-button {
+	display: inline-flex;
+	align-items: center;
+	padding: 3px 12px;
+	font-size: 12px;
+	font-weight: 500;
+	line-height: 20px;
+	color: #24292e;
+	background-color: #fafbfc;
+	border: 1px solid rgba(27, 31, 35, 0.15);
+	border-radius: 6px;
+	cursor: pointer;
+	transition: 0.2s cubic-bezier(0.3, 0, 0.5, 1);
+	transition-property: color, background-color, border-color;
+	margin-top: 0 !important; /* Override original */
+
+	&:hover {
+		background-color: #f3f4f6;
+		border-color: rgba(27, 31, 35, 0.15);
+		text-decoration: none;
+	}
+
+	svg {
+		height: 14px;
+		width: 14px;
+		margin-right: 4px;
+		fill: #6a737d;
+	}
+}
+
+/* --- Breadcrumbs --- */
+
+.tree-path {
+	font-size: 16px;
+	margin: 10px 0;
+	color: #586069;
+
+	a {
+		color: #0366d6;
+		&:hover { text-decoration: underline; }
+	}
+
+	/* Slash separator */
+	.slash {
+		color: #586069;
+		margin: 0 4px;
+	}
+}
+
+/* --- Readme Container --- */
+.readme {
+	border: 1px solid #e1e4e8;
+	border-radius: 6px;
+	padding: 32px;
+	margin-top: 24px;
+	background-color: #fff;
+
+	h1 { border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+	code { background-color: rgba(27,31,35,.05); padding: 0.2em 0.4em; border-radius: 3px; border: none; }
+	pre code { padding: 16px; overflow: auto; line-height: 1.45; background-color: #f6f8fa; display: block; }
+	img { max-width: 100%; box-sizing: content-box; background-color: #fff; }
 }

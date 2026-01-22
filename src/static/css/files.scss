@@ -1,111 +1,132 @@
+/* Header for the file table (Last Commit Info) */
 .last_commit {
 	display: flex;
 	align-items: center;
-	padding: 9px 11px;
-	border-bottom: 1px solid $gray;
-	background-color: #bfdbff54;
-}
+	justify-content: space-between;
+	padding: 10px 16px;
+	background-color: #f6f8fa;
+	border: 1px solid #e1e4e8;
+	border-top-left-radius: 6px;
+	border-top-right-radius: 6px;
+	border-bottom: none;
+	font-size: 13px;
+	color: #24292e;
 
-.last_commit_message {
-	word-break: break-all;
-
-	margin-left: 5px;
-}
-
-.last_commit_hash {
-	background-color: #cbe2ff;
-
-	margin-left: 5px;
-	margin-right: 5px;
-}
-
-.files {
-	@include mobile {
-		width: 100%;
+	.last_commit_message {
+		color: #586069;
+		margin-left: 8px;
+		flex: 1;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 
-	margin: 0 auto;
-	border-left: 1px solid #dfdfdf;
-	border-right: 1px solid #dfdfdf;
-	border-top: 1px solid #dfdfdf;
-	border-radius: $small-radius;
+	.last_commit_hash {
+		font-family: monospace;
+		color: #24292e;
+		background-color: transparent;
+		margin: 0 10px;
+		font-size: 12px;
+	}
+
+	.time {
+		color: #6a737d;
+		white-space: nowrap;
+	}
 }
 
+/* The File List Container */
+.files {
+	border: 1px solid #e1e4e8;
+	border-radius: 6px;
+	margin-bottom: 20px;
+}
+
+/* Individual File Row */
 .file {
-	display: flex;
+	display: grid;
+	/* Grid: Icon | Name | Message | Date */
+	grid-template-columns: 20px minmax(150px, 25%) 1fr 140px;
 	align-items: center;
-	padding: 9px 11px;
-	cursor: pointer;
-	border-bottom: 1px solid $gray;
-	color: $black;
+	padding: 8px 16px;
+	border-top: 1px solid #e1e4e8;
+	font-size: 14px;
+	line-height: 20px;
+	color: #24292e;
+	background-color: #fff;
+	transition: background-color 0.1s;
 
 	&:hover {
-		background-color: $gray-light;
+		background-color: #f6f8fa;
+	}
+
+	/* Adjustments for first item if not using the last_commit header div
+	   but assuming .files contains .last_commit followed by divs
+	*/
+	&:last-child {
+		border-bottom-left-radius: 6px;
+		border-bottom-right-radius: 6px;
 	}
 }
 
-.file svg {
-	height: 16px;
+/* Responsive Grid for Mobile */
+@media (max-width: 768px) {
+	.file {
+		grid-template-columns: 20px 1fr;
+		gap: 5px;
+	}
+	.file-msg, .file-time { display: none; }
 }
 
+/* Icon */
 .file-ico {
-	margin-right: 6px;
-	height: 16px;
-	width: 16px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: #79b8ff; /* Folder blue */
+
+	svg {
+		fill: currentColor;
+		width: 14px;
+		height: 14px;
+	}
 }
 
+/* File Name */
 .file-name {
-	@include desktop {
-		width: 25%;
-	}
-
-	@include mobile {
-		flex: 1;
-	}
-
-	position: relative;
-	top: 1px;
-
-	a {
-		color: $black !important;
-
-		&:hover {
-			text-decoration: none;
-		}
-
-		position: relative;
-		top: -2px;
-	}
-}
-
-.file-size {
-	@include mobile {
-		display: none;
-	}
-
-	width: 15%;
-	margin-right: 10px;
-}
-
-.file-msg {
-	@include mobile {
-		display: none;
-	}
-
-	flex: 1;
-	text-overflow: ellipsis;
 	white-space: nowrap;
 	overflow: hidden;
-	//font-style: italic;
-	color: $gray-dark !important;
+	text-overflow: ellipsis;
+	padding-right: 10px;
 
 	a {
-		color: $gray-dark;
+		color: #24292e !important;
+		font-weight: 400;
+
+		&:hover {
+			color: #0366d6 !important;
+			text-decoration: underline;
+		}
 	}
 }
 
+/* Commit Message */
+.file-msg {
+	color: #6a737d !important;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	padding-right: 10px;
+
+	a {
+		color: #6a737d;
+		&:hover { color: #0366d6; }
+	}
+}
+
+/* Time */
 .file-time {
-	color: $gray-dark !important;
-	//position: relative;
-	//top: 3px;
+	color: #6a737d !important;
+	text-align: right;
+	font-size: 13px;
 }

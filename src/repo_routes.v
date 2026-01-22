@@ -446,6 +446,7 @@ pub fn (mut app App) tree(mut ctx Context, username string, repo_name string, br
 	if license_file.id != 0 {
 		license_file_path = '/${username}/${repo_name}/blob/${branch_name}/${license_file.name}'
 	}
+	eprintln('license_file_path=${license_file_path}')
 
 	watcher_count := app.get_count_repo_watchers(repo_id)
 	is_repo_starred := app.check_repo_starred(repo_id, ctx.user.id)
