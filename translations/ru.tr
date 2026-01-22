@@ -13,3 +13,13 @@ new_repository
 -----
 repo_being_cloned_plz_wait
 Your repo is being cloned. Please wait a bit...
+-----
+username
+Имя пользователя
+-----
+password
+Пароль
+-----
+email
+Электронная почта
+-----

@@ -407,6 +407,14 @@ form {
 	margin-top: 10px;
 	width: 100%;
 }
+#select_lang {
+	margin-right:20px;
+}
+
+
+
+
 
 @import "files", "langs", "tree", "commits", "hl_table", "branches", "admin",
 	"blob", "contributors", "issues", "user", "releases", "feed", "search";
+
