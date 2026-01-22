@@ -297,6 +297,7 @@ input[type="submit"] {
 	padding: 5px 8px;
 	border-radius: $small-radius;
 	transition: background-color 0.07s, border-color 0.07s, color 0.07s;
+	width: 50% !important;
 }
 
 .button:hover,
@@ -338,7 +339,7 @@ form {
 
 .form {
 	max-width: 400px;
-	margin: 0 auto;
+	//margin: 0 auto;
 
 	input:not([type="checkbox"]):not([type="radio"]) {
 		box-sizing: border-box;

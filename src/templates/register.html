@@ -12,15 +12,17 @@
 			}
 
 			<h1>
-				Register
 				@if no_users
-				 an admin account
+				%register_admin_account
+				@else
+				  %register
 				@end
 			</h1>
 
 			@if no_users
-				Welcome to Gitly! Looks like you've just set it up, you'll need to register
-				the main administrator account for this server.
+				<br><br>
+				%raw welcome_to_gitly
+				<br><br>
 			@end
 
 			<div class="form">
@@ -35,7 +37,7 @@
 						<input type='email' name="email" placeholder='Email' required>
 					</div>
 					<div class="field">
-						<input type='submit' value='Register'>
+						<input type='submit' value='%register'>
 					</div>
 				</form>
 			</div>

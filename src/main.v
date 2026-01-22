@@ -7,6 +7,11 @@ fn get_port() int {
 	return os.getenv_opt('GITLY_PORT') or { '8080' }.int()
 }
 
+enum Lang {
+	en
+	ru
+}
+
 fn main() {
 	if os.args.contains('ci_run') {
 		return

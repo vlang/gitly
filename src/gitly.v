@@ -44,6 +44,7 @@ mut:
 	logged_in     bool
 	path_split    []string
 	branch        string
+	lang          Lang = .ru
 }
 
 fn C.sqlite3_config(int)
