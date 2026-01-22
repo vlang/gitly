@@ -80,12 +80,14 @@ pre > code {
 }
 
 .search-input {
-	position: absolute;
-	top: 10px;
-	right: 200px;
+	//position: absolute;
+	//top: 10px;
+	//right: 200px;
+	display: inline-block;
 
 	background-color: #000;
 	color: #fff;
+	margin-right:30px;
 }
 
 .search-input::placeholder {
@@ -93,10 +95,11 @@ pre > code {
 }
 
 .user {
-	display: flex;
-	position: absolute;
-	top: 0;
-	right: 0;
+	//display: flex;
+	//position: absolute;
+	//top: 0;
+	//right: 0;
+	display: inline-block;
 	padding-right: 10px;
 }
 
