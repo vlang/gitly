@@ -4,6 +4,11 @@
 
 	<div id='top_right_div'>
 
+	  <div class='lang_select' onchange='change_lang(this)'>
+      @{veb.raw(build_tr_menu(ctx.lang))}
+  </div>
+
+
 	<form action="/search" method="GET" style='display: inline-block;'>
 		<input class="search-input" name="query" type="text" placeholder="Search..." autocomplete="off">
 	</form>

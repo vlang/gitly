@@ -9,7 +9,7 @@ register_admin_account
 Register an admin account
 -----
 new_repository
-New repository
+New repo
 -----
 repo_being_cloned_plz_wait
 Your repo is being cloned. Please wait a bit...

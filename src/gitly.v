@@ -135,9 +135,7 @@ pub fn (mut app App) init_server() {
 pub fn (mut app App) before_request(mut ctx Context) {
 	url := ctx.req.url
 	ctx.logged_in = app.is_logged_in(mut ctx)
-
-	app.load_settings()
-
+	app.load_settings() // TODO no need in doing this for each request
 	if ctx.logged_in {
 		ctx.user = app.get_user_from_cookies(ctx) or {
 			ctx.logged_in = false
@@ -145,6 +143,7 @@ pub fn (mut app App) before_request(mut ctx Context) {
 		}
 	}
 	dump(url)
+	ctx.lang = Lang.from_string(ctx.get_cookie('lang') or { 'en' }) or { Lang.en }
 }
 
 @['/']
@@ -156,6 +155,15 @@ pub fn (mut app App) index() veb.Result {
 	}
 
 	return $veb.html()
+}
+
+@['/change_lang/:lang'; post]
+pub fn (mut app App) change_lang(lang string) veb.Result {
+	eprintln('CHANGING LANG ${lang}')
+	expire_date := time.now().add_days(400)
+	ctx.set_cookie(name: 'lang', value: lang, path: '/', expires: expire_date)
+	// return ctx.redirect('/')
+	return ctx.json('ok')
 }
 
 pub fn (mut ctx Context) redirect_to_index() veb.Result {
