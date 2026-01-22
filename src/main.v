@@ -25,3 +25,20 @@ fn main() {
 		panic(err)
 	}
 }
+
+fn build_tr_menu(cur_lang Lang) string {
+	println('BUILD TR ${cur_lang}')
+	// mut sb := strings.new_builder()
+	// sb.write_string('<select>')
+	// TODO loop when >2 langs
+	s := '<select id=select_lang>' +
+		'<option value=en ${if cur_lang == .en { 'selected' } else { '' }}>English</option>' +
+		'<option value=ru ${if cur_lang == .ru { 'selected' } else { '' }}>Русский</option></select>'
+	/*
+	s := match cur_lang {
+		.ru { 'English' }
+		.en { 'Русский' }
+	}
+	*/
+	return s
+}

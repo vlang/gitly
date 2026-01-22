@@ -12,7 +12,7 @@ pub fn (mut app App) login(mut ctx Context) veb.Result {
 	ctx.set_cookie(name: 'csrf', value: csrf)
 
 	if app.is_logged_in(mut ctx) {
-		return ctx.redirect("/" + ctx.user.username)
+		return ctx.redirect('/' + ctx.user.username)
 	}
 
 	return $veb.html()
@@ -166,6 +166,9 @@ fn (mut app App) rename_user_directory(old_name string, new_name string) {
 }
 
 pub fn (mut app App) register(mut ctx Context) veb.Result {
+	if ctx.logged_in {
+		return ctx.redirect('/${ctx.user.username}')
+	}
 	user_count := app.get_users_count() or { 0 }
 	no_users := user_count == 0
 
@@ -181,7 +184,7 @@ pub fn (mut app App) handle_register(mut ctx Context, username string, email str
 		return app.register(mut ctx)
 	}
 	no_users := user_count == 0
-	println('USERNAME=$username')
+	println('USERNAME=${username}')
 
 	if username in ['login', 'register', 'new', 'new_post', 'oauth'] {
 		ctx.error('Username `${username}` is not available')
@@ -255,7 +258,7 @@ pub fn (mut app App) handle_register(mut ctx Context, username string, email str
 		app.add_admin(user.id) or { app.info(err.str()) }
 	}
 
-	client_ip := ctx.ip()
+	client_ip := 'ip' // ctx.ip() // XTODO
 
 	app.auth_user(mut ctx, user, client_ip) or {
 		ctx.error('Failed to register')

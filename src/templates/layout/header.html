@@ -2,7 +2,7 @@
 	<div style="margin: 0 auto; max-width:1000px">
 	<a id='mainlogo' href='/'>Gitly</a>
 
-	<div style="float:right;">
+	<div id='top_right_div'>
 
 	<form action="/search" method="GET" style='display: inline-block;'>
 		<input class="search-input" name="query" type="text" placeholder="Search..." autocomplete="off">
@@ -10,7 +10,7 @@
 
 	@if ctx.logged_in
 		<div class="new">
-			<a href="/new">New repository</a>
+			<a href="/new">%new_repository</a>
 		</div>
 	@end
 

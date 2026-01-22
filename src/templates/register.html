@@ -2,6 +2,13 @@
 <html>
 	<head>
 		@include 'layout/head.html'
+
+		@if no_users
+		<style>
+			#top_right_div { display: none; }
+		</style>
+		@end
+
 	</head>
 	<body>
 		@include 'layout/header.html'

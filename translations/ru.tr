@@ -8,3 +8,6 @@ register
 register_admin_account
 Регистрация аккаунта администратора
 -----
+new_repository
+Новый репозиторий
+-----

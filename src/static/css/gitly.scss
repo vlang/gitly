@@ -62,7 +62,6 @@ pre > code {
 	background-color: #eff0f1;
 	display: block;
 }
-
 .no_select {
 	-webkit-touch-callout: none;
 	-webkit-user-select: none;
@@ -71,14 +70,18 @@ pre > code {
 	-ms-user-select: none;
 	user-select: none;
 }
-
 .content {
 	max-width: $mob-max;
 	margin: 0 auto;
 	margin-bottom: 200px;
 	min-height: calc(100vh - 300px);
 }
-
+#top_right_div {
+	float:right;
+	display: flex;
+	align-items: center;
+	height: 50px;
+}
 .search-input {
 	//position: absolute;
 	//top: 10px;
@@ -207,10 +210,7 @@ pre > code {
 }
 
 .new {
-	display: flex;
-	position: absolute;
-	top: 0;
-	right: 75px;
+	margin-right: 20px;
 }
 
 .new a {
