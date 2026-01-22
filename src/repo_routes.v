@@ -201,23 +201,23 @@ pub fn (mut app App) handle_new_repo(mut ctx Context, name string, clone_url str
 		ctx.error('The repository name is too long (should be fewer than ${max_repo_name_len} characters)')
 		return app.new(mut ctx)
 	}
-	println(1)
+	eprintln(1)
 	if _ := app.find_repo_by_name_and_username(name, ctx.user.username) {
 		ctx.error('A repository with the name "${name}" already exists')
 		return app.new(mut ctx)
 	}
-	println(2)
+	eprintln(2)
 	if name.contains(' ') {
 		ctx.error('Repository name cannot contain spaces')
 		return app.new(mut ctx)
 	}
-	println(3)
+	eprintln(3)
 	is_repo_name_valid := validation.is_repository_name_valid(name)
 	if !is_repo_name_valid {
 		ctx.error('The repository name is not valid')
 		return app.new(mut ctx)
 	}
-	println(4)
+	eprintln(4)
 	has_clone_url_https_prefix := clone_url.starts_with('https://')
 	if !is_clone_url_empty {
 		if !has_clone_url_https_prefix {
@@ -253,7 +253,8 @@ pub fn (mut app App) handle_new_repo(mut ctx Context, name string, clone_url str
 		app.debug('cloning')
 		// t := time.now()
 
-		spawn app.foo(mut new_repo)
+		new_repo.status = .cloning
+		spawn app.clone_repo(mut new_repo)
 		// new_repo.clone()
 		// println(time.since(t))
 	}
@@ -292,20 +293,29 @@ pub fn (mut app App) handle_new_repo(mut ctx Context, name string, clone_url str
 	if !has_first_repo_activity {
 		app.add_activity(ctx.user.id, 'first_repo') or { app.info(err.str()) }
 	}
-	return ctx.redirect('/${ctx.user.username}/repos')
+	return ctx.redirect('/${ctx.user.username}/${new_repo.name}')
 }
 
-pub fn (mut app App) foo(mut new_repo Repo) {
+pub fn (mut app App) clone_repo(mut new_repo Repo) {
 	new_repo.clone()
 	app.debug('cloning done')
 	app.update_repo_from_fs(mut new_repo) or {}
+	app.set_repo_status(new_repo.id, .done) or {}
 	// git.clone(valid_clone_url, repo_path)
+}
+
+pub fn (mut app App) kekw(mut ctx Context) veb.Result {
+	return $veb.html('templates/cloning_in_process.html')
 }
 
 @['/:username/:repo_name/tree/:branch_name/:path...']
 pub fn (mut app App) tree(mut ctx Context, username string, repo_name string, branch_name string, path string) veb.Result {
 	mut repo := app.find_repo_by_name_and_username(repo_name, username) or {
 		return ctx.not_found()
+	}
+	eprintln('!!! REPO STATUS = ${repo.status}')
+	if repo.status == .cloning {
+		return $veb.html('templates/cloning_in_process.html')
 	}
 
 	_, user := app.check_username(username)

@@ -40,7 +40,6 @@ fn (app App) build_avatar_file_path(avatar_filename string) string {
 
 fn (app App) build_avatar_file_url(avatar_filename string) string {
 	clean_path := app.config.avatars_path.trim_string_left('./')
-
 	return os.join_path('/', clean_path, avatar_filename)
 }
 
@@ -55,14 +54,11 @@ fn (app App) write_user_avatar(avatar_filename string, file_content string) bool
 fn (app App) prepare_user_avatar_url(avatar_filename_or_url string) string {
 	is_url := avatar_filename_or_url.starts_with('http')
 	is_default_avatar := avatar_filename_or_url == default_avatar_name
-
 	if is_url {
 		return avatar_filename_or_url
 	}
-
 	if is_default_avatar {
 		return os.join_path('/', assets_path, avatar_filename_or_url)
 	}
-
 	return app.build_avatar_file_url(avatar_filename_or_url)
 }

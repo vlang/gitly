@@ -11,3 +11,5 @@ register_admin_account
 new_repository
 Новый репозиторий
 -----
+repo_being_cloned_plz_wait
+Your repo is being cloned. Please wait a bit...

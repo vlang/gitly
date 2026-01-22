@@ -37,8 +37,8 @@ mut:
 	lang_stats      []LangStat @[skip]
 	created_at      int
 	nr_contributors int
-	labels          []Label           @[skip]
-	status          RepoStatus        @[skip]
+	labels          []Label @[skip]
+	status          RepoStatus
 	msg_cache       map[string]string @[skip]
 }
 
@@ -48,10 +48,10 @@ const log_field_separator = '\x7F'
 const ignored_folder = ['thirdparty']
 
 enum RepoStatus {
-	done
-	caching
-	clone_failed
-	clone_done
+	done         = 0
+	caching      = 1
+	clone_failed = 2
+	cloning      = 3
 }
 
 enum ArchiveFormat {
@@ -201,6 +201,12 @@ fn (mut app App) set_repo_webhook_secret(repo_id int, secret string) ! {
 	}!
 }
 
+fn (mut app App) set_repo_status(repo_id int, status RepoStatus) ! {
+	sql app.db {
+		update Repo set status = status where id == repo_id
+	}!
+}
+
 fn (mut app App) increment_repo_issues(repo_id int) ! {
 	sql app.db {
 		update Repo set nr_open_issues = nr_open_issues + 1 where id == repo_id
@@ -210,7 +216,7 @@ fn (mut app App) increment_repo_issues(repo_id int) ! {
 fn (mut app App) get_count_repo() int {
 	return sql app.db {
 		select count from Repo
-	} or {0}
+	} or { 0 }
 }
 
 fn (mut app App) add_repo(repo Repo) ! {
@@ -778,7 +784,7 @@ fn (mut app App) update_repo_primary_branch(repo_id int, branch string) ! {
 }
 
 fn (mut r Repo) clone() {
-	println('R CLONE')
+	eprintln('R CLONE')
 	if r.git_repo != unsafe { nil } {
 		r.git_repo.clone(r.clone_url, r.git_dir)
 	} else {
@@ -798,7 +804,8 @@ fn (mut r Repo) clone() {
 	}
 	*/
 
-	r.status = .clone_done
+	r.status = .done
+	eprintln('clone done')
 }
 
 fn (r &Repo) read_file(branch string, path string) string {
@@ -844,7 +851,8 @@ fn find_readme_file(items []File) ?File {
 
 fn find_license_file(items []File) ?File {
 	// List of common license file names
-	license_common_files := ['license', 'license.md', 'license.txt', 'licence', 'licence.md', 'licence.txt']
+	license_common_files := ['license', 'license.md', 'license.txt', 'licence', 'licence.md',
+		'licence.txt']
 
 	files := items.filter(license_common_files.contains(it.name.to_lower()))
 
