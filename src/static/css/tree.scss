@@ -196,7 +196,6 @@
 .repo-code-container:hover .repo-clone-dropdown {
 	display: block;
 }
-
 /* Repo About / Actions Section */
 .repo-about {
 	display: flex;
@@ -206,7 +205,7 @@
 	h2, p, div:not(.button-container) {
 		/* Hide original text elements if purely for structure,
            or style them if they contain description */
-		display: none;
+		//display: none;
 	}
 
 	/* Show buttons explicitly */

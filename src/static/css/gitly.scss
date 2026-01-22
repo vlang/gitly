@@ -49,6 +49,9 @@ a {
 	font-size: 14px;
 	text-decoration: none;
 }
+h2 {
+	padding:10px;
+}
 
 code {
 	background-color: #f7f7f7;
@@ -415,6 +418,7 @@ form {
 
 
 
-@import "files", "langs", "tree", "commits", "hl_table", "branches", "admin",
-	"blob", "contributors", "issues", "user", "releases", "feed", "search";
+
+@import "files.scss", "langs.scss", "tree.scss", "commits.scss", "hl_table.scss", "branches.scss", "admin.scss",
+	"blob.scss", "contributors.scss", "issues.scss", "user.scss", "releases.scss", "feed.scss", "search.scss";
 
