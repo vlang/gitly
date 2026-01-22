@@ -186,7 +186,7 @@ pub fn (mut app App) new() veb.Result {
 
 @['/new'; post]
 pub fn (mut app App) handle_new_repo(mut ctx Context, name string, clone_url string, description string, no_redirect string) veb.Result {
-	println("NEW POST")
+	println('NEW POST')
 	mut valid_clone_url := clone_url
 	is_clone_url_empty := validation.is_string_empty(clone_url)
 	is_public := ctx.form['repo_visibility'] == 'public'
@@ -231,13 +231,13 @@ pub fn (mut app App) handle_new_repo(mut ctx Context, name string, clone_url str
 			return app.new(mut ctx)
 		}
 	}
-	println("OK")
+	println('OK')
 	repo_path := os.join_path(app.config.repo_storage_path, ctx.user.username, name)
 	id := app.get_count_repo() + 1
 	mut new_repo := &Repo{
 		git_repo:       git.new_repo(repo_path)
 		name:           name
-		id: 			id
+		id:             id
 		description:    description
 		git_dir:        repo_path
 		user_id:        ctx.user.id
@@ -250,7 +250,7 @@ pub fn (mut app App) handle_new_repo(mut ctx Context, name string, clone_url str
 		os.mkdir(new_repo.git_dir) or { panic(err) }
 		new_repo.git('init --bare')
 	} else {
-		app.debug("cloning")
+		app.debug('cloning')
 		// t := time.now()
 
 		spawn app.foo(mut new_repo)
@@ -297,7 +297,7 @@ pub fn (mut app App) handle_new_repo(mut ctx Context, name string, clone_url str
 
 pub fn (mut app App) foo(mut new_repo Repo) {
 	new_repo.clone()
-	app.debug("cloning done")
+	app.debug('cloning done')
 	app.update_repo_from_fs(mut new_repo) or {}
 	// git.clone(valid_clone_url, repo_path)
 }
@@ -395,6 +395,7 @@ pub fn (mut app App) tree(mut ctx Context, username string, repo_name string, br
 	}
 
 	diff := int(time.ticks() - ctx.page_gen_start)
+	println('DIFF=${diff}')
 	if diff == 0 {
 		ctx.page_gen_time = '<1ms'
 	} else {

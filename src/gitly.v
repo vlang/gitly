@@ -256,3 +256,13 @@ fn (mut app App) send_file(filname string, content string) veb.Result {
 
 	return ctx.ok(content)
 }
+
+fn (mut ctx Context) page_gen_time() string {
+	diff := int(time.ticks() - ctx.page_gen_start)
+	println('DIFF=${diff}')
+	return if diff == 0 {
+		'<1ms'
+	} else {
+		'${diff}ms'
+	}
+}
