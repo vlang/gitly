@@ -283,7 +283,7 @@ pub fn (mut app App) get_all_registered_user_count() int {
 fn (app App) search_users(query string) []User {
 	q := 'select id, full_name, username, avatar from `User` where is_blocked is false and ' +
 		'(username like "%${query}%" or full_name like "%${query}%")'
-	repo_rows := app.db.exec(q) or { return [] }
+	repo_rows := app.db.exec_no_null(q) or { return [] }
 	mut users := []User{}
 	for row in repo_rows {
 		users << User{

@@ -6,7 +6,8 @@ import veb
 import time
 import os
 import log
-import db.sqlite
+// import db.sqlite
+import db.pg
 import api
 import config
 
@@ -26,7 +27,7 @@ pub struct App {
 	veb.Middleware[Context]
 	started_at i64
 pub mut:
-	db sqlite.DB
+	db pg.DB
 mut:
 	version  string
 	logger   log.Log
@@ -47,13 +48,21 @@ mut:
 	lang          Lang = .en //.ru
 }
 
-fn C.sqlite3_config(int)
+// fn C.sqlite3_config(int)
 
 fn new_app() !&App {
-	C.sqlite3_config(3)
+	// C.sqlite3_config(3)
 
 	mut app := &App{
-		db:         sqlite.connect('gitly.sqlite') or { panic(err) }
+		// db: sqlite.connect('gitly.sqlite') or { panic(err) }
+		db: pg.connect(
+			// host:     conf.pg.host
+			dbname:   'gitly'
+			user:     'gitly'
+			password: 'gitly'
+			// port:     conf.pg.port
+		)!
+
 		started_at: time.now().unix()
 	}
 

@@ -16,7 +16,7 @@ fn main() {
     println('\nStep 2: Remote compilation and restart...')
     remote_cmds := [
         'cd $remote_path',
-        'v -d new_veb -d use_openssl .',
+        '/root/v2/v -d new_veb -d use_openssl .',
         'sudo systemctl restart gitly'
     ].join(' && ')
 
