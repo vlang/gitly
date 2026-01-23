@@ -259,7 +259,7 @@ pub fn (mut app App) handle_new_repo(mut ctx Context, name string, clone_url str
 		// println(time.since(t))
 	}
 	app.add_repo(new_repo) or {
-		ctx.error('There was an error while adding the repo')
+		ctx.error('There was an error while adding the repo ${err}')
 		return app.new(mut ctx)
 	}
 	new_repo2 := app.find_repo_by_name_and_user_id(new_repo.name, ctx.user.id) or {
