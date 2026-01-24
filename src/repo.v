@@ -72,7 +72,7 @@ fn (mut app App) save_repo(repo Repo) ! {
 	views_count := repo.views_count
 	webhook_secret := repo.webhook_secret
 	tags_count := repo.tags_count
-	is_public := if repo.is_public { 1 } else { 0 }
+	is_public := repo.is_public // if repo.is_public { 1 } else { 0 } // SQLITE hack
 	open_issues_count := repo.nr_open_issues
 	open_prs_count := repo.nr_open_prs
 	branches_count := repo.nr_branches

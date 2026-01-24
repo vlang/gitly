@@ -299,8 +299,9 @@ pub fn (mut app App) handle_new_repo(mut ctx Context, name string, clone_url str
 pub fn (mut app App) clone_repo(mut new_repo Repo) {
 	new_repo.clone()
 	app.debug('cloning done')
-	app.update_repo_from_fs(mut new_repo) or {}
-	app.set_repo_status(new_repo.id, .done) or {}
+	app.update_repo_from_fs(mut new_repo) or { eprintln('cannot update repo from fs ${err}') }
+	eprintln('setting repo status to done after cloning xxx')
+	app.set_repo_status(new_repo.id, .done) or { eprintln('cannot set repo status ${err}') }
 	// git.clone(valid_clone_url, repo_path)
 }
 
@@ -311,6 +312,7 @@ pub fn (mut app App) kekw(mut ctx Context) veb.Result {
 @['/:username/:repo_name/tree/:branch_name/:path...']
 pub fn (mut app App) tree(mut ctx Context, username string, repo_name string, branch_name string, path string) veb.Result {
 	mut repo := app.find_repo_by_name_and_username(repo_name, username) or {
+		eprintln('tree() repo ${repo_name} not found')
 		return ctx.not_found()
 	}
 	eprintln('!!! REPO STATUS = ${repo.status}')
