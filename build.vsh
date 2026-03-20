@@ -9,6 +9,11 @@ if !exists(path) {
 	}
 }
 
+rc_deps := system('v install')
+if rc_deps != 0 {
+  panic('Some error during dependencies install/update (rc: ${rc_deps})')
+}
+
 ret := system('v .')
 if ret == 0 {
 	println('Gitly has been successfully built, run it with ./gitly')
