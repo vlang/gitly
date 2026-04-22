@@ -14,7 +14,7 @@ pub fn (mut app App) user_ssh_keys_list(mut ctx Context, username string) veb.Re
 
 	ssh_keys := app.find_ssh_keys(ctx.user.id)
 
-	return $veb.html()
+	return $veb.html('../templates/user/ssh/keys/list.html')
 }
 
 @['/:username/settings/ssh-keys'; 'post']
@@ -79,5 +79,5 @@ pub fn (mut app App) user_ssh_keys_new(mut ctx Context, username string) veb.Res
 		return ctx.redirect_to_index()
 	}
 
-	return $veb.html()
+	return $veb.html('../templates/user/ssh/keys/new.html')
 }

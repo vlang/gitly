@@ -3,6 +3,6 @@ Module {
 	description: 'A self-hosted Git service, written in V'
 	version: '0.1.1'
 	license: 'GPL 3'
-	subdirs: ['admin', 'repo', 'commit', 'ci']
+	subdirs: ['admin', 'repo', 'commit', 'ci', 'security', 'ssh', 'user']
 	dependencies: []
 }
