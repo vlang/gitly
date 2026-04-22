@@ -1,0 +1,299 @@
+$ci-success: #28a745;
+$ci-failure: #cb2431;
+$ci-running: #dbab09;
+$ci-pending: #6a737d;
+$ci-cancelled: #959da5;
+$gray: #dfdfdf;
+$gray-light: #f3f3f3;
+
+.ci-error {
+	padding: 12px 16px;
+	margin-bottom: 16px;
+	background: #ffeef0;
+	border: 1px solid #fdaeb7;
+	border-radius: 5px;
+	color: $ci-failure;
+	font-size: 14px;
+}
+
+.ci-empty {
+	padding: 40px 20px;
+	text-align: center;
+	color: #6a737d;
+
+	code {
+		background: $gray-light;
+		padding: 2px 6px;
+		border-radius: 3px;
+		font-size: 13px;
+	}
+}
+
+// Status badges
+.ci-status-badge {
+	display: inline-block;
+	padding: 2px 10px;
+	border-radius: 3px;
+	font-size: 12px;
+	font-weight: 500;
+	color: #fff;
+	text-transform: capitalize;
+
+	&.ci-success { background: $ci-success; }
+	&.ci-failure { background: $ci-failure; }
+	&.ci-running { background: $ci-running; color: #24292e; }
+	&.ci-pending { background: $ci-pending; }
+	&.ci-cancelled { background: $ci-cancelled; }
+}
+
+// Small inline badge for tree view
+.ci-badge-inline {
+	display: inline-block;
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+	margin-left: 6px;
+	vertical-align: middle;
+
+	&.ci-success { background: $ci-success; }
+	&.ci-failure { background: $ci-failure; }
+	&.ci-running { background: $ci-running; }
+	&.ci-pending { background: $ci-pending; }
+	&.ci-cancelled { background: $ci-cancelled; }
+}
+
+// CI runs list
+.ci-runs {
+	border: 1px solid $gray;
+	border-radius: 5px;
+	overflow: hidden;
+}
+
+.ci-runs-header {
+	display: flex;
+	padding: 10px 15px;
+	background: $gray-light;
+	border-bottom: 1px solid $gray;
+	font-weight: 600;
+	font-size: 13px;
+	color: #586069;
+}
+
+.ci-run-row {
+	display: flex;
+	padding: 10px 15px;
+	border-bottom: 1px solid $gray;
+	text-decoration: none;
+	color: inherit;
+	align-items: center;
+
+	&:last-child { border-bottom: none; }
+	&:hover { background: $gray-light; }
+}
+
+.ci-col-status { flex: 0 0 120px; }
+.ci-col-branch { flex: 0 0 150px; }
+.ci-col-commit { flex: 0 0 120px; }
+.ci-col-time { flex: 1; text-align: right; color: #586069; font-size: 13px; }
+
+// CI run detail page
+.ci-run-header {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin-bottom: 10px;
+
+	h1 { margin: 0; }
+}
+
+// Restart button
+.ci-restart-form {
+	margin-left: auto;
+}
+
+.ci-restart-btn {
+	padding: 5px 14px;
+	background: #fff;
+	color: #24292e;
+	border: 1px solid $gray;
+	border-radius: 5px;
+	font-size: 13px;
+	font-weight: 500;
+	cursor: pointer;
+
+	&:hover {
+		background: $gray-light;
+		border-color: #c6cbd1;
+	}
+}
+
+.ci-run-info {
+	display: flex;
+	gap: 20px;
+	padding: 12px 0;
+	margin-bottom: 20px;
+	border-bottom: 1px solid $gray;
+	font-size: 13px;
+	color: #586069;
+
+	b { color: #24292e; }
+	code {
+		background: $gray-light;
+		padding: 1px 5px;
+		border-radius: 3px;
+		font-size: 12px;
+	}
+}
+
+// CI job block
+.ci-job {
+	border: 1px solid $gray;
+	border-radius: 5px;
+	margin-bottom: 16px;
+	overflow: hidden;
+}
+
+.ci-job-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 10px 15px;
+	background: $gray-light;
+	border-bottom: 1px solid $gray;
+
+	&.ci-success { border-left: 3px solid $ci-success; }
+	&.ci-failure { border-left: 3px solid $ci-failure; }
+	&.ci-running { border-left: 3px solid $ci-running; }
+	&.ci-pending { border-left: 3px solid $ci-pending; }
+}
+
+// CI steps
+.ci-steps {
+	padding: 0;
+}
+
+.ci-step {
+	border-bottom: 1px solid $gray;
+
+	&:last-child { border-bottom: none; }
+}
+
+.ci-step-header {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 15px;
+	font-size: 13px;
+
+	&.ci-success .ci-step-icon { color: $ci-success; }
+	&.ci-failure .ci-step-icon { color: $ci-failure; }
+	&.ci-running .ci-step-icon { color: $ci-running; }
+	&.ci-pending .ci-step-icon { color: $ci-pending; }
+}
+
+.ci-step-icon {
+	font-size: 14px;
+	width: 16px;
+	text-align: center;
+}
+
+.ci-step-cmd {
+	background: $gray-light;
+	padding: 1px 6px;
+	border-radius: 3px;
+	font-size: 12px;
+	color: #586069;
+	margin-left: auto;
+}
+
+.ci-step-output {
+	background: #1b1f23;
+	color: #e1e4e8;
+	padding: 12px 15px;
+	margin: 0;
+	font-family: SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+	font-size: 12px;
+	line-height: 1.6;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	word-break: break-all;
+}
+
+// Create CI file button
+.ci-create-btn {
+	display: inline-block;
+	margin-top: 15px;
+	padding: 8px 20px;
+	background: #28a745;
+	color: #fff !important;
+	border-radius: 5px;
+	font-size: 14px;
+	font-weight: 500;
+	text-decoration: none;
+
+	&:hover {
+		background: #22863a;
+	}
+}
+
+// Create file form
+.create-file-form {
+	margin-top: 15px;
+}
+
+.create-file-path {
+	display: flex;
+	align-items: center;
+	margin-bottom: 10px;
+	gap: 4px;
+
+	input {
+		flex: 1;
+		font-size: 14px;
+		padding: 6px 10px;
+	}
+}
+
+.create-file-prefix {
+	color: #586069;
+	font-size: 14px;
+	white-space: nowrap;
+}
+
+.create-file-editor {
+	width: 100%;
+	box-sizing: border-box;
+	font-family: SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+	font-size: 13px;
+	line-height: 1.5;
+	padding: 12px;
+	border: 1px solid $gray;
+	border-radius: 5px;
+	resize: vertical;
+	tab-size: 2;
+}
+
+.create-file-commit {
+	display: flex;
+	gap: 10px;
+	margin-top: 10px;
+	align-items: center;
+
+	input[type="text"] {
+		flex: 1;
+		padding: 6px 10px;
+	}
+
+	input[type="submit"] {
+		padding: 6px 20px;
+		background: #28a745;
+		color: #fff;
+		border: 1px solid #28a745;
+		width: auto !important;
+
+		&:hover {
+			background: #22863a;
+			border-color: #22863a;
+		}
+	}
+}

@@ -309,10 +309,10 @@ pub fn (mut app App) get_count_repo_contributors(id int) !int {
 }
 
 pub fn (mut app App) contains_contributor(user_id int, repo_id int) bool {
-	contributors := sql app.db {
-		select from Contributor where repo_id == repo_id && user_id == user_id
-	} or { [] }
-	return contributors.len > 0
+	count := sql app.db {
+		select count from Contributor where repo_id == repo_id && user_id == user_id
+	} or { 0 }
+	return count > 0
 }
 
 pub fn (mut app App) increment_user_post(mut user User) ! {

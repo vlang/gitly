@@ -22,7 +22,7 @@ fn (mut app App) handle_git_info(username string, git_repo_name string) veb.Resu
 	is_private_repo := !repo.is_public
 
 	if is_receive_service || is_private_repo {
-		app.check_git_http_access(mut ctx, username, repo_name) or { return ctx.ok('') }
+		app.check_git_http_access(mut ctx, username, repo_name) or { return veb.no_result() }
 	}
 
 	refs := repo.git_advertise(service.str())
@@ -43,7 +43,7 @@ fn (mut app App) handle_git_upload_pack(username string, git_repo_name string) v
 	is_private_repo := !repo.is_public
 
 	if is_private_repo {
-		app.check_git_http_access(mut ctx, username, repo_name) or { return ctx.ok('') }
+		app.check_git_http_access(mut ctx, username, repo_name) or { return veb.no_result() }
 	}
 
 	git_response := repo.git_smart('upload-pack', body)
@@ -60,21 +60,20 @@ fn (mut app App) handle_git_receive_pack(username string, git_repo_name string) 
 	user := app.get_user_by_username(username) or { return ctx.not_found() }
 	repo := app.find_repo_by_name_and_user_id(repo_name, user.id) or { return ctx.not_found() }
 
-	app.check_git_http_access(mut ctx, username, repo_name) or { return ctx.ok('') }
+	app.check_git_http_access(mut ctx, username, repo_name) or { return veb.no_result() }
 
 	git_response := repo.git_smart('receive-pack', body)
 
 	branch_name := git.parse_branch_name_from_receive_upload(body) or {
-		ctx.send_internal_error('Receive upload parsing error')
-
-		return ctx.ok('')
+		return ctx.server_error('Receive upload parsing error')
 	}
 
 	app.update_repo_after_push(repo.id, branch_name) or {
-		ctx.send_internal_error('There was an error while updating the repo')
-
-		return ctx.ok('')
+		return ctx.server_error('There was an error while updating the repo')
 	}
+
+	// Trigger CI if .gitly-ci.yml exists in the repo
+	spawn app.trigger_ci_if_configured(repo.id, branch_name)
 
 	ctx.set_git_content_type_headers(.receive)
 
@@ -87,6 +86,7 @@ fn (mut app App) check_git_http_access(mut ctx Context, repository_owner string,
 	if !has_valid_auth_header {
 		ctx.set_authenticate_headers()
 		ctx.send_unauthorized()
+		return none
 	}
 
 	has_user_valid_credentials := app.check_user_credentials(ctx)

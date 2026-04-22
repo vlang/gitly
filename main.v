@@ -1,15 +1,27 @@
 import os
 import veb
-
-const http_port = get_port()
-
-fn get_port() int {
-	return os.getenv_opt('GITLY_PORT') or { '8080' }.int()
-}
+import config
 
 enum Lang {
 	en
 	ru
+}
+
+fn get_port(conf config.Config) int {
+	// Priority: -p flag > GITLY_PORT env > config.json port > 8080
+	for i, arg in os.args {
+		if (arg == '-p' || arg == '--port') && i + 1 < os.args.len {
+			return os.args[i + 1].int()
+		}
+	}
+	env_port := os.getenv_opt('GITLY_PORT') or { '' }
+	if env_port != '' {
+		return env_port.int()
+	}
+	if conf.port > 0 {
+		return conf.port
+	}
+	return 8080
 }
 
 fn main() {
@@ -19,13 +31,13 @@ fn main() {
 	mut app := new_app()!
 
 	app.use(handler: app.before_request)
-	// vweb.run_at(new_app()!, http_port)
+
+	app.port = get_port(app.config)
 
 	veb.run_at[App, Context](mut app,
-		port:               http_port
+		port:               app.port
 		family:             .ip
 		timeout_in_seconds: 5
-		// benchmark_page_generation: true
 	) or { panic(err) }
 }
 

@@ -17,6 +17,10 @@
 				<span>${file.pretty_size()}</span>
 				|
 				<span>Latest commit hash ${file.last_hash}</span>
+				@if repo.user_id == ctx.user.id
+					|
+					<a href="/@username/@repo_name/edit/@branch_name/@path">Edit</a>
+				@end
 			</div>
 
 			@if is_markdown

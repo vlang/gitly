@@ -69,6 +69,29 @@
 	gap: 10px;
 }
 
+.add-file-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 32px;
+	height: 32px;
+	background: #fafbfc;
+	border: 1px solid rgba(27, 31, 35, 0.15);
+	border-radius: 6px;
+	color: #24292e !important;
+	font-size: 18px;
+	font-weight: 400;
+	line-height: 1;
+	text-decoration: none;
+	cursor: pointer;
+
+	&:hover {
+		background: #2ea44f;
+		border-color: #2ea44f;
+		color: #fff !important;
+	}
+}
+
 /* Branch Select Dropdown */
 .branch-select {
 	appearance: none;

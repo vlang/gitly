@@ -71,7 +71,7 @@ pub fn (mut app App) commits(mut ctx Context, username string, repo_name string,
 		}
 	}
 
-	return $veb.html()
+	return $veb.html('../templates/commits.html')
 }
 
 @['/:username/:repo_name/commit/:hash']
@@ -101,5 +101,5 @@ pub fn (mut app App) commit(mut ctx Context, username string, repo_name string, 
 		sources[change.file] = veb.RawHtml(src)
 	}
 
-	return $veb.html()
+	return $veb.html('../templates/commit.html')
 }

@@ -12,7 +12,7 @@ pub fn (mut app App) admin_settings(mut ctx Context) veb.Result {
 		return ctx.redirect_to_index()
 	}
 
-	return $veb.html()
+	return $veb.html('../templates/admin/settings.html')
 }
 
 @['/admin/settings'; post]
@@ -60,7 +60,7 @@ pub fn (mut app App) admin_users(mut ctx Context, page int) veb.Result {
 	is_last_page := check_last_page(user_count, offset, admin_users_per_page)
 	prev_page, next_page := generate_prev_next_pages(page)
 
-	return $veb.html()
+	return $veb.html('../templates/admin/users.html')
 }
 
 @['/admin/statistics']
@@ -68,5 +68,5 @@ pub fn (mut app App) admin_statistics() veb.Result {
 	if !ctx.is_admin() {
 		return ctx.redirect_to_index()
 	}
-	return $veb.html()
+	return $veb.html('../templates/admin/statistics.html')
 }

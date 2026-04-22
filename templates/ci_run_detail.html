@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		@include 'layout/head.html'
+		@css '/css/ci.css'
+	</head>
+	<body>
+		@include 'layout/header.html'
+
+		<div class="content">
+			@include 'layout/repo_menu.html'
+
+			<div class="ci-run-header">
+				<h1>CI Run #@{ci_run.id}</h1>
+				<span class="ci-status-badge @{ci_run.status_css_class()}">@{ci_run.status}</span>
+				@if repo.user_id == ctx.user.id
+					<form class="ci-restart-form" method="POST" action="/@repo.user_name/@repo.name/ci/@{ci_run.id}/restart">
+						<button type="submit" class="ci-restart-btn">⟳ Restart</button>
+					</form>
+				@end
+			</div>
+
+			<div class="ci-run-info">
+				<span>Branch: <b>@{ci_run.branch}</b></span>
+				<span>Commit: <code>@{ci_run.commit_hash}</code></span>
+				<span>Started: @{ci_run.created_relative()}</span>
+				<span>Duration: @{ci_run.duration()}</span>
+			</div>
+
+			@for job in ci_run.jobs
+				<div class="ci-job">
+					<div class="ci-job-header @{job.status_css_class()}">
+						<b>@job.name</b>
+						<span class="ci-status-badge @{job.status_css_class()}">@job.status</span>
+					</div>
+
+					<div class="ci-steps">
+						@for step in job.steps
+							<div class="ci-step">
+								<div class="ci-step-header @{step.status_css_class()}">
+									<span class="ci-step-icon">@{step.status_icon()}</span>
+									<b>@step.name</b>
+									<code class="ci-step-cmd">@step.command</code>
+								</div>
+								@if step.output.len > 0
+									<pre class="ci-step-output">@step.output</pre>
+								@end
+							</div>
+						@end
+					</div>
+				</div>
+			@end
+		</div>
+
+		@include 'layout/footer.html'
+	</body>
+</html>

@@ -250,6 +250,9 @@ fn (mut app App) delete_repository(id int, path string, name string) ! {
 
 	app.delete_repo_folder(path)
 	app.info('Removed repo folder (${id}, ${name})')
+
+	app.delete_repo_ci_statuses(id) or {}
+	app.info('Removed repo CI statuses (${id}, ${name})')
 }
 
 fn (mut app App) move_repo_to_user(repo_id int, user_id int, user_name string) ! {
@@ -308,21 +311,24 @@ fn (mut app App) update_repo_branch_from_fs(mut repo Repo, branch_name string) !
 	if branch.id == 0 {
 		return
 	}
-	// $dbg;
 
 	data := repo.git('--no-pager log ${branch_name} --abbrev-commit --abbrev=7 --pretty="%h${log_field_separator}%aE${log_field_separator}%cD${log_field_separator}%s${log_field_separator}%aN"')
-	// println('DATA=')
-	// println(data)
 
 	for line in data.split_into_lines() {
 		args := line.split(log_field_separator)
 
-		if args.len > 3 {
+		if args.len > 4 {
 			commit_hash := args[0]
 			commit_author_email := args[1]
 			commit_message := args[3]
 			commit_author := args[4]
 			mut commit_author_id := 0
+
+			// git log outputs newest commits first; if this commit already
+			// exists, all subsequent (older) commits do too — stop early.
+			if app.commit_exists(repo_id, branch.id, commit_hash) {
+				break
+			}
 
 			commit_date := time.parse_rfc2822(args[2]) or {
 				app.info('Error: ${err}')
@@ -337,9 +343,7 @@ fn (mut app App) update_repo_branch_from_fs(mut repo Repo, branch_name string) !
 				commit_author_id = user.id
 			}
 
-			// $dbg;
-
-			app.add_commit_if_not_exist(repo_id, branch.id, commit_hash, commit_author,
+			app.add_commit(repo_id, branch.id, commit_hash, commit_author,
 				commit_author_id, commit_message, int(commit_date.unix()))!
 		}
 	}
@@ -393,12 +397,16 @@ fn (mut app App) update_repo_branch_data(mut repo Repo, branch_name string) ! {
 	for line in data.split_into_lines() {
 		args := line.split(log_field_separator)
 
-		if args.len > 3 {
+		if args.len > 4 {
 			commit_hash := args[0]
 			commit_author_email := args[1]
 			commit_message := args[3]
 			commit_author := args[4]
 			mut commit_author_id := 0
+
+			if app.commit_exists(repo_id, branch.id, commit_hash) {
+				break
+			}
 
 			commit_date := time.parse_rfc2822(args[2]) or {
 				app.info('Error: ${err}')
@@ -413,8 +421,7 @@ fn (mut app App) update_repo_branch_data(mut repo Repo, branch_name string) ! {
 				commit_author_id = user.id
 			}
 
-			// $dbg;
-			app.add_commit_if_not_exist(repo_id, branch.id, commit_hash, commit_author,
+			app.add_commit(repo_id, branch.id, commit_hash, commit_author,
 				commit_author_id, commit_message, int(commit_date.unix()))!
 		}
 	}
@@ -584,7 +591,6 @@ fn (r &Repo) parse_ls(ls_line string, branch string) ?File {
 	item_type := ls_line_parts[1]
 	item_size := ls_line_parts[3]
 	item_path := ls_line_parts[4]
-	item_hash := r.git('log ${branch} -n 1 --format="%h" -- ${item_path}')
 
 	item_name := item_path.after('/')
 	if item_name == '' {
@@ -604,7 +610,6 @@ fn (r &Repo) parse_ls(ls_line string, branch string) ?File {
 		name:        item_name
 		parent_path: parent_path
 		repo_id:     r.id
-		last_hash:   item_hash
 		branch:      branch
 		is_dir:      item_type == 'tree'
 		size:        if item_type == 'blob' { item_size.int() } else { 0 }
@@ -769,11 +774,12 @@ fn (mut app App) fetch_file_info(r &Repo, file &File) ! {
 		return
 	}
 	last_msg := first_line(vals[0])
-	last_time := vals[1].int() // last_hash
+	last_time := vals[1].int()
+	last_hash := vals[2]
 
 	file_id := file.id
 	sql app.db {
-		update File set last_msg = last_msg, last_time = last_time where id == file_id
+		update File set last_msg = last_msg, last_time = last_time, last_hash = last_hash where id == file_id
 	}!
 }
 

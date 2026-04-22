@@ -81,17 +81,14 @@ fn (commit Commit) get_changes(repo Repo) []Change {
 	return changes
 }
 
-fn (mut app App) add_commit_if_not_exist(repo_id int, branch_id int, last_hash string, author string, author_id int, message string, date int) ! {
-	commits := sql app.db {
-		select from Commit where repo_id == repo_id && branch_id == branch_id && hash == last_hash limit 1
-	} or { []Commit{} }
+fn (mut app App) commit_exists(repo_id int, branch_id int, hash string) bool {
+	count := sql app.db {
+		select count from Commit where repo_id == repo_id && branch_id == branch_id && hash == hash
+	} or { 0 }
+	return count > 0
+}
 
-	// $dbg;
-
-	if commits.len > 0 {
-		return
-	}
-
+fn (mut app App) add_commit(repo_id int, branch_id int, last_hash string, author string, author_id int, message string, date int) ! {
 	new_commit := Commit{
 		author_id:  author_id
 		author:     author
@@ -102,7 +99,6 @@ fn (mut app App) add_commit_if_not_exist(repo_id int, branch_id int, last_hash s
 		message:    message
 	}
 
-	// $dbg;
 	sql app.db {
 		insert new_commit into Commit
 	}!

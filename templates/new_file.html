@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		@include 'layout/head.html'
+		@css '/css/ci.css'
+	</head>
+	<body>
+		@include 'layout/header.html'
+
+		<div class="content">
+			@include 'layout/repo_menu.html'
+
+			<h1>Create new file</h1>
+
+			<div class='form-error'>
+				@ctx.form_error
+			</div>
+
+			<form action="/@username/@repo.name/create-file" method="post" class="create-file-form">
+				<input type="hidden" name="branch" value="@branch_name">
+
+				<div class="create-file-path">
+					<span class="create-file-prefix">@repo.user_name/@repo.name /</span>
+					<input type="text" name="file_path" placeholder="file name (e.g. .gitly-ci.yml)" value="@default_filename" required autofocus>
+				</div>
+
+				<textarea name="file_content" class="create-file-editor" rows="20" placeholder="Enter file contents...">@default_content</textarea>
+
+				<div class="create-file-commit">
+					<input type="text" name="commit_message" placeholder="Commit message (e.g. Add .gitly-ci.yml)" value="Create @default_filename" required>
+					<input type="submit" value="Commit new file">
+				</div>
+			</form>
+		</div>
+
+		@include 'layout/footer.html'
+	</body>
+</html>

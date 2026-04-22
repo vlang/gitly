@@ -4,9 +4,9 @@ import veb
 import crypto.sha1
 import os
 import highlight
-import time
 import validation
 import git
+import db.pg
 
 @['/:username/repos']
 pub fn (mut app App) user_repos(username string) veb.Result {
@@ -22,7 +22,7 @@ pub fn (mut app App) user_repos(username string) veb.Result {
 		repos = app.find_user_repos(user.id)
 	}
 
-	return $veb.html()
+	return $veb.html('../templates/user/repos.html')
 }
 
 @['/:username/stars']
@@ -35,7 +35,7 @@ pub fn (mut app App) user_stars(username string) veb.Result {
 
 	repos := app.find_user_starred_repos(ctx.user.id)
 
-	return $veb.html()
+	return $veb.html('../templates/user/stars.html')
 }
 
 @['/:username/:repo_name/settings']
@@ -49,7 +49,7 @@ pub fn (mut app App) repo_settings(username string, repo_name string) veb.Result
 		return ctx.redirect_to_repository(username, repo_name)
 	}
 
-	return $veb.html()
+	return $veb.html('../templates/repo/settings.html')
 }
 
 @['/:username/:repo_name/settings'; post]
@@ -181,7 +181,7 @@ pub fn (mut app App) new() veb.Result {
 	if !ctx.logged_in {
 		return ctx.redirect_to_login()
 	}
-	return $veb.html()
+	return $veb.html('../templates/new.html')
 }
 
 @['/new'; post]
@@ -254,7 +254,7 @@ pub fn (mut app App) handle_new_repo(mut ctx Context, name string, clone_url str
 		// t := time.now()
 
 		new_repo.status = .cloning
-		spawn app.clone_repo(mut new_repo)
+		spawn clone_repo(mut new_repo)
 		// new_repo.clone()
 		// println(time.since(t))
 	}
@@ -296,17 +296,50 @@ pub fn (mut app App) handle_new_repo(mut ctx Context, name string, clone_url str
 	return ctx.redirect('/${ctx.user.username}/${new_repo.name}')
 }
 
-pub fn (mut app App) clone_repo(mut new_repo Repo) {
+fn bg_fetch_files_info(repo_ Repo, branch string, path string) {
+	mut repo := repo_
+	mut app := &App{
+		db: pg.connect(
+			dbname:   'gitly'
+			user:     'gitly'
+			password: 'gitly'
+		) or {
+			eprintln('cannot open db connection for bg_fetch thread: ${err}')
+			return
+		}
+	}
+	app.slow_fetch_files_info(mut repo, branch, path) or {
+		eprintln('bg_fetch_files_info error: ${err}')
+	}
+	app.db.close() or {}
+}
+
+fn clone_repo(mut new_repo Repo) {
 	new_repo.clone()
-	app.debug('cloning done')
-	app.update_repo_from_fs(mut new_repo) or { eprintln('cannot update repo from fs ${err}') }
-	eprintln('setting repo status to done after cloning xxx')
+	// Use a dedicated DB connection for the clone thread to avoid
+	// corrupting the main connection's PostgreSQL protocol state.
+	mut app := &App{
+		db: pg.connect(
+			dbname:   'gitly'
+			user:     'gitly'
+			password: 'gitly'
+		) or {
+			eprintln('cannot open db connection for clone thread: ${err}')
+			return
+		}
+	}
+	// Mark repo as done immediately so the user can browse it.
+	// The tree page will fetch files from git on demand.
 	app.set_repo_status(new_repo.id, .done) or { eprintln('cannot set repo status ${err}') }
-	// git.clone(valid_clone_url, repo_path)
+	eprintln('clone done, repo available — indexing in background')
+	// Index branches, commits, and language stats in the background.
+	app.update_repo_from_fs(mut new_repo) or { eprintln('cannot update repo from fs ${err}') }
+	eprintln('background indexing complete')
+	app.db.close() or {}
 }
 
 pub fn (mut app App) kekw(mut ctx Context) veb.Result {
-	return $veb.html('templates/cloning_in_process.html')
+	return $veb.html('../templates/cloning_in_process.html')
 }
 
 @['/:username/:repo_name/tree/:branch_name/:path...']
@@ -317,7 +350,7 @@ pub fn (mut app App) tree(mut ctx Context, username string, repo_name string, br
 	}
 	eprintln('!!! REPO STATUS = ${repo.status}')
 	if repo.status == .cloning {
-		return $veb.html('templates/cloning_in_process.html')
+		return $veb.html('../templates/cloning_in_process.html')
 	}
 
 	_, user := app.check_username(username)
@@ -365,7 +398,6 @@ pub fn (mut app App) tree(mut ctx Context, username string, repo_name string, br
 	branch := app.find_repo_branch_by_name(repo.id, branch_name)
 
 	app.info('${log_prefix}: ${items.len} items found in branch ${branch_name}')
-	println(items)
 
 	if items.len == 0 {
 		// No files in the db, fetch them from git and cache in db
@@ -375,17 +407,11 @@ pub fn (mut app App) tree(mut ctx Context, username string, repo_name string, br
 			app.info(err.str())
 			[]File{}
 		}
-		app.slow_fetch_files_info(mut repo, branch_name, ctx.current_path) or {
-			app.info(err.str())
-		}
-	}
-
-	if items.any(it.last_msg == '') {
-		// If any of the files has a missing `last_msg`, we need to refetch it.
-		println('no last msg')
-		app.slow_fetch_files_info(mut repo, branch_name, ctx.current_path) or {
-			app.info(err.str())
-		}
+		// Fetch commit info in background — don't block the page
+		spawn bg_fetch_files_info(repo, branch_name, ctx.current_path)
+	} else if items.any(it.last_msg == '') {
+		// Some files still need commit info — fetch in background
+		spawn bg_fetch_files_info(repo, branch_name, ctx.current_path)
 	}
 
 	// Fetch last commit message for this directory, printed at the top of the tree
@@ -399,25 +425,11 @@ pub fn (mut app App) tree(mut ctx Context, username string, repo_name string, br
 			p = '/${p}'
 		}
 		if dir := app.find_repo_file_by_path(repo.id, branch_name, p) {
-			println('hash=${dir.last_hash}')
 			last_commit = app.find_repo_commit_by_hash(repo.id, dir.last_hash)
 		}
 	} else {
 		last_commit = app.find_repo_last_commit(repo.id, branch.id)
 	}
-
-	diff := int(time.ticks() - ctx.page_gen_start)
-	println('DIFF=${diff}')
-	if diff == 0 {
-		ctx.page_gen_time = '<1ms'
-	} else {
-		ctx.page_gen_time = '${diff}ms'
-	}
-
-	// Update items after fetching info
-	items = app.find_repository_items(repo_id, branch_name, ctx.current_path)
-	println('new items')
-	println(items)
 
 	dirs := items.filter(it.is_dir)
 	files := items.filter(!it.is_dir)
@@ -455,7 +467,15 @@ pub fn (mut app App) tree(mut ctx Context, username string, repo_name string, br
 	is_repo_watcher := app.check_repo_watcher_status(repo_id, ctx.user.id)
 	is_top_directory := ctx.current_path == ''
 
-	return $veb.html()
+	// CI status for last commit
+	ci_status := app.find_ci_status_for_commit(repo_id, last_commit.hash) or {
+		app.find_ci_status_for_branch(repo_id, branch_name) or {
+			CiStatus{}
+		}
+	}
+	has_ci := ci_status.id != 0
+
+	return $veb.html('../templates/tree.html')
 }
 
 @['/api/v1/repos/:repo_id/star'; 'post']
@@ -496,13 +516,44 @@ pub fn (mut app App) handle_api_repo_watch(mut ctx Context, repo_id_str string) 
 	return ctx.json_success(is_watching)
 }
 
+// API: get file listing with commit info for a directory (used by JS polling)
+@['/api/v1/repos/:repo_id_str/files']
+pub fn (mut app App) handle_api_repo_files(mut ctx Context, repo_id_str string) veb.Result {
+	repo_id := repo_id_str.int()
+	repo := app.find_repo_by_id(repo_id) or { return ctx.json_error('Not found') }
+
+	if !repo.is_public && repo.user_id != ctx.user.id {
+		return ctx.json_error('Not found')
+	}
+
+	branch := if 'branch' in ctx.query { ctx.query['branch'] } else { '' }
+	path := if 'path' in ctx.query { ctx.query['path'] } else { '' }
+
+	if branch == '' {
+		return ctx.json_error('branch is required')
+	}
+
+	items := app.find_repository_items(repo_id, branch, path)
+	mut result := []FileInfo{}
+	for item in items {
+		result << FileInfo{
+			name:      item.name
+			last_msg:  item.last_msg
+			last_hash: item.last_hash
+			last_time: item.pretty_last_time()
+		}
+	}
+
+	return ctx.json_success(result)
+}
+
 @['/:username/:repo_name/contributors']
 pub fn (mut app App) contributors(mut ctx Context, username string, repo_name string) veb.Result {
 	repo := app.find_repo_by_name_and_username(repo_name, username) or { return ctx.not_found() }
 
 	contributors := app.find_repo_registered_contributor(repo.id)
 
-	return $veb.html()
+	return $veb.html('../templates/contributors.html')
 }
 
 @['/:username/:repo_name/blob/:branch_name/:path...']
@@ -529,7 +580,7 @@ pub fn (mut app App) blob(mut ctx Context, username string, repo_name string, br
 	source := veb.RawHtml(highlighted_source)
 	loc, sloc := calculate_lines_of_code(plain_text)
 
-	return $veb.html()
+	return $veb.html('../templates/blob.html')
 }
 
 @['/:user/:repository/raw/:branch_name/:path...']

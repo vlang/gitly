@@ -33,6 +33,7 @@ mut:
 	logger   log.Log
 	config   config.Config
 	settings Settings
+	port     int
 }
 
 pub struct Context {
@@ -74,7 +75,7 @@ fn new_app() !&App {
 
 	app.setup_logger()
 
-	mut version := os.read_file('src/static/assets/version') or { 'unknown' }
+	mut version := os.read_file('static/assets/version') or { 'unknown' }
 	git_result := os.execute('git rev-parse --short HEAD')
 
 	if git_result.exit_code == 0 && !git_result.output.contains('fatal') {
@@ -82,12 +83,12 @@ fn new_app() !&App {
 	}
 
 	if version != app.version {
-		os.write_file('src/static/assets/version', app.version) or { panic(err) }
+		os.write_file('static/assets/version', app.version) or { panic(err) }
 	}
 
 	app.version = version
 
-	app.handle_static('src/static', true)!
+	app.handle_static('static', true)!
 	if !os.exists('avatars') {
 		os.mkdir('avatars')!
 	}
@@ -141,7 +142,7 @@ pub fn (mut app App) debug(msg string) {
 pub fn (mut app App) init_server() {
 }
 
-pub fn (mut app App) before_request(mut ctx Context) {
+pub fn (mut app App) before_request(mut ctx Context) bool {
 	url := ctx.req.url
 	ctx.logged_in = app.is_logged_in(mut ctx)
 	app.load_settings() // TODO no need in doing this for each request
@@ -153,6 +154,7 @@ pub fn (mut app App) before_request(mut ctx Context) {
 	}
 	dump(url)
 	ctx.lang = Lang.from_string(ctx.get_cookie('lang') or { 'en' }) or { Lang.en }
+	return true
 }
 
 @['/']
@@ -248,6 +250,9 @@ fn (mut app App) create_tables() ! {
 	}!
 	sql app.db {
 		create table Watch
+	}!
+	sql app.db {
+		create table CiStatus
 	}!
 }
 

@@ -53,5 +53,5 @@ pub fn (mut app App) releases(mut ctx Context, username string, repo_name string
 		releases << release
 	}
 
-	return $veb.html()
+	return $veb.html('../templates/releases.html')
 }

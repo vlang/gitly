@@ -1,3 +1,3 @@
-sassc src/static/css/gitly.scss > src/static/css/gitly.css
+sassc static/css/gitly.scss > static/css/gitly.css
 v .
 ./gitly

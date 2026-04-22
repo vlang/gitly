@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		@include 'layout/head.html'
+		@css '/css/ci.css'
+	</head>
+	<body>
+		@include 'layout/header.html'
+
+		<div class="content">
+			@include 'layout/repo_menu.html'
+
+			<h1>CI / CD</h1>
+
+			@if ci_service_error
+				<div class="ci-error">
+					<b>CI service unavailable.</b> The CI service is not running or cannot be reached.
+				</div>
+			@end
+
+			@if ci_runs.len == 0
+				@if !ci_service_error
+					<div class="ci-empty">
+						@if has_ci_file
+							<p>No CI runs yet. Push a commit to trigger a CI run.</p>
+						@else
+							<p>No CI runs yet. Add a <code>.gitly-ci.yml</code> file to your repository to enable CI.</p>
+							@if repo.user_id == ctx.user.id
+								<a class="ci-create-btn" href="/@repo.user_name/@repo.name/new-ci-file">Create .gitly-ci.yml</a>
+							@end
+						@end
+					</div>
+				@end
+			@else
+				<div class="ci-runs">
+					<div class="ci-runs-header">
+						<span class="ci-col-status">Status</span>
+						<span class="ci-col-branch">Branch</span>
+						<span class="ci-col-commit">Commit</span>
+						<span class="ci-col-time">Time</span>
+					</div>
+					@for ci_run in ci_runs
+						<a class="ci-run-row" href="/@repo.user_name/@repo.name/ci/@ci_run.ci_run_id">
+							<span class="ci-col-status">
+								<span class="ci-status-badge @{ci_run.status.css_class()}">
+									@{ci_run.status.icon()} @{ci_run.status.str()}
+								</span>
+							</span>
+							<span class="ci-col-branch">
+								@ci_run.branch
+							</span>
+							<span class="ci-col-commit">
+								<code>@ci_run.commit_hash</code>
+							</span>
+							<span class="ci-col-time">
+								@{ci_run.relative_time()}
+							</span>
+						</a>
+					@end
+				</div>
+			@end
+		</div>
+
+		@include 'layout/footer.html'
+	</body>
+</html>

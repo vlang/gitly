@@ -2,5 +2,6 @@
 	"repo_storage_path": "./repos",
 	"archive_path": "./archives",
 	"avatars_path": "./avatars",
-	"hostname": "gitly.org"
+	"hostname": "gitly.org",
+	"ci_service_url": "http://localhost:8081"
 }

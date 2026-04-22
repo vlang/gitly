@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		@include 'layout/head.html'
+		@css '/css/ci.css'
+	</head>
+	<body>
+		@include 'layout/header.html'
+
+		<div class="content">
+			@include 'layout/repo_menu.html'
+
+			<h1>Edit @path</h1>
+
+			<div class='form-error'>
+				@ctx.form_error
+			</div>
+
+			<form action="/@username/@repo.name/update-file" method="post" class="create-file-form">
+				<input type="hidden" name="branch" value="@branch_name">
+				<input type="hidden" name="file_path" value="@path">
+
+				<div class="create-file-path">
+					<span class="create-file-prefix">@repo.user_name/@repo.name / @path</span>
+				</div>
+
+				<textarea name="file_content" class="create-file-editor" rows="20">@file_content</textarea>
+
+				<div class="create-file-commit">
+					<input type="text" name="commit_message" placeholder="Commit message" value="Update @path" required>
+					<input type="submit" value="Commit changes">
+				</div>
+			</form>
+		</div>
+
+		@include 'layout/footer.html'
+	</body>
+</html>

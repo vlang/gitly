@@ -40,6 +40,9 @@ fn (f &File) full_path() string {
 }
 
 fn (f File) pretty_last_time() string {
+	if f.last_time == 0 {
+		return ''
+	}
 	return time.unix(f.last_time).relative()
 }
 
@@ -60,6 +63,13 @@ fn (f File) pretty_size() string {
 	size_in := math.round_sig(size_in_bytes / (math.pow(1024, index)), 2)
 
 	return '${size_in} ${sizes[index]}'
+}
+
+struct FileInfo {
+	name      string
+	last_msg  string
+	last_hash string
+	last_time string
 }
 
 fn calculate_lines_of_code(source string) (int, int) {
