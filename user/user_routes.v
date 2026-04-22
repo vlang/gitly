@@ -15,7 +15,7 @@ pub fn (mut app App) login(mut ctx Context) veb.Result {
 		return ctx.redirect('/' + ctx.user.username)
 	}
 
-	return $veb.html('../templates/login.html')
+	return $veb.html()
 }
 
 @['/login'; post]
@@ -69,7 +69,7 @@ pub fn (mut app App) user(mut ctx Context, username string) veb.Result {
 		app.find_user_public_repos(user.id)
 	}
 	activities := app.find_activities(user.id)
-	return $veb.html('../templates/user.html')
+	return $veb.html()
 }
 
 @['/:username/settings']
@@ -80,7 +80,7 @@ pub fn (mut app App) user_settings(mut ctx Context, username string) veb.Result 
 		return ctx.redirect_to_index()
 	}
 
-	return $veb.html('../templates/user/settings.html')
+	return $veb.html('templates/user/settings.html')
 }
 
 @['/:username/settings'; post]
@@ -174,7 +174,7 @@ pub fn (mut app App) register(mut ctx Context) veb.Result {
 
 	ctx.current_path = ''
 
-	return $veb.html('../templates/register.html')
+	return $veb.html()
 }
 
 @['/register'; post]

@@ -12,7 +12,7 @@ pub fn (mut app App) admin_settings(mut ctx Context) veb.Result {
 		return ctx.redirect_to_index()
 	}
 
-	return $veb.html('../templates/admin/settings.html')
+	return $veb.html('templates/admin/settings.html')
 }
 
 @['/admin/settings'; post]
@@ -43,24 +43,25 @@ pub fn (mut app App) handle_admin_edit_user(user_id string) veb.Result {
 
 @['/admin/users']
 pub fn (mut app App) admin_users_default(mut ctx Context) veb.Result {
-	return app.admin_users(mut ctx, 0)
+	return app.admin_users(mut ctx, '0')
 }
 
 @['/admin/users/:page']
-pub fn (mut app App) admin_users(mut ctx Context, page int) veb.Result {
+pub fn (mut app App) admin_users(mut ctx Context, page string) veb.Result {
 	if !ctx.is_admin() {
 		return ctx.redirect_to_index()
 	}
 
+	page_i := page.int()
 	user_count := app.get_all_registered_user_count()
-	offset := admin_users_per_page * page
+	offset := admin_users_per_page * page_i
 	users := app.get_all_registered_users_as_page(offset)
 	page_count := calculate_pages(user_count, admin_users_per_page)
-	is_first_page := check_first_page(page)
+	is_first_page := check_first_page(page_i)
 	is_last_page := check_last_page(user_count, offset, admin_users_per_page)
-	prev_page, next_page := generate_prev_next_pages(page)
+	prev_page, next_page := generate_prev_next_pages(page_i)
 
-	return $veb.html('../templates/admin/users.html')
+	return $veb.html('templates/admin/users.html')
 }
 
 @['/admin/statistics']
@@ -68,5 +69,5 @@ pub fn (mut app App) admin_statistics() veb.Result {
 	if !ctx.is_admin() {
 		return ctx.redirect_to_index()
 	}
-	return $veb.html('../templates/admin/statistics.html')
+	return $veb.html('templates/admin/statistics.html')
 }

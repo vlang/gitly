@@ -1,6 +1,7 @@
 module main
 
 import veb
+import api
 import json
 import net.http
 import os
@@ -30,7 +31,10 @@ pub fn (mut app App) handle_ci_status_callback() veb.Result {
 		return ctx.json_error('Failed to update CI status: ${err}')
 	}
 
-	return ctx.json_success('ok')
+	return ctx.json(api.ApiSuccessResponse[string]{
+		success: true
+		result:  'ok'
+	})
 }
 
 // GET /:username/:repo_name/ci - CI runs list page
@@ -77,7 +81,7 @@ pub fn (mut app App) ci_runs(username string, repo_name string) veb.Result {
 		}
 	}
 
-	return $veb.html('../templates/ci_runs.html')
+	return $veb.html()
 }
 
 // GET /:username/:repo_name/ci/:run_id_str - CI run detail page
@@ -116,7 +120,7 @@ pub fn (mut app App) ci_run_detail(username string, repo_name string, run_id_str
 
 	ci_run := run_data.result
 
-	return $veb.html('../templates/ci_run_detail.html')
+	return $veb.html()
 }
 
 // POST /:username/:repo_name/ci/:run_id_str/restart - Restart a CI run

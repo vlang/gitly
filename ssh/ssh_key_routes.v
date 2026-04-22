@@ -14,7 +14,7 @@ pub fn (mut app App) user_ssh_keys_list(mut ctx Context, username string) veb.Re
 
 	ssh_keys := app.find_ssh_keys(ctx.user.id)
 
-	return $veb.html('../templates/user/ssh/keys/list.html')
+	return $veb.html('templates/user/ssh/keys/list.html')
 }
 
 @['/:username/settings/ssh-keys'; 'post']
@@ -53,14 +53,14 @@ pub fn (mut app App) handle_add_ssh_key(mut ctx Context, username string) veb.Re
 }
 
 @['/:username/settings/ssh-keys/:id'; 'delete']
-pub fn (mut app App) handle_remove_ssh_key(mut ctx Context, username string, id int) veb.Result {
+pub fn (mut app App) handle_remove_ssh_key(mut ctx Context, username string, id string) veb.Result {
 	is_users_settings := username == ctx.user.username
 
 	if !ctx.logged_in || !is_users_settings {
 		return ctx.redirect_to_index()
 	}
 
-	app.remove_ssh_key(ctx.user.id, id) or {
+	app.remove_ssh_key(ctx.user.id, id.int()) or {
 		response := api.ApiErrorResponse{
 			message: 'There was an error while deleting the SSH key'
 		}
@@ -79,5 +79,5 @@ pub fn (mut app App) user_ssh_keys_new(mut ctx Context, username string) veb.Res
 		return ctx.redirect_to_index()
 	}
 
-	return $veb.html('../templates/user/ssh/keys/new.html')
+	return $veb.html('templates/user/ssh/keys/new.html')
 }

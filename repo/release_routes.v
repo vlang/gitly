@@ -7,23 +7,24 @@ const releases_per_page = 20
 
 @['/:username/:repo_name/releases']
 pub fn (mut app App) releases_default(mut ctx Context, username string, repo_name string) veb.Result {
-	return app.releases(mut ctx, username, repo_name, 0)
+	return app.releases(mut ctx, username, repo_name, '0')
 }
 
 @['/:username/:repo_name/releases/:page']
-pub fn (mut app App) releases(mut ctx Context, username string, repo_name string, page int) veb.Result {
+pub fn (mut app App) releases(mut ctx Context, username string, repo_name string, page string) veb.Result {
 	repo := app.find_repo_by_name_and_username(repo_name, username) or { return ctx.not_found() }
 
+	page_i := page.int()
 	repo_id := repo.id
 	mut releases := []Release{}
 	mut release := Release{}
 
 	release_count := app.get_repo_release_count(repo_id)
-	offset := releases_per_page * page
+	offset := releases_per_page * page_i
 	page_count := calculate_pages(release_count, releases_per_page)
-	is_first_page := check_first_page(page)
+	is_first_page := check_first_page(page_i)
 	is_last_page := check_last_page(release_count, offset, releases_per_page)
-	prev_page, next_page := generate_prev_next_pages(page)
+	prev_page, next_page := generate_prev_next_pages(page_i)
 
 	tags := app.get_all_repo_tags(repo_id)
 	rels := app.find_repo_releases_as_page(repo_id, offset)
@@ -53,5 +54,5 @@ pub fn (mut app App) releases(mut ctx Context, username string, repo_name string
 		releases << release
 	}
 
-	return $veb.html('../templates/releases.html')
+	return $veb.html()
 }

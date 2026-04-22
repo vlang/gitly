@@ -30,5 +30,5 @@ pub fn (mut app App) branches(username string, repo_name string) veb.Result {
 		return ctx.json_error('Not found')
 	}
 	branches := app.get_all_repo_branches(repo.id)
-	return $veb.html('../templates/branches.html')
+	return $veb.html()
 }

@@ -1,6 +1,7 @@
 module main
 
 import veb
+import api
 import crypto.sha1
 import os
 import highlight
@@ -22,7 +23,7 @@ pub fn (mut app App) user_repos(username string) veb.Result {
 		repos = app.find_user_repos(user.id)
 	}
 
-	return $veb.html('../templates/user/repos.html')
+	return $veb.html('templates/user/repos.html')
 }
 
 @['/:username/stars']
@@ -35,7 +36,7 @@ pub fn (mut app App) user_stars(username string) veb.Result {
 
 	repos := app.find_user_starred_repos(ctx.user.id)
 
-	return $veb.html('../templates/user/stars.html')
+	return $veb.html('templates/user/stars.html')
 }
 
 @['/:username/:repo_name/settings']
@@ -49,7 +50,7 @@ pub fn (mut app App) repo_settings(username string, repo_name string) veb.Result
 		return ctx.redirect_to_repository(username, repo_name)
 	}
 
-	return $veb.html('../templates/repo/settings.html')
+	return $veb.html('templates/repo/settings.html')
 }
 
 @['/:username/:repo_name/settings'; post]
@@ -181,7 +182,7 @@ pub fn (mut app App) new() veb.Result {
 	if !ctx.logged_in {
 		return ctx.redirect_to_login()
 	}
-	return $veb.html('../templates/new.html')
+	return $veb.html()
 }
 
 @['/new'; post]
@@ -339,7 +340,7 @@ fn clone_repo(mut new_repo Repo) {
 }
 
 pub fn (mut app App) kekw(mut ctx Context) veb.Result {
-	return $veb.html('../templates/cloning_in_process.html')
+	return $veb.html('templates/cloning_in_process.html')
 }
 
 @['/:username/:repo_name/tree/:branch_name/:path...']
@@ -350,7 +351,7 @@ pub fn (mut app App) tree(mut ctx Context, username string, repo_name string, br
 	}
 	eprintln('!!! REPO STATUS = ${repo.status}')
 	if repo.status == .cloning {
-		return $veb.html('../templates/cloning_in_process.html')
+		return $veb.html('templates/cloning_in_process.html')
 	}
 
 	_, user := app.check_username(username)
@@ -475,7 +476,7 @@ pub fn (mut app App) tree(mut ctx Context, username string, repo_name string, br
 	}
 	has_ci := ci_status.id != 0
 
-	return $veb.html('../templates/tree.html')
+	return $veb.html()
 }
 
 @['/api/v1/repos/:repo_id/star'; 'post']
@@ -494,7 +495,10 @@ pub fn (mut app App) handle_api_repo_star(mut ctx Context, repo_id_str string) v
 	}
 	is_repo_starred := app.check_repo_starred(repo_id, user_id)
 
-	return ctx.json_success(is_repo_starred)
+	return ctx.json(api.ApiSuccessResponse[bool]{
+		success: true
+		result:  is_repo_starred
+	})
 }
 
 @['/api/v1/repos/:repo_id/watch'; 'post']
@@ -513,7 +517,10 @@ pub fn (mut app App) handle_api_repo_watch(mut ctx Context, repo_id_str string) 
 	}
 	is_watching := app.check_repo_watcher_status(repo_id, user_id)
 
-	return ctx.json_success(is_watching)
+	return ctx.json(api.ApiSuccessResponse[bool]{
+		success: true
+		result:  is_watching
+	})
 }
 
 // API: get file listing with commit info for a directory (used by JS polling)
@@ -544,7 +551,10 @@ pub fn (mut app App) handle_api_repo_files(mut ctx Context, repo_id_str string) 
 		}
 	}
 
-	return ctx.json_success(result)
+	return ctx.json(api.ApiSuccessResponse[[]FileInfo]{
+		success: true
+		result:  result
+	})
 }
 
 @['/:username/:repo_name/contributors']
@@ -553,7 +563,7 @@ pub fn (mut app App) contributors(mut ctx Context, username string, repo_name st
 
 	contributors := app.find_repo_registered_contributor(repo.id)
 
-	return $veb.html('../templates/contributors.html')
+	return $veb.html()
 }
 
 @['/:username/:repo_name/blob/:branch_name/:path...']
@@ -580,7 +590,7 @@ pub fn (mut app App) blob(mut ctx Context, username string, repo_name string, br
 	source := veb.RawHtml(highlighted_source)
 	loc, sloc := calculate_lines_of_code(plain_text)
 
-	return $veb.html('../templates/blob.html')
+	return $veb.html()
 }
 
 @['/:user/:repository/raw/:branch_name/:path...']

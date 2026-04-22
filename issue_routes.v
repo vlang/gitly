@@ -40,7 +40,7 @@ pub fn (mut app App) new_issue(username string, repo_name string) veb.Result {
 
 @['/:username/issues']
 pub fn (mut app App) handle_get_user_issues(mut ctx Context, username string) veb.Result {
-	return app.user_issues(mut ctx, username, 0)
+	return app.user_issues(mut ctx, username, '0')
 }
 
 @['/:username/:repo_name/issues'; post]
@@ -69,14 +69,15 @@ pub fn (mut app App) handle_add_repo_issue(mut ctx Context, username string, rep
 
 @['/:username/:repo_name/issues']
 pub fn (mut app App) handle_get_repo_issues(mut ctx Context, username string, repo_name string) veb.Result {
-	return app.issues(mut ctx, username, repo_name, 0)
+	return app.issues(mut ctx, username, repo_name, '0')
 }
 
 @['/:username/:repo_name/issues/:page']
-pub fn (mut app App) issues(mut ctx Context, username string, repo_name string, page int) veb.Result {
+pub fn (mut app App) issues(mut ctx Context, username string, repo_name string, page string) veb.Result {
 	repo := app.find_repo_by_name_and_username(repo_name, username) or { return ctx.not_found() }
+	page_i := page.int()
 	mut issues_with_users := []IssueWithUser{}
-	for issue in app.find_repo_issues_as_page(repo.id, page) {
+	for issue in app.find_repo_issues_as_page(repo.id, page_i) {
 		user := app.get_user_by_id(issue.author_id) or { continue }
 		issues_with_users << IssueWithUser{
 			item: issue
@@ -86,10 +87,10 @@ pub fn (mut app App) issues(mut ctx Context, username string, repo_name string, 
 	mut first := false
 	mut last := false
 	if repo.nr_open_issues > commits_per_page {
-		offset := page * commits_per_page
+		offset := page_i * commits_per_page
 		delta := repo.nr_open_issues - offset
 		if delta > 0 {
-			if delta == repo.nr_open_issues && page == 0 {
+			if delta == repo.nr_open_issues && page_i == 0 {
 				first = true
 			} else {
 				last = true
@@ -100,7 +101,7 @@ pub fn (mut app App) issues(mut ctx Context, username string, repo_name string, 
 		first = true
 	}
 	page_count := calculate_pages(repo.nr_open_issues, commits_per_page)
-	prev_page, next_page := generate_prev_next_pages(page)
+	prev_page, next_page := generate_prev_next_pages(page_i)
 	return $veb.html()
 }
 
@@ -121,7 +122,7 @@ pub fn (mut app App) issue(mut ctx Context, username string, repo_name string, i
 }
 
 @['/:username/issues/:page']
-pub fn (mut app App) user_issues(mut ctx Context, username string, page int) veb.Result {
+pub fn (mut app App) user_issues(mut ctx Context, username string, page string) veb.Result {
 	if !ctx.logged_in {
 		return ctx.not_found()
 	}
@@ -132,6 +133,7 @@ pub fn (mut app App) user_issues(mut ctx Context, username string, page int) veb
 	if !exists {
 		return ctx.not_found()
 	}
+	page_i := page.int()
 	mut issues := app.find_user_issues(user.id)
 	mut first := false
 	mut last := false
@@ -141,10 +143,10 @@ pub fn (mut app App) user_issues(mut ctx Context, username string, page int) veb
 		issues[i].repo_name = repo.name
 	}
 	if issues.len > commits_per_page {
-		offset := page * commits_per_page
+		offset := page_i * commits_per_page
 		delta := issues.len - offset
 		if delta > 0 {
-			if delta == issues.len && page == 0 {
+			if delta == issues.len && page_i == 0 {
 				first = true
 			} else {
 				last = true
@@ -163,9 +165,9 @@ pub fn (mut app App) user_issues(mut ctx Context, username string, page int) veb
 		}
 	}
 	mut last_site := 0
-	if page > 0 {
-		last_site = page - 1
+	if page_i > 0 {
+		last_site = page_i - 1
 	}
-	next_site := page + 1
+	next_site := page_i + 1
 	return $veb.html()
 }

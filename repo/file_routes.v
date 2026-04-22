@@ -14,7 +14,7 @@ pub fn (mut app App) new_file(username string, repo_name string, branch_name str
 
 	default_content := ''
 	default_filename := ''
-	return $veb.html('../templates/new_file.html')
+	return $veb.html('templates/new_file.html')
 }
 
 // GET /:username/:repo_name/new-ci-file - Show create .gitly-ci.yml form (pre-filled)
@@ -36,7 +36,7 @@ pub fn (mut app App) new_ci_file(username string, repo_name string) veb.Result {
       - name: Test
         run: echo "running tests"
 '
-	return $veb.html('../templates/new_file.html')
+	return $veb.html('templates/new_file.html')
 }
 
 // GET /:username/:repo_name/edit/:branch_name/:path... - Show edit file form
@@ -50,7 +50,7 @@ pub fn (mut app App) edit_file(username string, repo_name string, branch_name st
 
 	file_content := repo.read_file(branch_name, path)
 
-	return $veb.html('../templates/edit_file.html')
+	return $veb.html('templates/edit_file.html')
 }
 
 // POST /:username/:repo_name/update-file - Save edited file
@@ -72,7 +72,7 @@ pub fn (mut app App) handle_update_file(username string, repo_name string) veb.R
 	if commit_message == '' {
 		ctx.error('Commit message is required')
 		path := file_path
-		return $veb.html('../templates/edit_file.html')
+		return $veb.html('templates/edit_file.html')
 	}
 
 	mut actual_branch := branch_name
@@ -86,7 +86,7 @@ pub fn (mut app App) handle_update_file(username string, repo_name string) veb.R
 	if !success {
 		ctx.error('Failed to save file')
 		path := file_path
-		return $veb.html('../templates/edit_file.html')
+		return $veb.html('templates/edit_file.html')
 	}
 
 	// Clear cached files so the updated file shows up
@@ -126,14 +126,14 @@ pub fn (mut app App) handle_create_file(username string, repo_name string) veb.R
 		ctx.error('File path is required')
 		default_content := file_content
 		default_filename := file_path
-		return $veb.html('../templates/new_file.html')
+		return $veb.html('templates/new_file.html')
 	}
 
 	if commit_message == '' {
 		ctx.error('Commit message is required')
 		default_content := file_content
 		default_filename := file_path
-		return $veb.html('../templates/new_file.html')
+		return $veb.html('templates/new_file.html')
 	}
 
 	// Sanitize file path
@@ -141,7 +141,7 @@ pub fn (mut app App) handle_create_file(username string, repo_name string) veb.R
 		ctx.error('Invalid file path')
 		default_content := file_content
 		default_filename := file_path
-		return $veb.html('../templates/new_file.html')
+		return $veb.html('templates/new_file.html')
 	}
 
 	mut actual_branch := branch_name
@@ -156,7 +156,7 @@ pub fn (mut app App) handle_create_file(username string, repo_name string) veb.R
 		ctx.error('Failed to create file')
 		default_content := file_content
 		default_filename := file_path
-		return $veb.html('../templates/new_file.html')
+		return $veb.html('templates/new_file.html')
 	}
 
 	// Clear cached files so the new file shows up

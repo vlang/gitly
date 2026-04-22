@@ -31,19 +31,20 @@ fn (mut app App) handle_commits_count(mut ctx Context, username string, repo_nam
 }
 
 @['/:username/:repo_name/:branch_name/commits/:page']
-pub fn (mut app App) commits(mut ctx Context, username string, repo_name string, branch_name string, page int) veb.Result {
+pub fn (mut app App) commits(mut ctx Context, username string, repo_name string, branch_name string, page string) veb.Result {
 	repo := app.find_repo_by_name_and_username(repo_name, username) or { return ctx.not_found() }
 
+	page_i := page.int()
 	branch := app.find_repo_branch_by_name(repo.id, branch_name)
 	commits_count := app.get_repo_commit_count(repo.id, branch.id)
 
-	offset := commits_per_page * page
+	offset := commits_per_page * page_i
 	// FIXME: b_author always false
 	b_author := false
 	page_count := calculate_pages(commits_count, commits_per_page)
-	is_first_page := check_first_page(page)
+	is_first_page := check_first_page(page_i)
 	is_last_page := check_last_page(commits_count, offset, commits_per_page)
-	prev_page, next_page := generate_prev_next_pages(page)
+	prev_page, next_page := generate_prev_next_pages(page_i)
 
 	mut commits := app.find_repo_commits_as_page(repo.id, branch.id, offset)
 
@@ -71,7 +72,7 @@ pub fn (mut app App) commits(mut ctx Context, username string, repo_name string,
 		}
 	}
 
-	return $veb.html('../templates/commits.html')
+	return $veb.html()
 }
 
 @['/:username/:repo_name/commit/:hash']
@@ -101,5 +102,5 @@ pub fn (mut app App) commit(mut ctx Context, username string, repo_name string, 
 		sources[change.file] = veb.RawHtml(src)
 	}
 
-	return $veb.html('../templates/commit.html')
+	return $veb.html()
 }
