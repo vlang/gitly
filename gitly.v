@@ -234,6 +234,9 @@ fn (mut app App) create_tables() ! {
 	sql app.db {
 		create table Commit
 	}!
+	sql app.db {
+		create table BranchCommit
+	}!
 	// author text default '' is to to avoid joins
 	sql app.db {
 		create table LangStat
@@ -336,6 +339,8 @@ fn (mut app App) migrate_tables() ! {
 	app.add_missing_column('Repo', 'disable_milestones', db_bool_column_type())!
 	app.add_missing_column('Repo', 'disable_wiki', db_bool_column_type())!
 	app.add_missing_column('Repo', 'is_pinned', db_bool_column_type())!
+
+	app.db.exec('create index if not exists idx_commit_repo_created on ${sql_table('Commit')} (repo_id, created_at desc)')!
 }
 
 fn (mut app App) add_missing_column(table_name string, column_name string, column_type string) ! {

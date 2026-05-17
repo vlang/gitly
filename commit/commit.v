@@ -12,8 +12,14 @@ mut:
 	hash       string @[unique: 'commit']
 	created_at int
 	repo_id    int @[unique: 'commit']
-	branch_id  int @[unique: 'commit']
 	message    string
+}
+
+struct BranchCommit {
+mut:
+	id        int @[primary; sql: serial]
+	branch_id int @[unique: 'branch_commit']
+	commit_id int @[unique: 'branch_commit']
 }
 
 fn (commit Commit) relative() string {
@@ -27,39 +33,75 @@ fn (commit Commit) short_hash() string {
 	return commit.hash[..7]
 }
 
+fn row_to_commit(row []string) Commit {
+	if row.len < 7 {
+		return Commit{}
+	}
+	return Commit{
+		id:         row[0].int()
+		author_id:  row[1].int()
+		author:     row[2]
+		hash:       row[3]
+		created_at: row[4].int()
+		repo_id:    row[5].int()
+		message:    row[6]
+	}
+}
+
+const commit_select_cols = 'c.id, c.author_id, c.author, c.hash, c.created_at, c.repo_id, c.message'
+
 fn (mut app App) commit_exists(repo_id int, branch_id int, hash string) bool {
-	count := sql app.db {
-		select count from Commit where repo_id == repo_id && branch_id == branch_id && hash == hash
-	} or { 0 }
-	return count > 0
+	rows := db_exec_values(app.db, 'select 1 from ${sql_table('Commit')} c join ${sql_table('BranchCommit')} bc on bc.commit_id = c.id where c.repo_id = ${repo_id} and bc.branch_id = ${branch_id} and c.hash = ${sql_literal(hash)} limit 1') or {
+		return false
+	}
+	return rows.len > 0
 }
 
 fn (mut app App) add_commit(repo_id int, branch_id int, last_hash string, author string, author_id int, message string, date int) ! {
-	new_commit := Commit{
-		author_id:  author_id
-		author:     author
-		hash:       last_hash
-		created_at: date
-		repo_id:    repo_id
-		branch_id:  branch_id
-		message:    message
+	mut existing := app.find_repo_commit_by_hash(repo_id, last_hash)
+	mut commit_id := existing.id
+	if commit_id == 0 {
+		new_commit := Commit{
+			author_id:  author_id
+			author:     author
+			hash:       last_hash
+			created_at: date
+			repo_id:    repo_id
+			message:    message
+		}
+		sql app.db {
+			insert new_commit into Commit
+		}!
+		commit_id = db_last_insert_id(app.db)
 	}
-
+	link := BranchCommit{
+		branch_id: branch_id
+		commit_id: commit_id
+	}
 	sql app.db {
-		insert new_commit into Commit
+		insert link into BranchCommit
 	}!
 }
 
 fn (mut app App) find_repo_commits_as_page(repo_id int, branch_id int, offset int) []Commit {
-	return sql app.db {
-		select from Commit where repo_id == repo_id && branch_id == branch_id order by created_at desc limit 35 offset offset
-	} or { []Commit{} }
+	rows := db_exec_values(app.db, 'select ${commit_select_cols} from ${sql_table('Commit')} c join ${sql_table('BranchCommit')} bc on bc.commit_id = c.id where c.repo_id = ${repo_id} and bc.branch_id = ${branch_id} order by c.created_at desc limit 35 offset ${offset}') or {
+		return []Commit{}
+	}
+	mut commits := []Commit{cap: rows.len}
+	for row in rows {
+		commits << row_to_commit(row)
+	}
+	return commits
 }
 
 fn (mut app App) get_repo_commit_count(repo_id int, branch_id int) int {
-	return sql app.db {
-		select count from Commit where repo_id == repo_id && branch_id == branch_id
-	} or { 0 }
+	rows := db_exec_values(app.db, 'select count(*) from ${sql_table('BranchCommit')} where branch_id = ${branch_id}') or {
+		return 0
+	}
+	if rows.len == 0 || rows[0].len == 0 {
+		return 0
+	}
+	return rows[0][0].int()
 }
 
 fn (mut app App) find_repo_commit_by_hash(repo_id int, hash string) Commit {
@@ -73,15 +115,13 @@ fn (mut app App) find_repo_commit_by_hash(repo_id int, hash string) Commit {
 }
 
 fn (mut app App) find_repo_last_commit(repo_id int, branch_id int) Commit {
-	commits := sql app.db {
-		select from Commit where repo_id == repo_id && branch_id == branch_id order by created_at desc limit 1
-	} or { []Commit{} }
-
-	if commits.len == 0 {
+	rows := db_exec_values(app.db, 'select ${commit_select_cols} from ${sql_table('Commit')} c join ${sql_table('BranchCommit')} bc on bc.commit_id = c.id where c.repo_id = ${repo_id} and bc.branch_id = ${branch_id} order by c.created_at desc limit 1') or {
 		return Commit{}
 	}
-
-	return commits.first()
+	if rows.len == 0 {
+		return Commit{}
+	}
+	return row_to_commit(rows[0])
 }
 
 fn (app App) find_repo_last_commit_time(repo_id int) int {
