@@ -19,47 +19,8 @@
 		</script>
 
 		<div class="content">
-			@include 'layout/repo_menu.html'
-
-			<div class="repo-wrapper">
-				<span class="branch-specific-container">
-					<select class="branch-select" name="branch">
-						@for name in app.get_all_repo_branch_names(repo.id)
-							<option value="@name">@name</option>
-						@end
-					</select>
-
-					<a class="branches-link" href="/@repo.user_name/@repo.name/branches">
-						<svg aria-hidden="true" focusable="false" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M384 144c0-44.2-35.8-80-80-80s-80 35.8-80 80c0 36.4 24.3 67.1 57.5 76.8-.6 16.1-4.2 28.5-11 36.9-15.4 19.2-49.3 22.4-85.2 25.7-28.2 2.6-57.4 5.4-81.3 16.9v-144c32.5-10.2 56-40.5 56-76.3 0-44.2-35.8-80-80-80S0 35.8 0 80c0 35.8 23.5 66.1 56 76.3v199.3C23.5 365.9 0 396.2 0 432c0 44.2 35.8 80 80 80s80-35.8 80-80c0-34-21.2-63.1-51.2-74.6 3.1-5.2 7.8-9.8 14.9-13.4 16.2-8.2 40.4-10.4 66.1-12.8 42.2-3.9 90-8.4 118.2-43.4 14-17.4 21.1-39.8 21.6-67.9 31.6-10.8 54.4-40.7 54.4-75.9zM80 64c8.8 0 16 7.2 16 16s-7.2 16-16 16-16-7.2-16-16 7.2-16 16-16zm0 384c-8.8 0-16-7.2-16-16s7.2-16 16-16 16 7.2 16 16-7.2 16-16 16zm224-320c8.8 0 16 7.2 16 16s-7.2 16-16 16-16-7.2-16-16 7.2-16 16-16z"></path></svg>
-						@repo.format_nr_branches(ctx.lang)
-					</a>
-
-					<div class="repo-mode-switch">
-						@if is_top_files_mode
-							<a class="repo-mode-link" href="@tree_url">Tree</a>
-							<span class="repo-mode-link active">Top files</span>
-						@else
-							<span class="repo-mode-link active">Tree</span>
-							<a class="repo-mode-link" href="@top_files_url">Top files</a>
-						@end
-					</div>
-
-					<div class="repo-code-container">
-						<div class="repo-code-button">Code</div>
-
-						<div class="repo-clone-dropdown">
-							Clone with HTTPS:
-							<div class="clone-input-group">
-								<input disabled value="@{app.generate_clone_url(repo)}">
-								<button class="copy-clone-url-button">Copy</button>
-							</div>
-						</div>
-					</div>
-
-					@if repo.user_id == ctx.user.id
-						<a class="add-file-btn" href="/@repo.user_name/@repo.name/new/@branch_name">+</a>
-					@end
-				</span>
+			<div class="repo-header-area">
+				@include 'layout/repo_menu.html'
 
 				@if is_top_directory
 					<div class="repo-actions">
@@ -88,6 +49,53 @@
 						@end
 					</div>
 				@end
+			</div>
+
+			@if is_top_directory
+				<div class="repo-wrapper repo-wrapper--with-sidebar">
+			@else
+				<div class="repo-wrapper">
+			@end
+				<span class="branch-specific-container">
+					<select class="branch-select" name="branch">
+						@for name in app.get_all_repo_branch_names(repo.id)
+							<option value="@name">@name</option>
+						@end
+					</select>
+
+					<a class="branches-link" href="/@repo.user_name/@repo.name/branches">
+						<svg aria-hidden="true" focusable="false" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path fill="currentColor" d="M384 144c0-44.2-35.8-80-80-80s-80 35.8-80 80c0 36.4 24.3 67.1 57.5 76.8-.6 16.1-4.2 28.5-11 36.9-15.4 19.2-49.3 22.4-85.2 25.7-28.2 2.6-57.4 5.4-81.3 16.9v-144c32.5-10.2 56-40.5 56-76.3 0-44.2-35.8-80-80-80S0 35.8 0 80c0 35.8 23.5 66.1 56 76.3v199.3C23.5 365.9 0 396.2 0 432c0 44.2 35.8 80 80 80s80-35.8 80-80c0-34-21.2-63.1-51.2-74.6 3.1-5.2 7.8-9.8 14.9-13.4 16.2-8.2 40.4-10.4 66.1-12.8 42.2-3.9 90-8.4 118.2-43.4 14-17.4 21.1-39.8 21.6-67.9 31.6-10.8 54.4-40.7 54.4-75.9zM80 64c8.8 0 16 7.2 16 16s-7.2 16-16 16-16-7.2-16-16 7.2-16 16-16zm0 384c-8.8 0-16-7.2-16-16s7.2-16 16-16 16 7.2 16 16-7.2 16-16 16zm224-320c8.8 0 16 7.2 16 16s-7.2 16-16 16-16-7.2-16-16 7.2-16 16-16z"></path></svg>
+						@repo.format_nr_branches(ctx.lang)
+					</a>
+
+					<div class="repo-mode-switch">
+						@if is_top_files_mode
+							<a class="repo-mode-link" href="@tree_url">Tree</a>
+							<span class="repo-mode-link active">Top files</span>
+						@else
+							<span class="repo-mode-link active">Tree</span>
+							<a class="repo-mode-link" href="@top_files_url">Top files</a>
+						@end
+					</div>
+
+					<div class="branch-right-actions">
+						@if repo.user_id == ctx.user.id
+							<a class="add-file-btn" href="/@repo.user_name/@repo.name/new/@branch_name">+</a>
+						@end
+
+						<div class="repo-code-container">
+							<div class="repo-code-button">Code</div>
+
+							<div class="repo-clone-dropdown">
+								Clone with HTTPS:
+								<div class="clone-input-group">
+									<input disabled value="@{app.generate_clone_url(repo)}">
+									<button class="copy-clone-url-button">Copy</button>
+								</div>
+							</div>
+						</div>
+					</div>
+				</span>
 			</div>
 
 			@if is_top_directory

@@ -18,12 +18,11 @@
 		@else
 			<span class="repo-visibility repo-visibility--private">Private</span>
 		@end
-	@end
-
-	@if repo.user_id == ctx.user.id
-		<a class='repo-settings-link' href="/@repo.user_name/@repo.name/settings">
-			Settings
-		</a>
+		@if repo.user_id == ctx.user.id
+			<a class='repo-settings-link' href="/@repo.user_name/@repo.name/settings">
+				Settings
+			</a>
+		@end
 	@end
 </div>
 

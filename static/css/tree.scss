@@ -22,7 +22,17 @@
 .repo-settings-link {
 	font-size: 14px;
 	line-height: 1;
-	margin-left: auto;
+}
+
+.repo-header-area {
+	position: relative;
+
+	.repo-actions {
+		position: absolute;
+		top: 11px;
+		right: 0;
+		z-index: 5;
+	}
 }
 
 /* 1. The repo stats panel */
@@ -85,11 +95,23 @@ a.repo-stat-item:hover {
 	gap: 10px;
 }
 
+.repo-wrapper--with-sidebar {
+	padding-right: 184px;
+}
+
 .branch-specific-container {
 	display: flex;
 	align-items: center;
 	gap: 10px;
 	flex-wrap: wrap;
+	width: 100%;
+}
+
+.branch-right-actions {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin-left: auto;
 }
 
 .add-file-btn {
@@ -126,7 +148,7 @@ a.repo-stat-item:hover {
 	font-size: 14px;
 	font-weight: 500;
 	line-height: 20px;
-	max-width: 200px;
+	max-width: 150px;
 	padding: 5px 35px 5px 12px;
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -503,6 +525,10 @@ a.repo-mode-link:hover {
 @media (max-width: 960px) {
 	.repo-layout {
 		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.repo-wrapper--with-sidebar {
+		padding-right: 0;
 	}
 }
 
