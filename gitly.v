@@ -38,14 +38,15 @@ mut:
 pub struct Context {
 	veb.Context
 mut:
-	user          User
-	current_path  string
-	page_gen_time string
-	is_tree       bool
-	logged_in     bool
-	path_split    []string
-	branch        string
-	lang          Lang = .en //.ru
+	user           User
+	current_path   string
+	page_gen_time  string
+	page_gen_start i64
+	is_tree        bool
+	logged_in      bool
+	path_split     []string
+	branch         string
+	lang           Lang = .en //.ru
 }
 
 // fn C.sqlite3_config(int)
@@ -141,6 +142,7 @@ pub fn (mut app App) init_server() {
 }
 
 pub fn (mut app App) before_request(mut ctx Context) bool {
+	ctx.page_gen_start = time.ticks()
 	$if trace_prealloc ? {
 		unsafe { prealloc_scope_checkpoint(c'gitly before_request start') }
 	}

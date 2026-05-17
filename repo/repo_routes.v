@@ -469,10 +469,14 @@ fn read_clone_progress(progress_path string) string {
 
 @['/:username/:repo_name/tree/:branch_name/:path...']
 pub fn (mut app App) tree(mut ctx Context, username string, repo_name string, branch_name string, path string) veb.Result {
+	tree_t0 := time.ticks()
+	mut tree_t := tree_t0
 	mut repo := app.find_repo_by_name_and_username(repo_name, username) or {
 		eprintln('tree() repo ${repo_name} not found')
 		return ctx.not_found()
 	}
+	eprintln('[tree] find_repo: ${time.ticks() - tree_t}ms')
+	tree_t = time.ticks()
 	mut clone_url := ''
 	mut clone_progress := ''
 	if repo.status == .cloning {
@@ -482,6 +486,8 @@ pub fn (mut app App) tree(mut ctx Context, username string, repo_name string, br
 	}
 
 	_, user := app.check_username(username)
+	eprintln('[tree] check_username: ${time.ticks() - tree_t}ms')
+	tree_t = time.ticks()
 	if !repo.is_public {
 		if user.id != ctx.user.id {
 			return ctx.not_found()
@@ -507,6 +513,8 @@ pub fn (mut app App) tree(mut ctx Context, username string, repo_name string, br
 	ctx.branch = branch_name
 
 	app.increment_repo_views(repo.id) or { app.info(err.str()) }
+	eprintln('[tree] increment_repo_views: ${time.ticks() - tree_t}ms')
+	tree_t = time.ticks()
 
 	mut up := '/'
 	can_up := path != ''
@@ -525,6 +533,10 @@ pub fn (mut app App) tree(mut ctx Context, username string, repo_name string, br
 	} else {
 		[]File{}
 	}
+	if is_top_files_mode {
+		eprintln('[tree] top_files: ${time.ticks() - tree_t}ms')
+		tree_t = time.ticks()
+	}
 	tree_url := if path == '' {
 		'/${username}/${repo_name}/tree/${branch_name}'
 	} else {
@@ -533,7 +545,11 @@ pub fn (mut app App) tree(mut ctx Context, username string, repo_name string, br
 	top_files_url := '/${username}/${repo_name}/tree/${branch_name}?mode=top-files'
 
 	mut items := app.find_repository_items(repo_id, branch_name, ctx.current_path)
+	eprintln('[tree] find_repository_items (${items.len} items): ${time.ticks() - tree_t}ms')
+	tree_t = time.ticks()
 	branch := app.find_repo_branch_by_name(repo.id, branch_name)
+	eprintln('[tree] find_repo_branch_by_name: ${time.ticks() - tree_t}ms')
+	tree_t = time.ticks()
 
 	show_folder_size := app.settings.tree_folder_size_enabled()
 
@@ -544,6 +560,8 @@ pub fn (mut app App) tree(mut ctx Context, username string, repo_name string, br
 				app.info(err.str())
 				[]File{}
 			}
+			eprintln('[tree] cache_repository_items: ${time.ticks() - tree_t}ms')
+			tree_t = time.ticks()
 			// Fetch commit info in background — don't block the page
 			spawn bg_fetch_files_info(repo, branch_name, ctx.current_path, app.config)
 		} else if items.any(it.last_msg == '') {
@@ -573,6 +591,8 @@ pub fn (mut app App) tree(mut ctx Context, username string, repo_name string, br
 	} else {
 		last_commit = app.find_repo_last_commit(repo.id, branch.id)
 	}
+	eprintln('[tree] last_commit lookup: ${time.ticks() - tree_t}ms')
+	tree_t = time.ticks()
 
 	mut next_dir_idx := 0
 	for scan_idx in 0 .. items.len {
@@ -592,10 +612,14 @@ pub fn (mut app App) tree(mut ctx Context, username string, repo_name string, br
 
 	commits_count := app.get_repo_commit_count(repo.id, branch.id)
 	has_commits := commits_count > 0
+	eprintln('[tree] get_repo_commit_count: ${time.ticks() - tree_t}ms')
+	tree_t = time.ticks()
 
 	// Get readme after updating repository
 	readme_file := find_readme_file(items) or { File{} }
 	readme := render_readme(repo, branch_name, path, readme_file)
+	eprintln('[tree] render_readme: ${time.ticks() - tree_t}ms')
+	tree_t = time.ticks()
 
 	license_file := find_license_file(items) or { File{} }
 	mut license_file_path := ''
@@ -608,12 +632,16 @@ pub fn (mut app App) tree(mut ctx Context, username string, repo_name string, br
 	is_repo_starred := app.check_repo_starred(repo_id, ctx.user.id)
 	is_repo_watcher := app.check_repo_watcher_status(repo_id, ctx.user.id)
 	is_top_directory := ctx.current_path == ''
+	eprintln('[tree] watcher/star/watcher_status: ${time.ticks() - tree_t}ms')
+	tree_t = time.ticks()
 
 	// CI status for last commit
 	ci_status := app.find_ci_status_for_commit(repo_id, last_commit.hash) or {
 		app.find_ci_status_for_branch(repo_id, branch_name) or { CiStatus{} }
 	}
 	has_ci := ci_status.id != 0
+	eprintln('[tree] ci_status: ${time.ticks() - tree_t}ms')
+	tree_t = time.ticks()
 
 	mut sidebar_contributors := []User{}
 	mut sidebar_releases := []Release{}
@@ -642,8 +670,11 @@ pub fn (mut app App) tree(mut ctx Context, username string, repo_name string, br
 				break
 			}
 		}
+		eprintln('[tree] sidebar contributors/releases: ${time.ticks() - tree_t}ms')
+		tree_t = time.ticks()
 	}
 
+	eprintln('[tree] pre-render TOTAL ${username}/${repo_name}: ${time.ticks() - tree_t0}ms')
 	return $veb.html()
 }
 

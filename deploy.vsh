@@ -10,7 +10,7 @@ const local_binary = 'gitly_linux'
 fn main() {
 	if !os.exists(local_binary) {
 		eprintln(term.red('${local_binary} not found. Build it first with:'))
-		eprintln('  ~/code/v3/v -os linux -d use_openssl -cc clang -o ${local_binary} .')
+		eprintln('  ~/code/v3/v -os linux -d use_openssl -cc clang -gc none -prealloc -cflags "-O2" -o ${local_binary} .')
 		exit(1)
 	}
 
