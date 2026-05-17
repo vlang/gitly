@@ -272,7 +272,7 @@ fn test_api_branches_count(username string, repo_name string) {
 
 	assert api_branches_count_result.status_code == 200
 
-	response_json := json.decode(api.ApiBranchCount, api_branches_count_result.body) or {
+	response_json := json.decode[api.ApiBranchCount](api_branches_count_result.body) or {
 		exit_with_message(err.str())
 	}
 	assert response_json.result > 0
@@ -391,7 +391,7 @@ fn get_repo_commit_count(token string, username string, repo_name string, branch
 		url:     prepare_url('api/v1/${username}/${repo_name}/${branch_name}/commits/count')
 	) or { exit_with_message(err.str()) }
 
-	response_json := json.decode(api.ApiCommitCount, response.body) or {
+	response_json := json.decode[api.ApiCommitCount](response.body) or {
 		exit_with_message(err.str())
 	}
 	dump(response_json.result)
@@ -408,7 +408,7 @@ fn get_repo_issue_count(token string, username string, repo_name string) int {
 		url:     prepare_url('api/v1/${username}/${repo_name}/issues/count')
 	) or { exit_with_message(err.str()) }
 
-	response_json := json.decode(api.ApiIssueCount, response.body) or {
+	response_json := json.decode[api.ApiIssueCount](response.body) or {
 		exit_with_message(err.str())
 	}
 
@@ -424,7 +424,7 @@ fn get_repo_branch_count(token string, username string, repo_name string) int {
 		url:     prepare_url('api/v1/${username}/${repo_name}/branches/count')
 	) or { exit_with_message(err.str()) }
 
-	response_json := json.decode(api.ApiBranchCount, response.body) or {
+	response_json := json.decode[api.ApiBranchCount](response.body) or {
 		exit_with_message(err.str())
 	}
 

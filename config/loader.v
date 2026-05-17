@@ -1,7 +1,7 @@
 module config
 
 import os
-import json
+import x.json2 as json
 
 pub struct Config {
 pub:
@@ -33,5 +33,5 @@ pub:
 pub fn read_config(path string) !Config {
 	config_raw := os.read_file(path)!
 
-	return json.decode(Config, config_raw)!
+	return json.decode[Config](config_raw)!
 }

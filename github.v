@@ -3,7 +3,7 @@
 module main
 
 import veb
-import json
+import x.json2 as json
 import net.http
 import time
 // import veb.auth as oauth
@@ -122,7 +122,7 @@ fn fetch_github_repo_description(clone_url string) string {
 		eprintln('[github-info] non-200 status ${resp.status_code}: ${resp.body#[..200]}')
 		return ''
 	}
-	info := json.decode(GitHubRepoInfo, resp.body) or {
+	info := json.decode[GitHubRepoInfo](resp.body) or {
 		eprintln('[github-info] cannot decode response: ${err}')
 		return ''
 	}
@@ -146,7 +146,7 @@ fn (mut app App) import_github_contributors(repo_id int, clone_url string) ! {
 		if resp.status_code != 200 {
 			return error('github api ${resp.status_code}: ${resp.body}')
 		}
-		contributors := json.decode([]GitHubContributor, resp.body) or {
+		contributors := json.decode[[]GitHubContributor](resp.body) or {
 			return error('cannot decode github contributors: ${err}')
 		}
 		if contributors.len == 0 {
@@ -223,7 +223,7 @@ fn (mut app App) import_github_issues(repo_id int, clone_url string, owner_user_
 			eprintln('[github-import] ERROR body: ${resp.body}')
 			return error('github api ${resp.status_code}: ${resp.body}')
 		}
-		issues := json.decode([]GitHubIssue, resp.body) or {
+		issues := json.decode[[]GitHubIssue](resp.body) or {
 			eprintln('[github-import] ERROR: cannot decode response: ${err}')
 			eprintln('[github-import] response body was: ${resp.body#[..1000]}')
 			return error('cannot decode github issues: ${err}')
@@ -336,7 +336,7 @@ pub fn (mut app App) handle_oauth() veb.Result {
 		return ctx.text('Received ${user_response.status_code} error while attempting to contact GitHub')
 	}
 
-	github_user := json.decode(GitHubUser, user_response.body) or { return ctx.redirect_to_index() }
+	github_user := json.decode[GitHubUser](user_response.body) or { return ctx.redirect_to_index() }
 
 	if github_user.email.trim_space().len == 0 {
 		app.add_security_log(

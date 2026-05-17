@@ -29,7 +29,7 @@ import os
 import log
 import net.http
 import time
-import json
+import x.json2 as json
 
 const test_port = 8765
 const test_url = 'http://127.0.0.1:${test_port}'
@@ -234,7 +234,7 @@ fn fetch_test_repo_id() !int {
 	if resp.status_code != 200 {
 		return error('listing returned ${resp.status_code}')
 	}
-	repos := json.decode([]ApiRepoSummary, resp.body)!
+	repos := json.decode[[]ApiRepoSummary](resp.body)!
 	for r in repos {
 		if r.name == test_repo {
 			return r.id
@@ -316,7 +316,7 @@ fn test_api_v1_me_with_bearer() {
 		header: bearer_header()
 	) or { panic(err) }
 	assert resp.status_code == 200
-	user := json.decode(ApiUserSummary, resp.body) or { panic(err) }
+	user := json.decode[ApiUserSummary](resp.body) or { panic(err) }
 	assert user.username == test_username
 }
 
@@ -329,14 +329,14 @@ fn test_api_v1_me_with_session_cookie() {
 		}
 	) or { panic(err) }
 	assert resp.status_code == 200
-	user := json.decode(ApiUserSummary, resp.body) or { panic(err) }
+	user := json.decode[ApiUserSummary](resp.body) or { panic(err) }
 	assert user.username == test_username
 }
 
 fn test_api_v1_user_lookup() {
 	resp := http.get(url('/api/v1/users/${test_username}')) or { panic(err) }
 	assert resp.status_code == 200
-	user := json.decode(ApiUserSummary, resp.body) or { panic(err) }
+	user := json.decode[ApiUserSummary](resp.body) or { panic(err) }
 	assert user.username == test_username
 
 	missing := http.get(url('/api/v1/users/ghost_user')) or { panic(err) }
@@ -346,7 +346,7 @@ fn test_api_v1_user_lookup() {
 fn test_api_v1_user_repos() {
 	resp := http.get(url('/api/v1/users/${test_username}/repos')) or { panic(err) }
 	assert resp.status_code == 200
-	repos := json.decode([]ApiRepoSummary, resp.body) or { panic(err) }
+	repos := json.decode[[]ApiRepoSummary](resp.body) or { panic(err) }
 	assert repos.len >= 1
 	mut found := false
 	for r in repos {
@@ -361,7 +361,7 @@ fn test_api_v1_user_repos() {
 fn test_api_v1_repo_show() {
 	resp := http.get(url('/api/v1/repos/${test_username}/${test_repo}')) or { panic(err) }
 	assert resp.status_code == 200
-	r := json.decode(ApiRepoSummary, resp.body) or { panic(err) }
+	r := json.decode[ApiRepoSummary](resp.body) or { panic(err) }
 	assert r.name == test_repo
 	assert r.user_name == test_username
 
@@ -372,7 +372,7 @@ fn test_api_v1_repo_show() {
 fn test_api_v1_repo_issues_list_empty() {
 	resp := http.get(url('/api/v1/repos/${test_username}/${test_repo}/issues')) or { panic(err) }
 	assert resp.status_code == 200
-	issues := json.decode([]ApiIssueSummary, resp.body) or { panic(err) }
+	issues := json.decode[[]ApiIssueSummary](resp.body) or { panic(err) }
 	assert issues.len == 0
 }
 
@@ -408,19 +408,19 @@ fn test_api_v1_create_issue_succeeds() {
 		data:   'title=first-issue&body=hello'
 	) or { panic(err) }
 	assert resp.status_code == 200
-	issue := json.decode(ApiIssueSummary, resp.body) or { panic(err) }
+	issue := json.decode[ApiIssueSummary](resp.body) or { panic(err) }
 	assert issue.title == 'first-issue'
 	assert issue.status == 'open'
 
 	listing := http.get(url('/api/v1/repos/${test_username}/${test_repo}/issues')) or { panic(err) }
-	issues := json.decode([]ApiIssueSummary, listing.body) or { panic(err) }
+	issues := json.decode[[]ApiIssueSummary](listing.body) or { panic(err) }
 	assert issues.len >= 1
 
 	single := http.get(url('/api/v1/repos/${test_username}/${test_repo}/issues/${issue.id}')) or {
 		panic(err)
 	}
 	assert single.status_code == 200
-	got := json.decode(ApiIssueSummary, single.body) or { panic(err) }
+	got := json.decode[ApiIssueSummary](single.body) or { panic(err) }
 	assert got.id == issue.id
 }
 
@@ -434,7 +434,7 @@ fn test_api_v1_repo_issue_not_found() {
 fn test_api_v1_repo_pulls_empty() {
 	resp := http.get(url('/api/v1/repos/${test_username}/${test_repo}/pulls')) or { panic(err) }
 	assert resp.status_code == 200
-	prs := json.decode([]ApiPullSummary, resp.body) or { panic(err) }
+	prs := json.decode[[]ApiPullSummary](resp.body) or { panic(err) }
 	assert prs.len == 0
 }
 
@@ -459,7 +459,7 @@ fn test_api_v1_issues_count() {
 		}
 	) or { panic(err) }
 	assert resp.status_code == 200
-	decoded := json.decode(ApiIssueCount, resp.body) or { panic(err) }
+	decoded := json.decode[ApiIssueCount](resp.body) or { panic(err) }
 	assert decoded.success
 	assert decoded.result >= 1
 }
@@ -478,7 +478,7 @@ fn test_api_v1_branches_count() {
 		}
 	) or { panic(err) }
 	assert resp.status_code == 200
-	decoded := json.decode(ApiBranchCount, resp.body) or { panic(err) }
+	decoded := json.decode[ApiBranchCount](resp.body) or { panic(err) }
 	assert decoded.success
 	assert decoded.result == 0
 }
@@ -492,7 +492,7 @@ fn test_api_v1_commits_count() {
 		}
 	) or { panic(err) }
 	assert resp.status_code == 200
-	decoded := json.decode(ApiCommitCount, resp.body) or { panic(err) }
+	decoded := json.decode[ApiCommitCount](resp.body) or { panic(err) }
 	assert decoded.success
 	assert decoded.result == 0
 }
@@ -507,7 +507,7 @@ fn test_api_v1_repo_star_toggle() {
 		}
 	) or { panic(err) }
 	assert resp.status_code == 200
-	first := json.decode(ApiBoolResult, resp.body) or { panic(err) }
+	first := json.decode[ApiBoolResult](resp.body) or { panic(err) }
 	assert first.success
 	assert first.result == true
 
@@ -518,7 +518,7 @@ fn test_api_v1_repo_star_toggle() {
 			'token': session_cookie()
 		}
 	) or { panic(err) }
-	second := json.decode(ApiBoolResult, resp2.body) or { panic(err) }
+	second := json.decode[ApiBoolResult](resp2.body) or { panic(err) }
 	assert second.result == false
 }
 
@@ -532,7 +532,7 @@ fn test_api_v1_repo_watch_toggle() {
 		}
 	) or { panic(err) }
 	assert resp.status_code == 200
-	first := json.decode(ApiBoolResult, resp.body) or { panic(err) }
+	first := json.decode[ApiBoolResult](resp.body) or { panic(err) }
 	assert first.success
 }
 
@@ -546,7 +546,7 @@ fn test_api_v1_repo_tree_files_with_branch() {
 	rid := repo_id()
 	resp := http.get(url('/api/v1/repos/${rid}/tree/files?branch=main')) or { panic(err) }
 	assert resp.status_code == 200
-	decoded := json.decode(ApiFilesResult, resp.body) or { panic(err) }
+	decoded := json.decode[ApiFilesResult](resp.body) or { panic(err) }
 	assert decoded.success
 }
 

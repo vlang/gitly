@@ -7,7 +7,7 @@ import net.http
 import crypto.hmac
 import crypto.sha256
 import encoding.hex
-import json
+import x.json2 as json
 
 pub struct WebhookIssuePayload {
 	action string

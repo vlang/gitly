@@ -2,7 +2,7 @@ module main
 
 import veb
 import api
-import json
+import x.json2 as json
 import net.http
 import time
 import git
@@ -19,7 +19,7 @@ struct CiStatusCallback {
 @['/api/v1/ci/status'; post]
 pub fn (mut app App) handle_ci_status_callback() veb.Result {
 	body := ctx.req.data
-	callback := json.decode(CiStatusCallback, body) or {
+	callback := json.decode[CiStatusCallback](body) or {
 		return ctx.json_error('Invalid request body')
 	}
 
@@ -62,7 +62,7 @@ pub fn (mut app App) ci_runs(username string, repo_name string) veb.Result {
 			http.Response{}
 		}
 		if !ci_service_error && response.status_code == 200 {
-			runs_resp := json.decode(CiApiRunListResponse, response.body) or {
+			runs_resp := json.decode[CiApiRunListResponse](response.body) or {
 				CiApiRunListResponse{}
 			}
 			if runs_resp.success {
@@ -113,7 +113,7 @@ pub fn (mut app App) ci_run_detail(username string, repo_name string, run_id_str
 	ci_run_json := response.body
 
 	// Parse the response to display
-	run_data := json.decode(CiApiRunResponse, ci_run_json) or { return ctx.not_found() }
+	run_data := json.decode[CiApiRunResponse](ci_run_json) or { return ctx.not_found() }
 
 	ci_run := run_data.result
 
@@ -144,7 +144,7 @@ pub fn (mut app App) ci_restart_run(username string, repo_name string, run_id_st
 		return ctx.not_found()
 	}
 
-	result := json.decode(CiApiRunResponse, response.body) or { return ctx.not_found() }
+	result := json.decode[CiApiRunResponse](response.body) or { return ctx.not_found() }
 
 	if result.success {
 		new_run := result.result

@@ -1,6 +1,6 @@
 module main
 
-import json
+import x.json2 as json
 import net.http
 import os
 import git
@@ -90,7 +90,7 @@ fn (mut app App) send_ci_trigger(repo Repo, branch_name string, yaml_config stri
 	}
 
 	if response.status_code == 200 {
-		result := json.decode(CiTriggerResponse, response.body) or {
+		result := json.decode[CiTriggerResponse](response.body) or {
 			app.warn('Failed to parse CI trigger response')
 			return
 		}
