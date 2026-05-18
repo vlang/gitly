@@ -1,6 +1,6 @@
 module highlight
 
-import markdown
+import x.markdown
 import regex.pcre
 
 const allowed_tags = [
@@ -72,7 +72,7 @@ const unallowed_schemas = [
 pub fn convert_markdown_to_html(code string) string {
 	markdown_code := sanitize_markdown_code(code)
 
-	return markdown.to_html(markdown_code)
+	return markdown.to_html(markdown_code).trim_right('\n')
 }
 
 // temporary solution while markdown module doesn't support
