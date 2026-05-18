@@ -215,6 +215,8 @@ pub fn (mut app App) new() veb.Result {
 	if !ctx.logged_in {
 		return ctx.redirect_to_login()
 	}
+	orgs := app.find_orgs_for_user(ctx.user.id)
+	selected_owner := ctx.query['owner'] or { ctx.user.username }
 	return $veb.html()
 }
 
@@ -227,7 +229,22 @@ pub fn (mut app App) handle_new_repo(mut ctx Context, name string, clone_url str
 	if !ctx.logged_in {
 		return ctx.redirect_to_login()
 	}
-	if !ctx.is_admin() && app.get_count_user_repos(ctx.user.id) >= max_user_repos {
+	owner := ctx.form['owner'] or { ctx.user.username }
+	mut owner_name := ctx.user.username
+	mut owner_org_id := 0
+	if owner != ctx.user.username {
+		org := app.get_org_by_name(owner) or {
+			ctx.error('Unknown owner "${owner}"')
+			return app.new(mut ctx)
+		}
+		if !app.is_org_member(org.id, ctx.user.id) {
+			ctx.error('You are not a member of "${owner}"')
+			return app.new(mut ctx)
+		}
+		owner_name = org.name
+		owner_org_id = org.id
+	}
+	if owner_org_id == 0 && !ctx.is_admin() && app.get_count_user_repos(ctx.user.id) >= max_user_repos {
 		ctx.error('You have reached the limit for the number of repositories')
 		return app.new(mut ctx)
 	}
@@ -236,7 +253,7 @@ pub fn (mut app App) handle_new_repo(mut ctx Context, name string, clone_url str
 		return app.new(mut ctx)
 	}
 	eprintln(1)
-	if _ := app.find_repo_by_name_and_username(name, ctx.user.username) {
+	if _ := app.find_repo_by_name_and_username(name, owner_name) {
 		ctx.error('A repository with the name "${name}" already exists')
 		return app.new(mut ctx)
 	}
@@ -266,7 +283,11 @@ pub fn (mut app App) handle_new_repo(mut ctx Context, name string, clone_url str
 		}
 	}
 	println('OK')
-	repo_path := os.join_path(app.config.repo_storage_path, ctx.user.username, name)
+	owner_dir := os.join_path(app.config.repo_storage_path, owner_name)
+	if !os.exists(owner_dir) {
+		os.mkdir(owner_dir) or { app.info('failed to create owner dir ${owner_dir}: ${err}') }
+	}
+	repo_path := os.join_path(owner_dir, name)
 	id := app.get_max_repo_id() + 1
 	mut new_repo := &Repo{
 		name:           name
@@ -275,7 +296,7 @@ pub fn (mut app App) handle_new_repo(mut ctx Context, name string, clone_url str
 		git_dir:        repo_path
 		user_id:        ctx.user.id
 		primary_branch: 'master'
-		user_name:      ctx.user.username
+		user_name:      owner_name
 		clone_url:      valid_clone_url
 		is_public:      is_public
 	}
@@ -297,7 +318,7 @@ pub fn (mut app App) handle_new_repo(mut ctx Context, name string, clone_url str
 		clone_job_repo := *new_repo
 		spawn clone_repo(clone_job_repo, app.config, import_issues, ctx.user.id)
 	}
-	new_repo2 := app.find_repo_by_name_and_user_id(new_repo.name, ctx.user.id) or {
+	new_repo2 := app.find_repo_by_name_and_username(new_repo.name, owner_name) or {
 		app.info('Repo was not inserted')
 		return ctx.redirect('/new')
 	}
@@ -328,7 +349,7 @@ pub fn (mut app App) handle_new_repo(mut ctx Context, name string, clone_url str
 	if !has_first_repo_activity {
 		app.add_activity(ctx.user.id, 'first_repo') or { app.info(err.str()) }
 	}
-	return ctx.redirect('/${ctx.user.username}/${new_repo.name}')
+	return ctx.redirect('/${owner_name}/${new_repo.name}')
 }
 
 fn bg_fetch_files_info(repo_ Repo, branch string, path string, conf config.Config) {

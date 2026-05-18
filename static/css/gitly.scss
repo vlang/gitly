@@ -407,6 +407,22 @@ form {
 	}
 }
 
+.github-auth {
+	display: inline-block;
+	margin-top: 15px;
+	padding: 8px 14px;
+	background-color: #24292f;
+	color: $white !important;
+	border-radius: $small-radius;
+	text-decoration: none;
+	font-weight: 500;
+	transition: background-color 0.07s;
+}
+
+.github-auth:hover {
+	background-color: #1a7be9;
+}
+
 .block {
 	margin: auto;
 	max-width: 700px;
@@ -900,6 +916,47 @@ form {
 	}
 }
 
+.new-repo__owner-row {
+	display: flex;
+	align-items: flex-end;
+	gap: 8px;
+}
+
+.new-repo__field--owner {
+	flex: 0 0 auto;
+	min-width: 180px;
+}
+
+.new-repo__field--name {
+	flex: 1 1 auto;
+}
+
+.new-repo__owner-select {
+	box-sizing: border-box;
+	width: 100%;
+	padding: 7px 10px;
+	font-size: 14px;
+	border: 1px solid $gray;
+	border-radius: $small-radius;
+	background-color: $white;
+
+	&:focus {
+		border-color: #4392eb;
+		outline: none;
+	}
+}
+
+.new-repo__owner-slash {
+	font-size: 20px;
+	color: $gray-dark;
+	padding-bottom: 4px;
+}
+
+.new-repo__name-input--standalone {
+	border: 1px solid $gray;
+	border-radius: $small-radius;
+}
+
 .new-repo__owner {
 	background-color: $gray-light;
 	color: $gray-dark;
@@ -994,6 +1051,155 @@ form {
 	font-weight: 500;
 
 	&:hover {
+		background-color: #1a7f37;
+		border-color: rgba(27, 31, 36, 0.15);
+		color: $white;
+	}
+}
+
+.new-org {
+	max-width: 640px;
+}
+
+.new-org__header {
+	margin: 24px 0 24px;
+	text-align: center;
+
+	h1 {
+		font-size: 28px;
+		margin: 0;
+		padding: 0;
+	}
+}
+
+.new-org__subtitle {
+	margin: 0 0 4px;
+	color: $gray-dark;
+	font-size: 13px;
+	font-family: monospace;
+}
+
+.new-org__form {
+	display: flex;
+	flex-direction: column;
+	gap: 22px;
+}
+
+.new-org__field {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.new-org__field--inline {
+	gap: 0;
+}
+
+.new-org__label {
+	font-weight: 600;
+	font-size: 14px;
+	margin: 0;
+	padding: 0;
+	color: $black;
+}
+
+.new-org__req {
+	color: #cf222e;
+	margin-left: 2px;
+}
+
+.new-org__input {
+	box-sizing: border-box;
+	width: 100%;
+	padding: 8px 10px;
+	font-size: 14px;
+	border: 1px solid $gray;
+	border-radius: $small-radius;
+	background-color: #f6f8fa;
+
+	&:focus {
+		border-color: #4392eb;
+		background-color: $white;
+		outline: none;
+	}
+}
+
+.new-org__hint {
+	margin: 0;
+	color: $gray-dark;
+	font-size: 12px;
+}
+
+.new-org__url-slot {
+	font-weight: 600;
+	color: $black;
+}
+
+.new-org__option {
+	display: flex;
+	gap: 10px;
+	padding: 4px 0;
+	cursor: pointer;
+	align-items: flex-start;
+
+	input[type="radio"] {
+		margin-top: 4px;
+	}
+}
+
+.new-org__option-body {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.new-org__option-title {
+	font-weight: 600;
+	font-size: 14px;
+	color: $black;
+}
+
+.new-org__option-desc {
+	color: $gray-dark;
+	font-size: 13px;
+	line-height: 1.4;
+}
+
+.new-org__checkbox {
+	display: inline-flex;
+	align-items: flex-start;
+	gap: 8px;
+	cursor: pointer;
+	font-size: 14px;
+	line-height: 1.5;
+
+	input[type="checkbox"] {
+		margin: 4px 0 0;
+	}
+}
+
+.new-org__actions {
+	padding-top: 6px;
+	display: flex;
+	justify-content: stretch;
+}
+
+.new-org__submit {
+	width: 100% !important;
+	padding: 10px 18px;
+	background-color: #aed8b8;
+	color: $white;
+	border: 1px solid rgba(31, 136, 61, 0.4);
+	font-weight: 500;
+	cursor: not-allowed;
+
+	&:not(:disabled) {
+		background-color: #1f883d;
+		border-color: rgba(31, 136, 61, 0.6);
+		cursor: pointer;
+	}
+
+	&:not(:disabled):hover {
 		background-color: #1a7f37;
 		border-color: rgba(27, 31, 36, 0.15);
 		color: $white;

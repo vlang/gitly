@@ -328,6 +328,12 @@ fn (mut app App) create_tables() ! {
 	sql app.db {
 		create table ApiToken
 	}!
+	sql app.db {
+		create table Org
+	}!
+	sql app.db {
+		create table OrgMember
+	}!
 }
 
 fn (mut app App) migrate_tables() ! {

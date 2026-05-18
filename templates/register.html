@@ -46,6 +46,10 @@
 					</div>
 				</form>
 			</div>
+
+			@if app.settings.oauth_client_id != ''
+				<a class='github-auth' href='https://github.com/login/oauth/authorize?response_type=code&state=@csrf&client_id=@app.settings.oauth_client_id'>%register_via_github</a>
+			@end
 		</div>
 
 		@js '/js/register.js'

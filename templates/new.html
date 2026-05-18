@@ -17,11 +17,28 @@
 			@end
 
 			<form class="new-repo__form" method='post'>
-				<div class="new-repo__field">
-					<label class="new-repo__label" for="name">%new_repo_name <span class="new-repo__req">*</span></label>
-					<div class="new-repo__name-row">
-						<span class="new-repo__owner">@app.config.hostname/@ctx.user.username/</span>
-						<input class="new-repo__name-input" id="name" type='text' name='name' required autofocus maxlength=@max_repo_name_len placeholder="my-awesome-project">
+				<div class="new-repo__owner-row">
+					<div class="new-repo__field new-repo__field--owner">
+						<label class="new-repo__label" for="owner">%new_repo_owner <span class="new-repo__req">*</span></label>
+						<select id="owner" class="new-repo__owner-select" name="owner">
+							@if selected_owner == ctx.user.username
+								<option value="@ctx.user.username" selected>@ctx.user.username</option>
+							@else
+								<option value="@ctx.user.username">@ctx.user.username</option>
+							@end
+							@for org in orgs
+								@if selected_owner == org.name
+									<option value="@org.name" selected>@org.name</option>
+								@else
+									<option value="@org.name">@org.name</option>
+								@end
+							@end
+						</select>
+					</div>
+					<div class="new-repo__owner-slash">/</div>
+					<div class="new-repo__field new-repo__field--name">
+						<label class="new-repo__label" for="name">%new_repo_name <span class="new-repo__req">*</span></label>
+						<input class="new-repo__name-input new-repo__name-input--standalone" id="name" type='text' name='name' required autofocus maxlength=@max_repo_name_len placeholder="my-awesome-project">
 					</div>
 				</div>
 

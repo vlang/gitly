@@ -198,7 +198,10 @@ new_repo_title
 Create a new repository
 -----
 new_repo_name
-Name
+Repository name
+-----
+new_repo_owner
+Owner
 -----
 new_repo_description
 Description
@@ -232,6 +235,45 @@ You choose who can see and commit to this repository.
 -----
 new_repo_create
 Create repository
+-----
+new_org_subtitle
+Tell us about your organization
+-----
+new_org_title
+Set up your organization
+-----
+new_org_name
+Organization name
+-----
+new_org_name_hint
+This will be the name of your account on Gitly.
+-----
+new_org_url_hint
+Your URL will be:
+-----
+new_org_contact_email
+Contact email
+-----
+new_org_belongs_to
+This organization belongs to:
+-----
+new_org_personal
+My personal account
+-----
+new_org_personal_example
+I.e.,
+-----
+new_org_business
+A business or institution
+-----
+new_org_business_example
+For example: Acme, Inc., Example Institute, American Red Cross
+-----
+new_org_accept_terms
+I hereby accept the Terms of Service.
+-----
+new_org_next
+Next
 -----
 commits_count
 commit|commits|commits
@@ -988,4 +1030,10 @@ First issue
 -----
 user_activity_on
 on
+-----
+login_via_github
+Login via GitHub
+-----
+register_via_github
+Register via GitHub
 -----

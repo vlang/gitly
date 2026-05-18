@@ -198,7 +198,10 @@ new_repo_title
 Создать новый репозиторий KEKW
 -----
 new_repo_name
-Название
+Название репозитория
+-----
+new_repo_owner
+Владелец
 -----
 new_repo_description
 Описание
@@ -232,6 +235,45 @@ new_repo_private_desc
 -----
 new_repo_create
 Создать репозиторий
+-----
+new_org_subtitle
+Расскажите о вашей организации
+-----
+new_org_title
+Создание организации
+-----
+new_org_name
+Название организации
+-----
+new_org_name_hint
+Это будет именем вашего аккаунта в Gitly.
+-----
+new_org_url_hint
+URL будет:
+-----
+new_org_contact_email
+Контактный email
+-----
+new_org_belongs_to
+Эта организация принадлежит:
+-----
+new_org_personal
+Моему личному аккаунту
+-----
+new_org_personal_example
+Например,
+-----
+new_org_business
+Компании или учреждению
+-----
+new_org_business_example
+Например: ООО «Ромашка», Example Institute, Красный Крест
+-----
+new_org_accept_terms
+Я принимаю Условия использования.
+-----
+new_org_next
+Далее
 -----
 commits_count
 коммит|коммита|коммитов
@@ -988,4 +1030,10 @@ user_activity_first_issue
 -----
 user_activity_on
 от
+-----
+login_via_github
+Войти через GitHub
+-----
+register_via_github
+Регистрация через GitHub
 -----

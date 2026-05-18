@@ -190,6 +190,9 @@ pub fn (mut app App) register(mut ctx Context) veb.Result {
 	if ctx.logged_in {
 		return ctx.redirect('/${ctx.user.username}')
 	}
+	csrf := rand.string(30)
+	ctx.set_cookie(name: 'csrf', value: csrf)
+
 	user_count := app.get_users_count() or { 0 }
 	no_users := user_count == 0
 

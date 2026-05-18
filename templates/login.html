@@ -28,7 +28,7 @@
 			</div>
 
 			@if app.settings.oauth_client_id != ''
-				<a href='https://github.com/login/oauth/authorize?response_type=code&state=@csrf&client_id=@app.settings.oauth_client_id'>Login via GitHub</a>
+				<a class='github-auth' href='https://github.com/login/oauth/authorize?response_type=code&state=@csrf&client_id=@app.settings.oauth_client_id'>%login_via_github</a>
 			@end
 		</div>
 
