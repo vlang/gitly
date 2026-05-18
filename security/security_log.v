@@ -38,8 +38,9 @@ fn (mut app App) add_security_log(log SecurityLog) ! {
 }
 
 fn (app &App) get_all_user_security_logs(user_id int) []SecurityLog {
+	uid := user_id
 	mut logs := sql app.db {
-		select from SecurityLog where user_id == user_id order by id desc
+		select from SecurityLog where user_id == uid order by id desc
 	} or { []SecurityLog{} }
 
 	for i, log in logs {
