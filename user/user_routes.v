@@ -193,7 +193,7 @@ pub fn (mut app App) register(mut ctx Context) veb.Result {
 	csrf := rand.string(30)
 	ctx.set_cookie(name: 'csrf', value: csrf)
 
-	user_count := app.get_users_count() or { 0 }
+	user_count := app.get_users_count_with_reconnect() or { return ctx.db_error(err) }
 	no_users := user_count == 0
 
 	ctx.current_path = ''
@@ -212,7 +212,7 @@ fn (mut app App) register_failed(mut ctx Context, no_redirect string, msg string
 
 @['/register'; post]
 pub fn (mut app App) handle_register(mut ctx Context, username string, email string, password string, no_redirect string) veb.Result {
-	user_count := app.get_users_count() or {
+	user_count := app.get_users_count_with_reconnect() or {
 		eprintln('[register] get_users_count failed: ${err}')
 		return app.register_failed(mut ctx, no_redirect, 'Failed to register: ${err}')
 	}

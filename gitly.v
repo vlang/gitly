@@ -181,10 +181,9 @@ pub fn (mut app App) open_source() veb.Result {
 }
 
 @['/']
-pub fn (mut app App) index() veb.Result {
-	user_count := app.get_users_count() or { 0 }
-	no_users := user_count == 0
-	if no_users {
+pub fn (mut app App) index(mut ctx Context) veb.Result {
+	user_count := app.get_users_count_with_reconnect() or { return ctx.db_error(err) }
+	if user_count == 0 {
 		return ctx.redirect('/register')
 	}
 

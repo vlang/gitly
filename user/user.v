@@ -343,7 +343,7 @@ fn (app App) search_users(query string) []User {
 pub fn (mut app App) get_users_count() !int {
 	return sql app.db {
 		select count from User
-	} or { 0 }
+	}!
 }
 
 pub fn (mut app App) get_count_repo_contributors(id int) !int {
