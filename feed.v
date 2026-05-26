@@ -23,7 +23,7 @@ fn (mut app App) build_user_feed_as_page(user_id int, offset int) []FeedItem {
 	}
 	where_repo_ids := repo_ids.map(it.str()).join(', ')
 
-	commits := db_exec_values(app.db, '
+	commits := db_exec_values(mut app.db, '
 		select author, hash, created_at, repo_id, branch_id, message from ${sql_table('Commit')}
 			where repo_id in (${where_repo_ids}) order by created_at desc
 			limit ${feed_items_per_page} offset ${offset}') or {
@@ -70,7 +70,7 @@ fn (mut app App) get_feed_items_count(user_id int) int {
 	}
 	where_repo_ids := repo_ids.map(it.str()).join(', ')
 
-	count_result := db_exec_values(app.db,
+	count_result := db_exec_values(mut app.db,
 		'select count(id) from ${sql_table('Commit')} where repo_id in (${where_repo_ids})') or {
 		return 0
 	}

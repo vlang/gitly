@@ -65,7 +65,7 @@ fn (mut app App) add_imported_issue_returning_id(repo_id int, author_id int, tit
 	sql app.db {
 		insert issue into Issue
 	}!
-	return db_last_insert_id(app.db)
+	return db_last_insert_id(mut app.db)
 }
 
 fn (mut app App) find_or_create_label(repo_id int, name string, color string) !int {
@@ -83,7 +83,7 @@ fn (mut app App) find_or_create_label(repo_id int, name string, color string) !i
 	sql app.db {
 		insert label into Label
 	}!
-	return db_last_insert_id(app.db)
+	return db_last_insert_id(mut app.db)
 }
 
 fn (mut app App) add_issue_label(issue_id int, label_id int) ! {
@@ -151,7 +151,7 @@ fn (mut app App) find_user_mentioned_issues(username string) []Issue {
 	needle := '@' + username
 	mut seen := map[int]bool{}
 	mut result := []Issue{}
-	direct_rows := db_exec_values(app.db,
+	direct_rows := db_exec_values(mut app.db,
 		'select id from ${sql_table('Issue')} where is_pr = 0 and text like ${sql_like_pattern(needle)} order by created_at desc') or {
 		[][]string{}
 	}
@@ -164,7 +164,7 @@ fn (mut app App) find_user_mentioned_issues(username string) []Issue {
 		seen[id] = true
 		result << issue
 	}
-	comment_rows := db_exec_values(app.db,
+	comment_rows := db_exec_values(mut app.db,
 		'select distinct issue_id from ${sql_table('Comment')} where text like ${sql_like_pattern(needle)}') or {
 		[][]string{}
 	}
@@ -195,7 +195,7 @@ fn (mut app App) find_user_recent_issues(user_id int) []Issue {
 		seen[issue.id] = true
 		result << issue
 	}
-	comment_rows := db_exec_values(app.db,
+	comment_rows := db_exec_values(mut app.db,
 		'select distinct issue_id from ${sql_table('Comment')} where author_id = ${user_id}') or {
 		[][]string{}
 	}

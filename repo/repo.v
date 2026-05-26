@@ -195,8 +195,8 @@ fn (mut app App) find_user_profile_repos(user_id int, include_private bool) []Re
 	return app.find_user_top_repos_by_stars(user_id, include_private, profile_repos_limit)
 }
 
-fn (app &App) search_public_repos(query string) []Repo {
-	repo_rows := db_exec_values(app.db,
+fn (mut app App) search_public_repos(query string) []Repo {
+	repo_rows := db_exec_values(mut app.db,
 		'select id, name, user_id, description, stars_count from ${sql_table('Repo')} where is_public is true and is_deleted is false and name like ${sql_like_pattern(query)}') or {
 		return []
 	}

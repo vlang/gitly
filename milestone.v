@@ -38,7 +38,7 @@ fn (mut app App) add_milestone(repo_id int, title string, description string, du
 	sql app.db {
 		insert m into Milestone
 	}!
-	return db_last_insert_id(app.db)
+	return db_last_insert_id(mut app.db)
 }
 
 fn (mut app App) list_repo_milestones(repo_id int) []Milestone {

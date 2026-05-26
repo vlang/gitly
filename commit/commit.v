@@ -51,7 +51,8 @@ fn row_to_commit(row []string) Commit {
 const commit_select_cols = 'c.id, c.author_id, c.author, c.hash, c.created_at, c.repo_id, c.message'
 
 fn (mut app App) commit_exists(repo_id int, branch_id int, hash string) bool {
-	rows := db_exec_values(app.db, 'select 1 from ${sql_table('Commit')} c join ${sql_table('BranchCommit')} bc on bc.commit_id = c.id where c.repo_id = ${repo_id} and bc.branch_id = ${branch_id} and c.hash = ${sql_literal(hash)} limit 1') or {
+	rows := db_exec_values(mut app.db,
+		'select 1 from ${sql_table('Commit')} c join ${sql_table('BranchCommit')} bc on bc.commit_id = c.id where c.repo_id = ${repo_id} and bc.branch_id = ${branch_id} and c.hash = ${sql_literal(hash)} limit 1') or {
 		return false
 	}
 	return rows.len > 0
@@ -72,7 +73,7 @@ fn (mut app App) add_commit(repo_id int, branch_id int, last_hash string, author
 		sql app.db {
 			insert new_commit into Commit
 		}!
-		commit_id = db_last_insert_id(app.db)
+		commit_id = db_last_insert_id(mut app.db)
 	}
 	link := BranchCommit{
 		branch_id: branch_id
@@ -84,7 +85,8 @@ fn (mut app App) add_commit(repo_id int, branch_id int, last_hash string, author
 }
 
 fn (mut app App) find_repo_commits_as_page(repo_id int, branch_id int, offset int) []Commit {
-	rows := db_exec_values(app.db, 'select ${commit_select_cols} from ${sql_table('Commit')} c join ${sql_table('BranchCommit')} bc on bc.commit_id = c.id where c.repo_id = ${repo_id} and bc.branch_id = ${branch_id} order by c.created_at desc limit 35 offset ${offset}') or {
+	rows := db_exec_values(mut app.db,
+		'select ${commit_select_cols} from ${sql_table('Commit')} c join ${sql_table('BranchCommit')} bc on bc.commit_id = c.id where c.repo_id = ${repo_id} and bc.branch_id = ${branch_id} order by c.created_at desc limit 35 offset ${offset}') or {
 		return []Commit{}
 	}
 	mut commits := []Commit{cap: rows.len}
@@ -95,7 +97,8 @@ fn (mut app App) find_repo_commits_as_page(repo_id int, branch_id int, offset in
 }
 
 fn (mut app App) get_repo_commit_count(repo_id int, branch_id int) int {
-	rows := db_exec_values(app.db, 'select count(*) from ${sql_table('BranchCommit')} where branch_id = ${branch_id}') or {
+	rows := db_exec_values(mut app.db,
+		'select count(*) from ${sql_table('BranchCommit')} where branch_id = ${branch_id}') or {
 		return 0
 	}
 	if rows.len == 0 || rows[0].len == 0 {
@@ -115,7 +118,8 @@ fn (mut app App) find_repo_commit_by_hash(repo_id int, hash string) Commit {
 }
 
 fn (mut app App) find_repo_last_commit(repo_id int, branch_id int) Commit {
-	rows := db_exec_values(app.db, 'select ${commit_select_cols} from ${sql_table('Commit')} c join ${sql_table('BranchCommit')} bc on bc.commit_id = c.id where c.repo_id = ${repo_id} and bc.branch_id = ${branch_id} order by c.created_at desc limit 1') or {
+	rows := db_exec_values(mut app.db,
+		'select ${commit_select_cols} from ${sql_table('Commit')} c join ${sql_table('BranchCommit')} bc on bc.commit_id = c.id where c.repo_id = ${repo_id} and bc.branch_id = ${branch_id} order by c.created_at desc limit 1') or {
 		return Commit{}
 	}
 	if rows.len == 0 {

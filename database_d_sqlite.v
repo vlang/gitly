@@ -20,7 +20,7 @@ fn db_backend_name() string {
 	return 'sqlite'
 }
 
-fn db_exec_values(db &GitlyDb, query string) ![][]string {
+fn db_exec_values(mut db GitlyDb, query string) ![][]string {
 	rows := db.exec(query)!
 	mut values := [][]string{cap: rows.len}
 	for row in rows {
@@ -29,7 +29,7 @@ fn db_exec_values(db &GitlyDb, query string) ![][]string {
 	return values
 }
 
-fn db_last_insert_id(db &GitlyDb) int {
+fn db_last_insert_id(mut db GitlyDb) int {
 	rows := db.exec('select last_insert_rowid()') or { return 0 }
 	if rows.len > 0 && rows[0].vals.len > 0 {
 		return rows[0].vals[0].int()
@@ -37,8 +37,8 @@ fn db_last_insert_id(db &GitlyDb) int {
 	return 0
 }
 
-fn db_column_exists(db &GitlyDb, table_name string, column_name string) !bool {
-	rows := db_exec_values(db, 'pragma table_info(${sql_table(table_name)})')!
+fn db_column_exists(mut db GitlyDb, table_name string, column_name string) !bool {
+	rows := db_exec_values(mut db, 'pragma table_info(${sql_table(table_name)})')!
 	for row in rows {
 		if row.len > 1 && row[1] == column_name {
 			return true

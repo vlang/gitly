@@ -353,7 +353,7 @@ fn (mut app App) migrate_tables() ! {
 }
 
 fn (mut app App) add_missing_column(table_name string, column_name string, column_type string) ! {
-	if db_column_exists(app.db, table_name, column_name)! {
+	if db_column_exists(mut app.db, table_name, column_name)! {
 		return
 	}
 

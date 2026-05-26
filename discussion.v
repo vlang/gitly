@@ -62,7 +62,7 @@ fn (mut app App) add_discussion(repo_id int, author_id int, title string, body s
 	sql app.db {
 		insert d into Discussion
 	}!
-	return db_last_insert_id(app.db)
+	return db_last_insert_id(mut app.db)
 }
 
 fn (mut app App) find_discussion(id int) ?Discussion {

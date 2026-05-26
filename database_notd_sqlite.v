@@ -8,22 +8,24 @@ type GitlyDb = pg.DB
 
 fn connect_db(conf config.Config) !GitlyDb {
 	if conninfo := first_env_opt(['GITLY_DB_CONNINFO', 'DATABASE_URL'], conf.pg.conninfo) {
-		return GitlyDb(pg.connect_with_conninfo(conninfo)!)
+		db := pg.connect_with_conninfo(conninfo, pg.PoolConfig{})!
+		return GitlyDb(*db)
 	}
-	return GitlyDb(pg.connect(
+	db := pg.connect(
 		host:     first_env(['GITLY_DB_HOST', 'PGHOST'], conf.pg.host)
 		port:     first_int_env(['GITLY_DB_PORT', 'PGPORT'], conf.pg.port)
 		dbname:   first_env(['GITLY_DB_NAME', 'PGDATABASE'], conf.pg.dbname)
 		user:     first_env(['GITLY_DB_USER', 'PGUSER'], conf.pg.user)
 		password: first_env(['GITLY_DB_PASSWORD', 'PGPASSWORD'], conf.pg.password)
-	)!)
+	)!
+	return GitlyDb(*db)
 }
 
 fn db_backend_name() string {
 	return 'postgres'
 }
 
-fn db_exec_values(db &GitlyDb, query string) ![][]string {
+fn db_exec_values(mut db GitlyDb, query string) ![][]string {
 	rows := db.exec_no_null(query)!
 	mut values := [][]string{cap: rows.len}
 	for row in rows {
@@ -32,16 +34,12 @@ fn db_exec_values(db &GitlyDb, query string) ![][]string {
 	return values
 }
 
-fn db_last_insert_id(db &GitlyDb) int {
-	rows := db.exec_no_null('SELECT lastval()') or { return 0 }
-	if rows.len > 0 && rows[0].vals.len > 0 {
-		return rows[0].vals[0].int()
-	}
-	return 0
+fn db_last_insert_id(mut db GitlyDb) int {
+	return db.last_id()
 }
 
-fn db_column_exists(db &GitlyDb, table_name string, column_name string) !bool {
-	rows := db_exec_values(db,
+fn db_column_exists(mut db GitlyDb, table_name string, column_name string) !bool {
+	rows := db_exec_values(mut db,
 		'select column_name from information_schema.columns where table_name = ${sql_literal(table_name.to_lower())} and column_name = ${sql_literal(column_name)}')!
 	return rows.len > 0
 }

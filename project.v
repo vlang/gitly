@@ -47,7 +47,7 @@ fn (mut app App) add_project(repo_id int, name string, description string) !int 
 	sql app.db {
 		insert pr into Project
 	}!
-	project_id := db_last_insert_id(app.db)
+	project_id := db_last_insert_id(mut app.db)
 	if project_id != 0 {
 		for i, col_name in ['Todo', 'In progress', 'Done'] {
 			app.add_project_column(project_id, col_name, i) or {}
@@ -103,7 +103,7 @@ fn (mut app App) add_project_column(project_id int, name string, position int) !
 	sql app.db {
 		insert c into ProjectColumn
 	}!
-	return db_last_insert_id(app.db)
+	return db_last_insert_id(mut app.db)
 }
 
 fn (mut app App) list_project_columns(project_id int) []ProjectColumn {

@@ -40,7 +40,7 @@ fn (mut app App) add_api_token(user_id int, name string) !(int, string) {
 	sql app.db {
 		insert t into ApiToken
 	}!
-	return db_last_insert_id(app.db), plain
+	return db_last_insert_id(mut app.db), plain
 }
 
 fn (mut app App) list_user_api_tokens(user_id int) []ApiToken {

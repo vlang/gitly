@@ -150,7 +150,7 @@ fn (mut app App) add_pull_request(repo_id int, author_id int, title string, desc
 	sql app.db {
 		insert pr into PullRequest
 	}!
-	return db_last_insert_id(app.db)
+	return db_last_insert_id(mut app.db)
 }
 
 fn (mut app App) find_pull_request_by_id(pr_id int) ?PullRequest {
@@ -246,7 +246,7 @@ fn (mut app App) add_pr_review(pr_id int, author_id int, state int, body string)
 	sql app.db {
 		insert review into PrReview
 	}!
-	return db_last_insert_id(app.db)
+	return db_last_insert_id(mut app.db)
 }
 
 fn (mut app App) get_pr_reviews(pr_id int) []PrReview {

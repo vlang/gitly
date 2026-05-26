@@ -65,7 +65,7 @@ pub fn (mut app App) get_admin_stats(days int) AdminStats {
 		}
 	}
 
-	repo_rows := db_exec_values(app.db,
+	repo_rows := db_exec_values(mut app.db,
 		'select created_at from ${sql_table('Repo')} where created_at >= ${range_start}') or {
 		[][]string{}
 	}
@@ -79,7 +79,7 @@ pub fn (mut app App) get_admin_stats(days int) AdminStats {
 		}
 	}
 
-	commit_rows := db_exec_values(app.db,
+	commit_rows := db_exec_values(mut app.db,
 		'select created_at from ${sql_table('Commit')} where created_at >= ${range_start}') or {
 		[][]string{}
 	}
@@ -93,7 +93,7 @@ pub fn (mut app App) get_admin_stats(days int) AdminStats {
 		}
 	}
 
-	issue_rows := db_exec_values(app.db,
+	issue_rows := db_exec_values(mut app.db,
 		'select created_at from ${sql_table('Issue')} where is_pr is false and created_at >= ${range_start}') or {
 		[][]string{}
 	}
