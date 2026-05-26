@@ -28,11 +28,12 @@ pub struct App {
 pub mut:
 	db GitlyDb
 mut:
-	version  string
-	logger   log.Log
-	config   config.Config
-	settings Settings
-	port     int
+	version    string
+	build_time string
+	logger     log.Log
+	config     config.Config
+	settings   Settings
+	port       int
 }
 
 pub struct Context {
@@ -89,6 +90,9 @@ fn new_app() !&App {
 	}
 
 	app.version = version
+
+	build_unix := os.file_last_mod_unix(os.executable())
+	app.build_time = time.unix(build_unix).format()
 
 	app.handle_static('static', true)!
 	app.serve_static('/favicon.ico', 'static/assets/favicon.svg')!
