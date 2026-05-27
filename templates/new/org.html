@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		@include '../layout/head.html'
+	</head>
+	<body>
+		@include '../layout/header.html'
+
+		<div class="content">
+			<div class="new-org">
+				<div class="new-org__header">
+					<p class="new-org__subtitle">%new_org_subtitle</p>
+					<h1>%new_org_title</h1>
+				</div>
+
+				@if ctx.form_error != ''
+					<div class='form-error'>@ctx.form_error</div>
+				@end
+
+				<form class="new-org__form" method='post' action='/organizations/new'>
+					<div class="new-org__field">
+						<label class="new-org__label" for="org_name">%new_org_name <span class="new-org__req">*</span></label>
+						<input id="org_name" class="new-org__input" type='text' name='org_name' required autofocus maxlength=@max_username_len>
+						<p class="new-org__hint">%new_org_name_hint</p>
+						<p class="new-org__hint">%new_org_url_hint https://@app.config.hostname/<span class="new-org__url-slot" id="url_slot"></span></p>
+					</div>
+
+					<div class="new-org__field">
+						<label class="new-org__label" for="contact_email">%new_org_contact_email <span class="new-org__req">*</span></label>
+						<input id="contact_email" class="new-org__input" type='email' name='contact_email' required>
+					</div>
+
+					<div class="new-org__field">
+						<p class="new-org__label">%new_org_belongs_to</p>
+						<label class="new-org__option">
+							<input type="radio" name="org_kind" value="personal" required>
+							<span class="new-org__option-body">
+								<span class="new-org__option-title">%new_org_personal</span>
+								<span class="new-org__option-desc">
+								%new_org_personal_example @ctx.user.username
+								@if ctx.user.full_name != ''
+									(@ctx.user.full_name)
+								@end
+							</span>
+							</span>
+						</label>
+						<label class="new-org__option">
+							<input type="radio" name="org_kind" value="business" required>
+							<span class="new-org__option-body">
+								<span class="new-org__option-title">%new_org_business</span>
+								<span class="new-org__option-desc">%new_org_business_example</span>
+							</span>
+						</label>
+					</div>
+
+					<div class="new-org__field new-org__field--inline">
+						<label class="new-org__checkbox">
+							<input type="checkbox" id="accept_terms" name="accept_terms" value="1" required>
+							<span>%new_org_accept_terms</span>
+						</label>
+					</div>
+
+					<div class="new-org__actions">
+						<input id="new_org_submit" type='submit' class='new-org__submit' value='%new_org_next' disabled>
+					</div>
+				</form>
+			</div>
+		</div>
+
+		<script>
+			(function() {
+				var nameInput = document.getElementById('org_name');
+				var slot = document.getElementById('url_slot');
+				var terms = document.getElementById('accept_terms');
+				var submit = document.getElementById('new_org_submit');
+				function syncUrl() { slot.textContent = nameInput.value; }
+				function syncSubmit() { submit.disabled = !terms.checked; }
+				nameInput.addEventListener('input', syncUrl);
+				terms.addEventListener('change', syncSubmit);
+				syncUrl();
+				syncSubmit();
+			})();
+		</script>
+
+		@include '../layout/footer.html'
+	</body>
+</html>
