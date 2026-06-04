@@ -155,6 +155,7 @@ pre > code {
 .user:hover .header-dropdown,
 .header-dropdown:hover,
 .user:focus .header-dropdown {
+	z-index: 10;
 	transform: scale(1) translateY(0px);
 	opacity: 1;
 	pointer-events: all;
