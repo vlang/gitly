@@ -812,6 +812,9 @@ header_feed
 header_settings
 Настройки
 -----
+header_new_organization
+Новая организация
+-----
 header_admin_panel
 Панель администратора
 -----
