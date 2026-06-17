@@ -6,6 +6,9 @@ import x.json2 as json
 import net.http
 import time
 import git
+import crypto.hmac
+import crypto.sha256
+import encoding.hex
 
 struct CiStatusCallback {
 	run_id      string
@@ -19,6 +22,10 @@ struct CiStatusCallback {
 @['/api/v1/ci/status'; post]
 pub fn (mut app App) handle_ci_status_callback() veb.Result {
 	body := ctx.req.data
+	if !app.verify_ci_callback_signature(ctx, body) {
+		ctx.res.set_status(.unauthorized)
+		return ctx.json_error('Invalid or missing CI callback signature')
+	}
 	callback := json.decode[CiStatusCallback](body) or {
 		return ctx.json_error('Invalid request body')
 	}
@@ -35,6 +42,23 @@ pub fn (mut app App) handle_ci_status_callback() veb.Result {
 		success: true
 		result:  'ok'
 	})
+}
+
+// verify_ci_callback_signature checks the HMAC-SHA256 signature of the raw
+// callback body against the shared ci_secret, using a constant-time compare.
+// When no secret is configured it allows the request (preserving the previous
+// behaviour) but logs a warning; set `ci_secret` in both gitly and gitly_ci to
+// require signed callbacks and stop anyone from spoofing CI status.
+fn (mut app App) verify_ci_callback_signature(ctx &Context, body string) bool {
+	secret := app.config.ci_secret
+	if secret == '' {
+		app.warn('CI status callback accepted WITHOUT authentication; set ci_secret in gitly and gitly_ci to require signed callbacks')
+		return true
+	}
+	provided := ctx.get_custom_header('X-Gitly-CI-Signature') or { return false }
+	mac := hmac.new(secret.bytes(), body.bytes(), sha256.sum, sha256.block_size)
+	expected := 'sha256=' + hex.encode(mac)
+	return hmac.equal(provided.bytes(), expected.bytes())
 }
 
 // GET /:username/:repo_name/ci - CI runs list page

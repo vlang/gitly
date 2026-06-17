@@ -25,6 +25,33 @@ pub fn Git.exec_shell(command string) os.Result {
 	return os.exec(['/bin/sh', '-c', command])
 }
 
+// Git.exec_in_dir_with_env runs `git -C <dir> <args...>` without going through a
+// shell, with `extra_env` added on top of the inherited environment. Use this
+// instead of building a shell string when any argument or environment value is
+// user-controlled (file paths, branch names, commit messages, author names),
+// since arguments are passed directly to git and never re-parsed by /bin/sh.
+pub fn Git.exec_in_dir_with_env(dir string, args []string, extra_env map[string]string) os.Result {
+	mut full_args := ['-C', dir]
+	full_args << args
+	mut p := os.new_process('git')
+	p.set_args(full_args)
+	mut merged := os.environ()
+	for k, v in extra_env {
+		merged[k] = v
+	}
+	p.set_environment(merged)
+	p.set_redirect_stdio()
+	p.run()
+	output := p.stdout_slurp() + p.stderr_slurp()
+	p.wait()
+	code := p.code
+	p.close()
+	return os.Result{
+		exit_code: code
+		output:    output
+	}
+}
+
 pub fn Git.clone(url string, path string) os.Result {
 	println('new clone url="${url}" path="${path}"')
 	return os.exec(['git', 'clone', '--bare', url, path])

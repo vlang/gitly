@@ -28,6 +28,9 @@ pub fn (mut app App) branches(username string, repo_name string) veb.Result {
 	repo := app.find_repo_by_name_and_username(repo_name, username) or {
 		return ctx.json_error('Not found')
 	}
+	if !app.can_read_repo(ctx, repo) {
+		return ctx.not_found()
+	}
 	branches := app.get_all_repo_branches(repo.id)
 	return $veb.html()
 }

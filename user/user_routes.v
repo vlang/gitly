@@ -42,6 +42,9 @@ pub fn (mut app App) handle_login(mut ctx Context, username string, password str
 	if !user.is_registered {
 		return ctx.redirect_to_login()
 	}
+	// Transparently migrate legacy salted-SHA-256 hashes to bcrypt now that we
+	// have the plaintext password and know it is correct.
+	app.maybe_upgrade_password_hash(user, password)
 	if app.user_has_two_factor(user.id) {
 		expires := time.now().unix() + two_factor_pending_ttl
 		token := app.sign_pending_2fa(user, expires)

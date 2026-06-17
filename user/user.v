@@ -1,8 +1,13 @@
 module main
 
 import crypto.sha256
+import crypto.bcrypt
 import time
 import os
+
+// bcrypt_cost is the work factor for password hashing. 12 is a good balance of
+// security and speed on current hardware.
+const bcrypt_cost = 12
 
 struct User {
 	id              int @[primary; sql: serial]
@@ -52,14 +57,54 @@ pub fn (mut app App) set_user_admin_status(user_id int, status bool) ! {
 	}!
 }
 
+// hash_password_with_salt returns a bcrypt hash of the password. bcrypt
+// generates and embeds its own random salt with a tunable cost factor, so the
+// `salt` argument is ignored for new hashes (kept only so existing callers and
+// the User.salt column are unaffected).
 fn hash_password_with_salt(password string, salt string) string {
-	salted_password := '${password}${salt}'
-
-	return sha256.sum(salted_password.bytes()).hex().str()
+	return bcrypt.generate_from_password(password.bytes(), bcrypt_cost) or { '' }
 }
 
+// compare_password_with_hash verifies a password against a stored hash. It
+// accepts both new bcrypt hashes ($2...) and legacy salted-SHA-256 hashes, so
+// users created before the bcrypt migration can still log in; their hash is
+// upgraded to bcrypt on next login (see maybe_upgrade_password_hash).
 fn compare_password_with_hash(password string, salt string, hashed string) bool {
-	return hash_password_with_salt(password, salt) == hashed
+	if password_hash_is_legacy(hashed) {
+		legacy := sha256.sum('${password}${salt}'.bytes()).hex()
+		return legacy == hashed
+	}
+	bcrypt.compare_hash_and_password(password.bytes(), hashed.bytes()) or { return false }
+	return true
+}
+
+// password_hash_is_legacy reports whether a stored hash uses the old
+// salted-SHA-256 scheme (anything that is not a bcrypt `$2...` hash) and should
+// be upgraded to bcrypt after a successful login.
+fn password_hash_is_legacy(hashed string) bool {
+	return !hashed.starts_with('$2')
+}
+
+// maybe_upgrade_password_hash rehashes a legacy password with bcrypt after the
+// user has successfully authenticated, so old SHA-256 hashes are phased out
+// transparently. The plaintext password is only available at login time.
+fn (mut app App) maybe_upgrade_password_hash(user User, password string) {
+	if !password_hash_is_legacy(user.password) {
+		return
+	}
+	new_hash := hash_password_with_salt(password, '')
+	if new_hash == '' {
+		return
+	}
+	app.update_user_password_hash(user.id, new_hash) or {
+		app.info('failed to upgrade password hash for user ${user.id}: ${err}')
+	}
+}
+
+fn (mut app App) update_user_password_hash(user_id int, hashed string) ! {
+	sql app.db {
+		update User set password = hashed where id == user_id
+	}!
 }
 
 pub fn (mut app App) register_user(username string, password string, salt string, emails []string, github bool, is_admin bool) !bool {
@@ -432,7 +477,18 @@ pub fn (mut app App) auth_user(mut ctx Context, user User, ip string) ! {
 	token := app.add_token(user.id, ip)!
 	app.update_user_login_attempts(user.id, 0)!
 	expire_date := time.now().add_days(200)
-	ctx.set_cookie(name: 'token', value: token, expires: expire_date)
+	// HttpOnly keeps the session token out of reach of JavaScript (so an XSS
+	// payload can't steal it); SameSite=Lax stops the cookie from riding along
+	// on cross-site requests, mitigating CSRF. Set `secure: true` as well when
+	// deploying behind HTTPS.
+	ctx.set_cookie(
+		name:      'token'
+		value:     token
+		expires:   expire_date
+		path:      '/'
+		http_only: true
+		same_site: .same_site_lax_mode
+	)
 }
 
 pub fn (mut app App) is_logged_in(mut ctx Context) bool {

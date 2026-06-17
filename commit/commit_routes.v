@@ -31,6 +31,10 @@ fn (mut app App) handle_commits_count(mut ctx Context, username string, repo_nam
 pub fn (mut app App) commits(mut ctx Context, username string, repo_name string, branch_name string, page string) veb.Result {
 	repo := app.find_repo_by_name_and_username(repo_name, username) or { return ctx.not_found() }
 
+	if !app.can_read_repo(ctx, repo) {
+		return ctx.not_found()
+	}
+
 	page_i := page.int()
 	branch := app.find_repo_branch_by_name(repo.id, branch_name)
 	commits_count := app.get_repo_commit_count(repo.id, branch.id)
@@ -79,6 +83,10 @@ pub fn (mut app App) commits(mut ctx Context, username string, repo_name string,
 @['/:username/:repo_name/commit/:hash']
 pub fn (mut app App) commit(mut ctx Context, username string, repo_name string, hash string) veb.Result {
 	repo := app.find_repo_by_name_and_username(repo_name, username) or { return ctx.not_found() }
+
+	if !app.can_read_repo(ctx, repo) {
+		return ctx.not_found()
+	}
 
 	is_patch_request := hash.ends_with('.patch')
 

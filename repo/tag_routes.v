@@ -9,6 +9,10 @@ pub fn (mut app App) handle_download_tag_archive(username string, repo_name stri
 	user := app.get_user_by_username(username) or { return ctx.not_found() }
 	repo := app.find_repo_by_name_and_user_id(repo_name, user.id) or { return ctx.not_found() }
 
+	if !app.can_read_repo(ctx, repo) {
+		return ctx.not_found()
+	}
+
 	archive_abs_path := os.abs_path(app.config.archive_path)
 	snapshot_format := if format == 'zip' { 'zip' } else { 'tar.gz' }
 	snapshot_name := '${username}_${repo_name}_${tag}.${snapshot_format}'

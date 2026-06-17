@@ -53,7 +53,7 @@ pub fn (mut app App) repo_settings(username string, repo_name string) veb.Result
 	repo := app.find_repo_by_name_and_username(repo_name, username) or {
 		return ctx.redirect_to_repository(username, repo_name)
 	}
-	is_owner := app.check_repo_owner(ctx.user.username, repo_name)
+	is_owner := app.can_admin_repo(ctx, repo)
 
 	if !is_owner {
 		return ctx.redirect_to_repository(username, repo_name)
@@ -67,7 +67,7 @@ pub fn (mut app App) handle_update_repo_settings(username string, repo_name stri
 	repo := app.find_repo_by_name_and_username(repo_name, username) or {
 		return ctx.redirect_to_repository(username, repo_name)
 	}
-	is_owner := app.check_repo_owner(ctx.user.username, repo_name)
+	is_owner := app.can_admin_repo(ctx, repo)
 
 	if !is_owner {
 		return ctx.redirect_to_repository(username, repo_name)
@@ -86,7 +86,7 @@ pub fn (mut app App) handle_update_repo_features(username string, repo_name stri
 	repo := app.find_repo_by_name_and_username(repo_name, username) or {
 		return ctx.redirect_to_repository(username, repo_name)
 	}
-	is_owner := app.check_repo_owner(ctx.user.username, repo_name)
+	is_owner := app.can_admin_repo(ctx, repo)
 
 	if !is_owner {
 		return ctx.redirect_to_repository(username, repo_name)
@@ -108,7 +108,7 @@ pub fn (mut app App) handle_repo_delete(username string, repo_name string) veb.R
 	repo := app.find_repo_by_name_and_username(repo_name, username) or {
 		return ctx.redirect_to_repository(username, repo_name)
 	}
-	is_owner := app.check_repo_owner(ctx.user.username, repo_name)
+	is_owner := app.can_admin_repo(ctx, repo)
 
 	if !is_owner {
 		return ctx.redirect_to_repository(username, repo_name)
@@ -129,7 +129,7 @@ pub fn (mut app App) handle_repo_move(username string, repo_name string, dest st
 	repo := app.find_repo_by_name_and_username(repo_name, username) or {
 		return ctx.redirect_to_index()
 	}
-	is_owner := app.check_repo_owner(ctx.user.username, repo_name)
+	is_owner := app.can_admin_repo(ctx, repo)
 
 	if !is_owner {
 		return ctx.redirect_to_repository(username, repo_name)
@@ -244,7 +244,8 @@ pub fn (mut app App) handle_new_repo(mut ctx Context, name string, clone_url str
 		owner_name = org.name
 		owner_org_id = org.id
 	}
-	if owner_org_id == 0 && !ctx.is_admin() && app.get_count_user_repos(ctx.user.id) >= max_user_repos {
+	if owner_org_id == 0 && !ctx.is_admin()
+		&& app.get_count_user_repos(ctx.user.id) >= max_user_repos {
 		ctx.error('You have reached the limit for the number of repositories')
 		return app.new(mut ctx)
 	}
@@ -795,6 +796,10 @@ pub fn (mut app App) handle_api_repo_files(mut ctx Context, repo_id_str string) 
 pub fn (mut app App) contributors(mut ctx Context, username string, repo_name string) veb.Result {
 	repo := app.find_repo_by_name_and_username(repo_name, username) or { return ctx.not_found() }
 
+	if !app.can_read_repo(ctx, repo) {
+		return ctx.not_found()
+	}
+
 	contributors := app.find_repo_registered_contributor(repo.id)
 
 	return $veb.html()
@@ -803,6 +808,10 @@ pub fn (mut app App) contributors(mut ctx Context, username string, repo_name st
 @['/:username/:repo_name/blob/:branch_name/:path...']
 pub fn (mut app App) blob(mut ctx Context, username string, repo_name string, branch_name string, path string) veb.Result {
 	repo := app.find_repo_by_name_and_username(repo_name, username) or { return ctx.not_found() }
+
+	if !app.can_read_repo(ctx, repo) {
+		return ctx.not_found()
+	}
 
 	mut path_parts := path.split('/')
 	path_parts.pop()
@@ -833,6 +842,10 @@ pub fn (mut app App) blob(mut ctx Context, username string, repo_name string, br
 pub fn (mut app App) handle_raw(mut ctx Context, username string, repo_name string, branch_name string, path string) veb.Result {
 	user := app.get_user_by_username(username) or { return ctx.not_found() }
 	repo := app.find_repo_by_name_and_user_id(repo_name, user.id) or { return ctx.not_found() }
+
+	if !app.can_read_repo(ctx, repo) {
+		return ctx.not_found()
+	}
 
 	// TODO: throw error when git returns non-zero status
 	file_source := repo.git('--no-pager show ${branch_name}:${path}')

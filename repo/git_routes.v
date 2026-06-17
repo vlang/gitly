@@ -119,9 +119,11 @@ fn (mut app App) check_git_http_access(mut ctx Context, repository_owner string,
 fn (ctx &Context) check_basic_authorization_header() bool {
 	auth_header := ctx.get_header(.authorization) or { return false }
 	auth_header_parts := auth_header.fields()
-	auth_type := auth_header_parts[0]
-	is_basic_auth_type := auth_type == 'Basic'
-	return auth_header_parts.len == 2 || is_basic_auth_type
+	if auth_header_parts.len != 2 {
+		return false
+	}
+	is_basic_auth_type := auth_header_parts[0] == 'Basic'
+	return is_basic_auth_type
 }
 
 fn (ctx &Context) extract_user_credentials() ?(string, string) {

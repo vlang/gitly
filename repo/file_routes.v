@@ -185,8 +185,22 @@ fn (mut app App) create_file_in_bare_repo(mut repo Repo, branch string, file_pat
 	git_dir := repo.git_dir
 	app.info('Creating file ${file_path} in ${git_dir} on branch ${branch}')
 
+	// Validate untrusted inputs before they reach git. Every git invocation
+	// below passes its arguments as an array (never through a shell), but we
+	// still reject values git itself could treat as flags/refs or that contain
+	// control characters. This guards both the create-file and update-file
+	// routes, which both funnel through here.
+	if !is_safe_ref(branch) {
+		app.warn('Refusing to write file: invalid branch name "${branch}"')
+		return false
+	}
+	if !is_valid_repo_file_path(file_path) {
+		app.warn('Refusing to write file: invalid file path "${file_path}"')
+		return false
+	}
+
 	// Write content to a temp file, then hash it into git
-	tmp_file := '/tmp/gitly_newfile_${repo.id}'
+	tmp_file := os.join_path(os.temp_dir(), 'gitly_newfile_${repo.id}_${os.getpid()}')
 	os.write_file(tmp_file, content) or {
 		app.warn('Failed to write temp file: ${err}')
 		return false
@@ -195,81 +209,81 @@ fn (mut app App) create_file_in_bare_repo(mut repo Repo, branch string, file_pat
 		os.rm(tmp_file) or {}
 	}
 
-	// 1. Hash the blob
-	blob_hash := sh('git -C ${git_dir} hash-object -w ${tmp_file}')
+	// 1. Hash the blob into the object store
+	hash_res := git.Git.exec_in_dir(git_dir, ['hash-object', '-w', tmp_file])
+	if hash_res.exit_code != 0 {
+		app.warn('hash-object failed: ${hash_res.output}')
+		return false
+	}
+	blob_hash := hash_res.output.trim_space()
 	if blob_hash == '' {
-		app.warn('hash-object failed')
+		app.warn('hash-object produced no hash')
 		return false
 	}
 
-	// 2. Read the current tree for this branch (if it exists)
-	mut parent_commit := ''
-	existing_tree := sh('git -C ${git_dir} rev-parse "${branch}^{tree}"')
+	// 2. Find the current tree and parent commit for this branch (both may be
+	//    empty when committing to a brand-new branch).
+	tree_res := git.Git.exec_in_dir(git_dir, ['rev-parse', '${branch}^{tree}'])
+	existing_tree := if tree_res.exit_code == 0 { tree_res.output.trim_space() } else { '' }
 	has_existing_tree := existing_tree != ''
 
-	// Get parent commit hash
-	parent_commit = sh('git -C ${git_dir} rev-parse ${branch}')
+	parent_res := git.Git.exec_in_dir(git_dir, ['rev-parse', branch])
+	parent_commit := if parent_res.exit_code == 0 { parent_res.output.trim_space() } else { '' }
 
-	// 3. Build a new tree
-	mut new_tree_hash := ''
-	if has_existing_tree {
-		tmp_index := '/tmp/gitly_index_${repo.id}'
-		defer {
-			os.rm(tmp_index) or {}
-		}
-
-		// Read existing tree into temp index
-		r1 :=
-			git.Git.exec_shell('GIT_INDEX_FILE=${tmp_index} git -C ${git_dir} read-tree ${existing_tree}')
-		if r1.exit_code != 0 {
-			app.warn('read-tree failed: ${r1.output}')
-			return false
-		}
-
-		// Add the new blob to the index
-		r2 :=
-			git.Git.exec_shell('GIT_INDEX_FILE=${tmp_index} git -C ${git_dir} update-index --add --cacheinfo 100644,${blob_hash},${file_path}')
-		if r2.exit_code != 0 {
-			app.warn('update-index failed: ${r2.output}')
-			return false
-		}
-
-		// Write the tree
-		r3 := git.Git.exec_shell('GIT_INDEX_FILE=${tmp_index} git -C ${git_dir} write-tree')
-		if r3.exit_code != 0 {
-			app.warn('write-tree failed: ${r3.output}')
-			return false
-		}
-		new_tree_hash = r3.output.trim_space()
-	} else {
-		// No existing tree — create from scratch using mktree
-		tree_entry := '100644 blob ${blob_hash}\t${file_path}'
-		tmp_tree := '/tmp/gitly_tree_${repo.id}'
-		os.write_file(tmp_tree, tree_entry + '\n') or { return false }
-		defer {
-			os.rm(tmp_tree) or {}
-		}
-		r := git.Git.exec_shell('git -C ${git_dir} mktree < ${tmp_tree}')
-		if r.exit_code != 0 {
-			app.warn('mktree failed: ${r.output}')
-			return false
-		}
-		new_tree_hash = r.output.trim_space()
+	// 3. Build the new tree inside an isolated temp index, so neither the
+	//    repo's own index nor a concurrent edit of the same repo is affected.
+	//    Starting from an empty index (no read-tree) handles the new-branch
+	//    case without needing `mktree`.
+	tmp_index := os.join_path(os.temp_dir(), 'gitly_index_${repo.id}_${os.getpid()}')
+	os.rm(tmp_index) or {}
+	defer {
+		os.rm(tmp_index) or {}
+	}
+	index_env := {
+		'GIT_INDEX_FILE': tmp_index
 	}
 
+	if has_existing_tree {
+		read_res := git.Git.exec_in_dir_with_env(git_dir, ['read-tree', existing_tree], index_env)
+		if read_res.exit_code != 0 {
+			app.warn('read-tree failed: ${read_res.output}')
+			return false
+		}
+	}
+
+	add_res := git.Git.exec_in_dir_with_env(git_dir, ['update-index', '--add', '--cacheinfo',
+		'100644,${blob_hash},${file_path}'], index_env)
+	if add_res.exit_code != 0 {
+		app.warn('update-index failed: ${add_res.output}')
+		return false
+	}
+
+	write_res := git.Git.exec_in_dir_with_env(git_dir, ['write-tree'], index_env)
+	if write_res.exit_code != 0 {
+		app.warn('write-tree failed: ${write_res.output}')
+		return false
+	}
+	new_tree_hash := write_res.output.trim_space()
 	if new_tree_hash == '' {
 		app.warn('Failed to create tree')
 		return false
 	}
 
-	// 4. Create a commit
-	mut parent_flag := ''
+	// 4. Create the commit. The message and author are passed as plain
+	//    arguments / environment values, so any shell metacharacters they
+	//    contain are inert.
+	mut commit_args := ['commit-tree', new_tree_hash]
 	if parent_commit != '' {
-		parent_flag = '-p ${parent_commit}'
+		commit_args << ['-p', parent_commit]
 	}
-
-	commit_sh := 'GIT_AUTHOR_NAME="${author}" GIT_AUTHOR_EMAIL="${author}@gitly" GIT_COMMITTER_NAME="${author}" GIT_COMMITTER_EMAIL="${author}@gitly" git -C ${git_dir} commit-tree ${new_tree_hash} ${parent_flag} -m "${message}"'
-	r4 := git.Git.exec_shell(commit_sh)
+	commit_args << ['-m', message]
+	commit_env := {
+		'GIT_AUTHOR_NAME':     author
+		'GIT_AUTHOR_EMAIL':    '${author}@gitly'
+		'GIT_COMMITTER_NAME':  author
+		'GIT_COMMITTER_EMAIL': '${author}@gitly'
+	}
+	r4 := git.Git.exec_in_dir_with_env(git_dir, commit_args, commit_env)
 	if r4.exit_code != 0 {
 		app.warn('commit-tree failed: ${r4.output}')
 		return false
@@ -293,4 +307,22 @@ fn sh(cmd string) string {
 		return ''
 	}
 	return r.output.trim_space()
+}
+
+// is_valid_repo_file_path rejects empty/over-long paths, absolute paths, leading
+// dashes, parent-directory traversal, and any control characters (including NUL
+// and newlines).
+fn is_valid_repo_file_path(path string) bool {
+	if path.len == 0 || path.len > 4096 {
+		return false
+	}
+	if path.starts_with('/') || path.starts_with('-') || path.contains('..') {
+		return false
+	}
+	for c in path {
+		if c < 0x20 || c == 0x7f {
+			return false
+		}
+	}
+	return true
 }

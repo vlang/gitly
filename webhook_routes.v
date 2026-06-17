@@ -8,7 +8,7 @@ import validation
 @['/:username/:repo_name/settings/webhooks']
 pub fn (mut app App) repo_webhooks(mut ctx Context, username string, repo_name string) veb.Result {
 	repo := app.find_repo_by_name_and_username(repo_name, username) or { return ctx.not_found() }
-	if !app.check_repo_owner(ctx.user.username, repo_name) {
+	if !app.can_admin_repo(ctx, repo) {
 		return ctx.redirect_to_repository(username, repo_name)
 	}
 	webhooks := app.list_repo_webhooks(repo.id)
@@ -18,7 +18,7 @@ pub fn (mut app App) repo_webhooks(mut ctx Context, username string, repo_name s
 @['/:username/:repo_name/settings/webhooks/new']
 pub fn (mut app App) new_webhook(mut ctx Context, username string, repo_name string) veb.Result {
 	repo := app.find_repo_by_name_and_username(repo_name, username) or { return ctx.not_found() }
-	if !app.check_repo_owner(ctx.user.username, repo_name) {
+	if !app.can_admin_repo(ctx, repo) {
 		return ctx.redirect_to_repository(username, repo_name)
 	}
 	return $veb.html('templates/new/webhook.html')
@@ -27,13 +27,14 @@ pub fn (mut app App) new_webhook(mut ctx Context, username string, repo_name str
 @['/:username/:repo_name/settings/webhooks'; post]
 pub fn (mut app App) handle_create_webhook(mut ctx Context, username string, repo_name string) veb.Result {
 	repo := app.find_repo_by_name_and_username(repo_name, username) or { return ctx.not_found() }
-	if !app.check_repo_owner(ctx.user.username, repo_name) {
+	if !app.can_admin_repo(ctx, repo) {
 		return ctx.redirect_to_repository(username, repo_name)
 	}
 	url := ctx.form['url'].trim_space()
 	secret := ctx.form['secret']
-	if validation.is_string_empty(url) || !(url.starts_with('http://')
-		|| url.starts_with('https://')) {
+	// Reject empty URLs, non-http(s) schemes, and destinations that resolve to
+	// internal/loopback/link-local addresses (SSRF protection).
+	if validation.is_string_empty(url) || !is_safe_webhook_url(url) {
 		return ctx.redirect('/${username}/${repo_name}/settings/webhooks/new')
 	}
 	mut events := []string{}
@@ -53,7 +54,7 @@ pub fn (mut app App) handle_create_webhook(mut ctx Context, username string, rep
 @['/:username/:repo_name/settings/webhooks/:id/delete'; post]
 pub fn (mut app App) handle_delete_webhook(mut ctx Context, username string, repo_name string, id string) veb.Result {
 	repo := app.find_repo_by_name_and_username(repo_name, username) or { return ctx.not_found() }
-	if !app.check_repo_owner(ctx.user.username, repo_name) {
+	if !app.can_admin_repo(ctx, repo) {
 		return ctx.redirect_to_repository(username, repo_name)
 	}
 	wh := app.find_webhook_by_id(id.int()) or { return ctx.not_found() }
@@ -67,7 +68,7 @@ pub fn (mut app App) handle_delete_webhook(mut ctx Context, username string, rep
 @['/:username/:repo_name/settings/webhooks/:id']
 pub fn (mut app App) view_webhook(mut ctx Context, username string, repo_name string, id string) veb.Result {
 	repo := app.find_repo_by_name_and_username(repo_name, username) or { return ctx.not_found() }
-	if !app.check_repo_owner(ctx.user.username, repo_name) {
+	if !app.can_admin_repo(ctx, repo) {
 		return ctx.redirect_to_repository(username, repo_name)
 	}
 	webhook := app.find_webhook_by_id(id.int()) or { return ctx.not_found() }

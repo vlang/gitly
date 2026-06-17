@@ -10,9 +10,13 @@ pub:
 	avatars_path      string
 	hostname          string
 	ci_service_url    string
-	port              int
-	pg                PgConfig
-	sqlite            SqliteConfig
+	// ci_secret is the shared secret used to authenticate CI status callbacks
+	// from gitly_ci (HMAC-SHA256 over the request body). Must match gitly_ci's
+	// ci_secret. When empty, callbacks are accepted unauthenticated (insecure).
+	ci_secret string
+	port      int
+	pg        PgConfig
+	sqlite    SqliteConfig
 }
 
 pub struct PgConfig {

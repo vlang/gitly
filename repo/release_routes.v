@@ -14,6 +14,10 @@ pub fn (mut app App) releases_default(mut ctx Context, username string, repo_nam
 pub fn (mut app App) releases(mut ctx Context, username string, repo_name string, page string) veb.Result {
 	repo := app.find_repo_by_name_and_username(repo_name, username) or { return ctx.not_found() }
 
+	if !app.can_read_repo(ctx, repo) {
+		return ctx.not_found()
+	}
+
 	page_i := page.int()
 	repo_id := repo.id
 	mut releases := []Release{}

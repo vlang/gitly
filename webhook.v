@@ -3,7 +3,9 @@
 module main
 
 import time
+import net
 import net.http
+import net.urllib
 import crypto.hmac
 import crypto.sha256
 import encoding.hex
@@ -188,7 +190,118 @@ fn (mut app App) fan_out_webhook(repo_id int, event string, body string) {
 	}
 }
 
+// is_blocked_ipv4 reports whether the dotted-quad IPv4 string falls in a range
+// a webhook must never reach: unspecified (0/8), loopback (127/8), private
+// (10/8, 172.16/12, 192.168/16), CGNAT (100.64/10), link-local (169.254/16,
+// which includes the cloud metadata address 169.254.169.254), and
+// multicast/reserved (>=224). Unparseable input is treated as blocked.
+fn is_blocked_ipv4(ip string) bool {
+	parts := ip.split('.')
+	if parts.len != 4 {
+		return true
+	}
+	mut o := [4]int{}
+	for i in 0 .. 4 {
+		if parts[i] == '' {
+			return true
+		}
+		n := parts[i].int()
+		if n < 0 || n > 255 {
+			return true
+		}
+		o[i] = n
+	}
+	return o[0] == 0 || o[0] == 10 || o[0] == 127 || (o[0] == 169 && o[1] == 254)
+		|| (o[0] == 172 && o[1] >= 16 && o[1] <= 31) || (o[0] == 192 && o[1] == 168)
+		|| (o[0] == 100 && o[1] >= 64 && o[1] <= 127) || o[0] >= 224
+}
+
+// is_blocked_ipv6 reports whether the IPv6 text (no brackets) is loopback (::1),
+// unspecified (::), unique-local (fc00::/7), link-local (fe80::/10), or an
+// IPv4-mapped address (e.g. ::ffff:127.0.0.1) pointing at a blocked IPv4.
+fn is_blocked_ipv6(ip_in string) bool {
+	ip := ip_in.to_lower()
+	if ip == '::1' || ip == '::' {
+		return true
+	}
+	// IPv4-mapped/-compatible forms end in a dotted quad.
+	if ip.contains('.') {
+		tail := ip.all_after_last(':')
+		if tail.contains('.') {
+			return is_blocked_ipv4(tail)
+		}
+	}
+	if ip.starts_with('fc') || ip.starts_with('fd') {
+		return true
+	}
+	if ip.starts_with('fe8') || ip.starts_with('fe9') || ip.starts_with('fea')
+		|| ip.starts_with('feb') {
+		return true
+	}
+	return false
+}
+
+// is_safe_webhook_url validates a webhook destination before any server-side
+// request is made: the scheme must be http(s), the host must resolve, and none
+// of the resolved addresses may be loopback/private/link-local. Resolving here
+// blocks hostnames that point at internal IPs; it cannot fully defeat DNS
+// rebinding between this check and delivery, but it closes the common SSRF
+// vectors (literal internal IPs, localhost, cloud metadata endpoints).
+fn is_safe_webhook_url(raw string) bool {
+	u := urllib.parse(raw) or { return false }
+	scheme := u.scheme.to_lower()
+	if scheme != 'http' && scheme != 'https' {
+		return false
+	}
+	host := u.hostname()
+	if host == '' {
+		return false
+	}
+	lhost := host.to_lower()
+	if lhost == 'localhost' || lhost.ends_with('.localhost') {
+		return false
+	}
+	port := if u.port() != '' {
+		u.port()
+	} else if scheme == 'https' {
+		'443'
+	} else {
+		'80'
+	}
+	addrs := net.resolve_addrs('${host}:${port}', .unspec, .tcp) or { return false }
+	if addrs.len == 0 {
+		return false
+	}
+	for a in addrs {
+		s := a.str()
+		match a.family() {
+			.ip {
+				if is_blocked_ipv4(s.all_before_last(':')) {
+					return false
+				}
+			}
+			.ip6 {
+				if is_blocked_ipv6(s.find_between('[', ']')) {
+					return false
+				}
+			}
+			else {
+				return false
+			}
+		}
+	}
+	return true
+}
+
 fn (mut app App) deliver_webhook(wh Webhook, event string, body string) {
+	// Re-validate at delivery time: this is the authoritative SSRF gate. It
+	// also protects webhooks created before this check existed and catches
+	// hosts whose DNS now points at an internal address.
+	if !is_safe_webhook_url(wh.url) {
+		app.record_webhook_delivery(wh.id, event, 0,
+			'blocked: destination resolves to a disallowed (internal/loopback) address')
+		return
+	}
 	mut signature := ''
 	if wh.secret != '' {
 		sig_bytes := hmac.new(wh.secret.bytes(), body.bytes(), sha256.sum, sha256.block_size)

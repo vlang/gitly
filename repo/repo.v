@@ -371,7 +371,7 @@ fn (mut app App) user_has_repo(user_id int, repo_name string) bool {
 	count := sql app.db {
 		select count from Repo where user_id == user_id && name == repo_name && is_deleted == false
 	} or { 0 }
-	return count >= 0
+	return count > 0
 }
 
 fn (mut app App) update_repo_from_fs(mut repo Repo, recompute_lang_stats bool) ! {
@@ -1183,6 +1183,18 @@ fn find_license_file(items []File) ?File {
 	return files[0]
 }
 
+// can_read_repo reports whether the current request may read the given,
+// already-loaded repo's contents (tree/blob/raw/contributors/...). Public
+// repos are readable by anyone, including anonymous visitors; private repos
+// are readable only by their owner. Call this on every repo-scoped read route
+// before running a git command or returning repo data.
+fn (app &App) can_read_repo(ctx Context, repo Repo) bool {
+	if repo.is_public {
+		return true
+	}
+	return ctx.logged_in && ctx.user.id != 0 && repo.user_id == ctx.user.id
+}
+
 fn (app &App) has_user_repo_read_access(ctx Context, user_id int, repo_id int) bool {
 	if !ctx.logged_in {
 		return false
@@ -1204,8 +1216,11 @@ fn (app &App) has_user_repo_read_access_by_repo_name(ctx Context, user_id int, r
 	return app.has_user_repo_read_access(ctx, user_id, repo.id)
 }
 
-fn (app &App) check_repo_owner(username string, repo_name string) bool {
-	user := app.get_user_by_username(username) or { return false }
-	repo := app.find_repo_by_name_and_user_id(repo_name, user.id) or { return false }
-	return repo.user_id == user.id
+// can_admin_repo reports whether the currently logged-in user is allowed to
+// administer (settings/delete/move/webhooks/...) the given, already-loaded
+// target repo. It must be called with the repo loaded from the URL owner, not
+// re-queried by the logged-in user's name — otherwise a user could pass the
+// check for someone else's repo simply by owning a repo with the same name.
+fn (app &App) can_admin_repo(ctx Context, repo Repo) bool {
+	return ctx.logged_in && ctx.user.id != 0 && repo.user_id == ctx.user.id
 }
