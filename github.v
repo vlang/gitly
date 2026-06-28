@@ -6,6 +6,7 @@ import veb
 import x.json2 as json
 import net.http
 import time
+import git
 // import veb.auth as oauth
 import veb.oauth
 
@@ -22,6 +23,11 @@ struct GitHubIssueAuthor {
 
 struct GitHubPullRequestRef {
 	url string
+}
+
+struct GitHubPullRequestBranch {
+	ref_name string @[json: 'ref']
+	sha      string
 }
 
 struct GitHubLabel {
@@ -51,6 +57,17 @@ struct GitHubIssue {
 	user         GitHubIssueAuthor
 	pull_request GitHubPullRequestRef
 	labels       []GitHubLabel
+}
+
+struct GitHubPullRequest {
+	number     int
+	title      string
+	body       string
+	state      string
+	created_at string
+	user       GitHubIssueAuthor
+	head       GitHubPullRequestBranch
+	base       GitHubPullRequestBranch
 }
 
 fn parse_github_timestamp(s string) int {
@@ -175,6 +192,91 @@ fn (mut app App) import_github_contributors(repo_id int, clone_url string) ! {
 		eprintln('[github-contrib] cannot update contributor count: ${err}')
 	}
 	eprintln('[github-contrib] done: imported ${total} contributors into repo ${repo_id}')
+}
+
+fn (mut app App) import_github_pull_requests(repo Repo, owner_user_id int) ! {
+	eprintln('[github-pr] starting for repo_id=${repo.id} clone_url=${repo.clone_url} owner_user_id=${owner_user_id}')
+	owner, name := parse_github_owner_repo(repo.clone_url) or {
+		return error('cannot parse github url: ${repo.clone_url}')
+	}
+	defer {
+		app.sync_repo_open_pr_count(repo.id) or {
+			eprintln('[github-pr] cannot sync open PR count: ${err}')
+		}
+	}
+	mut page := 1
+	mut imported := 0
+	mut fetched := 0
+	for page <= 100 {
+		url := 'https://api.github.com/repos/${owner}/${name}/pulls?state=open&per_page=100&page=${page}'
+		eprintln('[github-pr] GET ${url}')
+		mut req := http.new_request(.get, url, '')
+		req.add_header(.user_agent, 'gitly')
+		req.add_header(.accept, 'application/vnd.github+json')
+		resp := req.do() or {
+			eprintln('[github-pr] ERROR: request failed: ${err}')
+			return error('github api request failed: ${err}')
+		}
+		eprintln('[github-pr] page=${page} status=${resp.status_code} body_len=${resp.body.len}')
+		if resp.status_code != 200 {
+			eprintln('[github-pr] ERROR body: ${resp.body}')
+			return error('github api ${resp.status_code}: ${resp.body}')
+		}
+		prs := json.decode[[]GitHubPullRequest](resp.body) or {
+			eprintln('[github-pr] ERROR: cannot decode response: ${err}')
+			eprintln('[github-pr] response body was: ${resp.body#[..1000]}')
+			return error('cannot decode github pull requests: ${err}')
+		}
+		eprintln('[github-pr] decoded ${prs.len} pull requests on page ${page}')
+		if prs.len == 0 {
+			break
+		}
+		for gh_pr in prs {
+			if gh_pr.number <= 0 {
+				continue
+			}
+			head_branch := 'pr/${gh_pr.number}'
+			refspec := '+refs/pull/${gh_pr.number}/head:refs/heads/${head_branch}'
+			fetch_result := git.Git.fetch_ref(repo.git_dir, 'origin', refspec)
+			if fetch_result.exit_code != 0 {
+				eprintln('[github-pr] cannot fetch PR #${gh_pr.number}: ${fetch_result.output}')
+				continue
+			}
+			fetched++
+
+			base_branch := gh_pr.base.ref_name
+			if base_branch == '' || !is_safe_ref(base_branch) {
+				eprintln('[github-pr] skipping PR #${gh_pr.number}: invalid base branch "${base_branch}"')
+				continue
+			}
+			if app.pull_request_exists_for_head(repo.id, head_branch) {
+				continue
+			}
+			mut author_id := owner_user_id
+			if gh_pr.user.login != '' {
+				author_id = app.find_or_create_github_shadow_user(gh_pr.user.login) or {
+					eprintln('[github-pr] cannot resolve author @${gh_pr.user.login}: ${err}')
+					owner_user_id
+				}
+			}
+			created_at := parse_github_timestamp(gh_pr.created_at)
+			title := if gh_pr.title != '' { gh_pr.title } else { 'Pull request #${gh_pr.number}' }
+			app.add_imported_pull_request(repo.id, author_id, title, gh_pr.body, head_branch,
+				base_branch, created_at) or {
+				eprintln('[github-pr] ERROR inserting PR #${gh_pr.number}: ${err}')
+				continue
+			}
+			app.increment_repo_open_prs(repo.id) or {
+				eprintln('[github-pr] cannot bump PR count: ${err}')
+			}
+			imported++
+		}
+		if prs.len < 100 {
+			break
+		}
+		page++
+	}
+	eprintln('[github-pr] done: fetched ${fetched} PR refs, imported ${imported} pull requests into repo ${repo.id}')
 }
 
 // find_or_create_github_shadow_contributor is like find_or_create_github_shadow_user

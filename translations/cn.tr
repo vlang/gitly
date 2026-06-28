@@ -215,6 +215,9 @@ new_repo_clone_hint
 new_repo_import_issues
 从 GitHub 导入 issue
 -----
+new_repo_import_prs
+从 GitHub 导入 PR
+-----
 new_repo_visibility
 仓库可见性
 -----
@@ -841,4 +844,94 @@ admin_stats_new_issues
 -----
 admin_stats_last_n_days
 最近 30 天
+-----
+clone_size_limit_title
+仓库超过 100 MB
+-----
+clone_size_limit_message
+此仓库超过 100 MB。请购买每月仅 $5 的 Premium 订阅，以支持 Gitly，并帮助我们提供托管仓库所需的基础设施。
+-----
+clone_size_limit_purchase_premium
+用 PayPal 以 $5 购买 Premium
+-----
+clone_size_limit_pricing_link
+查看 Premium 方案
+-----
+header_pricing
+价格
+-----
+pricing_title
+Gitly 价格
+-----
+pricing_subtitle
+选择符合仓库大小、存储需求和支持期望的方案。
+-----
+pricing_best_for_individuals
+适合个人
+-----
+pricing_best_for_teams
+适合团队
+-----
+pricing_premium_name
+Premium
+-----
+pricing_premium_desc
+适合需要更大导入和私有项目托管的开发者。
+-----
+pricing_premium_price
+$5
+-----
+pricing_per_month
+每月
+-----
+pricing_buy_premium
+用 PayPal 购买 Premium
+-----
+pricing_premium_feature_one
+克隆并托管最大 1 GB 的仓库
+-----
+pricing_premium_feature_two
+私有仓库和组织
+-----
+pricing_premium_feature_three
+导入 GitHub issues 和 pull requests
+-----
+pricing_premium_feature_four
+10 GB 托管存储
+-----
+pricing_premium_feature_five
+标准支持队列
+-----
+pricing_ultimate_name
+Ultimate
+-----
+pricing_ultimate_desc
+适合运行更大仓库和生产工作流的团队。
+-----
+pricing_ultimate_price
+$19
+-----
+pricing_buy_ultimate
+用 PayPal 购买 Ultimate
+-----
+pricing_ultimate_feature_one
+包含 Premium 的全部功能
+-----
+pricing_ultimate_feature_two
+克隆并托管最大 10 GB 的仓库
+-----
+pricing_ultimate_feature_three
+100 GB 托管存储
+-----
+pricing_ultimate_feature_four
+高级权限和受保护工作流
+-----
+pricing_ultimate_feature_five
+基础设施问题优先支持
+-----
+pricing_payment_title
+付款
+-----
+pricing_payment_note
+付款通过 PayPal 发送至
 -----

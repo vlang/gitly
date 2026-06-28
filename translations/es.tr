@@ -215,6 +215,9 @@ new_repo_clone_hint
 new_repo_import_issues
 Importar issues desde GitHub
 -----
+new_repo_import_prs
+Importar PRs desde GitHub
+-----
 new_repo_visibility
 Visibilidad del repositorio
 -----
@@ -841,4 +844,94 @@ Nuevas incidencias
 -----
 admin_stats_last_n_days
 Últimos 30 días
+-----
+clone_size_limit_title
+El repositorio supera los 100 MB
+-----
+clone_size_limit_message
+Este repositorio supera los 100 MB. Compra una suscripción Premium por solo $5/mes para apoyar a Gitly y ayudarnos a ofrecer la infraestructura necesaria para alojar repositorios.
+-----
+clone_size_limit_purchase_premium
+Comprar Premium por $5 con PayPal
+-----
+clone_size_limit_pricing_link
+Ver planes Premium
+-----
+header_pricing
+Precios
+-----
+pricing_title
+Precios de Gitly
+-----
+pricing_subtitle
+Elige el plan que encaja con el tamaño de tus repositorios, tus necesidades de almacenamiento y el soporte esperado.
+-----
+pricing_best_for_individuals
+Ideal para individuos
+-----
+pricing_best_for_teams
+Ideal para equipos
+-----
+pricing_premium_name
+Premium
+-----
+pricing_premium_desc
+Para desarrolladores que necesitan importaciones más grandes y alojamiento privado de proyectos.
+-----
+pricing_premium_price
+$5
+-----
+pricing_per_month
+al mes
+-----
+pricing_buy_premium
+Comprar Premium con PayPal
+-----
+pricing_premium_feature_one
+Clona y aloja repositorios de hasta 1 GB
+-----
+pricing_premium_feature_two
+Repositorios privados y organizaciones
+-----
+pricing_premium_feature_three
+Importación de issues y pull requests de GitHub
+-----
+pricing_premium_feature_four
+10 GB de almacenamiento alojado
+-----
+pricing_premium_feature_five
+Cola de soporte estándar
+-----
+pricing_ultimate_name
+Ultimate
+-----
+pricing_ultimate_desc
+Para equipos con repositorios más pesados y flujos de producción.
+-----
+pricing_ultimate_price
+$19
+-----
+pricing_buy_ultimate
+Comprar Ultimate con PayPal
+-----
+pricing_ultimate_feature_one
+Todo lo incluido en Premium
+-----
+pricing_ultimate_feature_two
+Clona y aloja repositorios de hasta 10 GB
+-----
+pricing_ultimate_feature_three
+100 GB de almacenamiento alojado
+-----
+pricing_ultimate_feature_four
+Permisos avanzados y flujos protegidos
+-----
+pricing_ultimate_feature_five
+Soporte prioritario para problemas de infraestructura
+-----
+pricing_payment_title
+Pago
+-----
+pricing_payment_note
+Los pagos se gestionan con PayPal a
 -----

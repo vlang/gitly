@@ -68,6 +68,7 @@ fn (r &Repo) wiki_enabled() bool {
 
 // log_field_separator is declared as constant in case we need to change it later
 const max_git_res_size = 1000
+const max_free_clone_size_bytes = u64(100) * 1024 * 1024
 const log_field_separator = '\x7F'
 const ignored_folder = ['thirdparty']
 
@@ -401,6 +402,7 @@ fn (mut app App) update_repo_from_fs(mut repo Repo, recompute_lang_stats bool) !
 
 	repo.nr_contributors = app.get_count_repo_contributors(repo_id)!
 	repo.nr_branches = app.get_count_repo_branches(repo_id)
+	repo.nr_open_prs = app.get_repo_open_pr_count(repo_id)
 
 	// TODO: TEMPORARY - UNTIL WE GET PERSISTENT RELEASE INFO
 	for tag in app.get_all_repo_tags(repo_id) {
@@ -490,6 +492,7 @@ fn (mut app App) update_repo_from_remote(mut repo Repo) ! {
 
 	repo.nr_contributors = app.get_count_repo_contributors(repo_id)!
 	repo.nr_branches = app.get_count_repo_branches(repo_id)
+	repo.nr_open_prs = app.get_repo_open_pr_count(repo_id)
 
 	app.save_repo(repo)!
 	app.db.exec('END TRANSACTION')!
@@ -1114,15 +1117,60 @@ fn (r &Repo) clone_progress_path() string {
 	return r.git_dir + '.progress'
 }
 
-fn (mut r Repo) clone() {
+fn directory_size(path string) u64 {
+	if !os.exists(path) {
+		return 0
+	}
+	if !os.is_dir(path) {
+		return os.file_size(path)
+	}
+	mut total := u64(0)
+	for entry in os.ls(path) or { return total } {
+		total += directory_size(os.join_path(path, entry))
+	}
+	return total
+}
+
+fn mark_clone_size_limit(progress_path string) {
+	mut log := os.open_append(progress_path) or {
+		os.write_file(progress_path, '${git.clone_size_limit_marker}\n') or {}
+		return
+	}
+	log.write_string('\n${git.clone_size_limit_marker}\n') or {}
+	log.close()
+}
+
+fn cleanup_oversized_clone(repo_path string) {
+	os.rmdir_all(repo_path) or { eprintln('failed to remove oversized clone ${repo_path}: ${err}') }
+}
+
+fn (mut r Repo) clone(enforce_size_limit bool) {
 	eprintln('R CLONE')
 	progress_path := r.clone_progress_path()
-	clone_result := git.Git.clone_with_progress(r.clone_url, r.git_dir, progress_path)
+	max_clone_size_bytes := if enforce_size_limit { max_free_clone_size_bytes } else { u64(0) }
+	clone_result := git.Git.clone_with_progress_limit(r.clone_url, r.git_dir, progress_path,
+		max_clone_size_bytes)
 	clone_exit_code := clone_result.exit_code
+
+	if enforce_size_limit && clone_exit_code == git.clone_size_limit_exit_code {
+		r.status = .clone_failed
+		mark_clone_size_limit(progress_path)
+		cleanup_oversized_clone(r.git_dir)
+		println('git clone stopped because repo is larger than 100 MB')
+		return
+	}
 
 	if clone_exit_code != 0 {
 		r.status = .clone_failed
 		println('git clone failed with exit code ${clone_exit_code}')
+		return
+	}
+
+	if enforce_size_limit && directory_size(r.git_dir) >= max_free_clone_size_bytes {
+		r.status = .clone_failed
+		mark_clone_size_limit(progress_path)
+		cleanup_oversized_clone(r.git_dir)
+		println('git clone removed because repo is larger than 100 MB')
 		return
 	}
 

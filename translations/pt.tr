@@ -215,6 +215,9 @@ new_repo_clone_hint
 new_repo_import_issues
 Importar issues do GitHub
 -----
+new_repo_import_prs
+Importar PRs do GitHub
+-----
 new_repo_visibility
 Visibilidade do repositório
 -----
@@ -841,4 +844,94 @@ Novas issues
 -----
 admin_stats_last_n_days
 Últimos 30 dias
+-----
+clone_size_limit_title
+O repositório tem mais de 100 MB
+-----
+clone_size_limit_message
+Este repositório tem mais de 100 MB. Assine o Premium por apenas $5/mês para apoiar o Gitly e nos ajudar a oferecer a infraestrutura necessária para hospedar repositórios.
+-----
+clone_size_limit_purchase_premium
+Comprar Premium por $5 com PayPal
+-----
+clone_size_limit_pricing_link
+Ver planos Premium
+-----
+header_pricing
+Preços
+-----
+pricing_title
+Preços do Gitly
+-----
+pricing_subtitle
+Escolha o plano que combina com o tamanho dos seus repositórios, suas necessidades de armazenamento e o suporte esperado.
+-----
+pricing_best_for_individuals
+Ideal para indivíduos
+-----
+pricing_best_for_teams
+Ideal para equipes
+-----
+pricing_premium_name
+Premium
+-----
+pricing_premium_desc
+Para desenvolvedores que precisam de importações maiores e hospedagem privada de projetos.
+-----
+pricing_premium_price
+$5
+-----
+pricing_per_month
+por mês
+-----
+pricing_buy_premium
+Comprar Premium com PayPal
+-----
+pricing_premium_feature_one
+Clone e hospede repositórios de até 1 GB
+-----
+pricing_premium_feature_two
+Repositórios privados e organizações
+-----
+pricing_premium_feature_three
+Importação de issues e pull requests do GitHub
+-----
+pricing_premium_feature_four
+10 GB de armazenamento hospedado
+-----
+pricing_premium_feature_five
+Fila de suporte padrão
+-----
+pricing_ultimate_name
+Ultimate
+-----
+pricing_ultimate_desc
+Para equipes com repositórios maiores e fluxos de produção.
+-----
+pricing_ultimate_price
+$19
+-----
+pricing_buy_ultimate
+Comprar Ultimate com PayPal
+-----
+pricing_ultimate_feature_one
+Tudo do Premium
+-----
+pricing_ultimate_feature_two
+Clone e hospede repositórios de até 10 GB
+-----
+pricing_ultimate_feature_three
+100 GB de armazenamento hospedado
+-----
+pricing_ultimate_feature_four
+Permissões avançadas e fluxos protegidos
+-----
+pricing_ultimate_feature_five
+Suporte prioritário para problemas de infraestrutura
+-----
+pricing_payment_title
+Pagamento
+-----
+pricing_payment_note
+Os pagamentos são feitos via PayPal para
 -----

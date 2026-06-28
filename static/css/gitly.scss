@@ -89,6 +89,64 @@ pre > code {
 	}
 }
 
+.clone-status--failed {
+	margin: 90px auto 0;
+	max-width: 700px;
+	padding: 0 14px;
+
+	h1 {
+		font-size: 28px;
+		line-height: 1.2;
+		margin-bottom: 12px;
+		padding: 0;
+	}
+
+	p {
+		color: $gray-dark;
+		font-size: 15px;
+	}
+}
+
+.clone-status-button {
+	display: inline-block;
+	margin-top: 20px;
+	padding: 8px 14px;
+	border-radius: $small-radius;
+	background: #1f883d;
+	color: $white;
+	font-size: 14px;
+	font-weight: 600;
+
+	&:hover {
+		background: #116329;
+		color: $white;
+	}
+}
+
+.clone-status-actions {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 12px;
+	margin-top: 20px;
+
+	.clone-status-button {
+		margin-top: 0;
+	}
+}
+
+.clone-status-button--secondary {
+	background: $white;
+	border: 1px solid #0969da;
+	color: #0969da;
+
+	&:hover {
+		background: #0969da;
+		border-color: #0969da;
+		color: $white;
+	}
+}
+
 .clone-status-url {
 	color: $gray-dark;
 	margin: 10px auto 0;
@@ -447,6 +505,144 @@ form {
 		border-collapse: collapse;
 		border: 1px solid #dfdfdf;
 		padding: 5px;
+	}
+}
+
+.pricing-page {
+	margin-bottom: 90px;
+}
+
+.pricing-hero {
+	padding: 48px 10px 26px;
+	text-align: center;
+
+	h1 {
+		font-size: 34px;
+		line-height: 1.2;
+		margin-bottom: 10px;
+		padding: 0;
+	}
+
+	p {
+		color: $gray-dark;
+		font-size: 16px;
+		margin: 0 auto;
+		max-width: 620px;
+	}
+}
+
+.pricing-plans {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 18px;
+	padding: 0 10px;
+
+	@include mobile {
+		grid-template-columns: 1fr;
+	}
+}
+
+.pricing-plan {
+	border: 1px solid $gray;
+	border-radius: $medium-radius;
+	background: $white;
+	padding: 22px;
+
+	h2 {
+		font-size: 24px;
+		line-height: 1.2;
+		padding: 0;
+		margin: 6px 0 8px;
+	}
+}
+
+.pricing-plan--featured {
+	border-color: #1f883d;
+	box-shadow: 0 1px 5px rgba(31, 136, 61, 0.14);
+}
+
+.pricing-plan__eyebrow {
+	color: #8250df;
+	font-size: 12px;
+	font-weight: 700;
+	letter-spacing: 0;
+	text-transform: uppercase;
+}
+
+.pricing-plan__desc {
+	color: $gray-dark;
+	min-height: 44px;
+}
+
+.pricing-plan__price {
+	display: flex;
+	align-items: baseline;
+	gap: 8px;
+	margin: 18px 0;
+
+	span {
+		font-size: 32px;
+		font-weight: 700;
+		line-height: 1;
+	}
+
+	small {
+		color: $gray-dark;
+		font-size: 14px;
+	}
+}
+
+.pricing-plan__button {
+	display: block;
+	box-sizing: border-box;
+	width: 100%;
+	padding: 9px 12px;
+	border: 1px solid #1f883d;
+	border-radius: $small-radius;
+	background: #1f883d;
+	color: $white;
+	font-weight: 700;
+	text-align: center;
+
+	&:hover {
+		background: #116329;
+		border-color: #116329;
+		color: $white;
+	}
+}
+
+.pricing-plan__button--secondary {
+	background: #0969da;
+	border-color: #0969da;
+
+	&:hover {
+		background: #0550ae;
+		border-color: #0550ae;
+	}
+}
+
+.pricing-plan__features {
+	margin: 18px 0 0 18px;
+
+	li {
+		margin-top: 8px;
+	}
+}
+
+.pricing-note {
+	margin: 24px 10px 0;
+	padding-top: 18px;
+	border-top: 1px solid $gray;
+
+	h2 {
+		font-size: 20px;
+		line-height: 1.2;
+		padding: 0;
+		margin-bottom: 8px;
+	}
+
+	p {
+		color: $gray-dark;
 	}
 }
 
@@ -881,7 +1077,10 @@ form {
 }
 
 .new-repo__field--inline {
-	gap: 0;
+	flex-direction: row;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 12px 18px;
 }
 
 .new-repo__label {
@@ -2450,4 +2649,3 @@ form {
 
 @import "files.scss", "langs.scss", "tree.scss", "commits.scss", "hl_table.scss", "branches.scss", "admin.scss",
 	"blob.scss", "contributors.scss", "issues.scss", "user.scss", "releases.scss", "feed.scss", "search.scss";
-

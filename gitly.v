@@ -184,6 +184,16 @@ pub fn (mut app App) open_source() veb.Result {
 	return $veb.html()
 }
 
+@['/pricing']
+pub fn (mut app App) pricing() veb.Result {
+	return $veb.html('templates/pricing.html')
+}
+
+@['/prcing']
+pub fn (mut app App) prcing() veb.Result {
+	return $veb.html('templates/pricing.html')
+}
+
 @['/']
 pub fn (mut app App) index(mut ctx Context) veb.Result {
 	user_count := app.get_users_count_with_reconnect() or { return ctx.db_error(err) }

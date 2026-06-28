@@ -218,6 +218,9 @@ new_repo_clone_hint
 new_repo_import_issues
 Import issues from GitHub
 -----
+new_repo_import_prs
+Import PRs from GitHub
+-----
 new_repo_visibility
 Repository visibility
 -----
@@ -1039,4 +1042,94 @@ Login via GitHub
 -----
 register_via_github
 Register via GitHub
+-----
+clone_size_limit_title
+Repository is over 100 MB
+-----
+clone_size_limit_message
+This repository is larger than 100 MB. Please purchase a Premium subscription for only $5/mo to support Gitly and help us provide the infrastructure needed for repository hosting.
+-----
+clone_size_limit_purchase_premium
+Purchase Premium for $5 with PayPal
+-----
+clone_size_limit_pricing_link
+View Premium plans
+-----
+header_pricing
+Pricing
+-----
+pricing_title
+Gitly pricing
+-----
+pricing_subtitle
+Choose the plan that matches your repository size, storage needs, and support expectations.
+-----
+pricing_best_for_individuals
+Best for individuals
+-----
+pricing_best_for_teams
+Best for teams
+-----
+pricing_premium_name
+Premium
+-----
+pricing_premium_desc
+For developers who need larger imports and private project hosting.
+-----
+pricing_premium_price
+$5
+-----
+pricing_per_month
+per month
+-----
+pricing_buy_premium
+Buy Premium with PayPal
+-----
+pricing_premium_feature_one
+Clone and host repositories up to 1 GB
+-----
+pricing_premium_feature_two
+Private repositories and organizations
+-----
+pricing_premium_feature_three
+GitHub issues and pull request import
+-----
+pricing_premium_feature_four
+10 GB hosted storage
+-----
+pricing_premium_feature_five
+Standard support queue
+-----
+pricing_ultimate_name
+Ultimate
+-----
+pricing_ultimate_desc
+For teams running heavier repositories and production workflows.
+-----
+pricing_ultimate_price
+$19
+-----
+pricing_buy_ultimate
+Buy Ultimate with PayPal
+-----
+pricing_ultimate_feature_one
+Everything in Premium
+-----
+pricing_ultimate_feature_two
+Clone and host repositories up to 10 GB
+-----
+pricing_ultimate_feature_three
+100 GB hosted storage
+-----
+pricing_ultimate_feature_four
+Advanced permissions and protected workflows
+-----
+pricing_ultimate_feature_five
+Priority support for infrastructure issues
+-----
+pricing_payment_title
+Payment
+-----
+pricing_payment_note
+Payments are handled via PayPal to
 -----

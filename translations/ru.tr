@@ -218,6 +218,9 @@ new_repo_clone_hint
 new_repo_import_issues
 Импортировать issues с GitHub
 -----
+new_repo_import_prs
+Импортировать PR с GitHub
+-----
 new_repo_visibility
 Видимость репозитория
 -----
@@ -1039,4 +1042,94 @@ login_via_github
 -----
 register_via_github
 Регистрация через GitHub
+-----
+clone_size_limit_title
+Репозиторий больше 100 МБ
+-----
+clone_size_limit_message
+Этот репозиторий больше 100 МБ. Пожалуйста, оформите Premium за $5/мес, чтобы поддержать Gitly и помочь нам оплачивать инфраструктуру для хостинга репозиториев.
+-----
+clone_size_limit_purchase_premium
+Купить Premium за $5 через PayPal
+-----
+clone_size_limit_pricing_link
+Посмотреть тарифы Premium
+-----
+header_pricing
+Тарифы
+-----
+pricing_title
+Тарифы Gitly
+-----
+pricing_subtitle
+Выберите план под нужный размер репозиториев, объём хранилища и уровень поддержки.
+-----
+pricing_best_for_individuals
+Лучше для разработчиков
+-----
+pricing_best_for_teams
+Лучше для команд
+-----
+pricing_premium_name
+Premium
+-----
+pricing_premium_desc
+Для разработчиков, которым нужны большие импорты и приватный хостинг проектов.
+-----
+pricing_premium_price
+$5
+-----
+pricing_per_month
+в месяц
+-----
+pricing_buy_premium
+Купить Premium через PayPal
+-----
+pricing_premium_feature_one
+Клонирование и хостинг репозиториев до 1 ГБ
+-----
+pricing_premium_feature_two
+Приватные репозитории и организации
+-----
+pricing_premium_feature_three
+Импорт issues и pull requests из GitHub
+-----
+pricing_premium_feature_four
+10 ГБ хранилища
+-----
+pricing_premium_feature_five
+Стандартная очередь поддержки
+-----
+pricing_ultimate_name
+Ultimate
+-----
+pricing_ultimate_desc
+Для команд с крупными репозиториями и производственными workflow.
+-----
+pricing_ultimate_price
+$19
+-----
+pricing_buy_ultimate
+Купить Ultimate через PayPal
+-----
+pricing_ultimate_feature_one
+Всё из Premium
+-----
+pricing_ultimate_feature_two
+Клонирование и хостинг репозиториев до 10 ГБ
+-----
+pricing_ultimate_feature_three
+100 ГБ хранилища
+-----
+pricing_ultimate_feature_four
+Расширенные права доступа и защищённые workflow
+-----
+pricing_ultimate_feature_five
+Приоритетная поддержка по вопросам инфраструктуры
+-----
+pricing_payment_title
+Оплата
+-----
+pricing_payment_note
+Платежи принимаются через PayPal на
 -----

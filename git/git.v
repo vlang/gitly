@@ -3,6 +3,9 @@ module git
 import os
 import time
 
+pub const clone_size_limit_exit_code = 125
+pub const clone_size_limit_marker = '[gitly:clone-size-limit]'
+
 pub struct Git {}
 
 pub fn Git.exec(args []string) os.Result {
@@ -62,6 +65,10 @@ pub fn Git.clone(url string, path string) os.Result {
 // `progress_path` while the clone is running, so a separate process can
 // poll the file and show live progress to the user.
 pub fn Git.clone_with_progress(url string, path string, progress_path string) os.Result {
+	return Git.clone_with_progress_limit(url, path, progress_path, 0)
+}
+
+pub fn Git.clone_with_progress_limit(url string, path string, progress_path string, max_bytes u64) os.Result {
 	println('new clone (progress) url="${url}" path="${path}" progress="${progress_path}"')
 	os.rm(progress_path) or {}
 	mut p := os.new_process('git')
@@ -81,12 +88,26 @@ pub fn Git.clone_with_progress(url string, path string, progress_path string) os
 		}
 	}
 	mut collected := ''
+	mut stopped_for_size := false
 	for p.is_alive() {
 		chunk := p.stderr_read()
 		if chunk.len > 0 {
 			log.write_string(chunk) or {}
 			log.flush()
 			collected += chunk
+			if max_bytes > 0 && !stopped_for_size
+				&& clone_progress_received_bytes(collected) >= max_bytes {
+				stopped_for_size = true
+				marker := '\n${clone_size_limit_marker}\n'
+				log.write_string(marker) or {}
+				log.flush()
+				collected += marker
+				p.signal_term()
+				time.sleep(500 * time.millisecond)
+				if p.is_alive() {
+					p.signal_kill()
+				}
+			}
 		}
 		// drain stdout so the pipe buffer never blocks the child
 		_ := p.stdout_read()
@@ -100,12 +121,51 @@ pub fn Git.clone_with_progress(url string, path string, progress_path string) os
 	}
 	log.close()
 	p.wait()
-	exit_code := p.code
+	exit_code := if stopped_for_size { clone_size_limit_exit_code } else { p.code }
 	p.close()
 	return os.Result{
 		exit_code: exit_code
 		output:    collected
 	}
+}
+
+pub fn clone_progress_received_bytes(progress string) u64 {
+	mut max_bytes := u64(0)
+	for line in progress.replace('\r', '\n').split('\n') {
+		if !line.contains('Receiving objects:') {
+			continue
+		}
+		bytes := parse_clone_progress_size(line) or { continue }
+		if bytes > max_bytes {
+			max_bytes = bytes
+		}
+	}
+	return max_bytes
+}
+
+fn parse_clone_progress_size(line string) ?u64 {
+	comma := line.index('),') or { return none }
+	mut size_part := line[comma + 2..].trim_space()
+	pipe := size_part.index('|') or { size_part.len }
+	size_part = size_part[..pipe].trim_space()
+	parts := size_part.fields()
+	if parts.len < 2 {
+		return none
+	}
+	value := parts[0].f64()
+	multiplier := match parts[1] {
+		'B', 'byte', 'bytes' { 1.0 }
+		'KiB' { 1024.0 }
+		'MiB' { 1024.0 * 1024.0 }
+		'GiB' { 1024.0 * 1024.0 * 1024.0 }
+		else { return none }
+	}
+
+	return u64(value * multiplier)
+}
+
+pub fn Git.fetch_ref(repo_dir string, remote string, refspec string) os.Result {
+	return Git.exec_in_dir(repo_dir, ['fetch', remote, refspec])
 }
 
 pub fn Git.show_file_blob(repo_dir string, branch string, file_path string) !string {

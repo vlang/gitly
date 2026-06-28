@@ -136,7 +136,7 @@ fn (rc &PrReviewComment) relative() string {
 	return time.unix(rc.created_at).relative()
 }
 
-fn (mut app App) add_pull_request(repo_id int, author_id int, title string, description string, head string, base string) !int {
+fn (mut app App) add_pull_request_with_created_at(repo_id int, author_id int, title string, description string, head string, base string, created_at int) !int {
 	pr := PullRequest{
 		repo_id:     repo_id
 		author_id:   author_id
@@ -145,12 +145,29 @@ fn (mut app App) add_pull_request(repo_id int, author_id int, title string, desc
 		head_branch: head
 		base_branch: base
 		status:      int(PrStatus.open)
-		created_at:  int(time.now().unix())
+		created_at:  created_at
 	}
 	sql app.db {
 		insert pr into PullRequest
 	}!
 	return db_last_insert_id(mut app.db)
+}
+
+fn (mut app App) add_pull_request(repo_id int, author_id int, title string, description string, head string, base string) !int {
+	return app.add_pull_request_with_created_at(repo_id, author_id, title, description, head, base,
+		int(time.now().unix()))
+}
+
+fn (mut app App) add_imported_pull_request(repo_id int, author_id int, title string, description string, head string, base string, created_at int) !int {
+	return app.add_pull_request_with_created_at(repo_id, author_id, title, description, head, base,
+		created_at)
+}
+
+fn (mut app App) pull_request_exists_for_head(repo_id int, head string) bool {
+	rows := sql app.db {
+		select count from PullRequest where repo_id == repo_id && head_branch == head
+	} or { 0 }
+	return rows > 0
 }
 
 fn (mut app App) find_pull_request_by_id(pr_id int) ?PullRequest {
@@ -181,6 +198,13 @@ fn (mut app App) get_repo_open_pr_count(repo_id int) int {
 	return sql app.db {
 		select count from PullRequest where repo_id == repo_id && status == wanted
 	} or { 0 }
+}
+
+fn (mut app App) sync_repo_open_pr_count(repo_id int) ! {
+	open_prs_count := app.get_repo_open_pr_count(repo_id)
+	sql app.db {
+		update Repo set nr_open_prs = open_prs_count where id == repo_id
+	}!
 }
 
 fn (mut app App) set_pr_status(pr_id int, new_status PrStatus) ! {

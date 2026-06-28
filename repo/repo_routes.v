@@ -302,6 +302,8 @@ pub fn (mut app App) handle_new_repo(mut ctx Context, name string, clone_url str
 		is_public:      is_public
 	}
 	import_issues := ctx.form['import_issues'] == '1'
+	import_prs := ctx.form['import_prs'] == '1'
+	eprintln('[new-repo] clone_url="${valid_clone_url}" import_issues=${import_issues} import_prs=${import_prs}')
 	if is_clone_url_empty {
 		os.mkdir(new_repo.git_dir) or { panic(err) }
 		new_repo.git('init --bare')
@@ -317,7 +319,8 @@ pub fn (mut app App) handle_new_repo(mut ctx Context, name string, clone_url str
 	if !is_clone_url_empty {
 		app.debug('cloning')
 		clone_job_repo := *new_repo
-		spawn clone_repo(clone_job_repo, app.config, import_issues, ctx.user.id)
+		spawn clone_repo(clone_job_repo, app.config, import_issues, import_prs, ctx.user.id,
+			!ctx.is_admin())
 	}
 	new_repo2 := app.find_repo_by_name_and_username(new_repo.name, owner_name) or {
 		app.info('Repo was not inserted')
@@ -374,9 +377,9 @@ fn bg_fetch_files_info(repo_ Repo, branch string, path string, conf config.Confi
 	app.db.close() or {}
 }
 
-fn clone_repo(new_repo Repo, conf config.Config, import_issues bool, owner_user_id int) {
+fn clone_repo(new_repo Repo, conf config.Config, import_issues bool, import_prs bool, owner_user_id int, enforce_clone_size_limit bool) {
 	mut cloned_repo := new_repo
-	cloned_repo.clone()
+	cloned_repo.clone(enforce_clone_size_limit)
 	// Use a dedicated DB connection for the clone thread to avoid
 	// sharing a connection across threads.
 	mut app := &App{
@@ -386,13 +389,27 @@ fn clone_repo(new_repo Repo, conf config.Config, import_issues bool, owner_user_
 		}
 		config: conf
 	}
+	if cloned_repo.status == .clone_failed {
+		app.set_repo_status(cloned_repo.id, .clone_failed) or {
+			eprintln('cannot set repo status ${err}')
+		}
+		app.db.close() or {}
+		return
+	}
 	// Mark repo as done immediately so the user can browse it.
 	// The tree page will fetch files from git on demand.
 	app.set_repo_status(cloned_repo.id, .done) or { eprintln('cannot set repo status ${err}') }
 	eprintln('clone done, repo available — indexing in background')
-	// For GitHub clones, also pull the repo description and contributors list
-	// (the issue import is gated on a separate user opt-in).
+	// For GitHub clones, also pull the repo description and contributors list.
+	// Issue and PR imports are gated on separate user opt-ins. Open PR refs are
+	// fetched before indexing so the branch scanner sees pr/<number> branches.
 	if cloned_repo.clone_url.contains('github.com') {
+		eprintln('[clone] github imports repo_id=${cloned_repo.id} import_issues=${import_issues} import_prs=${import_prs}')
+		if import_prs {
+			app.import_github_pull_requests(cloned_repo, owner_user_id) or {
+				eprintln('[github-pr] FAILED: ${err}')
+			}
+		}
 		spawn bg_import_github_repo_info(cloned_repo.id, cloned_repo.clone_url,
 			cloned_repo.description, conf)
 		if import_issues {
@@ -473,6 +490,12 @@ fn read_clone_progress(progress_path string) string {
 		if line == '' {
 			continue
 		}
+		if line == git.clone_size_limit_marker {
+			continue
+		}
+		if line.starts_with('Cloning into bare repository ') {
+			continue
+		}
 		mut body := line
 		if body.starts_with('remote: ') {
 			body = body[8..]
@@ -489,6 +512,11 @@ fn read_clone_progress(progress_path string) string {
 	return stages.join('\n')
 }
 
+fn clone_size_limit_failed(progress_path string) bool {
+	raw := os.read_file(progress_path) or { return false }
+	return raw.contains(git.clone_size_limit_marker)
+}
+
 @['/:username/:repo_name/tree/:branch_name/:path...']
 pub fn (mut app App) tree(mut ctx Context, username string, repo_name string, branch_name string, path string) veb.Result {
 	tree_t0 := time.ticks()
@@ -501,6 +529,14 @@ pub fn (mut app App) tree(mut ctx Context, username string, repo_name string, br
 	tree_t = time.ticks()
 	mut clone_url := ''
 	mut clone_progress := ''
+	if repo.status == .clone_failed {
+		clone_url = repo.clone_url
+		clone_progress = read_clone_progress(repo.clone_progress_path())
+		if clone_size_limit_failed(repo.clone_progress_path()) {
+			return $veb.html('templates/clone_size_limit.html')
+		}
+		return ctx.not_found()
+	}
 	if repo.status == .cloning {
 		clone_url = repo.clone_url
 		clone_progress = read_clone_progress(repo.clone_progress_path())
