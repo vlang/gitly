@@ -56,21 +56,7 @@
 							@if fd.is_binary
 								<div class="pr-diff__binary">%commit_binary_file</div>
 							@else
-								<table class="pr-diff__table">
-									@for hunk in fd.hunks
-										<tr class="pr-diff__hunk-header">
-											<td colspan="4"><code>@hunk.header</code></td>
-										</tr>
-										@for dline in hunk.lines
-											<tr class="pr-diff__row pr-diff__row--@dline.kind">
-												<td class="pr-diff__lineno">@{dline.old_line_str()}</td>
-												<td class="pr-diff__lineno">@{dline.new_line_str()}</td>
-												<td class="pr-diff__sign">@{dline.sign()}</td>
-												<td class="pr-diff__content"><pre>@{render_diff_line(dline.content, fd.path)}</pre></td>
-											</tr>
-										@end
-									@end
-								</table>
+								@{render_diff_table(fd)}
 							@end
 						</div>
 					@end

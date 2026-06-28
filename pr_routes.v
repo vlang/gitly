@@ -6,6 +6,7 @@ import veb
 import validation
 import git
 import time
+import strings
 
 struct PrWithUser {
 	pr   PullRequest
@@ -300,6 +301,7 @@ pub fn (mut app App) pull_request_files(mut ctx Context, username string, repo_n
 			user: u
 		}
 	}
+	can_comment := ctx.logged_in && pr.is_open()
 	return $veb.html('templates/pull_files.html')
 }
 
@@ -603,9 +605,26 @@ fn merge_branches_in_bare(repo Repo, base string, head string, author string, me
 	return commit_sha
 }
 
-// render_inline_comments returns the HTML rows for any line comments
-// attached to a given diff line (matched on file_path, side, line_number).
-fn render_inline_comments(file_path string, dline DiffLine, comments_by_key map[string][]PrReviewCommentWithUser) veb.RawHtml {
+fn render_pr_diff_table(fd FileDiff, comments_by_key map[string][]PrReviewCommentWithUser, can_comment bool, lang Lang) veb.RawHtml {
+	mut out := strings.new_builder(1024)
+	out.write_string('<div class=pr-diff__table>')
+	for hunk in fd.hunks {
+		out.write_string(diff_hunk_header_html(hunk.header))
+		for dline in hunk.lines {
+			out.write_string(diff_line_row_html(fd.path, dline))
+			if can_comment && dline.kind != 'context' {
+				out.write_string(diff_comment_box_html(fd.path, dline, lang))
+			}
+			out.write_string(inline_comments_html(fd.path, dline, comments_by_key))
+		}
+	}
+	out.write_string('</div>')
+	return veb.RawHtml(out.str())
+}
+
+// inline_comments_html returns any line comments attached to a given diff line,
+// matched on file_path, side, and line_number.
+fn inline_comments_html(file_path string, dline DiffLine, comments_by_key map[string][]PrReviewCommentWithUser) string {
 	mut side := ''
 	mut line_no := 0
 	if dline.kind == 'add' {
@@ -615,24 +634,21 @@ fn render_inline_comments(file_path string, dline DiffLine, comments_by_key map[
 		side = 'old'
 		line_no = dline.old_line
 	} else {
-		return veb.RawHtml('')
+		return ''
 	}
 	key := '${file_path}|${side}|${line_no}'
-	list := comments_by_key[key] or { return veb.RawHtml('') }
+	list := comments_by_key[key] or { return '' }
 	if list.len == 0 {
-		return veb.RawHtml('')
+		return ''
 	}
 	mut out := ''
 	for c in list {
 		body := html_escape_text(c.item.text)
 		username := html_escape_text(c.user.username)
 		rel := html_escape_text(c.item.relative())
-		out += '<tr class="pr-diff__inline-comment"><td colspan="4">' +
-			'<div class="pr-inline-comment">' +
-			'<strong>${username}</strong> <span class="pr-inline-comment__meta">commented ${rel}</span>' +
-			'<p>${body}</p>' + '</div></td></tr>'
+		out += '<p class=n><b>${username}</b> <i>commented ${rel}</i><br><s>${body}</s></p>'
 	}
-	return veb.RawHtml(out)
+	return out
 }
 
 // is_safe_ref does a strict whitelist check for branch names used in shell.

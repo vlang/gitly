@@ -2540,71 +2540,76 @@ form {
 
 .pr-diff__table {
 	width: 100%;
-	border-collapse: collapse;
+	overflow-x: auto;
 	font-family: SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 	font-size: 12px;
 	background-color: $white;
-	table-layout: auto;
 }
 
-.pr-diff__hunk-header td,
-.pr-diff__hunk-header td code {
+.pr-diff__table > p {
+	display: grid;
+	grid-template-columns: 56px 56px 18px max-content;
+	min-width: 100%;
+	margin: 0;
+	line-height: 20px;
+	font-family: SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+	font-size: 12px;
+}
+
+.pr-diff__table > p > u,
+.pr-diff__table > p > i,
+.pr-diff__table > p > s {
+	padding: 0 8px;
+	white-space: pre;
+	font-family: SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+	font-size: 12px;
+}
+
+.pr-diff__table > p.h {
+	display: block;
 	background-color: #ddf4ff;
+}
+
+.pr-diff__table > p.h > code {
+	display: block;
 	color: #57606a;
 	padding: 4px 12px;
 	font-size: 12px;
 	font-family: SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
-.pr-diff__row td {
-	padding: 0 8px;
-	white-space: pre;
-	vertical-align: top;
-	line-height: 20px;
-	font-family: SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-	font-size: 12px;
-}
+.pr-diff__table > p.c > * { background-color: $white; }
+.pr-diff__table > p.a > * { background-color: #e6ffec; }
+.pr-diff__table > p.d > * { background-color: #ffebe9; }
 
-.pr-diff__row--context td { background-color: $white; }
-.pr-diff__row--add td     { background-color: #e6ffec; }
-.pr-diff__row--del td     { background-color: #ffebe9; }
-
-.pr-diff__row--add .pr-diff__lineno,
-.pr-diff__row--add .pr-diff__sign {
+.pr-diff__table > p.a > u,
+.pr-diff__table > p.a > i {
 	background-color: #ccffd8;
 }
 
-.pr-diff__row--del .pr-diff__lineno,
-.pr-diff__row--del .pr-diff__sign {
+.pr-diff__table > p.d > u,
+.pr-diff__table > p.d > i {
 	background-color: #ffd7d5;
 }
 
-.pr-diff__lineno {
+.pr-diff__table > p > u {
 	color: rgba(36, 41, 46, 0.4);
 	text-align: right;
-	width: 1%;
+	text-decoration: none;
 	user-select: none;
-	min-width: 40px;
 	border-right: 1px solid rgba(0, 0, 0, 0.04);
 }
 
-.pr-diff__sign {
-	width: 1%;
-	min-width: 18px;
+.pr-diff__table > p > i {
+	color: inherit;
+	font-style: normal;
 	text-align: center;
 	user-select: none;
 }
 
-.pr-diff__content {
-	width: 100%;
-
-	pre {
-		margin: 0;
-		font-family: SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-		font-size: 12px;
-		line-height: 20px;
-		white-space: pre;
-	}
+.pr-diff__table > p > s {
+	display: block;
+	text-decoration: none;
 
 	b {
 		font-weight: 600;
@@ -2622,22 +2627,23 @@ form {
 	}
 }
 
-.pr-diff__commentrow td {
+.pr-diff__table > p.m {
 	background-color: $white;
 	padding: 4px 8px;
 }
 
-.pr-files-content .pr-diff__commentrow {
+.pr-files-content .pr-diff__table > p.m {
 	display: none;
 }
 
-.pr-files-content .pr-diff__row:hover + .pr-diff__commentrow,
-.pr-files-content .pr-diff__commentrow:hover,
-.pr-files-content .pr-diff__commentrow:focus-within {
-	display: table-row;
+.pr-files-content .pr-diff__table > p.a:hover + p.m,
+.pr-files-content .pr-diff__table > p.d:hover + p.m,
+.pr-files-content .pr-diff__table > p.m:hover,
+.pr-files-content .pr-diff__table > p.m:focus-within {
+	display: block;
 }
 
-.pr-diff__commentbox {
+.pr-diff__table > p.m > textarea {
 	width: 100%;
 	box-sizing: border-box;
 	font-family: system-ui, sans-serif;
@@ -2646,22 +2652,24 @@ form {
 	resize: vertical;
 }
 
-.pr-diff__inline-comment td {
+.pr-diff__table > p.n {
 	background-color: #fffbea;
 	padding: 8px 12px;
-}
-
-.pr-inline-comment {
 	font-family: system-ui, sans-serif;
+	font-size: 13px;
 
-	p {
-		margin: 4px 0 0;
+	i {
+		color: $gray-dark;
+		font-size: 12px;
+		font-style: normal;
 	}
-}
 
-.pr-inline-comment__meta {
-	color: $gray-dark;
-	font-size: 12px;
+	s {
+		display: block;
+		margin-top: 4px;
+		text-decoration: none;
+		white-space: pre-wrap;
+	}
 }
 
 .pr-review-form {

@@ -131,29 +131,7 @@
 								@if fd.is_binary
 									<div class='pr-diff__binary'>%pr_binary_file</div>
 								@else
-									<table class='pr-diff__table'>
-										@for hunk in fd.hunks
-											<tr class='pr-diff__hunk-header'>
-												<td colspan='4'><code>@hunk.header</code></td>
-											</tr>
-											@for dline in hunk.lines
-												<tr class='pr-diff__row pr-diff__row--@dline.kind'>
-													<td class='pr-diff__lineno'>@{dline.old_line_str()}</td>
-													<td class='pr-diff__lineno'>@{dline.new_line_str()}</td>
-													<td class='pr-diff__sign'>@{dline.sign()}</td>
-													<td class='pr-diff__content'><pre>@{render_diff_line(dline.content, fd.path)}</pre></td>
-												</tr>
-												@{render_inline_comments(fd.path, dline, comments_by_key)}
-												@if ctx.logged_in && pr.is_open() && dline.kind != 'context'
-													<tr class='pr-diff__commentrow'>
-														<td colspan='4'>
-															<textarea name='@{dline.comment_field_name(fd.path)}' placeholder='%pr_line_comment_placeholder' rows='2' class='pr-diff__commentbox'></textarea>
-														</td>
-													</tr>
-												@end
-											@end
-										@end
-									</table>
+									@{render_pr_diff_table(fd, comments_by_key, can_comment, ctx.lang)}
 								@end
 							</div>
 						@end

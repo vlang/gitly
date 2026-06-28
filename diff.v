@@ -4,11 +4,37 @@ module main
 
 import veb
 import highlight
+import strings
 
-// render_diff_line is a template helper that returns the diff line's
-// content with single-line syntax highlighting applied.
-fn render_diff_line(content string, file_path string) veb.RawHtml {
-	return veb.RawHtml(highlight.highlight_line(content, file_path))
+fn render_diff_table(fd FileDiff) veb.RawHtml {
+	mut out := strings.new_builder(1024)
+	out.write_string('<div class=pr-diff__table>')
+	for hunk in fd.hunks {
+		out.write_string(diff_hunk_header_html(hunk.header))
+		for dline in hunk.lines {
+			out.write_string(diff_line_row_html(fd.path, dline))
+		}
+	}
+	out.write_string('</div>')
+	return veb.RawHtml(out.str())
+}
+
+fn diff_hunk_header_html(header string) string {
+	return '<p class=h><code>${html_escape_text(header)}</code></p>'
+}
+
+fn diff_line_row_html(file_path string, dline DiffLine) string {
+	return '<p class=${dline.compact_class()}><u>${dline.old_line_str()}</u><u>${dline.new_line_str()}</u><i>${dline.compact_sign()}</i><s>${highlight.highlight_line(dline.content,
+		file_path)}</s></p>'
+}
+
+fn diff_comment_box_html(file_path string, dline DiffLine, lang Lang) string {
+	if dline.kind == 'context' {
+		return ''
+	}
+	name := html_escape_text(dline.comment_field_name(file_path))
+	placeholder := html_escape_text(veb.tr(lang.str(), 'pr_line_comment_placeholder').trim_space())
+	return '<p class=m><textarea name="${name}" placeholder="${placeholder}" rows=2></textarea></p>'
 }
 
 struct FileDiff {
@@ -134,11 +160,19 @@ fn parse_unified_diff(raw string) []FileDiff {
 	return files
 }
 
-fn (d &DiffLine) sign() string {
+fn (d &DiffLine) compact_sign() string {
 	return match d.kind {
 		'add' { '+' }
 		'del' { '-' }
-		else { ' ' }
+		else { '' }
+	}
+}
+
+fn (d &DiffLine) compact_class() string {
+	return match d.kind {
+		'add' { 'a' }
+		'del' { 'd' }
+		else { 'c' }
 	}
 }
 
