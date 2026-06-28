@@ -42,6 +42,7 @@ fn main() {
 	mut app := new_app()!
 
 	app.use(handler: app.before_request)
+	app.route_use('/:username/:repo_name/pull/:id/files', handler: minify_pr_files_html, after: true)
 
 	app.port = get_port(app.config)
 

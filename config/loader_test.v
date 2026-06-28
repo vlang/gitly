@@ -18,4 +18,5 @@ fn test_read_config_uses_database_defaults() {
 	assert conf.pg.user == 'gitly'
 	assert conf.pg.password == 'gitly'
 	assert conf.sqlite.path == 'gitly.sqlite'
+	assert conf.usdt_wallet == ''
 }

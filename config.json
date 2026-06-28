@@ -3,5 +3,6 @@
 	"archive_path": "./archives",
 	"avatars_path": "./avatars",
 	"hostname": "gitly.org",
-	"ci_service_url": "http://localhost:8081"
+	"ci_service_url": "http://localhost:8081",
+	"usdt_wallet": ""
 }

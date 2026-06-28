@@ -147,6 +147,16 @@ pre > code {
 	}
 }
 
+.clone-status-button--usdt {
+	background: #26a17b;
+	border: 1px solid #26a17b;
+
+	&:hover {
+		background: #1d7f61;
+		border-color: #1d7f61;
+	}
+}
+
 .clone-status-url {
 	color: $gray-dark;
 	margin: 10px auto 0;
@@ -611,6 +621,12 @@ form {
 	}
 }
 
+.pricing-plan__actions {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+	gap: 10px;
+}
+
 .pricing-plan__button--secondary {
 	background: #0969da;
 	border-color: #0969da;
@@ -618,6 +634,16 @@ form {
 	&:hover {
 		background: #0550ae;
 		border-color: #0550ae;
+	}
+}
+
+.pricing-plan__button--usdt {
+	background: #26a17b;
+	border-color: #26a17b;
+
+	&:hover {
+		background: #1d7f61;
+		border-color: #1d7f61;
 	}
 }
 
@@ -643,6 +669,17 @@ form {
 
 	p {
 		color: $gray-dark;
+	}
+}
+
+.pricing-note--usdt {
+	code {
+		display: inline-block;
+		max-width: 100%;
+		padding: 3px 6px;
+		border-radius: $small-radius;
+		background: #f6f8fa;
+		overflow-wrap: anywhere;
 	}
 }
 

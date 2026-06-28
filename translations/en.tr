@@ -1052,6 +1052,9 @@ This repository is larger than 100 MB. Please purchase a Premium subscription fo
 clone_size_limit_purchase_premium
 Purchase Premium for $5 with PayPal
 -----
+clone_size_limit_purchase_usdt
+Pay 4.50 USDT (-10%)
+-----
 clone_size_limit_pricing_link
 View Premium plans
 -----
@@ -1085,6 +1088,9 @@ per month
 pricing_buy_premium
 Buy Premium with PayPal
 -----
+pricing_buy_premium_usdt
+Pay 4.50 USDT (-10%)
+-----
 pricing_premium_feature_one
 Clone and host repositories up to 1 GB
 -----
@@ -1112,6 +1118,9 @@ $19
 pricing_buy_ultimate
 Buy Ultimate with PayPal
 -----
+pricing_buy_ultimate_usdt
+Pay 17.10 USDT (-10%)
+-----
 pricing_ultimate_feature_one
 Everything in Premium
 -----
@@ -1132,4 +1141,13 @@ Payment
 -----
 pricing_payment_note
 Payments are handled via PayPal to
+-----
+pricing_usdt_title
+USDT payment
+-----
+pricing_usdt_note
+USDT payments include a 10% discount. Send the discounted amount to this wallet.
+-----
+pricing_usdt_wallet_label
+USDT wallet:
 -----

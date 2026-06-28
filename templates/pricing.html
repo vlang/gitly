@@ -21,7 +21,12 @@
 						<span>%pricing_premium_price</span>
 						<small>%pricing_per_month</small>
 					</div>
-					<a class="pricing-plan__button" href="https://www.paypal.com/cgi-bin/webscr?cmd=_xclick-subscriptions&amp;business=paypal%40gitly.org&amp;item_name=Gitly%20Premium&amp;currency_code=USD&amp;a3=5.00&amp;p3=1&amp;t3=M&amp;src=1">%pricing_buy_premium</a>
+					<div class="pricing-plan__actions">
+						<a class="pricing-plan__button" href="https://www.paypal.com/cgi-bin/webscr?cmd=_xclick-subscriptions&amp;business=paypal%40gitly.org&amp;item_name=Gitly%20Premium&amp;currency_code=USD&amp;a3=5.00&amp;p3=1&amp;t3=M&amp;src=1">%pricing_buy_premium</a>
+						@if app.config.usdt_wallet != ''
+							<a class="pricing-plan__button pricing-plan__button--usdt" href="#usdt-payment">%pricing_buy_premium_usdt</a>
+						@end
+					</div>
 					<ul class="pricing-plan__features">
 						<li>%pricing_premium_feature_one</li>
 						<li>%pricing_premium_feature_two</li>
@@ -39,7 +44,12 @@
 						<span>%pricing_ultimate_price</span>
 						<small>%pricing_per_month</small>
 					</div>
-					<a class="pricing-plan__button pricing-plan__button--secondary" href="https://www.paypal.com/cgi-bin/webscr?cmd=_xclick-subscriptions&amp;business=paypal%40gitly.org&amp;item_name=Gitly%20Ultimate&amp;currency_code=USD&amp;a3=19.00&amp;p3=1&amp;t3=M&amp;src=1">%pricing_buy_ultimate</a>
+					<div class="pricing-plan__actions">
+						<a class="pricing-plan__button pricing-plan__button--secondary" href="https://www.paypal.com/cgi-bin/webscr?cmd=_xclick-subscriptions&amp;business=paypal%40gitly.org&amp;item_name=Gitly%20Ultimate&amp;currency_code=USD&amp;a3=19.00&amp;p3=1&amp;t3=M&amp;src=1">%pricing_buy_ultimate</a>
+						@if app.config.usdt_wallet != ''
+							<a class="pricing-plan__button pricing-plan__button--usdt" href="#usdt-payment">%pricing_buy_ultimate_usdt</a>
+						@end
+					</div>
 					<ul class="pricing-plan__features">
 						<li>%pricing_ultimate_feature_one</li>
 						<li>%pricing_ultimate_feature_two</li>
@@ -54,6 +64,14 @@
 				<h2>%pricing_payment_title</h2>
 				<p>%pricing_payment_note <a href="mailto:paypal%40gitly.org">paypal&#64;gitly.org</a></p>
 			</section>
+
+			@if app.config.usdt_wallet != ''
+				<section id="usdt-payment" class="pricing-note pricing-note--usdt">
+					<h2>%pricing_usdt_title</h2>
+					<p>%pricing_usdt_note</p>
+					<p class="pricing-usdt-wallet"><strong>%pricing_usdt_wallet_label</strong> <code>@app.config.usdt_wallet</code></p>
+				</section>
+			@end
 		</div>
 
 		@include 'layout/footer.html'

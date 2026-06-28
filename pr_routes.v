@@ -81,6 +81,39 @@ fn (row PrFileTreeRow) status() string {
 	return 'M'
 }
 
+fn render_pr_file_diff(fd FileDiff, comments_by_key map[string][]PrReviewCommentWithUser, can_comment bool, lang Lang) veb.RawHtml {
+	mut out := strings.new_builder(1024)
+	path := html_escape_text(fd.path)
+	out.write_string('<div class=pr-diff id="diff-${path}" data-diff-path="${path}"><div class=pr-diff__header><span class=pr-diff__path>')
+	if fd.is_renamed && fd.old_path != fd.path {
+		old_path := html_escape_text(fd.old_path)
+		renamed_label := tr_text(lang, 'commit_file_renamed')
+		out.write_string('<span class=pr-diff__tag>${renamed_label}</span><span class=pr-diff__oldpath>${old_path} &rarr;</span>')
+	}
+	out.write_string(path)
+	if fd.is_new {
+		new_label := tr_text(lang, 'commit_file_new')
+		out.write_string('<span class="pr-diff__tag pr-diff__tag--new">${new_label}</span>')
+	}
+	if fd.is_deleted {
+		deleted_label := tr_text(lang, 'commit_file_deleted')
+		out.write_string('<span class="pr-diff__tag pr-diff__tag--deleted">${deleted_label}</span>')
+	}
+	out.write_string('</span><span class=pr-diff__counts><span class=pr-diff__add>+${fd.additions}</span><span class=pr-diff__del>-${fd.deletions}</span></span></div>')
+	if fd.is_binary {
+		binary_label := tr_text(lang, 'pr_binary_file')
+		out.write_string('<div class=pr-diff__binary>${binary_label}</div>')
+	} else {
+		out.write_string(pr_diff_table_html(fd, comments_by_key, can_comment))
+	}
+	out.write_string('</div>')
+	return veb.RawHtml(out.str())
+}
+
+fn tr_text(lang Lang, key string) string {
+	return html_escape_text(veb.tr(lang.str(), key).trim_space())
+}
+
 fn build_pr_file_tree_rows(file_diffs []FileDiff) []PrFileTreeRow {
 	mut sorted := file_diffs.clone()
 	sorted.sort(a.path < b.path)
@@ -331,6 +364,7 @@ pub fn (mut app App) pull_request_files(mut ctx Context, username string, repo_n
 		}
 	}
 	can_comment := ctx.logged_in && pr.is_open()
+	line_comment_placeholder := veb.tr(ctx.lang.str(), 'pr_line_comment_placeholder').trim_space()
 	return $veb.html('templates/pull_files.html')
 }
 
@@ -634,7 +668,7 @@ fn merge_branches_in_bare(repo Repo, base string, head string, author string, me
 	return commit_sha
 }
 
-fn render_pr_diff_table(fd FileDiff, comments_by_key map[string][]PrReviewCommentWithUser, can_comment bool) veb.RawHtml {
+fn pr_diff_table_html(fd FileDiff, comments_by_key map[string][]PrReviewCommentWithUser, can_comment bool) string {
 	mut out := strings.new_builder(1024)
 	out.write_string('<div class=pr-diff__table>')
 	for hunk in fd.hunks {
@@ -650,7 +684,7 @@ fn render_pr_diff_table(fd FileDiff, comments_by_key map[string][]PrReviewCommen
 		}
 	}
 	out.write_string('</div>')
-	return veb.RawHtml(out.str())
+	return out.str()
 }
 
 // inline_comments_html returns any line comments attached to a given diff line,

@@ -71,34 +71,9 @@
 						<div class="pr-files-filter-empty" data-pr-files-filter-empty hidden>No files match the filter.</div>
 					</aside>
 
-					<section class="pr-files-diffs" data-line-comment-placeholder="%pr_line_comment_placeholder">
+					<section class="pr-files-diffs" data-line-comment-placeholder="@line_comment_placeholder">
 						@for fd in file_diffs
-							<div class='pr-diff' id='diff-@fd.path' data-diff-path="@fd.path">
-								<div class='pr-diff__header'>
-									<span class='pr-diff__path'>
-										@if fd.is_renamed && fd.old_path != fd.path
-											<span class="pr-diff__tag">%commit_file_renamed</span>
-											<span class="pr-diff__oldpath">@fd.old_path &rarr;</span>
-										@end
-										@fd.path
-										@if fd.is_new
-											<span class="pr-diff__tag pr-diff__tag--new">%commit_file_new</span>
-										@end
-										@if fd.is_deleted
-											<span class="pr-diff__tag pr-diff__tag--deleted">%commit_file_deleted</span>
-										@end
-									</span>
-									<span class='pr-diff__counts'>
-										<span class='pr-diff__add'>+@fd.additions</span>
-										<span class='pr-diff__del'>-@fd.deletions</span>
-									</span>
-								</div>
-								@if fd.is_binary
-									<div class='pr-diff__binary'>%pr_binary_file</div>
-								@else
-									@{render_pr_diff_table(fd, comments_by_key, can_comment)}
-								@end
-							</div>
+							@{render_pr_file_diff(fd, comments_by_key, can_comment, ctx.lang)}
 						@end
 					</section>
 				</div>

@@ -66,3 +66,167 @@ fn css2(s string) veb.RawHtml {
 		return '<link href="/static/${s}" rel="stylesheet" type="text/css">'
 	}
 }
+
+fn minify_pr_files_html(mut ctx Context) bool {
+	if ctx.res.body.len == 0 {
+		return true
+	}
+	minified := strip_intertag_whitespace(ctx.res.body)
+	if minified.len != ctx.res.body.len {
+		ctx.res.body = minified
+		ctx.res.header.set(.content_length, ctx.res.body.len.str())
+	}
+	return true
+}
+
+fn strip_intertag_whitespace(s string) string {
+	mut out := []u8{cap: s.len}
+	mut i := 0
+	mut preserve_whitespace_depth := 0
+	for i < s.len {
+		ch := s[i]
+		if ch == `<` {
+			tag_end := html_tag_end(s, i)
+			if tag_end == -1 {
+				out << ch
+				i++
+				continue
+			}
+			tag_name, closing, self_closing := html_tag_info(s, i, tag_end)
+			compact_tag := compact_html_tag(s, i, tag_end)
+			for k := 0; k < compact_tag.len; k++ {
+				out << compact_tag[k]
+			}
+			if preserves_html_whitespace(tag_name) {
+				if closing {
+					if preserve_whitespace_depth > 0 {
+						preserve_whitespace_depth--
+					}
+				} else if !self_closing {
+					preserve_whitespace_depth++
+				}
+			}
+			i = tag_end + 1
+			continue
+		}
+		if is_html_space(ch) {
+			mut j := i + 1
+			mut has_indentation := ch != ` `
+			for j < s.len && is_html_space(s[j]) {
+				if s[j] != ` ` {
+					has_indentation = true
+				}
+				j++
+			}
+			prev_is_tag_end := out.len > 0 && out[out.len - 1] == `>`
+			next_is_tag_start := j < s.len && s[j] == `<`
+			should_strip := preserve_whitespace_depth == 0
+				&& ((prev_is_tag_end && next_is_tag_start)
+				|| (has_indentation && (prev_is_tag_end || next_is_tag_start)))
+			if should_strip {
+				i = j
+				continue
+			}
+			if preserve_whitespace_depth == 0 && has_indentation {
+				out << ` `
+			} else {
+				for k := i; k < j; k++ {
+					out << s[k]
+				}
+			}
+			i = j
+			continue
+		}
+		out << ch
+		i++
+	}
+	return out.bytestr()
+}
+
+fn compact_html_tag(s string, start int, end int) string {
+	mut out := []u8{cap: end - start + 1}
+	mut i := start
+	for i <= end {
+		ch := s[i]
+		if ch == `"` || ch == `'` {
+			quote := ch
+			out << ch
+			mut value_end := i + 1
+			for value_end <= end && s[value_end] != quote {
+				value_end++
+			}
+			if value_end <= end {
+				mut value_start := i + 1
+				mut value_finish := value_end
+				for value_start < value_finish && is_html_space(s[value_start]) {
+					value_start++
+				}
+				for value_finish > value_start && is_html_space(s[value_finish - 1]) {
+					value_finish--
+				}
+				for k := value_start; k < value_finish; k++ {
+					out << s[k]
+				}
+				out << quote
+				i = value_end + 1
+				continue
+			}
+		}
+		out << ch
+		i++
+	}
+	return out.bytestr()
+}
+
+fn html_tag_end(s string, start int) int {
+	mut quote := u8(0)
+	for i := start + 1; i < s.len; i++ {
+		ch := s[i]
+		if quote != 0 {
+			if ch == quote {
+				quote = 0
+			}
+		} else if ch == `"` || ch == `'` {
+			quote = ch
+		} else if ch == `>` {
+			return i
+		}
+	}
+	return -1
+}
+
+fn html_tag_info(s string, start int, end int) (string, bool, bool) {
+	mut i := start + 1
+	mut closing := false
+	if i < end && s[i] == `/` {
+		closing = true
+		i++
+	}
+	for i < end && is_html_space(s[i]) {
+		i++
+	}
+	name_start := i
+	for i < end && is_html_tag_name_char(s[i]) {
+		i++
+	}
+	name := s[name_start..i].to_lower()
+	mut j := end - 1
+	for j > start && is_html_space(s[j]) {
+		j--
+	}
+	self_closing := !closing && j > start && s[j] == `/`
+	return name, closing, self_closing
+}
+
+fn preserves_html_whitespace(tag_name string) bool {
+	return tag_name in ['s', 'pre', 'textarea', 'script', 'style']
+}
+
+fn is_html_tag_name_char(ch u8) bool {
+	return (ch >= `a` && ch <= `z`) || (ch >= `A` && ch <= `Z`)
+		|| (ch >= `0` && ch <= `9`) || ch == `-` || ch == `_` || ch == `:`
+}
+
+fn is_html_space(ch u8) bool {
+	return ch == ` ` || ch == `\n` || ch == `\t` || ch == `\r`
+}

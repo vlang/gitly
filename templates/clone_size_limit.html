@@ -17,6 +17,9 @@
 			@end
 			<div class="clone-status-actions">
 				<a class="clone-status-button" href="https://www.paypal.com/cgi-bin/webscr?cmd=_xclick-subscriptions&amp;business=paypal%40gitly.org&amp;item_name=Gitly%20Premium&amp;currency_code=USD&amp;a3=5.00&amp;p3=1&amp;t3=M&amp;src=1">%clone_size_limit_purchase_premium</a>
+				@if app.config.usdt_wallet != ''
+					<a class="clone-status-button clone-status-button--usdt" href="/pricing#usdt-payment">%clone_size_limit_purchase_usdt</a>
+				@end
 				<a class="clone-status-button clone-status-button--secondary" href="/pricing">%clone_size_limit_pricing_link</a>
 			</div>
 			@if clone_progress != ''
