@@ -2,6 +2,7 @@ gitly
 tests/first_run
 bin/
 *.sqlite
+gitly.sqlite.bkup
 *.css
 *.xml
 *.css.map
