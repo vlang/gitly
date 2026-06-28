@@ -225,6 +225,12 @@ pub fn (mut app App) pull_request_files(mut ctx Context, username string, repo_n
 	author := app.get_user_by_id(pr.author_id) or { return ctx.not_found() }
 	raw_diff := repo.diff_branches(pr.base_branch, pr.head_branch)
 	file_diffs := parse_unified_diff(raw_diff)
+	mut all_adds := 0
+	mut all_dels := 0
+	for fd in file_diffs {
+		all_adds += fd.additions
+		all_dels += fd.deletions
+	}
 	rcomments := app.get_pr_review_comments(pr.id)
 	mut comments_by_key := map[string][]PrReviewCommentWithUser{}
 	for rc in rcomments {

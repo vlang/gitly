@@ -6,7 +6,7 @@
 	<body>
 		@include 'layout/header.html'
 
-		<div class="content">
+		<div class="content pr-files-content">
 			@include 'layout/repo_menu.html'
 
 			<div class="pr-header">
@@ -20,13 +20,15 @@
 						<span class="pr-status-badge pr-status--closed">%pr_status_closed</span>
 					@end
 					<a class="issue-row__author" href="/@author.username">@author.username</a>
+					<span>%pr_wants_to_merge</span>
 					<code>@pr.head_branch</code>
-					<span>&rarr;</span>
+					<span>%pr_into</span>
 					<code>@pr.base_branch</code>
+					<span>&middot; @{pr.relative_time()}</span>
 				</div>
 				<div class="pr-header__actions">
 					<a class="pr-tab-link" href="/@repo.user_name/@repo.name/pull/@pr.id">%pr_conversation</a>
-					<a class="pr-tab-link pr-tab-link--active" href="/@repo.user_name/@repo.name/pull/@pr.id/files">%pr_files_changed</a>
+					<a class="pr-tab-link pr-tab-link--active" href="/@repo.user_name/@repo.name/pull/@pr.id/files">%pr_files_changed <span class="pr-tab-link__count">@file_diffs.len</span></a>
 				</div>
 			</div>
 
@@ -37,44 +39,100 @@
 					<form method='post' class='pr-review-form' action='/@repo.user_name/@repo.name/pull/@pr.id/review'>
 				@end
 
-				@for fd in file_diffs
-					<div class='pr-diff' id='diff-@fd.path'>
-						<div class='pr-diff__header'>
-							<span class='pr-diff__path'>@fd.path</span>
-							<span class='pr-diff__counts'>
-								<span class='pr-diff__add'>+@fd.additions</span>
-								<span class='pr-diff__del'>-@fd.deletions</span>
-							</span>
-						</div>
-						@if fd.is_binary
-							<div class='pr-diff__binary'>%pr_binary_file</div>
-						@else
-							<table class='pr-diff__table'>
-								@for hunk in fd.hunks
-									<tr class='pr-diff__hunk-header'>
-										<td colspan='4'><code>@hunk.header</code></td>
-									</tr>
-									@for dline in hunk.lines
-										<tr class='pr-diff__row pr-diff__row--@dline.kind'>
-											<td class='pr-diff__lineno'>@{dline.old_line_str()}</td>
-											<td class='pr-diff__lineno'>@{dline.new_line_str()}</td>
-											<td class='pr-diff__sign'>@{dline.sign()}</td>
-											<td class='pr-diff__content'><pre>@{render_diff_line(dline.content, fd.path)}</pre></td>
-										</tr>
-										@{render_inline_comments(fd.path, dline, comments_by_key)}
-										@if ctx.logged_in && pr.is_open() && dline.kind != 'context'
-											<tr class='pr-diff__commentrow'>
-												<td colspan='4'>
-													<textarea name='@{dline.comment_field_name(fd.path)}' placeholder='%pr_line_comment_placeholder' rows='2' class='pr-diff__commentbox'></textarea>
-												</td>
-											</tr>
-										@end
-									@end
-								@end
-							</table>
-						@end
+				<div class="pr-files-toolbar">
+					<div class="pr-files-toolbar__summary">
+						<strong>@file_diffs.len</strong> %pr_files_changed_label
+						<span class="pr-files-toolbar__add">+@all_adds</span>
+						<span class="pr-files-toolbar__del">-@all_dels</span>
 					</div>
-				@end
+					@if ctx.logged_in
+						<button type='submit' class='pr-action pr-action--review pr-files-toolbar__submit'>%pr_submit_review</button>
+					@end
+				</div>
+
+				<div class="pr-files-layout">
+					<aside class="pr-files-sidebar" aria-label="%pr_files_changed">
+						<div class="pr-files-sidebar__header">
+							<span>%pr_files_changed</span>
+							<span>@file_diffs.len</span>
+						</div>
+						<nav class="pr-files-sidebar__list">
+							@for fd in file_diffs
+								<a class="pr-file-link" href="#diff-@fd.path">
+									<span class="pr-file-link__status">
+										@if fd.is_new
+											A
+										@else if fd.is_deleted
+											D
+										@else if fd.is_renamed
+											R
+										@else
+											M
+										@end
+									</span>
+									<span class="pr-file-link__path">@fd.path</span>
+									<span class="pr-file-link__counts">
+										<span class="pr-diff__add">+@fd.additions</span>
+										<span class="pr-diff__del">-@fd.deletions</span>
+									</span>
+								</a>
+							@end
+						</nav>
+					</aside>
+
+					<section class="pr-files-diffs">
+						@for fd in file_diffs
+							<div class='pr-diff' id='diff-@fd.path'>
+								<div class='pr-diff__header'>
+									<span class='pr-diff__path'>
+										@if fd.is_renamed && fd.old_path != fd.path
+											<span class="pr-diff__tag">%commit_file_renamed</span>
+											<span class="pr-diff__oldpath">@fd.old_path &rarr;</span>
+										@end
+										@fd.path
+										@if fd.is_new
+											<span class="pr-diff__tag pr-diff__tag--new">%commit_file_new</span>
+										@end
+										@if fd.is_deleted
+											<span class="pr-diff__tag pr-diff__tag--deleted">%commit_file_deleted</span>
+										@end
+									</span>
+									<span class='pr-diff__counts'>
+										<span class='pr-diff__add'>+@fd.additions</span>
+										<span class='pr-diff__del'>-@fd.deletions</span>
+									</span>
+								</div>
+								@if fd.is_binary
+									<div class='pr-diff__binary'>%pr_binary_file</div>
+								@else
+									<table class='pr-diff__table'>
+										@for hunk in fd.hunks
+											<tr class='pr-diff__hunk-header'>
+												<td colspan='4'><code>@hunk.header</code></td>
+											</tr>
+											@for dline in hunk.lines
+												<tr class='pr-diff__row pr-diff__row--@dline.kind'>
+													<td class='pr-diff__lineno'>@{dline.old_line_str()}</td>
+													<td class='pr-diff__lineno'>@{dline.new_line_str()}</td>
+													<td class='pr-diff__sign'>@{dline.sign()}</td>
+													<td class='pr-diff__content'><pre>@{render_diff_line(dline.content, fd.path)}</pre></td>
+												</tr>
+												@{render_inline_comments(fd.path, dline, comments_by_key)}
+												@if ctx.logged_in && pr.is_open() && dline.kind != 'context'
+													<tr class='pr-diff__commentrow'>
+														<td colspan='4'>
+															<textarea name='@{dline.comment_field_name(fd.path)}' placeholder='%pr_line_comment_placeholder' rows='2' class='pr-diff__commentbox'></textarea>
+														</td>
+													</tr>
+												@end
+											@end
+										@end
+									</table>
+								@end
+							</div>
+						@end
+					</section>
+				</div>
 
 				@if ctx.logged_in
 						<div class='pr-review-submit'>
