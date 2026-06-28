@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		@include 'layout/head.html'
+	</head>
+	<body>
+		@include 'layout/header.html'
+
+		<div class="content pricing-page">
+			<section class="pricing-hero">
+				<h1>%pricing_title</h1>
+				<p>%pricing_subtitle</p>
+			</section>
+
+			<section class="pricing-plans">
+				<article class="pricing-plan pricing-plan--featured">
+					<div class="pricing-plan__eyebrow">%pricing_best_for_individuals</div>
+					<h2>%pricing_premium_name</h2>
+					<p class="pricing-plan__desc">%pricing_premium_desc</p>
+					<div class="pricing-plan__price">
+						<span>%pricing_premium_price</span>
+						<small>%pricing_per_month</small>
+					</div>
+					<a class="pricing-plan__button" href="https://www.paypal.com/cgi-bin/webscr?cmd=_xclick-subscriptions&amp;business=paypal%40gitly.org&amp;item_name=Gitly%20Premium&amp;currency_code=USD&amp;a3=5.00&amp;p3=1&amp;t3=M&amp;src=1">%pricing_buy_premium</a>
+					<ul class="pricing-plan__features">
+						<li>%pricing_premium_feature_one</li>
+						<li>%pricing_premium_feature_two</li>
+						<li>%pricing_premium_feature_three</li>
+						<li>%pricing_premium_feature_four</li>
+						<li>%pricing_premium_feature_five</li>
+					</ul>
+				</article>
+
+				<article class="pricing-plan">
+					<div class="pricing-plan__eyebrow">%pricing_best_for_teams</div>
+					<h2>%pricing_ultimate_name</h2>
+					<p class="pricing-plan__desc">%pricing_ultimate_desc</p>
+					<div class="pricing-plan__price">
+						<span>%pricing_ultimate_price</span>
+						<small>%pricing_per_month</small>
+					</div>
+					<a class="pricing-plan__button pricing-plan__button--secondary" href="https://www.paypal.com/cgi-bin/webscr?cmd=_xclick-subscriptions&amp;business=paypal%40gitly.org&amp;item_name=Gitly%20Ultimate&amp;currency_code=USD&amp;a3=19.00&amp;p3=1&amp;t3=M&amp;src=1">%pricing_buy_ultimate</a>
+					<ul class="pricing-plan__features">
+						<li>%pricing_ultimate_feature_one</li>
+						<li>%pricing_ultimate_feature_two</li>
+						<li>%pricing_ultimate_feature_three</li>
+						<li>%pricing_ultimate_feature_four</li>
+						<li>%pricing_ultimate_feature_five</li>
+					</ul>
+				</article>
+			</section>
+
+			<section class="pricing-note">
+				<h2>%pricing_payment_title</h2>
+				<p>%pricing_payment_note <a href="mailto:paypal%40gitly.org">paypal&#64;gitly.org</a></p>
+			</section>
+		</div>
+
+		@include 'layout/footer.html'
+	</body>
+</html>
