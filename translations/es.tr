@@ -335,6 +335,9 @@ Comentar
 pr_merge
 Fusionar pull request
 -----
+pr_squash_merge
+Squash y fusionar
+-----
 pr_close
 Cerrar pull request
 -----

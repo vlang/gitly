@@ -301,14 +301,6 @@ fn (mut app App) create_file_in_bare_repo(mut repo Repo, branch string, file_pat
 	return true
 }
 
-fn sh(cmd string) string {
-	r := git.Git.exec_shell(cmd)
-	if r.exit_code != 0 {
-		return ''
-	}
-	return r.output.trim_space()
-}
-
 // is_valid_repo_file_path rejects empty/over-long paths, absolute paths, leading
 // dashes, parent-directory traversal, and any control characters (including NUL
 // and newlines).

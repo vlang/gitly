@@ -377,6 +377,9 @@ Comment
 pr_merge
 Merge pull request
 -----
+pr_squash_merge
+Squash and merge
+-----
 pr_close
 Close pull request
 -----

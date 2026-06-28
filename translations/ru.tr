@@ -377,6 +377,9 @@ pr_comment_button
 pr_merge
 Слить пулреквест
 -----
+pr_squash_merge
+Сквошить и слить
+-----
 pr_close
 Закрыть пулреквест
 -----

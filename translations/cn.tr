@@ -335,6 +335,9 @@ pr_comment_button
 pr_merge
 合并拉取请求
 -----
+pr_squash_merge
+压缩并合并
+-----
 pr_close
 关闭拉取请求
 -----

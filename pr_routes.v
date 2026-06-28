@@ -548,16 +548,52 @@ pub fn (mut app App) handle_merge_pr(mut ctx Context, username string, repo_name
 		ctx.error('Merge failed: ${err}')
 		return ctx.redirect('/${username}/${repo_name}/pull/${id}')
 	}
-	app.set_pr_merged(pr.id, merge_hash) or {
+	app.complete_pr_merge(repo, pr, merge_hash) or {
 		ctx.error('Merged but failed to update PR record')
 		return ctx.redirect('/${username}/${repo_name}/pull/${id}')
 	}
-	app.decrement_repo_open_prs(repo.id) or {}
-	app.delete_repository_files_in_branch(repo.id, pr.base_branch) or {}
-	app.update_repo_after_push(repo.id, pr.base_branch) or {
-		app.warn('Failed to update repo after merge: ${err}')
+	return ctx.redirect('/${username}/${repo_name}/pull/${id}')
+}
+
+// POST /:username/:repo_name/pull/:id/squash
+@['/:username/:repo_name/pull/:id/squash'; post]
+pub fn (mut app App) handle_squash_pr(mut ctx Context, username string, repo_name string, id string) veb.Result {
+	if !ctx.logged_in {
+		return ctx.redirect_to_login()
+	}
+	mut repo := app.find_repo_by_name_and_username(repo_name, username) or {
+		return ctx.not_found()
+	}
+	pr := app.find_pull_request_by_id(id.int()) or { return ctx.not_found() }
+	if pr.repo_id != repo.id {
+		return ctx.not_found()
+	}
+	if repo.user_id != ctx.user.id {
+		return ctx.redirect('/${username}/${repo_name}/pull/${id}')
+	}
+	if !pr.is_open() {
+		return ctx.redirect('/${username}/${repo_name}/pull/${id}')
+	}
+	merge_message := 'Squash pull request #${pr.id} from ${pr.head_branch}\n\n${pr.title}'
+	merge_hash := squash_branches_in_bare(repo, pr.base_branch, pr.head_branch, ctx.user.username,
+		merge_message) or {
+		ctx.error('Squash merge failed: ${err}')
+		return ctx.redirect('/${username}/${repo_name}/pull/${id}')
+	}
+	app.complete_pr_merge(repo, pr, merge_hash) or {
+		ctx.error('Merged but failed to update PR record')
+		return ctx.redirect('/${username}/${repo_name}/pull/${id}')
 	}
 	return ctx.redirect('/${username}/${repo_name}/pull/${id}')
+}
+
+fn (mut app App) complete_pr_merge(repo Repo, pr PullRequest, merge_hash string) ! {
+	app.set_pr_merged(pr.id, merge_hash)!
+	app.decrement_repo_open_prs(repo.id) or {}
+	app.update_repo_branch_after_change(repo.id, pr.base_branch) or {
+		app.warn('Failed to update repo after merge: ${err}')
+	}
+	app.delete_repository_files_in_branch(repo.id, pr.base_branch) or {}
 }
 
 // User-scoped PR list
@@ -630,42 +666,92 @@ fn merge_branches_in_bare(repo Repo, base string, head string, author string, me
 		return error('invalid branch name')
 	}
 	git_dir := repo.git_dir
-	base_sha := sh('git -C ${git_dir} rev-parse ${base}')
-	head_sha := sh('git -C ${git_dir} rev-parse ${head}')
-	if base_sha == '' || head_sha == '' {
-		return error('branch refs missing')
-	}
+	base_sha := git_rev_parse(git_dir, base)!
+	head_sha := git_rev_parse(git_dir, head)!
 	// Try fast-forward first: if base is an ancestor of head, fast-forward.
-	is_ancestor_result :=
-		git.Git.exec_shell('git -C ${git_dir} merge-base --is-ancestor ${base_sha} ${head_sha}')
-	if is_ancestor_result.exit_code == 0 {
-		r := git.Git.exec_in_dir(git_dir, ['update-ref', 'refs/heads/${base}', head_sha])
-		if r.exit_code != 0 {
-			return error('fast-forward update-ref failed: ${r.output}')
-		}
+	if git_is_ancestor(git_dir, base_sha, head_sha) {
+		update_branch_ref(git_dir, base, head_sha)!
 		return head_sha
 	}
 	// Use modern merge-tree --write-tree (Git >= 2.38).
-	merge_result :=
-		git.Git.exec_shell('git -C ${git_dir} merge-tree --write-tree ${base_sha} ${head_sha}')
-	if merge_result.exit_code != 0 {
-		return error('merge conflict — cannot auto-merge:\n${merge_result.output}')
+	tree_sha := git_merge_tree(git_dir, base_sha, head_sha)!
+	commit_sha := git_commit_tree(git_dir, tree_sha, [base_sha, head_sha], author, message)!
+	update_branch_ref(git_dir, base, commit_sha)!
+	return commit_sha
+}
+
+// squash_branches_in_bare computes the merge result and writes one new commit
+// on the base branch with only the old base commit as its parent.
+fn squash_branches_in_bare(repo Repo, base string, head string, author string, message string) !string {
+	if !is_safe_ref(base) || !is_safe_ref(head) {
+		return error('invalid branch name')
 	}
-	tree_sha := merge_result.output.trim_space().split_into_lines().first()
-	if tree_sha == '' {
+	git_dir := repo.git_dir
+	base_sha := git_rev_parse(git_dir, base)!
+	head_sha := git_rev_parse(git_dir, head)!
+	tree_sha := git_merge_tree(git_dir, base_sha, head_sha)!
+	commit_sha := git_commit_tree(git_dir, tree_sha, [base_sha], author, message)!
+	update_branch_ref(git_dir, base, commit_sha)!
+	return commit_sha
+}
+
+fn git_rev_parse(git_dir string, ref_name string) !string {
+	r := git.Git.exec_in_dir(git_dir, ['rev-parse', ref_name])
+	if r.exit_code != 0 {
+		return error('branch refs missing: ${r.output}')
+	}
+	sha := r.output.trim_space()
+	if sha == '' {
+		return error('branch refs missing')
+	}
+	return sha
+}
+
+fn git_is_ancestor(git_dir string, ancestor string, descendant string) bool {
+	r := git.Git.exec_in_dir(git_dir, ['merge-base', '--is-ancestor', ancestor, descendant])
+	return r.exit_code == 0
+}
+
+fn git_merge_tree(git_dir string, base_sha string, head_sha string) !string {
+	r := git.Git.exec_in_dir(git_dir, ['merge-tree', '--write-tree', base_sha, head_sha])
+	if r.exit_code != 0 {
+		return error('merge conflict: cannot auto-merge:\n${r.output}')
+	}
+	lines := r.output.trim_space().split_into_lines()
+	if lines.len == 0 || lines[0] == '' {
 		return error('failed to compute merge tree')
 	}
-	commit_sh := 'GIT_AUTHOR_NAME="${author}" GIT_AUTHOR_EMAIL="${author}@gitly" GIT_COMMITTER_NAME="${author}" GIT_COMMITTER_EMAIL="${author}@gitly" git -C ${git_dir} commit-tree ${tree_sha} -p ${base_sha} -p ${head_sha} -m "${shell_escape(message)}"'
-	cr := git.Git.exec_shell(commit_sh)
-	if cr.exit_code != 0 {
-		return error('commit-tree failed: ${cr.output}')
+	return lines[0]
+}
+
+fn git_commit_tree(git_dir string, tree_sha string, parents []string, author string, message string) !string {
+	mut args := ['commit-tree', tree_sha]
+	for parent in parents {
+		args << ['-p', parent]
 	}
-	commit_sha := cr.output.trim_space()
-	ur := git.Git.exec_in_dir(git_dir, ['update-ref', 'refs/heads/${base}', commit_sha])
-	if ur.exit_code != 0 {
-		return error('update-ref failed: ${ur.output}')
+	args << ['-m', message]
+	env := {
+		'GIT_AUTHOR_NAME':     author
+		'GIT_AUTHOR_EMAIL':    '${author}@gitly'
+		'GIT_COMMITTER_NAME':  author
+		'GIT_COMMITTER_EMAIL': '${author}@gitly'
+	}
+	r := git.Git.exec_in_dir_with_env(git_dir, args, env)
+	if r.exit_code != 0 {
+		return error('commit-tree failed: ${r.output}')
+	}
+	commit_sha := r.output.trim_space()
+	if commit_sha == '' {
+		return error('commit-tree produced no commit')
 	}
 	return commit_sha
+}
+
+fn update_branch_ref(git_dir string, branch string, commit_sha string) ! {
+	r := git.Git.exec_in_dir(git_dir, ['update-ref', 'refs/heads/${branch}', commit_sha])
+	if r.exit_code != 0 {
+		return error('update-ref failed: ${r.output}')
+	}
 }
 
 fn pr_diff_table_html(fd FileDiff, comments_by_key map[string][]PrReviewCommentWithUser, can_comment bool) string {
@@ -730,16 +816,4 @@ fn is_safe_ref(name string) bool {
 		return false
 	}
 	return true
-}
-
-fn shell_escape(s string) string {
-	mut out := ''
-	backtick := u8(0x60)
-	for ch in s {
-		if ch == `"` || ch == `\\` || ch == `$` || ch == backtick {
-			out += '\\'
-		}
-		out += ch.ascii_str()
-	}
-	return out
 }

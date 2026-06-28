@@ -97,6 +97,9 @@
 						<form method='post' action='/@repo.user_name/@repo.name/pull/@pr.id/merge' class='pr-action-form'>
 							<button type='submit' class='pr-action pr-action--merge'>%pr_merge</button>
 						</form>
+						<form method='post' action='/@repo.user_name/@repo.name/pull/@pr.id/squash' class='pr-action-form'>
+							<button type='submit' class='pr-action pr-action--merge'>%pr_squash_merge</button>
+						</form>
 					@end
 					@if can_close
 						<form method='post' action='/@repo.user_name/@repo.name/pull/@pr.id/close' class='pr-action-form'>

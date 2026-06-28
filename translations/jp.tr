@@ -335,6 +335,9 @@ pr_comment_button
 pr_merge
 プルリクエストをマージ
 -----
+pr_squash_merge
+スカッシュしてマージ
+-----
 pr_close
 プルリクエストをクローズ
 -----

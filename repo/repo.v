@@ -543,6 +543,30 @@ fn (mut app App) update_repo_branch_data(mut repo Repo, branch_name string) ! {
 	}
 }
 
+fn (mut app App) update_repo_branch_after_change(repo_id int, branch_name string) ! {
+	if branch_name == '' {
+		return
+	}
+
+	mut repo := app.find_repo_by_id(repo_id) or { return }
+
+	app.db.exec('BEGIN TRANSACTION')!
+	mut committed := false
+	defer {
+		if !committed {
+			app.db.exec('ROLLBACK') or {}
+		}
+	}
+	app.fetch_branch(repo, branch_name)!
+	app.update_repo_branch_data(mut repo, branch_name)!
+	repo.nr_contributors = app.get_count_repo_contributors(repo_id)!
+	repo.nr_branches = app.get_count_repo_branches(repo_id)
+	repo.nr_open_prs = app.get_repo_open_pr_count(repo_id)
+	app.save_repo(repo)!
+	app.db.exec('END TRANSACTION')!
+	committed = true
+}
+
 // TODO: tags and other stuff
 // update_repo_after_push runs on the request thread after a git push so that
 // new commits appear in the UI immediately. It skips language analysis,
@@ -712,7 +736,6 @@ fn (r &Repo) git(command string) string {
 	if command.contains('&') || command.contains(';') {
 		return ''
 	}
-	println('git(): "${command}"')
 
 	command_with_path := '-C ${r.git_dir} ${command}'
 
