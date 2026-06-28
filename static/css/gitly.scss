@@ -2387,6 +2387,11 @@ form {
 	}
 }
 
+.pr-file-tree-row[hidden],
+.pr-files-filter-empty[hidden] {
+	display: none !important;
+}
+
 .pr-file-tree-row--dir {
 	grid-template-columns: 16px 18px minmax(0, 1fr);
 	font-weight: 600;
