@@ -52,6 +52,35 @@ struct PrFileTreeRow {
 	deletions  int
 }
 
+fn render_pr_file_tree(file_tree []PrFileTreeRow) veb.RawHtml {
+	mut out := strings.new_builder(file_tree.len * 160)
+	for row in file_tree {
+		path := html_escape_text(row.path)
+		name := html_escape_text(row.name)
+		indent := row.indent_px
+		if row.is_dir {
+			out.write_string('<button type=button class="r d" q="${path}" style="--i:${indent}px" aria-expanded=true><b></b><span>${name}</span></button>')
+		} else {
+			status := row.status()
+			out.write_string('<a class="r f" href="#diff-${path}" p="${path}" style="--i:${indent}px" title="${path}"><b></b><span>${name}</span><em>${status}</em><small><b>+${row.additions}</b><i>-${row.deletions}</i></small></a>')
+		}
+	}
+	return veb.RawHtml(out.str())
+}
+
+fn (row PrFileTreeRow) status() string {
+	if row.is_new {
+		return 'A'
+	}
+	if row.is_deleted {
+		return 'D'
+	}
+	if row.is_renamed {
+		return 'R'
+	}
+	return 'M'
+}
+
 fn build_pr_file_tree_rows(file_diffs []FileDiff) []PrFileTreeRow {
 	mut sorted := file_diffs.clone()
 	sorted.sort(a.path < b.path)
@@ -605,16 +634,18 @@ fn merge_branches_in_bare(repo Repo, base string, head string, author string, me
 	return commit_sha
 }
 
-fn render_pr_diff_table(fd FileDiff, comments_by_key map[string][]PrReviewCommentWithUser, can_comment bool, lang Lang) veb.RawHtml {
+fn render_pr_diff_table(fd FileDiff, comments_by_key map[string][]PrReviewCommentWithUser, can_comment bool) veb.RawHtml {
 	mut out := strings.new_builder(1024)
 	out.write_string('<div class=pr-diff__table>')
 	for hunk in fd.hunks {
 		out.write_string(diff_hunk_header_html(hunk.header))
 		for dline in hunk.lines {
-			out.write_string(diff_line_row_html(fd.path, dline))
-			if can_comment && dline.kind != 'context' {
-				out.write_string(diff_comment_box_html(fd.path, dline, lang))
+			attrs := if can_comment && dline.kind != 'context' {
+				' s=${dline.compact_side()} l=${dline.effective_line()}'
+			} else {
+				''
 			}
+			out.write_string(diff_line_row_html_with_attrs(fd.path, dline, attrs))
 			out.write_string(inline_comments_html(fd.path, dline, comments_by_key))
 		}
 	}

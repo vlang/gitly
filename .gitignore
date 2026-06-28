@@ -28,3 +28,4 @@ build
 deploy
 gitly_linux
 gitly_ci
+gitly.sqlite*

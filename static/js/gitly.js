@@ -54,14 +54,14 @@ function initPrFilesTree() {
 	const clearButton = document.querySelector("[data-pr-files-filter-clear]");
 	const countEl = document.querySelector("[data-pr-files-count]");
 	const emptyEl = document.querySelector("[data-pr-files-filter-empty]");
-	const rows = Array.from(tree.querySelectorAll("[data-pr-tree-row]"));
-	const fileRows = rows.filter((row) => row.hasAttribute("data-file-path"));
+	const rows = Array.from(tree.querySelectorAll(".r, [data-pr-tree-row]"));
+	const fileRows = rows.filter((row) => row.hasAttribute("p") || row.hasAttribute("data-file-path"));
 	const diffEls = Array.from(document.querySelectorAll("[data-diff-path]"));
 	const totalFiles = fileRows.length;
 	const collapsedDirs = new Set();
 
 	function pathForRow(row) {
-		return row.getAttribute("data-file-path") || row.getAttribute("data-dir-path") || "";
+		return row.getAttribute("p") || row.getAttribute("q") || row.getAttribute("data-file-path") || row.getAttribute("data-dir-path") || "";
 	}
 
 	function addParentDirs(path, visibleDirs) {
@@ -88,7 +88,7 @@ function initPrFilesTree() {
 		let visibleFileCount = 0;
 
 		for (const row of fileRows) {
-			const path = row.getAttribute("data-file-path") || "";
+			const path = row.getAttribute("p") || row.getAttribute("data-file-path") || "";
 			if (query === "" || path.toLowerCase().indexOf(query) !== -1) {
 				visibleFileCount++;
 				addParentDirs(path, visibleDirs);
@@ -96,8 +96,8 @@ function initPrFilesTree() {
 		}
 
 		for (const row of rows) {
-			const filePath = row.getAttribute("data-file-path");
-			const dirPath = row.getAttribute("data-dir-path");
+			const filePath = row.getAttribute("p") || row.getAttribute("data-file-path");
+			const dirPath = row.getAttribute("q") || row.getAttribute("data-dir-path");
 			let visible = true;
 
 			if (filePath) {
@@ -129,11 +129,11 @@ function initPrFilesTree() {
 	}
 
 	for (const row of rows) {
-		if (!row.hasAttribute("data-dir-path")) {
+		if (!row.hasAttribute("q") && !row.hasAttribute("data-dir-path")) {
 			continue;
 		}
 		row.addEventListener("click", () => {
-			const path = row.getAttribute("data-dir-path");
+			const path = row.getAttribute("q") || row.getAttribute("data-dir-path");
 			if (!path) {
 				return;
 			}
@@ -166,6 +166,62 @@ function initPrFilesTree() {
 	applyPrFilesFilter();
 }
 
+function initPrReviewCommentBoxes() {
+	const root = document.querySelector(".pr-files-diffs");
+	if (!root) {
+		return;
+	}
+	const placeholder = root.getAttribute("data-line-comment-placeholder") || "";
+
+	function ensureBox(row) {
+		if (!row || !row.hasAttribute("s") || !row.hasAttribute("l")) {
+			return null;
+		}
+		const next = row.nextElementSibling;
+		if (next && next.classList.contains("m")) {
+			return next;
+		}
+		const diff = row.closest("[data-diff-path]");
+		const path = diff ? diff.getAttribute("data-diff-path") : "";
+		const side = row.getAttribute("s") === "n" ? "new" : "old";
+		const line = row.getAttribute("l") || "";
+		if (!path || !line) {
+			return null;
+		}
+		const wrap = document.createElement("p");
+		wrap.className = "m";
+		const textarea = document.createElement("textarea");
+		textarea.name = "rc::" + path + "::" + side + "::" + line;
+		textarea.rows = 2;
+		if (placeholder) {
+			textarea.placeholder = placeholder;
+		}
+		wrap.appendChild(textarea);
+		row.insertAdjacentElement("afterend", wrap);
+		return wrap;
+	}
+
+	function rowFromEvent(event) {
+		const target = event.target instanceof Element ? event.target : null;
+		return target ? target.closest(".pr-diff__table > p[s][l]") : null;
+	}
+
+	root.addEventListener("mouseover", (event) => {
+		ensureBox(rowFromEvent(event));
+	});
+	root.addEventListener("focusin", (event) => {
+		ensureBox(rowFromEvent(event));
+	});
+	root.addEventListener("click", (event) => {
+		const box = ensureBox(rowFromEvent(event));
+		const textarea = box ? box.querySelector("textarea") : null;
+		if (textarea) {
+			textarea.focus();
+		}
+	});
+}
+
 document.addEventListener("DOMContentLoaded", () => {
 	initPrFilesTree();
+	initPrReviewCommentBoxes();
 });

@@ -24,17 +24,12 @@ fn diff_hunk_header_html(header string) string {
 }
 
 fn diff_line_row_html(file_path string, dline DiffLine) string {
-	return '<p class=${dline.compact_class()}><u>${dline.old_line_str()}</u><u>${dline.new_line_str()}</u><i>${dline.compact_sign()}</i><s>${highlight.highlight_line(dline.content,
-		file_path)}</s></p>'
+	return diff_line_row_html_with_attrs(file_path, dline, '')
 }
 
-fn diff_comment_box_html(file_path string, dline DiffLine, lang Lang) string {
-	if dline.kind == 'context' {
-		return ''
-	}
-	name := html_escape_text(dline.comment_field_name(file_path))
-	placeholder := html_escape_text(veb.tr(lang.str(), 'pr_line_comment_placeholder').trim_space())
-	return '<p class=m><textarea name="${name}" placeholder="${placeholder}" rows=2></textarea></p>'
+fn diff_line_row_html_with_attrs(file_path string, dline DiffLine, attrs string) string {
+	return '<p class=${dline.compact_class()}${attrs}><u>${dline.old_line_str()}</u><u>${dline.new_line_str()}</u><i>${dline.compact_sign()}</i><s>${highlight.highlight_line(dline.content,
+		file_path)}</s></p>'
 }
 
 struct FileDiff {
@@ -173,6 +168,14 @@ fn (d &DiffLine) compact_class() string {
 		'add' { 'a' }
 		'del' { 'd' }
 		else { 'c' }
+	}
+}
+
+fn (d &DiffLine) compact_side() string {
+	return match d.kind {
+		'add' { 'n' }
+		'del' { 'o' }
+		else { '' }
 	}
 }
 
