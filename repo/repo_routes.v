@@ -319,8 +319,10 @@ pub fn (mut app App) handle_new_repo(mut ctx Context, name string, clone_url str
 	if !is_clone_url_empty {
 		app.debug('cloning')
 		clone_job_repo := *new_repo
+		enforce_clone_size_limit := should_enforce_clone_size_limit(ctx.is_admin(),
+			clone_size_limit_flag_enabled())
 		spawn clone_repo(clone_job_repo, app.config, import_issues, import_prs, ctx.user.id,
-			!ctx.is_admin())
+			enforce_clone_size_limit)
 	}
 	new_repo2 := app.find_repo_by_name_and_username(new_repo.name, owner_name) or {
 		app.info('Repo was not inserted')
@@ -375,6 +377,14 @@ fn bg_fetch_files_info(repo_ Repo, branch string, path string, conf config.Confi
 		}
 	}
 	app.db.close() or {}
+}
+
+fn clone_size_limit_flag_enabled() bool {
+	return os.exists('gitly_not_self_hosted')
+}
+
+fn should_enforce_clone_size_limit(is_admin bool, not_self_hosted bool) bool {
+	return not_self_hosted && !is_admin
 }
 
 fn clone_repo(new_repo Repo, conf config.Config, import_issues bool, import_prs bool, owner_user_id int, enforce_clone_size_limit bool) {

@@ -38,6 +38,64 @@ struct PrReviewCommentWithUser {
 	user User
 }
 
+struct PrFileTreeRow {
+	path       string
+	name       string
+	depth      int
+	indent_px  int
+	is_dir     bool
+	is_new     bool
+	is_deleted bool
+	is_renamed bool
+	additions  int
+	deletions  int
+}
+
+fn build_pr_file_tree_rows(file_diffs []FileDiff) []PrFileTreeRow {
+	mut sorted := file_diffs.clone()
+	sorted.sort(a.path < b.path)
+	mut rows := []PrFileTreeRow{}
+	mut seen_dirs := map[string]bool{}
+	for fd in sorted {
+		parts := fd.path.split('/')
+		if parts.len == 0 {
+			continue
+		}
+		mut current_path := ''
+		if parts.len > 1 {
+			for idx := 0; idx < parts.len - 1; idx++ {
+				part := parts[idx]
+				if part == '' {
+					continue
+				}
+				current_path = if current_path == '' { part } else { '${current_path}/${part}' }
+				if current_path !in seen_dirs {
+					seen_dirs[current_path] = true
+					rows << PrFileTreeRow{
+						path:      current_path
+						name:      part
+						depth:     idx
+						indent_px: 10 + idx * 16
+						is_dir:    true
+					}
+				}
+			}
+		}
+		rows << PrFileTreeRow{
+			path:       fd.path
+			name:       parts[parts.len - 1]
+			depth:      parts.len - 1
+			indent_px:  10 + (parts.len - 1) * 16
+			is_new:     fd.is_new
+			is_deleted: fd.is_deleted
+			is_renamed: fd.is_renamed
+			additions:  fd.additions
+			deletions:  fd.deletions
+		}
+	}
+	return rows
+}
+
 // GET /:username/:repo_name/pulls
 @['/:username/:repo_name/pulls']
 pub fn (mut app App) handle_get_repo_pulls(mut ctx Context, username string, repo_name string) veb.Result {
@@ -231,6 +289,7 @@ pub fn (mut app App) pull_request_files(mut ctx Context, username string, repo_n
 		all_adds += fd.additions
 		all_dels += fd.deletions
 	}
+	file_tree := build_pr_file_tree_rows(file_diffs)
 	rcomments := app.get_pr_review_comments(pr.id)
 	mut comments_by_key := map[string][]PrReviewCommentWithUser{}
 	for rc in rcomments {

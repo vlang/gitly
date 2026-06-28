@@ -54,35 +54,61 @@
 					<aside class="pr-files-sidebar" aria-label="%pr_files_changed">
 						<div class="pr-files-sidebar__header">
 							<span>%pr_files_changed</span>
-							<span>@file_diffs.len</span>
+							<span data-pr-files-count>@file_diffs.len</span>
 						</div>
-						<nav class="pr-files-sidebar__list">
-							@for fd in file_diffs
-								<a class="pr-file-link" href="#diff-@fd.path">
-									<span class="pr-file-link__status">
-										@if fd.is_new
-											A
-										@else if fd.is_deleted
-											D
-										@else if fd.is_renamed
-											R
-										@else
-											M
+						<div class="pr-files-filter">
+							<span class="pr-files-filter__icon">
+								<svg aria-hidden="true" focusable="false" viewBox="0 0 16 16"><path fill="currentColor" d="M10.68 11.74a6 6 0 1 1 1.06-1.06l3.04 3.04a.75.75 0 1 1-1.06 1.06ZM11.5 7a4.5 4.5 0 1 0-9 0 4.5 4.5 0 0 0 9 0Z"/></svg>
+							</span>
+							<input type="search" class="pr-files-filter__input" data-pr-files-filter placeholder="Filter files..." autocomplete="off">
+							<button type="button" class="pr-files-filter__clear" data-pr-files-filter-clear aria-label="Clear file filter">
+								<svg aria-hidden="true" focusable="false" viewBox="0 0 16 16"><path fill="currentColor" d="M3.72 3.72a.75.75 0 0 1 1.06 0L8 6.94l3.22-3.22a.75.75 0 1 1 1.06 1.06L9.06 8l3.22 3.22a.75.75 0 1 1-1.06 1.06L8 9.06l-3.22 3.22a.75.75 0 0 1-1.06-1.06L6.94 8 3.72 4.78a.75.75 0 0 1 0-1.06Z"/></svg>
+							</button>
+						</div>
+						<nav class="pr-files-sidebar__list" data-pr-files-tree>
+							@for row in file_tree
+								@if row.is_dir
+									<button type="button" class="pr-file-tree-row pr-file-tree-row--dir" data-pr-tree-row data-dir-path="@row.path" data-depth="@row.depth" style="padding-left: @{row.indent_px}px;" aria-expanded="true">
+										<span class="pr-file-tree-row__chevron">
+											<svg aria-hidden="true" focusable="false" viewBox="0 0 16 16"><path fill="currentColor" d="M6 12a.75.75 0 0 1-.53-1.28L8.19 8 5.47 5.28a.75.75 0 1 1 1.06-1.06l3.25 3.25a.75.75 0 0 1 0 1.06l-3.25 3.25A.75.75 0 0 1 6 12Z"/></svg>
+										</span>
+										<span class="pr-file-tree-row__folder">
+											<svg aria-hidden="true" focusable="false" viewBox="0 0 16 16"><path fill="currentColor" d="M1.75 2A1.75 1.75 0 0 0 0 3.75v8.5C0 13.216.784 14 1.75 14h12.5A1.75 1.75 0 0 0 16 12.25v-6.5A1.75 1.75 0 0 0 14.25 4H8.06L6.56 2.5A1.75 1.75 0 0 0 5.32 2Z"/></svg>
+										</span>
+										<span class="pr-file-tree-row__name">@row.name</span>
+									</button>
+								@else
+									<a class="pr-file-tree-row pr-file-tree-row--file" href="#diff-@row.path" data-pr-tree-row data-file-path="@row.path" data-depth="@row.depth" style="padding-left: @{row.indent_px}px;" title="@row.path">
+										<span class="pr-file-tree-row__spacer"></span>
+										<span class="pr-file-tree-row__file">
+											<svg aria-hidden="true" focusable="false" viewBox="0 0 16 16"><path fill="currentColor" d="M3.75 1h5.5c.2 0 .39.08.53.22l3 3c.14.14.22.33.22.53v7.5A1.75 1.75 0 0 1 11.25 14h-7.5A1.75 1.75 0 0 1 2 12.25v-9.5C2 1.784 2.784 1 3.75 1Zm5 1.5h-5a.25.25 0 0 0-.25.25v9.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25V5.5H9.75a1 1 0 0 1-1-1Zm1.5.56V4h.94Z"/></svg>
+										</span>
+										<span class="pr-file-tree-row__name">@row.name</span>
+										<span class="pr-file-link__status">
+											@if row.is_new
+												A
+											@else if row.is_deleted
+												D
+											@else if row.is_renamed
+												R
+											@else
+												M
+											@end
+										</span>
+										<span class="pr-file-link__counts">
+											<span class="pr-diff__add">+@row.additions</span>
+											<span class="pr-diff__del">-@row.deletions</span>
+										</span>
+									</a>
 										@end
-									</span>
-									<span class="pr-file-link__path">@fd.path</span>
-									<span class="pr-file-link__counts">
-										<span class="pr-diff__add">+@fd.additions</span>
-										<span class="pr-diff__del">-@fd.deletions</span>
-									</span>
-								</a>
 							@end
 						</nav>
+						<div class="pr-files-filter-empty" data-pr-files-filter-empty hidden>No files match the filter.</div>
 					</aside>
 
 					<section class="pr-files-diffs">
 						@for fd in file_diffs
-							<div class='pr-diff' id='diff-@fd.path'>
+							<div class='pr-diff' id='diff-@fd.path' data-diff-path="@fd.path">
 								<div class='pr-diff__header'>
 									<span class='pr-diff__path'>
 										@if fd.is_renamed && fd.old_path != fd.path
