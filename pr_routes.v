@@ -191,6 +191,13 @@ pub fn (mut app App) repo_pulls(mut ctx Context, username string, repo_name stri
 	tab_open_class := if current_tab == 'open' { 'pr-tab pr-tab--active' } else { 'pr-tab' }
 	tab_merged_class := if current_tab == 'merged' { 'pr-tab pr-tab--active' } else { 'pr-tab' }
 	tab_closed_class := if current_tab == 'closed' { 'pr-tab pr-tab--active' } else { 'pr-tab' }
+	tab_title := match current_tab {
+		'closed' { 'Closed pull requests' }
+		'merged' { 'Merged pull requests' }
+		else { 'Open pull requests' }
+	}
+
+	ctx.set_page_title([tab_title, '${repo.user_name}/${repo.name}'])
 	return $veb.html('templates/pulls.html')
 }
 
@@ -226,6 +233,7 @@ pub fn (mut app App) new_pull_request_form(mut ctx Context, username string, rep
 			}
 		}
 	}
+	ctx.set_page_title(['New pull request', '${repo.user_name}/${repo.name}'])
 	return $veb.html('templates/new/pull.html')
 }
 
@@ -329,6 +337,7 @@ pub fn (mut app App) pull_request(mut ctx Context, username string, repo_name st
 	can_merge := is_repo_owner && pr.is_open()
 	can_close := pr.is_open() && (is_repo_owner || pr.author_id == ctx.user.id)
 	can_reopen := pr.is_closed() && (is_repo_owner || pr.author_id == ctx.user.id)
+	ctx.set_page_title(['${pr.title} #${pr.id}', '${repo.user_name}/${repo.name}'])
 	return $veb.html('templates/pull.html')
 }
 
@@ -365,6 +374,7 @@ pub fn (mut app App) pull_request_files(mut ctx Context, username string, repo_n
 	}
 	can_comment := ctx.logged_in && pr.is_open()
 	line_comment_placeholder := veb.tr(ctx.lang.str(), 'pr_line_comment_placeholder').trim_space()
+	ctx.set_page_title(['${pr.title} #${pr.id}', 'Files changed', '${repo.user_name}/${repo.name}'])
 	return $veb.html('templates/pull_files.html')
 }
 
@@ -614,6 +624,7 @@ pub fn (mut app App) handle_get_user_pulls(mut ctx Context, username string) veb
 		pr.repo_name = r.name
 		prs_with_repo << pr
 	}
+	ctx.set_page_title(['Pull requests', user.username])
 	return $veb.html('templates/user_pulls.html')
 }
 

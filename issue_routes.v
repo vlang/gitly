@@ -29,11 +29,12 @@ fn (mut app App) handle_issues_count(username string, repo_name string) veb.Resu
 }
 
 @['/:username/:repo_name/issues/new']
-pub fn (mut app App) new_issue(username string, repo_name string) veb.Result {
+pub fn (mut app App) new_issue(mut ctx Context, username string, repo_name string) veb.Result {
 	if !ctx.logged_in {
 		return ctx.not_found()
 	}
 	repo := app.find_repo_by_name_and_username(repo_name, username) or { return ctx.not_found() }
+	ctx.set_page_title(['New issue', '${repo.user_name}/${repo.name}'])
 	return $veb.html()
 }
 
@@ -116,6 +117,7 @@ pub fn (mut app App) issues(mut ctx Context, username string, repo_name string, 
 	}
 	page_count := calculate_pages(repo.nr_open_issues, commits_per_page)
 	prev_page, next_page := generate_prev_next_pages(page_i)
+	ctx.set_page_title(['Issues', '${repo.user_name}/${repo.name}'])
 	return $veb.html()
 }
 
@@ -124,6 +126,7 @@ pub fn (mut app App) issue(mut ctx Context, username string, repo_name string, i
 	repo := app.find_repo_by_name_and_username(repo_name, username) or { return ctx.not_found() }
 	issue := app.find_issue_by_id(id.int()) or { return ctx.not_found() }
 	issue_author := app.get_user_by_id(issue.author_id) or { return ctx.not_found() }
+	ctx.set_page_title(['${issue.title} #${issue.id}', '${repo.user_name}/${repo.name}'])
 	mut comments_with_users := []CommentWithUser{}
 	mut comment := Comment{}
 	mut comment_author := User{}
@@ -200,5 +203,13 @@ pub fn (mut app App) user_issues(mut ctx Context, username string, tab string) v
 		'user-issues-sidebar__item'
 	}
 	show_repo_link := true
+	tab_title := match current_tab {
+		'assigned' { 'Assigned issues' }
+		'mentioned' { 'Mentioned issues' }
+		'activity' { 'Issue activity' }
+		else { 'Created issues' }
+	}
+
+	ctx.set_page_title([tab_title, user.username])
 	return $veb.html()
 }

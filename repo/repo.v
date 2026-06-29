@@ -352,6 +352,21 @@ fn (r &Repo) last_updated_str() string {
 	return time.unix(r.latest_commit_at).relative()
 }
 
+fn (r &Repo) created_str() string {
+	if r.created_at <= 0 {
+		return ''
+	}
+	return time.unix(r.created_at).relative()
+}
+
+fn (r &Repo) last_activity_str() string {
+	activity_at := if r.latest_commit_at > 0 { r.latest_commit_at } else { r.created_at }
+	if activity_at <= 0 {
+		return ''
+	}
+	return time.unix(activity_at).relative()
+}
+
 fn (mut app App) delete_repository(id int, path string, name string) ! {
 	sql app.db {
 		update Repo set is_deleted = true where id == id

@@ -749,9 +749,18 @@ form {
 
 .repo-card__header {
 	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 12px;
+	margin-bottom: 4px;
+}
+
+.repo-card__heading {
+	display: flex;
 	align-items: center;
 	gap: 10px;
-	margin-bottom: 4px;
+	flex-wrap: wrap;
+	min-width: 0;
 }
 
 .repo-card__title {
@@ -762,6 +771,18 @@ form {
 	&:hover {
 		text-decoration: underline;
 	}
+}
+
+.repo-card__dates {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	gap: 3px;
+	flex-shrink: 0;
+	color: $gray-dark;
+	font-size: 12px;
+	line-height: 1.35;
+	text-align: right;
 }
 
 .repo-card__footer {
@@ -837,6 +858,18 @@ form {
 	flex-wrap: wrap;
 	font-size: 12px;
 	color: $gray-dark;
+}
+
+@media (max-width: 700px) {
+	.repo-card__header {
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	.repo-card__dates {
+		align-items: flex-start;
+		text-align: left;
+	}
 }
 
 .repos-empty {

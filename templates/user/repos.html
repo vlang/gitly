@@ -19,11 +19,21 @@
 					@for repo in repos
 						<div class="repo-card">
 							<div class="repo-card__header">
-								<a class="repo-card__title" href="/@user.username/@repo.name">@repo.name</a>
-								@if repo.is_public
-									<span class="repo-card__badge">Public</span>
-								@else
-									<span class="repo-card__badge repo-card__badge--private">Private</span>
+								<div class="repo-card__heading">
+									<a class="repo-card__title" href="/@user.username/@repo.name">@repo.name</a>
+									@if repo.is_public
+										<span class="repo-card__badge">Public</span>
+									@else
+										<span class="repo-card__badge repo-card__badge--private">Private</span>
+									@end
+								</div>
+								@if repo.latest_commit_at > 0 || repo.created_at > 0
+									<div class="repo-card__dates">
+										@if repo.created_at > 0
+											<span>Created @{repo.created_str()}</span>
+										@end
+										<span>Last activity @{repo.last_activity_str()}</span>
+									</div>
 								@end
 							</div>
 							@if repo.description.len > 0
@@ -36,9 +46,6 @@
 											<span class="repo-card__lang-dot" style="background-color:@{repo.lang_stats[0].color}"></span>
 											@repo.lang_stats[0].name
 										</span>
-									@end
-									@if repo.latest_commit_at > 0
-										<span class="repo-card__updated">Updated @{repo.last_updated_str()}</span>
 									@end
 								</div>
 								@if repo.activity_buckets.len > 0

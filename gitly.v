@@ -41,6 +41,7 @@ pub struct Context {
 mut:
 	user           User
 	current_path   string
+	page_title     string
 	page_gen_time  string
 	page_gen_start i64
 	is_tree        bool
@@ -147,6 +148,7 @@ pub fn (mut app App) init_server() {
 
 pub fn (mut app App) before_request(mut ctx Context) bool {
 	ctx.page_gen_start = time.ticks()
+	ctx.set_page_title_from_path(ctx.req.url)
 	$if trace_prealloc ? {
 		unsafe { prealloc_scope_checkpoint(c'gitly before_request start') }
 	}
@@ -223,6 +225,93 @@ pub fn (mut ctx Context) redirect_to_login() veb.Result {
 
 pub fn (mut ctx Context) redirect_to_repository(username string, repo_name string) veb.Result {
 	return ctx.redirect('/${username}/${repo_name}')
+}
+
+fn (mut ctx Context) set_page_title(parts []string) {
+	mut clean_parts := []string{}
+	for part in parts {
+		clean := part.replace('\r', ' ').replace('\n', ' ').trim_space()
+		if clean != '' {
+			clean_parts << clean
+		}
+	}
+	clean_parts << 'Gitly'
+	ctx.page_title = clean_parts.join(' - ')
+}
+
+fn (mut ctx Context) set_page_title_from_path(raw_url string) {
+	path := raw_url.all_before('?').trim('/')
+	if path == '' {
+		ctx.set_page_title([]string{})
+		return
+	}
+
+	segments := path.split('/')
+	if segments.len >= 2 && segments[0] == 'api' {
+		ctx.set_page_title([]string{})
+		return
+	}
+	if segments.len >= 4 && segments[2] in ['issue', 'pull'] {
+		ctx.set_page_title(['${page_title_label(segments[2])} #${segments[3]}',
+			'${segments[0]}/${segments[1]}'])
+		return
+	}
+	if segments.len >= 3 {
+		ctx.set_page_title([page_title_label(segments[2]), '${segments[0]}/${segments[1]}'])
+		return
+	}
+	if segments.len == 2 {
+		if is_user_page_segment(segments[1]) {
+			ctx.set_page_title([page_title_label(segments[1]), segments[0]])
+		} else {
+			ctx.set_page_title(['${segments[0]}/${segments[1]}'])
+		}
+		return
+	}
+	ctx.set_page_title([page_title_label(segments[0])])
+}
+
+fn is_user_page_segment(slug string) bool {
+	return slug in ['feed', 'issues', 'pulls', 'repos', 'settings', 'stars']
+}
+
+fn page_title_label(slug string) string {
+	return match slug {
+		'2fa' { 'Two-factor authentication' }
+		'api-tokens' { 'API tokens' }
+		'blob' { 'File' }
+		'branches' { 'Branches' }
+		'ci' { 'CI' }
+		'commit' { 'Commit' }
+		'compare' { 'New pull request' }
+		'contributors' { 'Contributors' }
+		'discussions' { 'Discussions' }
+		'edit' { 'Edit file' }
+		'feed' { 'Feed' }
+		'issue' { 'Issue' }
+		'issues' { 'Issues' }
+		'login' { 'Login' }
+		'milestones' { 'Milestones' }
+		'new' { 'New repository' }
+		'open-source' { 'Open source' }
+		'organizations' { 'Organizations' }
+		'pricing' { 'Pricing' }
+		'projects' { 'Projects' }
+		'pull' { 'Pull request' }
+		'pulls' { 'Pull requests' }
+		'register' { 'Register' }
+		'releases' { 'Releases' }
+		'repos' { 'Repositories' }
+		'search' { 'Search' }
+		'security' { 'Security' }
+		'settings' { 'Settings' }
+		'ssh-keys' { 'SSH keys' }
+		'stars' { 'Stars' }
+		'tag' { 'Tag' }
+		'tree' { 'Code' }
+		'webhooks' { 'Webhooks' }
+		else { slug.replace('-', ' ').replace('_', ' ') }
+	}
 }
 
 fn (mut app App) create_tables() ! {
