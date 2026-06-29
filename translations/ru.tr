@@ -1007,6 +1007,27 @@ user_view_all_repos
 user_no_repos
 Репозиториев пока нет.
 -----
+user_repos_col_name
+Название
+-----
+user_repos_col_issues
+# задач
+-----
+user_repos_col_prs
+# PR
+-----
+user_repos_col_stars
+# звёзд
+-----
+user_repos_col_created
+Дата создания
+-----
+user_repos_col_activity
+Дата последней активности
+-----
+user_repos_unknown
+Неизвестно
+-----
 user_repo_public
 Публичный
 -----

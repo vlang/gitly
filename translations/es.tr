@@ -956,3 +956,30 @@ Los pagos con USDT incluyen un 10% de descuento. Envía el importe con descuento
 pricing_usdt_wallet_label
 Billetera USDT:
 -----
+user_repos_col_name
+Nombre
+-----
+user_repos_col_issues
+# incidencias
+-----
+user_repos_col_prs
+# PRs
+-----
+user_repos_col_stars
+# estrellas
+-----
+user_repos_col_created
+Fecha de creación
+-----
+user_repos_col_activity
+Fecha de última actividad
+-----
+user_repos_unknown
+Desconocido
+-----
+user_repo_public
+Público
+-----
+user_repo_private
+Privado
+-----

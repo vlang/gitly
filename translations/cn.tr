@@ -956,3 +956,30 @@ USDT 付款享受 10% 折扣。请将折后金额发送到此钱包。
 pricing_usdt_wallet_label
 USDT 钱包：
 -----
+user_repos_col_name
+名称
+-----
+user_repos_col_issues
+# 问题
+-----
+user_repos_col_prs
+# PR
+-----
+user_repos_col_stars
+# 星标
+-----
+user_repos_col_created
+创建日期
+-----
+user_repos_col_activity
+最近活动日期
+-----
+user_repos_unknown
+未知
+-----
+user_repo_public
+公开
+-----
+user_repo_private
+私有
+-----

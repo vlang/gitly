@@ -360,11 +360,15 @@ fn (r &Repo) created_str() string {
 }
 
 fn (r &Repo) last_activity_str() string {
-	activity_at := if r.latest_commit_at > 0 { r.latest_commit_at } else { r.created_at }
+	activity_at := r.last_activity_at()
 	if activity_at <= 0 {
 		return ''
 	}
 	return time.unix(activity_at).relative()
+}
+
+fn (r &Repo) last_activity_at() int {
+	return if r.latest_commit_at > 0 { r.latest_commit_at } else { r.created_at }
 }
 
 fn (mut app App) delete_repository(id int, path string, name string) ! {

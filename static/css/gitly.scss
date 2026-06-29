@@ -727,35 +727,72 @@ form {
 	}
 }
 
-.repo-list {
-	display: flex;
-	flex-direction: column;
-	gap: 10px;
-}
-
-.repo-card {
+.repo-table-wrap {
 	border: 1px solid $gray;
 	border-radius: $medium-radius;
-	padding: 14px 18px;
 	background-color: $white;
+	overflow-x: auto;
+}
+
+.repo-table {
+	width: 100%;
+	min-width: 840px;
+	border-collapse: collapse;
 	color: $black;
-	transition: border-color 0.1s, box-shadow 0.1s;
+}
+
+.repo-table th {
+	padding: 10px 16px;
+	border-bottom: 1px solid $gray;
+	background-color: #f6f8fa;
+	color: $gray-dark;
+	font-size: 12px;
+	font-weight: 600;
+	text-align: left;
+	white-space: nowrap;
+}
+
+.repo-table th a {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	color: $gray-dark;
 
 	&:hover {
-		border-color: #b8c7d8;
-		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+		color: $link-color;
+		text-decoration: none;
 	}
 }
 
-.repo-card__header {
-	display: flex;
-	align-items: flex-start;
-	justify-content: space-between;
-	gap: 12px;
-	margin-bottom: 4px;
+.repo-table td {
+	padding: 12px 16px;
+	border-top: 1px solid #eef1f4;
+	font-size: 13px;
+	vertical-align: top;
 }
 
-.repo-card__heading {
+.repo-table tbody tr:first-child td {
+	border-top: 0;
+}
+
+.repo-table tbody tr:hover {
+	background-color: #f6f8fa;
+}
+
+.repo-table__col-name {
+	width: 34%;
+}
+
+.repo-table__col-number {
+	width: 10%;
+	text-align: right !important;
+}
+
+.repo-table__col-date {
+	width: 18%;
+}
+
+.repo-table__repo-heading {
 	display: flex;
 	align-items: center;
 	gap: 10px;
@@ -763,8 +800,8 @@ form {
 	min-width: 0;
 }
 
-.repo-card__title {
-	font-size: 17px;
+.repo-table__repo-name {
+	font-size: 15px;
 	font-weight: 600;
 	color: $link-color;
 
@@ -773,62 +810,7 @@ form {
 	}
 }
 
-.repo-card__dates {
-	display: flex;
-	flex-direction: column;
-	align-items: flex-end;
-	gap: 3px;
-	flex-shrink: 0;
-	color: $gray-dark;
-	font-size: 12px;
-	line-height: 1.35;
-	text-align: right;
-}
-
-.repo-card__footer {
-	display: flex;
-	align-items: center;
-	gap: 12px;
-	margin-top: 8px;
-}
-
-.repo-card__footer-left {
-	display: flex;
-	align-items: center;
-	gap: 14px;
-	flex-wrap: wrap;
-	font-size: 12px;
-	color: $gray-dark;
-	flex: 1;
-	min-width: 0;
-}
-
-.repo-card__lang {
-	display: inline-flex;
-	align-items: center;
-	gap: 5px;
-}
-
-.repo-card__lang-dot {
-	display: inline-block;
-	width: 10px;
-	height: 10px;
-	border-radius: 50%;
-	border: 1px solid rgba(0, 0, 0, 0.08);
-}
-
-.repo-card__updated {
-	color: $gray-dark;
-}
-
-.repo-card__activity {
-	flex-shrink: 0;
-	width: 120px;
-	height: 28px;
-	overflow: visible;
-}
-
-.repo-card__badge {
+.repo-table__badge {
 	font-size: 11px;
 	font-weight: 500;
 	padding: 1px 8px;
@@ -839,37 +821,38 @@ form {
 	line-height: 1.6;
 }
 
-.repo-card__badge--private {
+.repo-table__badge--private {
 	color: #9a6700;
 	border-color: #d4a72c;
 	background-color: #fff8c5;
 }
 
-.repo-card__desc {
-	margin: 4px 0 10px;
+.repo-table__desc {
+	margin: 4px 0 0;
 	color: $gray-dark;
-	font-size: 14px;
+	font-size: 13px;
 	line-height: 1.4;
 }
 
-.repo-card__meta {
-	display: flex;
-	gap: 18px;
-	flex-wrap: wrap;
-	font-size: 12px;
-	color: $gray-dark;
+.repo-table__number {
+	font-variant-numeric: tabular-nums;
+	text-align: right;
 }
 
-@media (max-width: 700px) {
-	.repo-card__header {
-		flex-direction: column;
-		align-items: flex-start;
-	}
+.repo-table__date {
+	color: $gray-dark;
+	white-space: nowrap;
+}
 
-	.repo-card__dates {
-		align-items: flex-start;
-		text-align: left;
-	}
+.repo-table__muted {
+	color: #8c959f;
+}
+
+.repo-table__sort {
+	min-width: 12px;
+	color: #8c959f;
+	font-size: 12px;
+	line-height: 1;
 }
 
 .repos-empty {

@@ -12,6 +12,84 @@ import config
 
 const top_files_limit = 50
 
+fn normalize_repo_sort_key(value string) string {
+	if value in ['name', 'issues', 'prs', 'stars', 'created', 'activity'] {
+		return value
+	}
+	return 'name'
+}
+
+fn repo_default_sort_dir(sort_by string) string {
+	if sort_by == 'name' {
+		return 'asc'
+	}
+	return 'desc'
+}
+
+fn normalize_repo_sort_dir(sort_by string, value string) string {
+	if value == 'asc' || value == 'desc' {
+		return value
+	}
+	return repo_default_sort_dir(sort_by)
+}
+
+fn compare_int(a int, b int) int {
+	if a < b {
+		return -1
+	}
+	if a > b {
+		return 1
+	}
+	return 0
+}
+
+fn compare_repo_names(a &Repo, b &Repo) int {
+	a_name := a.name.to_lower()
+	b_name := b.name.to_lower()
+	if a_name < b_name {
+		return -1
+	}
+	if a_name > b_name {
+		return 1
+	}
+	return compare_int(a.id, b.id)
+}
+
+fn sort_user_repos(mut repos []Repo, sort_by string, sort_dir string) {
+	desc := sort_dir == 'desc'
+	repos.sort_with_compare(fn [sort_by, desc] (a &Repo, b &Repo) int {
+		primary := match sort_by {
+			'issues' { compare_int(a.nr_open_issues, b.nr_open_issues) }
+			'prs' { compare_int(a.nr_open_prs, b.nr_open_prs) }
+			'stars' { compare_int(a.nr_stars, b.nr_stars) }
+			'created' { compare_int(a.created_at, b.created_at) }
+			'activity' { compare_int(a.last_activity_at(), b.last_activity_at()) }
+			else { compare_repo_names(a, b) }
+		}
+
+		if primary != 0 {
+			return if desc { -primary } else { primary }
+		}
+		return compare_repo_names(a, b)
+	})
+}
+
+fn repo_sort_href(username string, current_sort string, current_dir string, target_sort string) string {
+	next_dir := if current_sort == target_sort {
+		if current_dir == 'asc' { 'desc' } else { 'asc' }
+	} else {
+		repo_default_sort_dir(target_sort)
+	}
+	return '/${username}/repos?sort=${target_sort}&dir=${next_dir}'
+}
+
+fn repo_sort_indicator(current_sort string, current_dir string, target_sort string) string {
+	if current_sort != target_sort {
+		return ''
+	}
+	return if current_dir == 'asc' { '↑' } else { '↓' }
+}
+
 @['/:username/repos']
 pub fn (mut app App) user_repos(username string) veb.Result {
 	exists, user := app.check_username(username)
@@ -27,10 +105,12 @@ pub fn (mut app App) user_repos(username string) veb.Result {
 	}
 
 	for mut repo in repos {
-		repo.lang_stats = app.find_repo_lang_stats(repo.id)
 		repo.latest_commit_at = app.find_repo_last_commit_time(repo.id)
-		repo.activity_buckets = app.get_repo_activity_buckets(repo.id)
 	}
+
+	sort_by := normalize_repo_sort_key(ctx.query['sort'] or { 'name' })
+	sort_dir := normalize_repo_sort_dir(sort_by, ctx.query['dir'] or { '' })
+	sort_user_repos(mut repos, sort_by, sort_dir)
 
 	return $veb.html('templates/user/repos.html')
 }

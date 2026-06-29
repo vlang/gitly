@@ -15,47 +15,85 @@
 			</div>
 
 			@if repos.len > 0
-				<div class="repo-list">
-					@for repo in repos
-						<div class="repo-card">
-							<div class="repo-card__header">
-								<div class="repo-card__heading">
-									<a class="repo-card__title" href="/@user.username/@repo.name">@repo.name</a>
-									@if repo.is_public
-										<span class="repo-card__badge">Public</span>
-									@else
-										<span class="repo-card__badge repo-card__badge--private">Private</span>
-									@end
-								</div>
-								@if repo.latest_commit_at > 0 || repo.created_at > 0
-									<div class="repo-card__dates">
-										@if repo.created_at > 0
-											<span>Created @{repo.created_str()}</span>
+				<div class="repo-table-wrap">
+					<table class="repo-table">
+						<thead>
+							<tr>
+								<th scope="col" class="repo-table__col-name">
+									<a href="@{repo_sort_href(user.username, sort_by, sort_dir, 'name')}">
+										%user_repos_col_name
+										<span class="repo-table__sort">@{repo_sort_indicator(sort_by, sort_dir, 'name')}</span>
+									</a>
+								</th>
+								<th scope="col" class="repo-table__col-number">
+									<a href="@{repo_sort_href(user.username, sort_by, sort_dir, 'issues')}">
+										%user_repos_col_issues
+										<span class="repo-table__sort">@{repo_sort_indicator(sort_by, sort_dir, 'issues')}</span>
+									</a>
+								</th>
+								<th scope="col" class="repo-table__col-number">
+									<a href="@{repo_sort_href(user.username, sort_by, sort_dir, 'prs')}">
+										%user_repos_col_prs
+										<span class="repo-table__sort">@{repo_sort_indicator(sort_by, sort_dir, 'prs')}</span>
+									</a>
+								</th>
+								<th scope="col" class="repo-table__col-number">
+									<a href="@{repo_sort_href(user.username, sort_by, sort_dir, 'stars')}">
+										%user_repos_col_stars
+										<span class="repo-table__sort">@{repo_sort_indicator(sort_by, sort_dir, 'stars')}</span>
+									</a>
+								</th>
+								<th scope="col" class="repo-table__col-date">
+									<a href="@{repo_sort_href(user.username, sort_by, sort_dir, 'created')}">
+										%user_repos_col_created
+										<span class="repo-table__sort">@{repo_sort_indicator(sort_by, sort_dir, 'created')}</span>
+									</a>
+								</th>
+								<th scope="col" class="repo-table__col-date">
+									<a href="@{repo_sort_href(user.username, sort_by, sort_dir, 'activity')}">
+										%user_repos_col_activity
+										<span class="repo-table__sort">@{repo_sort_indicator(sort_by, sort_dir, 'activity')}</span>
+									</a>
+								</th>
+							</tr>
+						</thead>
+						<tbody>
+							@for repo in repos
+								<tr>
+									<td class="repo-table__repo">
+										<div class="repo-table__repo-heading">
+											<a class="repo-table__repo-name" href="/@user.username/@repo.name">@repo.name</a>
+											@if repo.is_public
+												<span class="repo-table__badge">%user_repo_public</span>
+											@else
+												<span class="repo-table__badge repo-table__badge--private">%user_repo_private</span>
+											@end
+										</div>
+										@if repo.description.len > 0
+											<p class="repo-table__desc">@repo.description</p>
 										@end
-										<span>Last activity @{repo.last_activity_str()}</span>
-									</div>
-								@end
-							</div>
-							@if repo.description.len > 0
-								<p class="repo-card__desc">@repo.description</p>
+									</td>
+									<td class="repo-table__number">@repo.nr_open_issues</td>
+									<td class="repo-table__number">@repo.nr_open_prs</td>
+									<td class="repo-table__number">@repo.nr_stars</td>
+									<td class="repo-table__date">
+										@if repo.created_at > 0
+											@repo.created_str()
+										@else
+											<span class="repo-table__muted">%user_repos_unknown</span>
+										@end
+									</td>
+									<td class="repo-table__date">
+										@if repo.last_activity_at() > 0
+											@repo.last_activity_str()
+										@else
+											<span class="repo-table__muted">%user_repos_unknown</span>
+										@end
+									</td>
+								</tr>
 							@end
-							<div class="repo-card__footer">
-								<div class="repo-card__footer-left">
-									@if repo.lang_stats.len > 0
-										<span class="repo-card__lang">
-											<span class="repo-card__lang-dot" style="background-color:@{repo.lang_stats[0].color}"></span>
-											@repo.lang_stats[0].name
-										</span>
-									@end
-								</div>
-								@if repo.activity_buckets.len > 0
-									<svg class="repo-card__activity" viewBox="0 0 120 28" preserveAspectRatio="none">
-										<polyline fill="none" stroke="#39d353" stroke-width="1.5" points="@{repo.activity_svg_points()}"/>
-									</svg>
-								@end
-							</div>
-						</div>
-					@end
+						</tbody>
+					</table>
 				</div>
 			@else
 				<p class="repos-empty">No repositories yet.</p>

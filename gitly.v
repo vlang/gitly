@@ -75,22 +75,12 @@ fn new_app() !&App {
 
 	app.setup_logger()
 
-	version_path := os.join_path('static', 'assets', 'version')
-	create_directory_if_not_exists(os.dir(version_path))
-
-	stored_version := os.read_file(version_path) or { 'unknown' }
-	mut version := stored_version
 	git_result := git.Git.exec(['rev-parse', '--short', 'HEAD'])
-
 	if git_result.exit_code == 0 && !git_result.output.contains('fatal') {
-		version = git_result.output.trim_space()
+		app.version = git_result.output.trim_space()
+	} else {
+		app.version = 'unknown'
 	}
-
-	if version != stored_version {
-		os.write_file(version_path, version) or { panic(err) }
-	}
-
-	app.version = version
 
 	build_unix := os.file_last_mod_unix(os.executable())
 	app.build_time = time.unix(build_unix).format()

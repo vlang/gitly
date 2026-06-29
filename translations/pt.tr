@@ -956,3 +956,30 @@ Pagamentos com USDT têm 10% de desconto. Envie o valor com desconto para esta c
 pricing_usdt_wallet_label
 Carteira USDT:
 -----
+user_repos_col_name
+Nome
+-----
+user_repos_col_issues
+# issues
+-----
+user_repos_col_prs
+# PRs
+-----
+user_repos_col_stars
+# estrelas
+-----
+user_repos_col_created
+Data de criação
+-----
+user_repos_col_activity
+Data da última atividade
+-----
+user_repos_unknown
+Desconhecido
+-----
+user_repo_public
+Público
+-----
+user_repo_private
+Privado
+-----

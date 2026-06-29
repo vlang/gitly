@@ -1007,6 +1007,27 @@ View all
 user_no_repos
 No repositories yet.
 -----
+user_repos_col_name
+Name
+-----
+user_repos_col_issues
+# issues
+-----
+user_repos_col_prs
+# PRs
+-----
+user_repos_col_stars
+# stars
+-----
+user_repos_col_created
+Creation date
+-----
+user_repos_col_activity
+Last activity date
+-----
+user_repos_unknown
+Unknown
+-----
 user_repo_public
 Public
 -----
