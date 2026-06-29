@@ -16,7 +16,6 @@ struct Repo {
 	user_id            int
 	user_name          string
 	clone_url          string @[skip]
-	primary_branch     string
 	description        string
 	is_public          bool
 	is_deleted         bool
@@ -27,6 +26,7 @@ struct Repo {
 	latest_update_hash string    @[skip]
 	latest_activity    time.Time @[skip]
 mut:
+	primary_branch      string
 	webhook_secret      string
 	tags_count          int
 	nr_open_issues      int @[orm: 'open_issues_count']
@@ -77,6 +77,12 @@ enum RepoStatus {
 	caching      = 1
 	clone_failed = 2
 	cloning      = 3
+}
+
+enum CloneReuseResult {
+	unavailable
+	reused
+	failed
 }
 
 enum ArchiveFormat {
@@ -235,6 +241,77 @@ fn (app &App) find_repo_by_id(repo_id int) ?Repo {
 	return repo
 }
 
+fn normalized_non_github_clone_url(value string) string {
+	mut s := value.trim_space()
+	if idx := s.index('?') {
+		s = s[..idx]
+	}
+	if idx := s.index('#') {
+		s = s[..idx]
+	}
+	for s.ends_with('/') {
+		s = s[..s.len - 1]
+	}
+	if s.ends_with('.git') {
+		s = s[..s.len - '.git'.len]
+	}
+	for s.ends_with('/') {
+		s = s[..s.len - 1]
+	}
+	lower := s.to_lower()
+	for prefix in ['https://', 'http://'] {
+		if lower.starts_with(prefix) {
+			return s[prefix.len..]
+		}
+	}
+	return s
+}
+
+fn same_clone_source_url(a string, b string) bool {
+	if a.trim_space() == '' || b.trim_space() == '' {
+		return false
+	}
+	if is_github_clone_url(a) && is_github_clone_url(b) {
+		a_owner, a_repo := parse_github_owner_repo(a) or { return false }
+		b_owner, b_repo := parse_github_owner_repo(b) or { return false }
+		return a_owner.to_lower() == b_owner.to_lower() && a_repo.to_lower() == b_repo.to_lower()
+	}
+	return normalized_non_github_clone_url(a) == normalized_non_github_clone_url(b)
+}
+
+fn repo_origin_url(repo_dir string) ?string {
+	if repo_dir == '' || !os.exists(repo_dir) || !os.is_dir(repo_dir) {
+		return none
+	}
+	res := git.Git.exec_in_dir(repo_dir, ['config', '--get', 'remote.origin.url'])
+	if res.exit_code != 0 {
+		return none
+	}
+	origin_url := res.output.trim_space()
+	if origin_url == '' {
+		return none
+	}
+	return origin_url
+}
+
+fn (mut app App) find_reusable_clone_source(clone_url string, target_repo_id int) ?Repo {
+	done_status := RepoStatus.done
+	repos := sql app.db {
+		select from Repo where is_deleted == false && status == done_status order by id desc
+	} or { []Repo{} }
+
+	for repo in repos {
+		if repo.id == target_repo_id {
+			continue
+		}
+		origin_url := repo_origin_url(repo.git_dir) or { continue }
+		if same_clone_source_url(origin_url, clone_url) {
+			return repo
+		}
+	}
+	return none
+}
+
 fn (mut app App) increment_repo_views(repo_id int) ! {
 	sql app.db {
 		update Repo set views_count = views_count + 1 where id == repo_id
@@ -314,8 +391,12 @@ fn (mut app App) get_max_repo_id() int {
 }
 
 fn (mut app App) add_repo(repo Repo) ! {
+	mut repo_to_insert := repo
+	if repo_to_insert.created_at <= 0 {
+		repo_to_insert.created_at = int(time.now().unix())
+	}
 	sql app.db {
-		insert repo into Repo
+		insert repo_to_insert into Repo
 	}!
 }
 
@@ -1186,6 +1267,137 @@ fn cleanup_oversized_clone(repo_path string) {
 	os.rmdir_all(repo_path) or { eprintln('failed to remove oversized clone ${repo_path}: ${err}') }
 }
 
+fn append_clone_progress(progress_path string, message string) {
+	mut log := os.open_append(progress_path) or {
+		os.write_file(progress_path, '${message}\n') or {}
+		return
+	}
+	log.write_string('${message}\n') or {}
+	log.close()
+}
+
+fn git_result_ok(res os.Result) bool {
+	return res.exit_code == 0 && !res.output.to_lower().contains('fatal')
+}
+
+fn remote_default_branch(repo_dir string) ?string {
+	res := git.Git.exec_in_dir(repo_dir, ['ls-remote', '--symref', 'origin', 'HEAD'])
+	if !git_result_ok(res) {
+		return none
+	}
+	for line in res.output.split_into_lines() {
+		if !line.starts_with('ref: refs/heads/') || !line.ends_with('\tHEAD') {
+			continue
+		}
+		branch := line['ref: refs/heads/'.len..line.len - '\tHEAD'.len].trim_space()
+		if branch != '' {
+			return branch
+		}
+	}
+	return none
+}
+
+fn local_head_branch(repo_dir string) ?string {
+	res := git.Git.exec_in_dir(repo_dir, ['symbolic-ref', '--quiet', '--short', 'HEAD'])
+	if !git_result_ok(res) {
+		return none
+	}
+	branch := res.output.trim_space()
+	if branch == '' {
+		return none
+	}
+	return branch
+}
+
+fn repo_has_branch(repo_dir string, branch string) bool {
+	if branch == '' {
+		return false
+	}
+	res := git.Git.exec_in_dir(repo_dir,
+		['show-ref', '--verify', '--quiet', 'refs/heads/${branch}'])
+	return res.exit_code == 0
+}
+
+fn detect_primary_branch(repo_dir string, fallback string) string {
+	for branch in [remote_default_branch(repo_dir) or { '' },
+		local_head_branch(repo_dir) or { '' }, fallback, 'main', 'master'] {
+		if repo_has_branch(repo_dir, branch) {
+			return branch
+		}
+	}
+	return fallback
+}
+
+fn point_head_to_branch(repo_dir string, branch string) bool {
+	if branch == '' {
+		return false
+	}
+	res := git.Git.exec_in_dir(repo_dir, ['symbolic-ref', 'HEAD', 'refs/heads/${branch}'])
+	return git_result_ok(res)
+}
+
+fn (mut r Repo) clone_from_existing(source Repo, enforce_size_limit bool) CloneReuseResult {
+	if source.git_dir == '' || source.git_dir == r.git_dir || !os.exists(source.git_dir)
+		|| !os.is_dir(source.git_dir) || os.exists(r.git_dir) {
+		return .unavailable
+	}
+	progress_path := r.clone_progress_path()
+	os.rm(progress_path) or {}
+	append_clone_progress(progress_path,
+		'Reusing existing local clone from ${source.user_name}/${source.name}')
+	tmp_path := '${r.git_dir}.tmp-${os.getpid()}-${time.ticks()}'
+	os.rmdir_all(tmp_path) or {}
+	os.cp_all(source.git_dir, tmp_path, false) or {
+		append_clone_progress(progress_path,
+			'Local clone reuse failed while copying; falling back to git clone.')
+		os.rmdir_all(tmp_path) or {}
+		eprintln('failed to copy reusable repo ${source.git_dir} to ${tmp_path}: ${err}')
+		return .unavailable
+	}
+	os.mv(tmp_path, r.git_dir, overwrite: false) or {
+		append_clone_progress(progress_path,
+			'Local clone reuse failed while installing copy; falling back to git clone.')
+		os.rmdir_all(tmp_path) or {}
+		eprintln('failed to move reusable repo ${tmp_path} to ${r.git_dir}: ${err}')
+		return .unavailable
+	}
+	set_url_result := git.Git.exec_in_dir(r.git_dir, ['remote', 'set-url', 'origin', r.clone_url])
+	if !git_result_ok(set_url_result) {
+		add_origin_result := git.Git.exec_in_dir(r.git_dir,
+			['remote', 'add', 'origin', r.clone_url])
+		if !git_result_ok(add_origin_result) {
+			append_clone_progress(progress_path,
+				'Local clone reuse failed while resetting origin; falling back to git clone.')
+			os.rmdir_all(r.git_dir) or {}
+			eprintln('failed to set origin for reused repo ${r.git_dir}: ${set_url_result.output}${add_origin_result.output}')
+			return .unavailable
+		}
+	}
+	append_clone_progress(progress_path, 'Fetching latest updates from origin')
+	fetch_result := git.Git.exec_in_dir(r.git_dir, ['fetch', '--prune', 'origin',
+		'+refs/heads/*:refs/heads/*', '+refs/tags/*:refs/tags/*'])
+	if !git_result_ok(fetch_result) {
+		append_clone_progress(progress_path,
+			'Local clone reuse failed while fetching updates; falling back to git clone.')
+		os.rmdir_all(r.git_dir) or {}
+		eprintln('failed to fetch reused repo ${r.git_dir}: ${fetch_result.output}')
+		return .unavailable
+	}
+	r.primary_branch = detect_primary_branch(r.git_dir, r.primary_branch)
+	point_head_to_branch(r.git_dir, r.primary_branch)
+	if enforce_size_limit && directory_size(r.git_dir) >= max_free_clone_size_bytes {
+		r.status = .clone_failed
+		mark_clone_size_limit(progress_path)
+		cleanup_oversized_clone(r.git_dir)
+		println('reused git clone removed because repo is larger than 100 MB')
+		return .failed
+	}
+	r.status = .done
+	os.rm(progress_path) or {}
+	eprintln('clone reused from ${source.git_dir}')
+	return .reused
+}
+
 fn (mut r Repo) clone(enforce_size_limit bool) {
 	eprintln('R CLONE')
 	progress_path := r.clone_progress_path()
@@ -1216,6 +1428,8 @@ fn (mut r Repo) clone(enforce_size_limit bool) {
 		return
 	}
 
+	r.primary_branch = detect_primary_branch(r.git_dir, r.primary_branch)
+	point_head_to_branch(r.git_dir, r.primary_branch)
 	r.status = .done
 	// progress file is no longer needed after a successful clone
 	os.rm(progress_path) or {}

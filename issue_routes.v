@@ -58,8 +58,11 @@ pub fn (mut app App) handle_add_repo_issue(mut ctx Context, username string, rep
 		return ctx.redirect('/${username}/${repo_name}/issues/new')
 	}
 	app.increment_user_post(mut ctx.user) or { app.info(err.str()) }
-	app.add_issue(repo.id, ctx.user.id, title, text) or { app.info(err.str()) }
-	app.increment_repo_issues(repo.id) or { app.info(err.str()) }
+	app.add_issue(repo.id, ctx.user.id, title, text) or {
+		app.info(err.str())
+		return ctx.redirect('/${username}/${repo_name}/issues/new')
+	}
+	app.sync_repo_open_issue_count(repo.id) or { app.info(err.str()) }
 	app.dispatch_webhook(repo.id, 'issue', WebhookIssuePayload{
 		action: 'opened'
 		repo:   '${username}/${repo_name}'
@@ -80,8 +83,25 @@ pub fn (mut app App) handle_get_repo_issues(mut ctx Context, username string, re
 
 @['/:username/:repo_name/issues/:page']
 pub fn (mut app App) issues(mut ctx Context, username string, repo_name string, page string) veb.Result {
-	repo := app.find_repo_by_name_and_username(repo_name, username) or { return ctx.not_found() }
-	page_i := page.int()
+	mut repo := app.find_repo_by_name_and_username(repo_name, username) or {
+		return ctx.not_found()
+	}
+	mut page_i := page.int()
+	if page_i < 0 {
+		page_i = 0
+	}
+	issue_count := app.get_repo_issue_count(repo.id)
+	if repo.nr_open_issues != issue_count {
+		app.sync_repo_open_issue_count(repo.id) or { app.info(err.str()) }
+		repo.nr_open_issues = issue_count
+	}
+	page_count := calculate_pages(issue_count, commits_per_page)
+	if page_i > page_count {
+		if page_count == 0 {
+			return ctx.redirect('/${repo.user_name}/${repo.name}/issues')
+		}
+		return ctx.redirect('/${repo.user_name}/${repo.name}/issues/${page_count}')
+	}
 	mut issues_with_users := []IssueWithUser{}
 	mut issue := Issue{}
 	mut user := User{}
@@ -89,7 +109,7 @@ pub fn (mut app App) issues(mut ctx Context, username string, repo_name string, 
 	mut i := 0
 	for i = 0; i < repo_issues.len; i++ {
 		issue = repo_issues[i]
-		user = app.get_user_by_id(issue.author_id) or { continue }
+		user = app.get_user_by_id(issue.author_id) or { placeholder_user(issue.author_id) }
 		issue.labels = app.get_issue_labels(issue.id)
 		issue.repo_author = repo.user_name
 		issue.repo_name = repo.name
@@ -99,23 +119,8 @@ pub fn (mut app App) issues(mut ctx Context, username string, repo_name string, 
 		}
 	}
 	show_repo_link := false
-	mut first := false
-	mut last := false
-	if repo.nr_open_issues > commits_per_page {
-		offset := page_i * commits_per_page
-		delta := repo.nr_open_issues - offset
-		if delta > 0 {
-			if delta == repo.nr_open_issues && page_i == 0 {
-				first = true
-			} else {
-				last = true
-			}
-		}
-	} else {
-		last = true
-		first = true
-	}
-	page_count := calculate_pages(repo.nr_open_issues, commits_per_page)
+	first := page_i == 0
+	last := page_i >= page_count
 	prev_page, next_page := generate_prev_next_pages(page_i)
 	ctx.set_page_title(['Issues', '${repo.user_name}/${repo.name}'])
 	return $veb.html()
@@ -125,7 +130,10 @@ pub fn (mut app App) issues(mut ctx Context, username string, repo_name string, 
 pub fn (mut app App) issue(mut ctx Context, username string, repo_name string, id string) veb.Result {
 	repo := app.find_repo_by_name_and_username(repo_name, username) or { return ctx.not_found() }
 	issue := app.find_issue_by_id(id.int()) or { return ctx.not_found() }
-	issue_author := app.get_user_by_id(issue.author_id) or { return ctx.not_found() }
+	if issue.repo_id != repo.id || issue.is_pr {
+		return ctx.not_found()
+	}
+	issue_author := app.get_user_by_id(issue.author_id) or { placeholder_user(issue.author_id) }
 	ctx.set_page_title(['${issue.title} #${issue.id}', '${repo.user_name}/${repo.name}'])
 	mut comments_with_users := []CommentWithUser{}
 	mut comment := Comment{}
@@ -134,7 +142,9 @@ pub fn (mut app App) issue(mut ctx Context, username string, repo_name string, i
 	mut i := 0
 	for i = 0; i < issue_comments.len; i++ {
 		comment = issue_comments[i]
-		comment_author = app.get_user_by_id(comment.author_id) or { continue }
+		comment_author = app.get_user_by_id(comment.author_id) or {
+			placeholder_user(comment.author_id)
+		}
 		comments_with_users << CommentWithUser{
 			item: comment
 			user: comment_author
@@ -176,7 +186,7 @@ pub fn (mut app App) user_issues(mut ctx Context, username string, tab string) v
 	}
 	mut issues_with_users := []IssueWithUser{}
 	for issue in issues {
-		issue_author := app.get_user_by_id(issue.author_id) or { continue }
+		issue_author := app.get_user_by_id(issue.author_id) or { placeholder_user(issue.author_id) }
 		issues_with_users << IssueWithUser{
 			item: issue
 			user: issue_author

@@ -437,8 +437,15 @@ fn (mut app App) migrate_tables() ! {
 	app.add_missing_column('Repo', 'disable_milestones', db_bool_column_type())!
 	app.add_missing_column('Repo', 'disable_wiki', db_bool_column_type())!
 	app.add_missing_column('Repo', 'is_pinned', db_bool_column_type())!
+	app.add_missing_column('Repo', 'created_at', 'INTEGER NOT NULL DEFAULT 0')!
+	app.backfill_repo_created_at()!
 
 	app.db.exec('create index if not exists idx_commit_repo_created on ${sql_table('Commit')} (repo_id, created_at desc)')!
+}
+
+fn (mut app App) backfill_repo_created_at() ! {
+	created_at := int(time.now().unix())
+	app.db.exec('update ${sql_table('Repo')} set ${sql_table('created_at')} = ${created_at} where ${sql_table('created_at')} is null or ${sql_table('created_at')} <= 0')!
 }
 
 fn (mut app App) add_missing_column(table_name string, column_name string, column_type string) ! {

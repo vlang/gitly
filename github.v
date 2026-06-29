@@ -80,21 +80,54 @@ fn parse_github_timestamp(s string) int {
 
 fn parse_github_owner_repo(clone_url string) ?(string, string) {
 	mut s := clone_url.trim_space()
+	mut lower := s.to_lower()
+	if lower.starts_with('ssh://') {
+		s = s['ssh://'.len..]
+		lower = s.to_lower()
+	}
 	for prefix in ['https://', 'http://', 'git@'] {
-		if s.starts_with(prefix) {
+		if lower.starts_with(prefix) {
 			s = s[prefix.len..]
+			lower = s.to_lower()
 			break
 		}
 	}
-	s = s.trim_string_left('github.com')
+	if lower.starts_with('git@') {
+		s = s['git@'.len..]
+		lower = s.to_lower()
+	}
+	if lower.starts_with('www.') {
+		s = s['www.'.len..]
+		lower = s.to_lower()
+	}
+	if !lower.starts_with('github.com') {
+		return none
+	}
+	s = s['github.com'.len..]
+	if s == '' || !(s[0] == `/` || s[0] == `:`) {
+		return none
+	}
 	s = s.trim_left(':/')
-	s = s.trim_string_right('.git')
+	if idx := s.index('?') {
+		s = s[..idx]
+	}
+	if idx := s.index('#') {
+		s = s[..idx]
+	}
 	s = s.trim('/')
+	if s.ends_with('.git') {
+		s = s[..s.len - '.git'.len]
+	}
 	parts := s.split('/')
 	if parts.len < 2 || parts[0] == '' || parts[1] == '' {
 		return none
 	}
 	return parts[0], parts[1]
+}
+
+fn is_github_clone_url(clone_url string) bool {
+	parse_github_owner_repo(clone_url) or { return false }
+	return true
 }
 
 // Returns the local user id for a GitHub login, creating an unregistered
@@ -303,6 +336,11 @@ fn (mut app App) find_or_create_github_shadow_contributor(github_login string, a
 
 fn (mut app App) import_github_issues(repo_id int, clone_url string, owner_user_id int) ! {
 	eprintln('[github-import] starting for repo_id=${repo_id} clone_url=${clone_url} owner_user_id=${owner_user_id}')
+	defer {
+		app.sync_repo_open_issue_count(repo_id) or {
+			eprintln('[github-import] cannot sync issue count: ${err}')
+		}
+	}
 	owner, name := parse_github_owner_repo(clone_url) or {
 		eprintln('[github-import] ERROR: cannot parse github url: ${clone_url}')
 		return error('cannot parse github url: ${clone_url}')

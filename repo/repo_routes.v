@@ -43,14 +43,22 @@ fn compare_int(a int, b int) int {
 	return 0
 }
 
+fn compare_string(a string, b string) int {
+	if a < b {
+		return -1
+	}
+	if a > b {
+		return 1
+	}
+	return 0
+}
+
 fn compare_repo_names(a &Repo, b &Repo) int {
 	a_name := a.name.to_lower()
 	b_name := b.name.to_lower()
-	if a_name < b_name {
-		return -1
-	}
-	if a_name > b_name {
-		return 1
+	name_result := compare_string(a_name, b_name)
+	if name_result != 0 {
+		return name_result
 	}
 	return compare_int(a.id, b.id)
 }
@@ -106,6 +114,11 @@ pub fn (mut app App) user_repos(username string) veb.Result {
 
 	for mut repo in repos {
 		repo.latest_commit_at = app.find_repo_last_commit_time(repo.id)
+		issue_count := app.get_repo_issue_count(repo.id)
+		if repo.nr_open_issues != issue_count {
+			repo.nr_open_issues = issue_count
+			app.sync_repo_open_issue_count(repo.id) or { app.info(err.str()) }
+		}
 	}
 
 	sort_by := normalize_repo_sort_key(ctx.query['sort'] or { 'name' })
@@ -380,6 +393,7 @@ pub fn (mut app App) handle_new_repo(mut ctx Context, name string, clone_url str
 		user_name:      owner_name
 		clone_url:      valid_clone_url
 		is_public:      is_public
+		created_at:     int(time.now().unix())
 	}
 	import_issues := ctx.form['import_issues'] == '1'
 	import_prs := ctx.form['import_prs'] == '1'
@@ -469,7 +483,6 @@ fn should_enforce_clone_size_limit(is_admin bool, not_self_hosted bool) bool {
 
 fn clone_repo(new_repo Repo, conf config.Config, import_issues bool, import_prs bool, owner_user_id int, enforce_clone_size_limit bool) {
 	mut cloned_repo := new_repo
-	cloned_repo.clone(enforce_clone_size_limit)
 	// Use a dedicated DB connection for the clone thread to avoid
 	// sharing a connection across threads.
 	mut app := &App{
@@ -479,6 +492,15 @@ fn clone_repo(new_repo Repo, conf config.Config, import_issues bool, import_prs 
 		}
 		config: conf
 	}
+	if source_repo := app.find_reusable_clone_source(cloned_repo.clone_url, cloned_repo.id) {
+		eprintln('[clone] reusing local clone source repo_id=${source_repo.id} path=${source_repo.git_dir}')
+		reuse_result := cloned_repo.clone_from_existing(source_repo, enforce_clone_size_limit)
+		if reuse_result == .unavailable {
+			cloned_repo.clone(enforce_clone_size_limit)
+		}
+	} else {
+		cloned_repo.clone(enforce_clone_size_limit)
+	}
 	if cloned_repo.status == .clone_failed {
 		app.set_repo_status(cloned_repo.id, .clone_failed) or {
 			eprintln('cannot set repo status ${err}')
@@ -486,14 +508,13 @@ fn clone_repo(new_repo Repo, conf config.Config, import_issues bool, import_prs 
 		app.db.close() or {}
 		return
 	}
-	// Mark repo as done immediately so the user can browse it.
-	// The tree page will fetch files from git on demand.
-	app.set_repo_status(cloned_repo.id, .done) or { eprintln('cannot set repo status ${err}') }
-	eprintln('clone done, repo available — indexing in background')
+	app.update_repo_primary_branch(cloned_repo.id, cloned_repo.primary_branch) or {
+		eprintln('cannot update repo primary branch ${err}')
+	}
 	// For GitHub clones, also pull the repo description and contributors list.
 	// Issue and PR imports are gated on separate user opt-ins. Open PR refs are
 	// fetched before indexing so the branch scanner sees pr/<number> branches.
-	if cloned_repo.clone_url.contains('github.com') {
+	if is_github_clone_url(cloned_repo.clone_url) {
 		eprintln('[clone] github imports repo_id=${cloned_repo.id} import_issues=${import_issues} import_prs=${import_prs}')
 		if import_prs {
 			app.import_github_pull_requests(cloned_repo, owner_user_id) or {
@@ -507,6 +528,10 @@ fn clone_repo(new_repo Repo, conf config.Config, import_issues bool, import_prs 
 				conf)
 		}
 	}
+	// Mark repo as done after clone-time imports that affect first page views.
+	// The tree page will fetch files from git on demand while indexing continues.
+	app.set_repo_status(cloned_repo.id, .done) or { eprintln('cannot set repo status ${err}') }
+	eprintln('clone done, repo available — indexing in background')
 	// Index branches, commits, and language stats in the background.
 	app.update_repo_from_fs(mut cloned_repo, true) or {
 		eprintln('cannot update repo from fs ${err}')

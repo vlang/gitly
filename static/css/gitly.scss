@@ -736,7 +736,7 @@ form {
 
 .repo-table {
 	width: 100%;
-	min-width: 840px;
+	min-width: 900px;
 	border-collapse: collapse;
 	color: $black;
 }
@@ -780,16 +780,16 @@ form {
 }
 
 .repo-table__col-name {
-	width: 34%;
+	width: 50%;
 }
 
 .repo-table__col-number {
-	width: 10%;
+	width: 7%;
 	text-align: right !important;
 }
 
 .repo-table__col-date {
-	width: 18%;
+	width: 14%;
 }
 
 .repo-table__repo-heading {

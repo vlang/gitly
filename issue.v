@@ -131,14 +131,30 @@ fn (mut app App) find_issue_by_id(issue_id int) ?Issue {
 fn (mut app App) find_repo_issues_as_page(repo_id int, page int) []Issue {
 	off := page * commits_per_page
 	return sql app.db {
-		select from Issue where repo_id == repo_id && is_pr == false limit 35 offset off
+		select from Issue where repo_id == repo_id && is_pr == false order by created_at desc limit commits_per_page offset off
 	} or { []Issue{} }
 }
 
 fn (mut app App) get_repo_issue_count(repo_id int) int {
 	return sql app.db {
-		select count from Issue where repo_id == repo_id
+		select count from Issue where repo_id == repo_id && is_pr == false
 	} or { 0 }
+}
+
+fn (mut app App) sync_repo_open_issue_count(repo_id int) ! {
+	open_issues_count := app.get_repo_issue_count(repo_id)
+	sql app.db {
+		update Repo set nr_open_issues = open_issues_count where id == repo_id
+	}!
+}
+
+fn placeholder_user(user_id int) User {
+	username := if user_id > 0 { 'user-${user_id}' } else { 'unknown-user' }
+	return User{
+		id:       user_id
+		username: username
+		avatar:   default_avatar_name
+	}
 }
 
 fn (mut app App) find_user_issues(user_id int) []Issue {
