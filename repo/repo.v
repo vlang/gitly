@@ -1195,11 +1195,28 @@ fn (r Repo) git_smart(service string, input string) string {
 }
 
 fn (mut app App) generate_clone_url(repo Repo) string {
+	return app.generate_https_clone_url(repo)
+}
+
+fn (mut app App) generate_https_clone_url(repo Repo) string {
 	hostname := app.config.hostname
 	username := repo.user_name
 	repo_name := repo.name
 
 	return 'https://${hostname}/${username}/${repo_name}.git'
+}
+
+fn (mut app App) generate_ssh_clone_url(repo Repo) string {
+	hostname := app.config.hostname
+	username := repo.user_name
+	repo_name := repo.name
+	git_user := app.config.ssh.git_user
+
+	return '${git_user}@${hostname}:${username}/${repo_name}.git'
+}
+
+fn (mut app App) ssh_enabled() bool {
+	return app.config.ssh.enabled
 }
 
 fn first_line(s string) string {

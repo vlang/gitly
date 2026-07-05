@@ -19,7 +19,7 @@ The biggest missing features that will be implemented soon:
 
 - [x] Multiple users and multiple repos
 - [x] `git push`
-- [ ] Access via ssh
+- [x] Access via ssh
 - [ ] Pull requests
 
 ```sh

@@ -87,11 +87,22 @@
 							<div class="repo-code-button">Code</div>
 
 							<div class="repo-clone-dropdown">
-								Clone with HTTPS:
-								<div class="clone-input-group">
-									<input disabled value="@{app.generate_clone_url(repo)}">
-									<button class="copy-clone-url-button">Copy</button>
+								<div class="clone-protocol">
+									Clone with HTTPS:
+									<div class="clone-input-group">
+										<input disabled value="@{app.generate_https_clone_url(repo)}">
+										<button class="copy-clone-url-button">Copy</button>
+									</div>
 								</div>
+								@if app.ssh_enabled()
+									<div class="clone-protocol" style="margin-top:12px">
+										Clone with SSH:
+										<div class="clone-input-group">
+											<input disabled value="@{app.generate_ssh_clone_url(repo)}">
+											<button class="copy-clone-url-button">Copy</button>
+										</div>
+									</div>
+								@end
 							</div>
 						</div>
 					</div>

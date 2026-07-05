@@ -18,6 +18,15 @@ pub:
 	port      int
 	pg        PgConfig
 	sqlite    SqliteConfig
+	ssh       SshConfig
+}
+
+pub struct SshConfig {
+pub:
+	enabled              bool
+	git_user             string = 'git'
+	authorized_keys_path string = '/home/git/.ssh/authorized_keys'
+	binary_path          string = '/usr/local/bin/gitly'
 }
 
 pub struct PgConfig {

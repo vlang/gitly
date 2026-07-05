@@ -4,5 +4,11 @@
 	"avatars_path": "./avatars",
 	"hostname": "gitly.org",
 	"ci_service_url": "http://localhost:8081",
-	"usdt_wallet": ""
+	"usdt_wallet": "",
+	"ssh": {
+		"enabled": false,
+		"git_user": "git",
+		"authorized_keys_path": "/home/git/.ssh/authorized_keys",
+		"binary_path": "/usr/local/bin/gitly"
+	}
 }

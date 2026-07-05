@@ -33,21 +33,20 @@ pub fn (mut app App) handle_add_ssh_key(mut ctx Context, username string) veb.Re
 
 	if is_title_empty {
 		ctx.error('Title is empty')
-
 		return app.user_ssh_keys_new(mut ctx, username)
 	}
 
 	if is_ssh_key_empty {
 		ctx.error('SSH key is empty')
-
 		return app.user_ssh_keys_new(mut ctx, username)
 	}
 
 	app.add_ssh_key(ctx.user.id, title, ssh_key) or {
 		ctx.error(err.str())
-
 		return app.user_ssh_keys_new(mut ctx, username)
 	}
+
+	app.sync_ssh_authorized_keys() or { app.warn('Failed to sync authorized_keys: ${err}') }
 
 	return ctx.redirect('/${username}/settings/ssh-keys')
 }
@@ -64,9 +63,10 @@ pub fn (mut app App) handle_remove_ssh_key(mut ctx Context, username string, id 
 		response := api.ApiErrorResponse{
 			message: 'There was an error while deleting the SSH key'
 		}
-
 		return ctx.json(response)
 	}
+
+	app.sync_ssh_authorized_keys() or { app.warn('Failed to sync authorized_keys: ${err}') }
 
 	return ctx.ok('')
 }

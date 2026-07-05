@@ -39,12 +39,26 @@ fn main() {
 	if os.args.contains('ci_run') {
 		return
 	}
+
+	ssh_shell_idx := os.args.index('-ssh-shell')
+	if ssh_shell_idx >= 0 && os.args.len > ssh_shell_idx + 1 {
+		user_id := os.args[ssh_shell_idx + 1].int()
+		conf := config.read_config('./config.json') or { panic(err) }
+		run_ssh_shell(user_id, conf) or {
+			eprintln('gitly-shell: ${err}')
+			exit(1)
+		}
+		return
+	}
+
 	mut app := new_app()!
 
 	app.use(handler: app.before_request)
 	app.route_use('/:username/:repo_name/pull/:id/files', handler: minify_pr_files_html, after: true)
 
 	app.port = get_port(app.config)
+
+	app.sync_ssh_authorized_keys() or { app.warn('Failed to sync authorized_keys: ${err}') }
 
 	veb.run_at[App, Context](mut app,
 		port:               app.port
