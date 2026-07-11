@@ -2,9 +2,8 @@ import os
 import log
 import net.http
 import time
-import json
+import x.json2 as json
 import api
-import term
 
 const gitly_url = 'http://127.0.0.1:8080'
 
@@ -16,8 +15,14 @@ const test_github_repo_url = 'https://github.com/vlang/pcre'
 
 const test_github_repo_primary_branch = 'master'
 
+// When GITLY_TEST_SKIP_REMOTE_REPO is set, the tests that clone a remote GitHub
+// repository (and therefore need network access + a working outbound git/https
+// stack) are skipped. This keeps the pure "gitly serves the expected HTML"
+// checks usable as a fast, reliable smoke test (e.g. in vlang/v's Windows CI).
+const skip_remote_repo = os.getenv('GITLY_TEST_SKIP_REMOTE_REPO') != ''
+
 fn main() {
-	before()!
+	mut gitly_process := before()!
 
 	test_index_page()
 
@@ -43,36 +48,42 @@ fn main() {
 	assert get_repo_issue_count(token, test_username, 'test1') == 0
 	assert get_repo_branch_count(token, test_username, 'test1') == 0
 
-	repo_name := 'test2'
-	test_create_repo(token, repo_name, test_github_repo_url)
-	// wait while repo is cloning
-	time.sleep(5 * time.second)
-	// get repo
-	assert get_repo_commit_count(token, test_username, repo_name, test_github_repo_primary_branch) > 0
-	assert get_repo_issue_count(token, test_username, repo_name) == 0
-	assert get_repo_branch_count(token, test_username, repo_name) > 0
-	test_repo_page(test_username, repo_name)
-	test_branch_page(test_username, repo_name, test_github_repo_primary_branch)
-	test_repos_page(test_username)
-	test_repo_settings_page(test_username, repo_name)
-	test_contributors_page(test_username, repo_name)
-	// test_issues_page(test_username)
-	test_stars_page(test_username)
-	test_settings_page(test_username)
-	test_commits_page(test_username, repo_name, test_github_repo_primary_branch)
-	test_branches_page(test_username, repo_name)
-	test_repo_tree(test_username, repo_name, test_github_repo_primary_branch, 'c')
-	// this makes sure that the blob (and the tree?) is ready
-	test_repo_tree(test_username, repo_name, test_github_repo_primary_branch, 'examples')
-	test_blob_page(test_username, repo_name, test_github_repo_primary_branch, 'examples/hello.v')
-	// test_refs_page(test_username, repo_name)
-	// test_api_branches_count(test_username, repo_name)
+	if skip_remote_repo {
+		ilog('Skipping the remote repository clone tests (GITLY_TEST_SKIP_REMOTE_REPO is set)')
+	} else {
+		repo_name := 'test2'
+		test_create_repo(token, repo_name, test_github_repo_url)
+		// wait while repo is cloning
+		time.sleep(5 * time.second)
+		// get repo
+		assert get_repo_commit_count(token, test_username, repo_name,
+			test_github_repo_primary_branch) > 0
+		assert get_repo_issue_count(token, test_username, repo_name) == 0
+		assert get_repo_branch_count(token, test_username, repo_name) > 0
+		test_repo_page(test_username, repo_name)
+		test_branch_page(test_username, repo_name, test_github_repo_primary_branch)
+		test_repos_page(test_username)
+		test_repo_settings_page(test_username, repo_name)
+		test_contributors_page(test_username, repo_name)
+		// test_issues_page(test_username)
+		test_stars_page(test_username)
+		test_settings_page(test_username)
+		test_commits_page(test_username, repo_name, test_github_repo_primary_branch)
+		test_branches_page(test_username, repo_name)
+		test_repo_tree(test_username, repo_name, test_github_repo_primary_branch, 'c')
+		// this makes sure that the blob (and the tree?) is ready
+		test_repo_tree(test_username, repo_name, test_github_repo_primary_branch, 'examples')
+		test_blob_page(test_username, repo_name, test_github_repo_primary_branch,
+			'examples/hello.v')
+		// test_refs_page(test_username, repo_name)
+		// test_api_branches_count(test_username, repo_name)
+	}
 	ilog('all tests passed!')
 
-	after()!
+	after(mut gitly_process)!
 }
 
-fn before() ! {
+fn before() !&os.Process {
 	cd_executable_dir()!
 
 	ilog('Make sure gitly is not running')
@@ -83,24 +94,37 @@ fn before() ! {
 	compile_gitly()
 
 	ilog('Start gitly in the background, then wait till gitly starts and is responding to requests')
-	spawn run_gitly()
+	mut gitly_process := start_gitly()
 
-	wait_gitly()
+	wait_gitly(mut gitly_process)
+
+	return gitly_process
 }
 
-fn after() ! {
+fn after(mut gitly_process os.Process) ! {
+	ilog('Ensure gitly is stopped')
+	if gitly_process.is_alive() {
+		gitly_process.signal_kill()
+	}
+	gitly_process.wait()
+	// A best effort fallback, in case an older instance is still lingering:
+	kill_gitly_processes()
+
+	// Only remove the DB/repos after gitly has released them, otherwise the
+	// files are still locked on Windows and the removal fails.
 	remove_database_if_exists()!
 	remove_repos_dir_if_exists()!
-
-	ilog('Ensure gitly is stopped')
-	kill_gitly_processes()
 }
 
-fn run_gitly() {
-	gitly_process := os.execute('./gitly.exe &')
-	if gitly_process.exit_code != 0 {
-		exit_with_message(gitly_process.str())
-	}
+// start_gitly launches the freshly compiled gitly.exe as a background process.
+// It uses os.new_process (instead of a shell `&`), so that it works the same
+// way on Windows, macOS and Linux, and so the process can be stopped later.
+fn start_gitly() &os.Process {
+	gitly_exe := os.join_path(os.getwd(), 'gitly.exe')
+	mut gitly_process := os.new_process(gitly_exe)
+	gitly_process.set_work_folder(os.getwd())
+	gitly_process.run()
+	return gitly_process
 }
 
 @[noreturn]
@@ -122,7 +146,11 @@ fn cd_executable_dir() ! {
 }
 
 fn kill_gitly_processes() {
-	os.execute('pkill -9 gitly.exe')
+	$if windows {
+		os.execute('taskkill /F /IM gitly.exe')
+	} $else {
+		os.execute('pkill -9 gitly.exe')
+	}
 }
 
 fn remove_database_if_exists() ! {
@@ -143,18 +171,35 @@ fn remove_repos_dir_if_exists() ! {
 
 fn compile_gitly() {
 	ilog('Compile gitly')
-	// Note that using `-d use_openssl` prevents tcc from working, so the compilation will be much slower:
-	os.execute('v -d use_libbacktrace -cg -keepc -d use_openssl -o gitly.exe .')
+	// Use the same V compiler that is running this test.
+	vexe := os.getenv_opt('VEXE') or { @VEXE }
+	// `-d sqlite` makes gitly use an embedded sqlite database instead of the
+	// default PostgreSQL backend, so the test needs no external database.
+	// Note that using `-d use_openssl` prevents tcc from working, so the compilation will be much slower.
+	// On Windows, -d use_libbacktrace is skipped (libbacktrace is not available there) and the native
+	// schannel https backend is used, so -d use_openssl is skipped as well.
+	mut compile_cmd := '${os.quoted_path(vexe)} -d sqlite -keepc -o gitly.exe .'
+	$if !windows {
+		compile_cmd = '${os.quoted_path(vexe)} -d sqlite -d use_libbacktrace -cg -keepc -d use_openssl -o gitly.exe .'
+	}
+	res := os.execute(compile_cmd)
+	if res.exit_code != 0 {
+		exit_with_message('failed to compile gitly:\n${res.output}')
+	}
 	ilog('Compiled gitly.exe, size: ${os.file_size('gitly.exe')}')
 }
 
-fn wait_gitly() {
-	for waiting_cycles := 0; waiting_cycles < 50; waiting_cycles++ {
+fn wait_gitly(mut gitly_process os.Process) {
+	for waiting_cycles := 0; waiting_cycles < 100; waiting_cycles++ {
 		ilog('\twait: ${waiting_cycles}')
-		time.sleep(100 * time.millisecond)
+		if !gitly_process.is_alive() {
+			exit_with_message('gitly exited before answering any request (exit code ${gitly_process.code}); this indicates a crash')
+		}
+		time.sleep(200 * time.millisecond)
 		http.get(prepare_url('')) or { continue }
-		break
+		return
 	}
+	exit_with_message('gitly did not start listening on ${gitly_url} in time')
 }
 
 fn prepare_url(path string) string {
