@@ -51,6 +51,7 @@ fn test_loc_languages_merge_c_headers() {
 		SccLocLanguage{ name: 'C Header', code: 4 },
 		SccLocLanguage{ name: 'Python', code: 2 },
 		SccLocLanguage{ name: 'Markdown', code: 20 },
+		SccLocLanguage{ name: 'Plain Text', code: 30 },
 		SccLocLanguage{ name: 'Ignored', code: 0 },
 	])
 	assert merged.len == 2
@@ -93,8 +94,13 @@ fn test_loc_history_counts_and_caches_weekly_languages() {
 			app.db.exec('create unique index idx_loc_history_job_repo_test on ${sql_table('LocHistoryJob')} (repo_id)')!
 			app.db.exec('create unique index idx_loc_history_snapshot_week_test on ${sql_table('LocHistorySnapshot')} (repo_id, week_start)')!
 			loc_test_commit(repo_dir, 'main.py', 'print("hello")\n', '2026-01-01T12:00:00Z')!
+			assert !loc_v_linguist_override(repo_dir, 'main')
+			loc_test_commit(repo_dir, '.gitattributes', '*.v linguist-language=V\n', '2026-01-08T11:59:00Z')!
+			assert loc_v_linguist_override(repo_dir, 'main')
 			loc_test_commit(repo_dir, 'main.v', 'fn main() {\n println("hi")\n}\n', '2026-01-08T12:00:00Z')!
+			loc_test_commit(repo_dir, 'hardware.v', 'module top; endmodule\n', '2026-01-08T12:00:15Z')!
 			loc_test_commit(repo_dir, 'README.md', '# Documentation\nThese lines are not source code.\n', '2026-01-08T12:00:30Z')!
+			loc_test_commit(repo_dir, 'notes.txt', 'These lines are plain text.\n', '2026-01-08T12:00:45Z')!
 			loc_test_commit(repo_dir, 'main.c', 'int main(void) { return 0; }\n', '2026-01-08T12:01:00Z')!
 			loc_test_commit(repo_dir, 'main.h', 'int number;\n', '2026-01-08T12:02:00Z')!
 			loc_test_commit(repo_dir, 'thirdparty/vendor.c', 'int a;\nint b;\n', '2026-01-08T12:03:00Z')!
@@ -133,7 +139,9 @@ fn test_loc_history_counts_and_caches_weekly_languages() {
 			assert languages.any(it.name == 'C' && it.code == 2)
 			assert !languages.any(it.name == 'C Header')
 			assert !languages.any(it.name == 'Markdown')
-			assert snapshots[1].total_code == 6
+			assert !languages.any(it.name == 'Plain Text')
+			assert !languages.any(it.name == 'Verilog')
+			assert snapshots[1].total_code == 7
 			assert app.queue_loc_history(repo.id)!
 			assert app.find_loc_history_job(repo.id).status == 'queued'
 		} else {

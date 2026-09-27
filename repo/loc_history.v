@@ -2,6 +2,7 @@ module main
 
 import config
 import git
+import highlight
 import json2
 import os
 import rand
@@ -59,6 +60,7 @@ struct LocHistoryResponse {
 	job       LocHistoryJob
 	snapshots []LocHistorySnapshot
 	languages []LocHistoryLanguage
+	colors    map[string]string
 }
 
 fn loc_week_start(timestamp int) int {
@@ -142,7 +144,7 @@ fn (mut app App) loc_job_update(repo_id int, status string, total int, completed
 fn merge_loc_languages(languages []SccLocLanguage) []SccLocLanguage {
 	mut counts := map[string]int{}
 	for language in languages {
-		if language.code <= 0 || language.name == '' || language.name == 'Markdown' {
+		if language.code <= 0 || language.name == '' || language.name in ['Markdown', 'Plain Text'] {
 			continue
 		}
 		name := if language.name == 'C Header' { 'C' } else { language.name }
@@ -156,6 +158,12 @@ fn merge_loc_languages(languages []SccLocLanguage) []SccLocLanguage {
 		}
 	}
 	return merged
+}
+
+fn loc_v_linguist_override(git_dir string, branch string) bool {
+	attribute := git.Git.exec_in_dir(git_dir, ['check-attr', '--source', branch, 'linguist-language',
+		'--', '.gitly-loc-probe.v'])
+	return attribute.exit_code == 0 && attribute.output.trim_space().ends_with(': V')
 }
 
 fn (mut app App) save_loc_snapshot(repo_id int, week LocWeek, languages []SccLocLanguage) ! {
@@ -181,6 +189,7 @@ fn (mut app App) save_loc_snapshot(repo_id int, week LocWeek, languages []SccLoc
 fn (mut app App) calculate_loc_history(repo_id int) ! {
 	repo := app.find_repo_by_id(repo_id) or { return error('repository no longer exists') }
 	branch := repo.primary_branch
+	v_linguist_override := loc_v_linguist_override(repo.git_dir, branch)
 	log_result := git.Git.exec_in_dir(repo.git_dir, ['log', '--first-parent', '--reverse',
 		'--format=%ct%x09%H', branch])
 	if log_result.exit_code != 0 {
@@ -230,8 +239,14 @@ fn (mut app App) calculate_loc_history(repo_id int) ! {
 				eprintln('LOC history clean for repo ${repo_id}: ${clean.output}')
 				return error('could not clean temporary checkout')
 			}
-			measurement := os.exec(['scc', '--format', 'json', '--no-config', '--exclude-dir',
-				loc_excluded_directories, '--exclude-ext', 'md', workdir])
+			mut scc_args := ['scc', '--format', 'json', '--no-config', '--exclude-dir',
+				loc_excluded_directories, '--exclude-ext', 'md,txt']
+			if v_linguist_override {
+				scc_args << '--count-as'
+				scc_args << 'v:V'
+			}
+			scc_args << workdir
+			measurement := os.exec(scc_args)
 			if measurement.exit_code != 0 {
 				eprintln('LOC history scc for repo ${repo_id}: ${measurement.output}')
 				return error('scc failed; check that it is installed on the server')
@@ -346,6 +361,7 @@ pub fn (mut app App) repo_loc_history_data(username string, repo_name string) ve
 	job := app.find_loc_history_job(repo.id)
 	mut snapshots := []LocHistorySnapshot{}
 	mut languages := []LocHistoryLanguage{}
+	mut colors := map[string]string{}
 	if job.status == 'done' {
 		repo_id := repo.id
 		snapshots = sql app.db {
@@ -356,6 +372,10 @@ pub fn (mut app App) repo_loc_history_data(username string, repo_name string) ve
 			[repo_id.str()]) or { return ctx.db_error(err) }
 		for row in rows {
 			if row.len == 4 {
+				name := if row[2] == 'C Header' { 'C' } else { row[2] }
+				if name !in colors {
+					colors[name] = highlight.language_color(name) or { '' }
+				}
 				languages << LocHistoryLanguage{
 					id:          row[0].int()
 					snapshot_id: row[1].int()
@@ -369,5 +389,6 @@ pub fn (mut app App) repo_loc_history_data(username string, repo_name string) ve
 		job:       job
 		snapshots: snapshots
 		languages: languages
+		colors:    colors
 	})
 }

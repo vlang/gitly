@@ -24,7 +24,7 @@
     const languageRows = data.languages;
     const bySnapshot = new Map(snapshots.map(snapshot => [snapshot.id, new Map()]));
     for (const row of languageRows) {
-      if (row.name === "Markdown") continue;
+      if (row.name === "Markdown" || row.name === "Plain Text") continue;
       const counts = bySnapshot.get(row.snapshot_id);
       if (!counts) continue;
       const name = row.name === "C Header" ? "C" : row.name;
@@ -43,7 +43,7 @@
       .sort(([a, aCode], [b, bCode]) => bCode - aCode || a.localeCompare(b))
       .slice(0, 4)
       .map(([name]) => name);
-    const colors = new Map(names.map((name, index) => [name, `hsl(${Math.round((index * 137.508 + 215) % 360)} 62% 46%)`]));
+    const colors = new Map(names.map((name, index) => [name, data.colors?.[name] || `hsl(${Math.round((index * 137.508 + 215) % 360)} 62% 46%)`]));
     const shownTotals = snapshots.map(snapshot => names.reduce((sum, name) => sum + (bySnapshot.get(snapshot.id).get(name) || 0), 0));
     const width = 920, height = 310, left = 72, right = 12, top = 14, bottom = 38;
     const plotWidth = width - left - right, plotHeight = height - top - bottom;
@@ -59,11 +59,15 @@
       label.textContent = number.format(Math.round(count));
       svg.append(label);
     }
-    const first = new Date(snapshots[0].week_start * 1000).toLocaleDateString();
-    const last = new Date(snapshots.at(-1).week_start * 1000).toLocaleDateString();
-    for (const [position, labelText] of [[left, first], [width - right, last]]) {
-      const label = element("text", { x: position, y: height - 7, "text-anchor": position === left ? "start" : "end", class: "loc-axis-label" });
-      label.textContent = labelText;
+    const firstTime = snapshots[0].week_start * 1000;
+    const lastTime = snapshots.at(-1).week_start * 1000;
+    for (let year = new Date(firstTime).getUTCFullYear(); year <= new Date(lastTime).getUTCFullYear(); year++) {
+      const jan1 = Date.UTC(year, 0, 1);
+      if (jan1 < firstTime || jan1 > lastTime) continue;
+      const position = firstTime === lastTime ? x(0) : left + (jan1 - firstTime) * plotWidth / (lastTime - firstTime);
+      svg.append(element("line", { x1: position, x2: position, y1: top, y2: top + plotHeight, class: "loc-year-grid" }));
+      const label = element("text", { x: position, y: height - 7, "text-anchor": "middle", class: "loc-axis-label loc-year-label" });
+      label.textContent = String(year);
       svg.append(label);
     }
 

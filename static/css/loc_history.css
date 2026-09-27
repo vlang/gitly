@@ -12,6 +12,7 @@
 .loc-chart-scroll { width: 100%; overflow-x: auto; }
 #loc-svg { display: block; width: 100%; min-width: 520px; height: 310px; }
 .loc-grid { stroke: #d8dee4; stroke-width: 1; }
+.loc-year-grid { stroke: #d8dee4; stroke-width: 1; stroke-dasharray: 3 4; }
 .loc-axis-label { fill: #57606a; font-size: 12px; }
 .loc-area { opacity: .9; }
 .loc-hit { fill: transparent; }
