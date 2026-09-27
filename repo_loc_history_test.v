@@ -32,7 +32,9 @@ fn loc_test_git(dir string, args []string) string {
 }
 
 fn loc_test_commit(dir string, file_name string, content string, date string) ! {
-	os.write_file(os.join_path(dir, file_name), content)!
+	path := os.join_path(dir, file_name)
+	os.mkdir_all(os.dir(path))!
+	os.write_file(path, content)!
 	loc_test_git(dir, ['add', file_name])
 	result := git.Git.exec_in_dir_with_env(dir, ['commit', '-m', file_name], {
 		'GIT_AUTHOR_DATE':    date
@@ -41,6 +43,18 @@ fn loc_test_commit(dir string, file_name string, content string, date string) ! 
 	if result.exit_code != 0 {
 		return error('git commit failed: ${result.output}')
 	}
+}
+
+fn test_loc_languages_merge_c_headers() {
+	merged := merge_loc_languages([
+		SccLocLanguage{ name: 'C', code: 10 },
+		SccLocLanguage{ name: 'C Header', code: 4 },
+		SccLocLanguage{ name: 'Python', code: 2 },
+		SccLocLanguage{ name: 'Ignored', code: 0 },
+	])
+	assert merged.len == 2
+	assert merged.any(it.name == 'C' && it.code == 14)
+	assert merged.any(it.name == 'Python' && it.code == 2)
 }
 
 fn test_weekly_loc_revisions_selects_last_commit_in_each_week() {
@@ -79,6 +93,12 @@ fn test_loc_history_counts_and_caches_weekly_languages() {
 			app.db.exec('create unique index idx_loc_history_snapshot_week_test on ${sql_table('LocHistorySnapshot')} (repo_id, week_start)')!
 			loc_test_commit(repo_dir, 'main.py', 'print("hello")\n', '2026-01-01T12:00:00Z')!
 			loc_test_commit(repo_dir, 'main.v', 'fn main() {\n println("hi")\n}\n', '2026-01-08T12:00:00Z')!
+			loc_test_commit(repo_dir, 'main.c', 'int main(void) { return 0; }\n', '2026-01-08T12:01:00Z')!
+			loc_test_commit(repo_dir, 'main.h', 'int number;\n', '2026-01-08T12:02:00Z')!
+			loc_test_commit(repo_dir, 'thirdparty/vendor.c', 'int a;\nint b;\n', '2026-01-08T12:03:00Z')!
+			loc_test_commit(repo_dir, '3rdparty/vendor.c', 'int a;\nint b;\n', '2026-01-08T12:04:00Z')!
+			loc_test_commit(repo_dir, 'third_party/vendor.c', 'int a;\nint b;\n', '2026-01-08T12:05:00Z')!
+			loc_test_commit(repo_dir, 'vendor/vendor.c', 'int a;\nint b;\n', '2026-01-08T12:06:00Z')!
 			repo := Repo{
 				id:             1
 				name:           'loc-history'
@@ -108,6 +128,8 @@ fn test_loc_history_counts_and_caches_weekly_languages() {
 			}!
 			assert languages.any(it.name == 'Python' && it.code == 1)
 			assert languages.any(it.name == 'V' && it.code > 0)
+			assert languages.any(it.name == 'C' && it.code == 2)
+			assert !languages.any(it.name == 'C Header')
 			assert app.queue_loc_history(repo.id)!
 			assert app.find_loc_history_job(repo.id).status == 'queued'
 		} else {

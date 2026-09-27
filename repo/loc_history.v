@@ -11,6 +11,7 @@ import veb
 const loc_week_seconds = 7 * 24 * 60 * 60
 const loc_monday_offset = 4 * 24 * 60 * 60
 const loc_stale_seconds = 60 * 60
+const loc_excluded_directories = '.git,.hg,.svn,3rdparty,thirdparty,3rd_party,third_party,3rd-party,third-party,vendor,vendors'
 
 struct LocHistoryJob {
 	id            int @[primary; sql: serial]
@@ -138,19 +139,34 @@ fn (mut app App) loc_job_update(repo_id int, status string, total int, completed
 	}!
 }
 
-fn (mut app App) save_loc_snapshot(repo_id int, week LocWeek, languages []SccLocLanguage) ! {
-	mut total := 0
-	for language in languages {
-		if language.code > 0 {
-			total += language.code
-		}
-	}
-	snapshot_id := db_insert_returning_id(mut app.db, 'LocHistorySnapshot', ['repo_id', 'week_start',
-		'commit_oid', 'total_code'], [repo_id.str(), week.week_start.str(), week.oid, total.str()])!
+fn merge_loc_languages(languages []SccLocLanguage) []SccLocLanguage {
+	mut counts := map[string]int{}
 	for language in languages {
 		if language.code <= 0 || language.name == '' {
 			continue
 		}
+		name := if language.name == 'C Header' { 'C' } else { language.name }
+		counts[name] += language.code
+	}
+	mut merged := []SccLocLanguage{}
+	for name, code in counts {
+		merged << SccLocLanguage{
+			name: name
+			code: code
+		}
+	}
+	return merged
+}
+
+fn (mut app App) save_loc_snapshot(repo_id int, week LocWeek, languages []SccLocLanguage) ! {
+	merged := merge_loc_languages(languages)
+	mut total := 0
+	for language in merged {
+		total += language.code
+	}
+	snapshot_id := db_insert_returning_id(mut app.db, 'LocHistorySnapshot', ['repo_id', 'week_start',
+		'commit_oid', 'total_code'], [repo_id.str(), week.week_start.str(), week.oid, total.str()])!
+	for language in merged {
 		row := LocHistoryLanguage{
 			snapshot_id: snapshot_id
 			name:        language.name
@@ -214,7 +230,8 @@ fn (mut app App) calculate_loc_history(repo_id int) ! {
 				eprintln('LOC history clean for repo ${repo_id}: ${clean.output}')
 				return error('could not clean temporary checkout')
 			}
-			measurement := os.exec(['scc', '--format', 'json', '--no-config', workdir])
+			measurement := os.exec(['scc', '--format', 'json', '--no-config', '--exclude-dir',
+				loc_excluded_directories, workdir])
 			if measurement.exit_code != 0 {
 				eprintln('LOC history scc for repo ${repo_id}: ${measurement.output}')
 				return error('scc failed; check that it is installed on the server')

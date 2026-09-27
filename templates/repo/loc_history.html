@@ -12,7 +12,7 @@
 				<div class="loc-history__heading">
 					<div>
 						<h1>Lines of code over time</h1>
-						<p>Weekly snapshots of the default branch, measured by scc. Blank and comment lines are excluded.</p>
+						<p>Weekly snapshots of the default branch, measured by scc. Showing the top four languages; blank lines, comments, and vendor directories are excluded.</p>
 					</div>
 					@if can_run
 						<form action="/@repo.user_name/@repo.name/loc" method="post" id="loc-start-form">
@@ -24,7 +24,7 @@
 				<progress id="loc-progress" max="100" value="0" hidden></progress>
 				<div id="loc-chart" hidden>
 					<div id="loc-hover" aria-live="polite"></div>
-					<div class="loc-chart-scroll"><svg id="loc-svg" role="img" aria-label="Stacked lines of code by language over time"></svg></div>
+					<div class="loc-chart-scroll"><svg id="loc-svg" role="img" aria-label="Stacked lines of code for the top four languages over time"></svg></div>
 					<div id="loc-legend" class="loc-legend"></div>
 				</div>
 			</section>

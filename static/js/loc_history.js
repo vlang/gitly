@@ -22,10 +22,13 @@
   function render(data) {
     const snapshots = data.snapshots;
     const languageRows = data.languages;
-    const names = [...new Set(languageRows.map(row => row.name))].sort();
-    const colors = new Map(names.map((name, index) => [name, `hsl(${Math.round((index * 137.508 + 215) % 360)} 62% 46%)`]));
     const bySnapshot = new Map(snapshots.map(snapshot => [snapshot.id, new Map()]));
-    for (const row of languageRows) bySnapshot.get(row.snapshot_id)?.set(row.name, row.code);
+    for (const row of languageRows) {
+      const counts = bySnapshot.get(row.snapshot_id);
+      if (!counts) continue;
+      const name = row.name === "C Header" ? "C" : row.name;
+      counts.set(name, (counts.get(name) || 0) + row.code);
+    }
 
     svg.replaceChildren();
     legend.replaceChildren();
@@ -33,9 +36,17 @@
       hover.textContent = "No snapshots were saved.";
       return;
     }
+    const latestCounts = bySnapshot.get(snapshots.at(-1).id);
+    const names = [...latestCounts.entries()]
+      .filter(([, code]) => code > 0)
+      .sort(([a, aCode], [b, bCode]) => bCode - aCode || a.localeCompare(b))
+      .slice(0, 4)
+      .map(([name]) => name);
+    const colors = new Map(names.map((name, index) => [name, `hsl(${Math.round((index * 137.508 + 215) % 360)} 62% 46%)`]));
+    const shownTotals = snapshots.map(snapshot => names.reduce((sum, name) => sum + (bySnapshot.get(snapshot.id).get(name) || 0), 0));
     const width = 920, height = 310, left = 72, right = 12, top = 14, bottom = 38;
     const plotWidth = width - left - right, plotHeight = height - top - bottom;
-    const max = Math.max(1, ...snapshots.map(row => row.total_code));
+    const max = Math.max(1, ...shownTotals);
     const x = index => left + (snapshots.length === 1 ? plotWidth / 2 : index * plotWidth / (snapshots.length - 1));
     const y = count => top + plotHeight * (1 - count / max);
     svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
@@ -77,13 +88,13 @@
       const hit = element("rect", { x: Math.max(left, x(index) - interval / 2), y: top, width: Math.min(interval, width - right - Math.max(left, x(index) - interval / 2)), height: plotHeight, class: "loc-hit", tabindex: "0" });
       const date = new Date(snapshot.week_start * 1000).toLocaleDateString();
       const details = names.map(name => `${name}: ${number.format(bySnapshot.get(snapshot.id).get(name) || 0)}`).filter(value => !value.endsWith(": 0"));
-      const label = `${date} · ${number.format(snapshot.total_code)} LOC${details.length ? " · " + details.join(" · ") : ""}`;
+      const label = `${date} · ${number.format(shownTotals[index])} LOC in shown languages${details.length ? " · " + details.join(" · ") : ""}`;
       hit.setAttribute("aria-label", label);
       hit.addEventListener("mouseenter", () => hover.textContent = label);
       hit.addEventListener("focus", () => hover.textContent = label);
       svg.append(hit);
     });
-    hover.textContent = `${number.format(snapshots.length)} weekly snapshots · ${number.format(snapshots.at(-1).total_code)} LOC in the latest snapshot`;
+    hover.textContent = `${number.format(snapshots.length)} weekly snapshots · ${number.format(shownTotals.at(-1))} LOC across ${names.length} shown languages in the latest snapshot`;
   }
 
   async function refresh() {
