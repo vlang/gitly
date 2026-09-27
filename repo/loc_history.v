@@ -142,7 +142,7 @@ fn (mut app App) loc_job_update(repo_id int, status string, total int, completed
 fn merge_loc_languages(languages []SccLocLanguage) []SccLocLanguage {
 	mut counts := map[string]int{}
 	for language in languages {
-		if language.code <= 0 || language.name == '' {
+		if language.code <= 0 || language.name == '' || language.name == 'Markdown' {
 			continue
 		}
 		name := if language.name == 'C Header' { 'C' } else { language.name }
@@ -231,7 +231,7 @@ fn (mut app App) calculate_loc_history(repo_id int) ! {
 				return error('could not clean temporary checkout')
 			}
 			measurement := os.exec(['scc', '--format', 'json', '--no-config', '--exclude-dir',
-				loc_excluded_directories, workdir])
+				loc_excluded_directories, '--exclude-ext', 'md', workdir])
 			if measurement.exit_code != 0 {
 				eprintln('LOC history scc for repo ${repo_id}: ${measurement.output}')
 				return error('scc failed; check that it is installed on the server')

@@ -24,6 +24,7 @@
     const languageRows = data.languages;
     const bySnapshot = new Map(snapshots.map(snapshot => [snapshot.id, new Map()]));
     for (const row of languageRows) {
+      if (row.name === "Markdown") continue;
       const counts = bySnapshot.get(row.snapshot_id);
       if (!counts) continue;
       const name = row.name === "C Header" ? "C" : row.name;
