@@ -144,7 +144,9 @@ fn (mut app App) loc_job_update(repo_id int, status string, total int, completed
 fn merge_loc_languages(languages []SccLocLanguage) []SccLocLanguage {
 	mut counts := map[string]int{}
 	for language in languages {
-		if language.code <= 0 || language.name == '' || language.name in ['Markdown', 'Plain Text'] {
+		if language.code <= 0 || language.name == '' || language.name in ['Markdown', 'Plain Text',
+			'YAML']
+			|| language.name.starts_with('JSON') {
 			continue
 		}
 		name := if language.name == 'C Header' { 'C' } else { language.name }
@@ -240,7 +242,7 @@ fn (mut app App) calculate_loc_history(repo_id int) ! {
 				return error('could not clean temporary checkout')
 			}
 			mut scc_args := ['scc', '--format', 'json', '--no-config', '--exclude-dir',
-				loc_excluded_directories, '--exclude-ext', 'md,txt']
+				loc_excluded_directories, '--exclude-ext', 'md,txt,yaml,yml,json,json5,jsonc,jsonl']
 			if v_linguist_override {
 				scc_args << '--count-as'
 				scc_args << 'v:V'

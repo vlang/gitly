@@ -52,6 +52,9 @@ fn test_loc_languages_merge_c_headers() {
 		SccLocLanguage{ name: 'Python', code: 2 },
 		SccLocLanguage{ name: 'Markdown', code: 20 },
 		SccLocLanguage{ name: 'Plain Text', code: 30 },
+		SccLocLanguage{ name: 'YAML', code: 40 },
+		SccLocLanguage{ name: 'JSON', code: 50 },
+		SccLocLanguage{ name: 'JSONC', code: 60 },
 		SccLocLanguage{ name: 'Ignored', code: 0 },
 	])
 	assert merged.len == 2
@@ -101,6 +104,9 @@ fn test_loc_history_counts_and_caches_weekly_languages() {
 			loc_test_commit(repo_dir, 'hardware.v', 'module top; endmodule\n', '2026-01-08T12:00:15Z')!
 			loc_test_commit(repo_dir, 'README.md', '# Documentation\nThese lines are not source code.\n', '2026-01-08T12:00:30Z')!
 			loc_test_commit(repo_dir, 'notes.txt', 'These lines are plain text.\n', '2026-01-08T12:00:45Z')!
+			loc_test_commit(repo_dir, 'config.yaml', 'setting: true\n', '2026-01-08T12:00:50Z')!
+			loc_test_commit(repo_dir, 'config.json', '{"setting":true}\n', '2026-01-08T12:00:55Z')!
+			loc_test_commit(repo_dir, 'config.jsonc', '{"setting":true}\n', '2026-01-08T12:00:59Z')!
 			loc_test_commit(repo_dir, 'main.c', 'int main(void) { return 0; }\n', '2026-01-08T12:01:00Z')!
 			loc_test_commit(repo_dir, 'main.h', 'int number;\n', '2026-01-08T12:02:00Z')!
 			loc_test_commit(repo_dir, 'thirdparty/vendor.c', 'int a;\nint b;\n', '2026-01-08T12:03:00Z')!
@@ -140,6 +146,8 @@ fn test_loc_history_counts_and_caches_weekly_languages() {
 			assert !languages.any(it.name == 'C Header')
 			assert !languages.any(it.name == 'Markdown')
 			assert !languages.any(it.name == 'Plain Text')
+			assert !languages.any(it.name == 'YAML')
+			assert !languages.any(it.name.starts_with('JSON'))
 			assert !languages.any(it.name == 'Verilog')
 			assert snapshots[1].total_code == 7
 			assert app.queue_loc_history(repo.id)!
