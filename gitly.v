@@ -446,6 +446,15 @@ fn (mut app App) create_tables() ! {
 		create table LangStat
 	}!
 	sql app.db {
+		create table LocHistoryJob
+	}!
+	sql app.db {
+		create table LocHistorySnapshot
+	}!
+	sql app.db {
+		create table LocHistoryLanguage
+	}!
+	sql app.db {
 		create table User
 	}!
 	sql app.db {
@@ -709,6 +718,9 @@ fn (mut app App) create_tables() ! {
 }
 
 fn (mut app App) migrate_tables() ! {
+	app.db.exec('create unique index if not exists idx_loc_history_job_repo on ${sql_table('LocHistoryJob')} (repo_id)')!
+	app.db.exec('create unique index if not exists idx_loc_history_snapshot_week on ${sql_table('LocHistorySnapshot')} (repo_id, week_start)')!
+	app.db.exec('create index if not exists idx_loc_history_language_snapshot on ${sql_table('LocHistoryLanguage')} (snapshot_id)')!
 	app.add_missing_column('User', 'github_id', 'BIGINT NOT NULL DEFAULT 0')!
 	app.add_missing_column('User', 'login_attempts', 'INTEGER NOT NULL DEFAULT 0')!
 	app.add_missing_column('User', 'login_attempt_window_started_at', 'BIGINT NOT NULL DEFAULT 0')!

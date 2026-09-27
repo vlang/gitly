@@ -8,7 +8,7 @@ It provides:
 
 - Multiple users, personal and organization repositories, and public/private visibility
 - Git clone, fetch, and push over HTTP(S) and OpenSSH
-- Repository browsing, syntax highlighting, Markdown rendering, language statistics, and a “Top files” view
+- Repository browsing, syntax highlighting, Markdown rendering, language statistics, weekly LOC history, and a “Top files” view
 - Editable issues with assignees and project labels; merge requests with reviews, required approvals, squash/merge support; plus discussions, projects, milestones, releases, stars, and watches
 - Reporter/Developer/Maintainer project roles and branch creation/deletion with protected-branch wildcard rules, push/merge controls, deletion protection, and force-push rejection
 - Webhooks, scoped/expiring personal access tokens, two-factor authentication, security logs, and optional CI integration
@@ -56,6 +56,7 @@ System libraries:
 - SQLite: `libsqlite3-dev` on Ubuntu/Debian
 - PostgreSQL: `libpq-dev` on Ubuntu/Debian or `brew install libpq` on macOS
 - Stylesheet compilation: `sassc`
+- Historical LOC analysis: `scc` on the Gitly server's `PATH` (analysis runs only when a repository maintainer requests it)
 
 ## Production configuration
 

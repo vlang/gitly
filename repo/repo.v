@@ -527,6 +527,10 @@ fn (mut app App) delete_repository(id int, path string, name string) ! {
 	sql tx {
 		delete from RepoTransfer where repo_id == repo_id
 	}!
+	// Historical LOC is derived from the repository and has no use after deletion.
+	tx.execute('delete from ${sql_table('LocHistoryLanguage')} where snapshot_id in (select id from ${sql_table('LocHistorySnapshot')} where repo_id = ${repo_id})')!
+	tx.execute('delete from ${sql_table('LocHistorySnapshot')} where repo_id = ${repo_id}')!
+	tx.execute('delete from ${sql_table('LocHistoryJob')} where repo_id = ${repo_id}')!
 	fork_rows := sql tx {
 		select from RepoFork where repo_id == repo_id limit 1
 	}!
