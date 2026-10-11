@@ -30,9 +30,11 @@ pub fn Git.exec_in_dir_command(dir string, command string) os.Result {
 	return Git.exec_in_dir(dir, args)
 }
 
-pub fn Git.exec_shell(command string) os.Result {
-	return os.exec(['/bin/sh', '-c', command])
-}
+// NOTE: there is deliberately no `exec_shell` wrapper here. Handing a
+// concatenated command string to `/bin/sh -c` is how command injection gets
+// introduced, and it is never needed: every caller below builds an argument
+// vector and passes it to `os.exec`, so arguments are never re-parsed by a
+// shell. Add an argument-array helper rather than a string one.
 
 // Git.exec_in_dir_with_env runs `git -C <dir> <args...>` without going through a
 // shell, with `extra_env` added on top of the inherited environment. Use this
