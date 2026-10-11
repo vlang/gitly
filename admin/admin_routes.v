@@ -16,7 +16,7 @@ pub fn (mut app App) admin_settings(mut ctx Context) veb.Result {
 }
 
 @['/admin/settings'; post]
-pub fn (mut app App) handle_admin_update_settings(oauth_client_id string, oauth_client_secret string) veb.Result {
+pub fn (mut app App) handle_admin_update_settings(mut ctx Context, oauth_client_id string, oauth_client_secret string) veb.Result {
 	if !ctx.is_admin() {
 		return ctx.redirect_to_index()
 	}
@@ -34,7 +34,7 @@ pub fn (mut app App) handle_admin_update_settings(oauth_client_id string, oauth_
 }
 
 @['/admin/users/:user'; post]
-pub fn (mut app App) handle_admin_edit_user(user_id string) veb.Result {
+pub fn (mut app App) handle_admin_edit_user(mut ctx Context, user_id string) veb.Result {
 	if !ctx.is_admin() {
 		return ctx.redirect_to_index()
 	}

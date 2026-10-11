@@ -84,7 +84,10 @@ fn pretty_size_bytes(size_in_bytes int) string {
 	return '${size_in} ${sizes[index]}'
 }
 
-struct FileInfo {
+// Named `RepoFileInfo` rather than `FileInfo` to avoid colliding with
+// `os.FileInfo`, which V resolves in the wrong scope when this type is
+// substituted into the `api.ApiSuccessResponse[T]` generic.
+struct RepoFileInfo {
 	name      string
 	last_msg  string
 	last_hash string

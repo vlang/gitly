@@ -98,7 +98,7 @@ fn repo_sort_indicator(current_sort string, current_dir string, target_sort stri
 }
 
 @['/:username/repos']
-pub fn (mut app App) user_repos(username string) veb.Result {
+pub fn (mut app App) user_repos(mut ctx Context, username string) veb.Result {
 	exists, user := app.check_username(username)
 
 	if !exists {
@@ -128,7 +128,7 @@ pub fn (mut app App) user_repos(username string) veb.Result {
 }
 
 @['/:username/stars']
-pub fn (mut app App) user_stars(username string) veb.Result {
+pub fn (mut app App) user_stars(mut ctx Context, username string) veb.Result {
 	exists, user := app.check_username(username)
 
 	if !exists {
@@ -145,7 +145,7 @@ pub fn (mut app App) user_stars(username string) veb.Result {
 }
 
 @['/:username/:repo_name/settings']
-pub fn (mut app App) repo_settings(username string, repo_name string) veb.Result {
+pub fn (mut app App) repo_settings(mut ctx Context, username string, repo_name string) veb.Result {
 	repo := app.find_repo_by_name_and_username(repo_name, username) or {
 		return ctx.redirect_to_repository(username, repo_name)
 	}
@@ -161,7 +161,7 @@ pub fn (mut app App) repo_settings(username string, repo_name string) veb.Result
 }
 
 @['/:username/:repo_name/settings'; post]
-pub fn (mut app App) handle_update_repo_settings(username string, repo_name string) veb.Result {
+pub fn (mut app App) handle_update_repo_settings(mut ctx Context, username string, repo_name string) veb.Result {
 	repo := app.find_repo_by_name_and_username(repo_name, username) or {
 		return ctx.redirect_to_repository(username, repo_name)
 	}
@@ -226,7 +226,7 @@ pub fn (mut app App) handle_update_repo_settings(username string, repo_name stri
 }
 
 @['/:username/:repo_name/settings/features'; post]
-pub fn (mut app App) handle_update_repo_features(username string, repo_name string) veb.Result {
+pub fn (mut app App) handle_update_repo_features(mut ctx Context, username string, repo_name string) veb.Result {
 	repo := app.find_repo_by_name_and_username(repo_name, username) or {
 		return ctx.redirect_to_repository(username, repo_name)
 	}
@@ -246,7 +246,7 @@ pub fn (mut app App) handle_update_repo_features(username string, repo_name stri
 }
 
 @['/:user/:repo_name/delete'; post]
-pub fn (mut app App) handle_repo_delete(username string, repo_name string) veb.Result {
+pub fn (mut app App) handle_repo_delete(mut ctx Context, username string, repo_name string) veb.Result {
 	repo := app.find_repo_by_name_and_username(repo_name, username) or {
 		return ctx.redirect_to_repository(username, repo_name)
 	}
@@ -273,7 +273,7 @@ pub fn (mut app App) handle_repo_delete(username string, repo_name string) veb.R
 }
 
 @['/:username/:repo_name/move'; post]
-pub fn (mut app App) handle_repo_move(username string, repo_name string, dest string, verify string) veb.Result {
+pub fn (mut app App) handle_repo_move(mut ctx Context, username string, repo_name string, dest string, verify string) veb.Result {
 	repo := app.find_repo_by_name_and_username(repo_name, username) or {
 		return ctx.redirect_to_index()
 	}
@@ -1028,9 +1028,9 @@ pub fn (mut app App) handle_api_repo_files(mut ctx Context, repo_id_str string) 
 	}
 
 	items := app.find_repository_items(repo_id, branch, path)
-	mut result := []FileInfo{}
+	mut result := []RepoFileInfo{}
 	for item in items {
-		result << FileInfo{
+		result << RepoFileInfo{
 			name: item.name
 			last_msg: item.last_msg
 			last_hash: item.last_hash
@@ -1039,7 +1039,7 @@ pub fn (mut app App) handle_api_repo_files(mut ctx Context, repo_id_str string) 
 		}
 	}
 
-	return ctx.json(api.ApiSuccessResponse[[]FileInfo]{
+	return ctx.json(api.ApiSuccessResponse[[]RepoFileInfo]{
 		success: true
 		result: result
 	})

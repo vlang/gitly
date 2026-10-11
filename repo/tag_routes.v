@@ -5,7 +5,7 @@ import os
 import rand
 
 @['/:username/:repo_name/tag/:tag/:format']
-pub fn (mut app App) handle_download_tag_archive(username string, repo_name string, tag string, format string) veb.Result {
+pub fn (mut app App) handle_download_tag_archive(mut ctx Context, username string, repo_name string, tag string, format string) veb.Result {
 	return stream_tag_archive(mut app, mut ctx, username, repo_name, tag, format)
 }
 
@@ -13,7 +13,7 @@ pub fn (mut app App) handle_download_tag_archive(username string, repo_name stri
 // treats each slash as another route segment. Keep it for existing links and
 // use this catch-all route for canonical release downloads.
 @['/:username/:repo_name/archive/:tag...']
-pub fn (mut app App) handle_download_tag_archive_path(username string, repo_name string, tag string) veb.Result {
+pub fn (mut app App) handle_download_tag_archive_path(mut ctx Context, username string, repo_name string, tag string) veb.Result {
 	format := ctx.query['format'] or { '' }
 	return stream_tag_archive(mut app, mut ctx, username, repo_name, tag, format)
 }
