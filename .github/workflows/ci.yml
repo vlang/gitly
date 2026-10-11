@@ -26,7 +26,11 @@ jobs:
           cd gitly
           v -cc gcc .
 
-      - name: Compile gitly with -autofree
+      # Non-blocking: V's own vlib/net does not compile with -autofree, so
+      # this step fails for reasons outside this repository. See vlang/v#30190.
+      # Flip back to blocking once V's net module builds cleanly.
+      - name: Compile gitly with -autofree (non-blocking, vlang/v#30190)
+        continue-on-error: true
         run: |
           cd gitly
           v -cc gcc -autofree .
@@ -71,7 +75,9 @@ jobs:
         run: |
           cd gitly
           v -cc clang .
-      - name: Compile gitly with -autofree
+      # Non-blocking: vlib/net does not compile with -autofree; see vlang/v#30190.
+      - name: Compile gitly with -autofree (non-blocking, vlang/v#30190)
+        continue-on-error: true
         run: |
           cd gitly
           v -cc clang -autofree .
@@ -139,7 +145,9 @@ jobs:
           make
           sudo ./v symlink
 
-      - name: Compile gitly with -autofree
+      # Non-blocking: vlib/net does not compile with -autofree; see vlang/v#30190.
+      - name: Compile gitly with -autofree (non-blocking, vlang/v#30190)
+        continue-on-error: true
         run: |
           cd gitly
           v -autofree .
