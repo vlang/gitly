@@ -16,7 +16,7 @@ mut:
 }
 
 @['/:username/:repo_name/comments'; post]
-pub fn (mut app App) handle_add_comment(username string, repo_name string) veb.Result {
+pub fn (mut app App) handle_add_comment(mut ctx Context, username string, repo_name string) veb.Result {
 	repo := app.find_repo_by_name_and_username(repo_name, username) or { return ctx.not_found() }
 	text := ctx.form['text']
 	issue_id := ctx.form['issue_id']

@@ -5,7 +5,7 @@ module main
 import veb
 
 @['/:username/:repo_name/settings/members']
-pub fn (mut app App) repo_members(username string, repo_name string) veb.Result {
+pub fn (mut app App) repo_members(mut ctx Context, username string, repo_name string) veb.Result {
 	repo := app.find_repo_by_name_and_username(repo_name, username) or { return ctx.not_found() }
 	if !app.can_admin_repo(ctx, repo) {
 		return ctx.not_found()
@@ -15,7 +15,7 @@ pub fn (mut app App) repo_members(username string, repo_name string) veb.Result 
 }
 
 @['/:username/:repo_name/settings/members'; post]
-pub fn (mut app App) handle_add_repo_member(username string, repo_name string) veb.Result {
+pub fn (mut app App) handle_add_repo_member(mut ctx Context, username string, repo_name string) veb.Result {
 	repo := app.find_repo_by_name_and_username(repo_name, username) or { return ctx.not_found() }
 	if !app.can_admin_repo(ctx, repo) {
 		return ctx.not_found()
@@ -42,7 +42,7 @@ pub fn (mut app App) handle_add_repo_member(username string, repo_name string) v
 }
 
 @['/:username/:repo_name/settings/members/:member_id'; post]
-pub fn (mut app App) handle_update_repo_member(username string, repo_name string, member_id string) veb.Result {
+pub fn (mut app App) handle_update_repo_member(mut ctx Context, username string, repo_name string, member_id string) veb.Result {
 	repo := app.find_repo_by_name_and_username(repo_name, username) or { return ctx.not_found() }
 	if !app.can_admin_repo(ctx, repo) {
 		return ctx.not_found()
@@ -56,7 +56,7 @@ pub fn (mut app App) handle_update_repo_member(username string, repo_name string
 }
 
 @['/:username/:repo_name/settings/members/:member_id/delete'; post]
-pub fn (mut app App) handle_delete_repo_member(username string, repo_name string, member_id string) veb.Result {
+pub fn (mut app App) handle_delete_repo_member(mut ctx Context, username string, repo_name string, member_id string) veb.Result {
 	repo := app.find_repo_by_name_and_username(repo_name, username) or { return ctx.not_found() }
 	if !app.can_admin_repo(ctx, repo) {
 		return ctx.not_found()
@@ -69,7 +69,7 @@ pub fn (mut app App) handle_delete_repo_member(username string, repo_name string
 }
 
 @['/:username/:repo_name/settings/branches']
-pub fn (mut app App) protected_branches(username string, repo_name string) veb.Result {
+pub fn (mut app App) protected_branches(mut ctx Context, username string, repo_name string) veb.Result {
 	repo := app.find_repo_by_name_and_username(repo_name, username) or { return ctx.not_found() }
 	if !app.can_admin_repo(ctx, repo) {
 		return ctx.not_found()
@@ -80,7 +80,7 @@ pub fn (mut app App) protected_branches(username string, repo_name string) veb.R
 }
 
 @['/:username/:repo_name/settings/branches'; post]
-pub fn (mut app App) handle_protect_branch(username string, repo_name string) veb.Result {
+pub fn (mut app App) handle_protect_branch(mut ctx Context, username string, repo_name string) veb.Result {
 	repo := app.find_repo_by_name_and_username(repo_name, username) or { return ctx.not_found() }
 	if !app.can_admin_repo(ctx, repo) {
 		return ctx.not_found()
@@ -96,7 +96,7 @@ pub fn (mut app App) handle_protect_branch(username string, repo_name string) ve
 }
 
 @['/:username/:repo_name/settings/branches/:rule_id'; post]
-pub fn (mut app App) handle_update_protected_branch(username string, repo_name string, rule_id string) veb.Result {
+pub fn (mut app App) handle_update_protected_branch(mut ctx Context, username string, repo_name string, rule_id string) veb.Result {
 	repo := app.find_repo_by_name_and_username(repo_name, username) or { return ctx.not_found() }
 	if !app.can_admin_repo(ctx, repo) {
 		return ctx.not_found()
@@ -110,7 +110,7 @@ pub fn (mut app App) handle_update_protected_branch(username string, repo_name s
 }
 
 @['/:username/:repo_name/settings/branches/:rule_id/delete'; post]
-pub fn (mut app App) handle_unprotect_branch(username string, repo_name string, rule_id string) veb.Result {
+pub fn (mut app App) handle_unprotect_branch(mut ctx Context, username string, repo_name string, rule_id string) veb.Result {
 	repo := app.find_repo_by_name_and_username(repo_name, username) or { return ctx.not_found() }
 	if !app.can_admin_repo(ctx, repo) {
 		return ctx.not_found()
@@ -123,7 +123,7 @@ pub fn (mut app App) handle_unprotect_branch(username string, repo_name string, 
 }
 
 @['/:username/:repo_name/settings/approvals'; post]
-pub fn (mut app App) handle_update_repo_approvals(username string, repo_name string) veb.Result {
+pub fn (mut app App) handle_update_repo_approvals(mut ctx Context, username string, repo_name string) veb.Result {
 	repo := app.find_repo_by_name_and_username(repo_name, username) or { return ctx.not_found() }
 	if !app.can_admin_repo(ctx, repo) {
 		return ctx.not_found()

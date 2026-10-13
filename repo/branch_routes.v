@@ -22,7 +22,7 @@ fn (mut app App) handle_branch_count(username string, repo_name string) veb.Resu
 }
 
 @['/:user/:repo/branches']
-pub fn (mut app App) branches(username string, repo_name string) veb.Result {
+pub fn (mut app App) branches(mut ctx Context, username string, repo_name string) veb.Result {
 	repo := app.find_repo_by_name_and_username(repo_name, username) or {
 		return ctx.json_error('Not found')
 	}

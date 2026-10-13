@@ -96,7 +96,7 @@ fn (mut app App) verify_ci_callback_signature(ctx &Context, body string) bool {
 
 // GET /:username/:repo_name/ci - CI runs list page
 @['/:username/:repo_name/ci']
-pub fn (mut app App) ci_runs(username string, repo_name string) veb.Result {
+pub fn (mut app App) ci_runs(mut ctx Context, username string, repo_name string) veb.Result {
 	repo := app.find_repo_by_name_and_username(repo_name, username) or { return ctx.not_found() }
 
 	if !app.can_read_repo(ctx, repo) {
@@ -141,7 +141,7 @@ pub fn (mut app App) ci_runs(username string, repo_name string) veb.Result {
 
 // GET /:username/:repo_name/ci/:run_id_str - CI run detail page
 @['/:username/:repo_name/ci/:run_id_str']
-pub fn (mut app App) ci_run_detail(username string, repo_name string, run_id_str string) veb.Result {
+pub fn (mut app App) ci_run_detail(mut ctx Context, username string, repo_name string, run_id_str string) veb.Result {
 	repo := app.find_repo_by_name_and_username(repo_name, username) or { return ctx.not_found() }
 
 	if !app.can_read_repo(ctx, repo) {
@@ -178,7 +178,7 @@ pub fn (mut app App) ci_run_detail(username string, repo_name string, run_id_str
 
 // POST /:username/:repo_name/ci/:run_id_str/restart - Restart a CI run
 @['/:username/:repo_name/ci/:run_id_str/restart'; post]
-pub fn (mut app App) ci_restart_run(username string, repo_name string, run_id_str string) veb.Result {
+pub fn (mut app App) ci_restart_run(mut ctx Context, username string, repo_name string, run_id_str string) veb.Result {
 	repo := app.find_repo_by_name_and_username(repo_name, username) or { return ctx.not_found() }
 
 	if !app.can_admin_repo(ctx, repo) {
@@ -221,7 +221,7 @@ pub fn (mut app App) ci_restart_run(username string, repo_name string, run_id_st
 
 // POST /:username/:repo_name/ci/:run_id_str/cancel - Cancel a CI run.
 @['/:username/:repo_name/ci/:run_id_str/cancel'; post]
-pub fn (mut app App) ci_cancel_run(username string, repo_name string, run_id_str string) veb.Result {
+pub fn (mut app App) ci_cancel_run(mut ctx Context, username string, repo_name string, run_id_str string) veb.Result {
 	repo := app.find_repo_by_name_and_username(repo_name, username) or { return ctx.not_found() }
 	if !app.can_admin_repo(ctx, repo) {
 		return ctx.not_found()
