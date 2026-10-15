@@ -5,162 +5,228 @@ on: [push, pull_request]
 jobs:
   ubuntu-gcc:
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     steps:
       - name: Checkout V
+        id: checkout_v
         uses: actions/checkout@v4
         with:
           repository: vlang/v
       - name: Checkout gitly
+        id: checkout_gitly
+        if: ${{ !cancelled() && steps.checkout_v.outcome == 'success' }}
         uses: actions/checkout@v4
         with:
           path: gitly
       - name: Install Dependencies
+        id: install_dependencies
+        if: ${{ !cancelled() && steps.checkout_gitly.outcome == 'success' }}
         run: sudo apt install libsqlite3-dev
       - name: Build V
+        id: build_v
+        if: ${{ !cancelled() && steps.install_dependencies.outcome == 'success' }}
         run: |
           make
           sudo ./v symlink
 
       - name: Compile gitly
+        id: compile_gitly
+        if: ${{ !cancelled() && steps.build_v.outcome == 'success' }}
         run: |
           cd gitly
           v -cc gcc .
 
       - name: Compile gitly with -autofree
+        id: compile_gitly_with_autofree
+        if: ${{ !cancelled() && steps.compile_gitly.outcome == 'success' }}
         run: |
           cd gitly
           v -cc gcc -autofree .
 
       - name: Compile gitly with -prod
+        id: compile_gitly_with_prod
+        if: ${{ !cancelled() && steps.compile_gitly_with_autofree.outcome == 'success' }}
         run: |
           cd gitly
           v -cc gcc -prod .
 
       - name: Compile CSS from SCSS files
+        id: compile_css_from_scss_files
+        if: ${{ !cancelled() && steps.compile_gitly_with_prod.outcome == 'success' }}
         uses: gha-utilities/sass-build@v0.4.11
         with:
           source: gitly/static/css/gitly.scss
           destination: gitly/static/css/gitly.css
 
       - name: Run all tests
+        id: run_all_tests
+        if: ${{ !cancelled() && steps.compile_css_from_scss_files.outcome == 'success' }}
         run: |
           cd gitly
           v -cc gcc -d sqlite -d use_openssl test $(git ls-files '*_test.v')
 
       - name: Run tests/first_run.v
+        id: run_tests_first_run_v
+        if: ${{ !cancelled() && steps.run_all_tests.outcome == 'success' }}
         run: |
           cd gitly
           v -cc gcc -g run tests/first_run.v
 
   macos-clang:
     runs-on: macos-latest
+    timeout-minutes: 60
     steps:
       - name: Checkout V
+        id: checkout_v
         uses: actions/checkout@v4
         with:
           repository: vlang/v
       - name: Checkout gitly
+        id: checkout_gitly
+        if: ${{ !cancelled() && steps.checkout_v.outcome == 'success' }}
         uses: actions/checkout@v4
         with:
           path: gitly
       - name: Build V
+        id: build_v
+        if: ${{ !cancelled() && steps.checkout_gitly.outcome == 'success' }}
         run: |
           make
           ./v symlink
       - name: Compile gitly
+        id: compile_gitly
+        if: ${{ !cancelled() && steps.build_v.outcome == 'success' }}
         run: |
           cd gitly
           v -cc clang .
       - name: Compile gitly with -autofree
+        id: compile_gitly_with_autofree
+        if: ${{ !cancelled() && steps.compile_gitly.outcome == 'success' }}
         run: |
           cd gitly
           v -cc clang -autofree .
       - name: Compile gitly with -prod
+        id: compile_gitly_with_prod
+        if: ${{ !cancelled() && steps.compile_gitly_with_autofree.outcome == 'success' }}
         run: |
           cd gitly
           v -cc clang -prod .
       - name: Compile CSS from SCSS files
+        id: compile_css_from_scss_files
+        if: ${{ !cancelled() && steps.compile_gitly_with_prod.outcome == 'success' }}
         uses: gha-utilities/sass-build@v0.4.11
         with:
           source: gitly/static/css/gitly.scss
           destination: gitly/static/css/gitly.css
       - name: Run all tests
+        id: run_all_tests
+        if: ${{ !cancelled() && steps.compile_css_from_scss_files.outcome == 'success' }}
         run: |
           cd gitly
           v -cc clang -d sqlite -d use_openssl test $(git ls-files '*_test.v')
       - name: Run tests/first_run.v
+        id: run_tests_first_run_v
+        if: ${{ !cancelled() && steps.run_all_tests.outcome == 'success' }}
         run: |
           cd gitly
           v -cc clang -g run tests/first_run.v
 
   windows-gcc:
     runs-on: windows-latest
+    timeout-minutes: 60
     env:
       VFLAGS: -cc gcc
     steps:
       - name: Checkout V
+        id: checkout_v
         uses: actions/checkout@v4
         with:
           repository: vlang/v
       - name: Checkout gitly
+        id: checkout_gitly
+        if: ${{ !cancelled() && steps.checkout_v.outcome == 'success' }}
         uses: actions/checkout@v4
         with:
           path: gitly
       - name: Install SQLite
+        id: install_sqlite
+        if: ${{ !cancelled() && steps.checkout_gitly.outcome == 'success' }}
         run: |
           .github\workflows\windows-install-sqlite.bat
           dir thirdparty\sqlite\
       - name: Build V
+        id: build_v
+        if: ${{ !cancelled() && steps.install_sqlite.outcome == 'success' }}
         run: |
           ./make.bat -gcc
       - name: Compile gitly
+        id: compile_gitly
+        if: ${{ !cancelled() && steps.build_v.outcome == 'success' }}
         run: |
           dir
           .\v.exe -cc gcc gitly
 
   ubuntu-tcc:
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     env:
       VFLAGS: -cc tcc -d no_backtrace -d no_segfault_handler
     steps:
       - name: Checkout V
+        id: checkout_v
         uses: actions/checkout@v4
         with:
           repository: vlang/v
       - name: Checkout gitly
+        id: checkout_gitly
+        if: ${{ !cancelled() && steps.checkout_v.outcome == 'success' }}
         uses: actions/checkout@v4
         with:
           path: gitly
       - name: Install Dependencies
+        id: install_dependencies
+        if: ${{ !cancelled() && steps.checkout_gitly.outcome == 'success' }}
         run: sudo apt install libsqlite3-dev
       - name: Build V
+        id: build_v
+        if: ${{ !cancelled() && steps.install_dependencies.outcome == 'success' }}
         run: |
           echo $VFLAGS
           make
           sudo ./v symlink
 
       - name: Compile gitly with -autofree
+        id: compile_gitly_with_autofree
+        if: ${{ !cancelled() && steps.build_v.outcome == 'success' }}
         run: |
           cd gitly
           v -autofree .
 
       - name: Compile gitly
+        id: compile_gitly
+        if: ${{ !cancelled() && steps.compile_gitly_with_autofree.outcome == 'success' }}
         run: |
           cd gitly
           v .
 
       - name: Compile CSS from SCSS files
+        id: compile_css_from_scss_files
+        if: ${{ !cancelled() && steps.compile_gitly.outcome == 'success' }}
         uses: gha-utilities/sass-build@v0.4.11
         with:
           source: gitly/static/css/gitly.scss
           destination: gitly/static/css/gitly.css
 
       - name: Run all tests
+        id: run_all_tests
+        if: ${{ !cancelled() && steps.compile_css_from_scss_files.outcome == 'success' }}
         run: |
           cd gitly
           v -d sqlite -d use_openssl test $(git ls-files '*_test.v')
 
       - name: Run tests/first_run.v
+        id: run_tests_first_run_v
+        if: ${{ !cancelled() && steps.run_all_tests.outcome == 'success' }}
         run: |
           cd gitly
           v -g run tests/first_run.v
