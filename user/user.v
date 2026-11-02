@@ -204,7 +204,7 @@ pub fn (mut app App) register_user(username string, password string, salt string
 			if matching_emails.len == 0 {
 				user_email := Email{
 					user_id: username_user.id
-					email: candidate_email
+					email:   candidate_email
 				}
 				sql tx {
 					insert user_email into Email
@@ -223,21 +223,21 @@ pub fn (mut app App) register_user(username string, password string, salt string
 		}!
 		tx.commit()!
 		committed = true
-		app.add_activity(id, 'joined') or { app.info('could not record joined activity: ${err}') }
+		app.add_activity(id, 'joined') or { app.info('could not record joined activity') }
 		app.create_user_dir(account_name)
 		return true
 	}
 
 	user := User{
-		username: account_name
-		password: password
-		salt: salt
-		created_at: time.now()
-		is_registered: true
-		is_github: github
+		username:        account_name
+		password:        password
+		salt:            salt
+		created_at:      time.now()
+		is_registered:   true
+		is_github:       github
 		github_username: if github { account_name } else { '' }
-		avatar: default_avatar_name
-		is_admin: is_admin
+		avatar:          default_avatar_name
+		is_admin:        is_admin
 	}
 
 	sql tx {
@@ -259,7 +259,7 @@ pub fn (mut app App) register_user(username string, password string, salt string
 	for email in clean_emails {
 		user_email := Email{
 			user_id: created.id
-			email: email
+			email:   email
 		}
 		sql tx {
 			insert user_email into Email
@@ -316,7 +316,7 @@ pub fn (mut app App) add_user(user User) ! {
 pub fn (mut app App) add_email(user_id int, email string) ! {
 	user_email := Email{
 		user_id: user_id
-		email: email
+		email:   email
 	}
 
 	sql app.db {
@@ -470,10 +470,10 @@ fn (mut app App) search_users(query string) []User {
 	mut users := []User{}
 	for row in repo_rows {
 		users << User{
-			id: row[0].int()
+			id:        row[0].int()
 			full_name: row[1]
-			username: row[2]
-			avatar: row[3]
+			username:  row[2]
+			avatar:    row[3]
 		}
 	}
 	return users
@@ -627,13 +627,13 @@ pub fn (mut app App) auth_user(mut ctx Context, user User, ip string) ! {
 	// on cross-site requests, mitigating CSRF. Set `secure: true` as well when
 	// deploying behind HTTPS.
 	ctx.set_cookie(
-		name: 'token'
-		value: token
-		expires: expire_date
-		path: '/'
+		name:      'token'
+		value:     token
+		expires:   expire_date
+		path:      '/'
 		http_only: true
 		same_site: .same_site_lax_mode
-		secure: app.config.cookie_secure
+		secure:    app.config.cookie_secure
 	)
 }
 
