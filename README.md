@@ -23,7 +23,7 @@ It provides:
 
 Gitly is beta software. It is a lightweight forge rather than a complete GitLab distribution. It supplies an integrated platform control plane while scanner engines, native LDAP/SAML protocol handling, managed observability backends, multi-region orchestration, and the separately maintained CI runner remain external services.
 
-The current GitLab capability comparison and the remaining implementation sequence are documented in [docs/gitlab-parity.md](docs/gitlab-parity.md). Gitly is intentionally described as a lightweight alternative, not as complete GitLab parity while major platform areas remain outstanding.
+The current GitLab capability comparison and the remaining implementation sequence are documented in [docs/gitlab-parity.md](docs/gitlab-parity.md). Gitly is intentionally described as a lightweight alternative, not as complete GitLab parity while major platform areas remain outstanding. The comparison against Gitea, which is the closer-sized forge and therefore the more useful bar, is in [docs/gitea-parity.md](docs/gitea-parity.md).
 
 ## Build and run
 
