@@ -7,6 +7,7 @@ import time
 import highlight
 import validation
 import git
+import highlight
 import config
 
 const top_files_limit = 50
@@ -456,15 +457,15 @@ pub fn (mut app App) handle_new_repo(mut ctx Context, name string, clone_url str
 	}
 	repo_path := os.join_path(owner_dir, name)
 	mut new_repo := &Repo{
-		name: name
-		description: description
-		git_dir: repo_path
-		user_id: ctx.user.id
+		name:           name
+		description:    description
+		git_dir:        repo_path
+		user_id:        ctx.user.id
 		primary_branch: default_primary_branch
-		user_name: owner_name
-		clone_url: valid_clone_url
-		is_public: is_public
-		created_at: int(time.now().unix())
+		user_name:      owner_name
+		clone_url:      valid_clone_url
+		is_public:      is_public
+		created_at:     int(time.now().unix())
 	}
 	import_issues := ctx.form['import_issues'] == '1'
 	import_prs := ctx.form['import_prs'] == '1'
@@ -544,7 +545,7 @@ pub fn (mut app App) handle_new_repo(mut ctx Context, name string, clone_url str
 fn bg_fetch_files_info(repo_ Repo, branch string, path string, conf config.Config) {
 	mut repo := repo_
 	mut app := &App{
-		db: connect_db(conf) or {
+		db:     connect_db(conf) or {
 			eprintln('cannot open ${db_backend_name()} db connection for bg_fetch thread: ${err}')
 			return
 		}
@@ -575,7 +576,7 @@ fn clone_repo(new_repo Repo, conf config.Config, import_issues bool, import_prs 
 	// Use a dedicated DB connection for the clone thread to avoid
 	// sharing a connection across threads.
 	mut app := &App{
-		db: connect_db(conf) or {
+		db:     connect_db(conf) or {
 			eprintln('cannot open ${db_backend_name()} db connection for clone thread: ${err}')
 			return
 		}
@@ -636,7 +637,7 @@ fn clone_repo(new_repo Repo, conf config.Config, import_issues bool, import_prs 
 fn bg_import_github_repo_info(repo_id int, clone_url string, existing_description string, conf config.Config) {
 	eprintln('[github-info] spawned thread for repo_id=${repo_id}')
 	mut app := &App{
-		db: connect_db(conf) or {
+		db:     connect_db(conf) or {
 			eprintln('[github-info] cannot open db connection: ${err}')
 			return
 		}
@@ -661,7 +662,7 @@ fn bg_import_github_repo_info(repo_id int, clone_url string, existing_descriptio
 fn bg_import_github_issues(repo_id int, clone_url string, owner_user_id int, conf config.Config) {
 	eprintln('[github-import] spawned thread for repo_id=${repo_id}')
 	mut app := &App{
-		db: connect_db(conf) or {
+		db:     connect_db(conf) or {
 			eprintln('[github-import] cannot open db connection for import thread: ${err}')
 			return
 		}
@@ -981,7 +982,7 @@ pub fn (mut app App) handle_api_repo_star(mut ctx Context, repo_id_str string) v
 
 	return ctx.json(api.ApiSuccessResponse[bool]{
 		success: true
-		result: is_repo_starred
+		result:  is_repo_starred
 	})
 }
 
@@ -1002,7 +1003,7 @@ pub fn (mut app App) handle_api_repo_watch(mut ctx Context, repo_id_str string) 
 
 	return ctx.json(api.ApiSuccessResponse[bool]{
 		success: true
-		result: is_watching
+		result:  is_watching
 	})
 }
 
@@ -1031,17 +1032,17 @@ pub fn (mut app App) handle_api_repo_files(mut ctx Context, repo_id_str string) 
 	mut result := []RepoFileInfo{}
 	for item in items {
 		result << RepoFileInfo{
-			name: item.name
-			last_msg: item.last_msg
+			name:      item.name
+			last_msg:  item.last_msg
 			last_hash: item.last_hash
 			last_time: item.pretty_last_time()
-			size: item.pretty_tree_size()
+			size:      item.pretty_tree_size()
 		}
 	}
 
 	return ctx.json(api.ApiSuccessResponse[[]RepoFileInfo]{
 		success: true
-		result: result
+		result:  result
 	})
 }
 
@@ -1107,4 +1108,32 @@ pub fn (mut app App) handle_raw(mut ctx Context, username string, repo_name stri
 	}
 
 	return ctx.ok(file_source)
+}
+
+@['/:username/:repo_name/wiki']
+pub fn (mut app App) wiki(mut ctx Context, username string, repo_name string) veb.Result {
+	return app.wiki_page(mut ctx, username, repo_name, 'Home')
+}
+
+@['/:username/:repo_name/wiki/:page...']
+pub fn (mut app App) wiki_page(mut ctx Context, username string, repo_name string, page string) veb.Result {
+	repo := app.find_repo_by_name_and_username(repo_name, username) or { return ctx.not_found() }
+	if !app.can_read_repo(ctx, repo) {
+		return ctx.not_found()
+	}
+	mut wiki_branch := 'wiki'
+	if git.Git.exec_in_dir(repo.git_dir, ['rev-parse', '--verify', wiki_branch]).exit_code != 0 {
+		wiki_branch = repo.primary_branch
+	}
+	page_name := if page == '' { 'Home' } else { page }
+	res := git.Git.exec_in_dir(repo.git_dir, ['show', ':.md'])
+	mut content := ''
+	if res.exit_code == 0 {
+		content = res.output
+	} else {
+		content = 'Page not found.'
+	}
+	wiki_content := veb.RawHtml(highlight.convert_markdown_to_html(content))
+	ctx.set_page_title(['Wiki', '/'])
+	return .html('templates/wiki.html')
 }
