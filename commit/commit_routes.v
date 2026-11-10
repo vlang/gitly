@@ -4,6 +4,7 @@ import veb
 import time
 import api
 import git
+import os
 
 @['/api/v1/:user/:repo_name/:branch_name/commits/count']
 fn (mut app App) handle_commits_count(mut ctx Context, username string, repo_name string, branch_name string) veb.Result {
@@ -32,7 +33,7 @@ fn (mut app App) handle_commits_count(mut ctx Context, username string, repo_nam
 	// app.debug("${branch} ${count}" )
 	return ctx.json(api.ApiCommitCount{
 		success: true
-		result: count
+		result:  count
 	})
 }
 
@@ -139,4 +140,37 @@ pub fn (mut app App) commit(mut ctx Context, username string, repo_name string, 
 	}
 
 	return $veb.html()
+}
+
+@['/:username/:repo_name/cherry-pick/:hash'; post]
+pub fn (mut app App) handle_cherry_pick(mut ctx Context, username string, repo_name string, hash string) veb.Result {
+	repo := app.find_repo_by_name_and_username(repo_name, username) or { return ctx.not_found() }
+	if !app.can_admin_repo(ctx, repo) {
+		return ctx.not_found()
+	}
+	branch := ctx.form['branch'] or { repo.primary_branch }
+	target := ctx.form['target_branch'] or { repo.primary_branch }
+	if !is_safe_ref(branch) || !is_safe_ref(target) || !is_valid_commit_hash(hash) {
+		ctx.error('Invalid ref')
+		return ctx.redirect('///-/commits/')
+	}
+	worktree := os.join_path(os.temp_dir(), 'gitly_cp_')
+	os.mkdir_all(worktree) or {
+		ctx.error('Failed to create worktree: ')
+		return ctx.redirect('///-/commits/')
+	}
+	defer { os.rmdir_all(worktree) or {} }
+	add_res := git.Git.exec_in_dir(repo.git_dir, ['worktree', 'add', '--force', worktree, target])
+	if add_res.exit_code != 0 {
+		ctx.error('Failed to prepare worktree: ')
+		return ctx.redirect('///-/commits/')
+	}
+	cp_res := git.Git.exec_in_dir(worktree, ['cherry-pick', hash])
+	remove_res := git.Git.exec_in_dir(repo.git_dir, ['worktree', 'remove', '--force', worktree])
+	if cp_res.exit_code != 0 {
+		ctx.error('Cherry-pick failed: ')
+		return ctx.redirect('///-/commits/')
+	}
+	_ = remove_res
+	return ctx.redirect('///-/commits/')
 }
