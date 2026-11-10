@@ -97,20 +97,34 @@ fn test_update_branch_writes_new_values() ! {
 	sql app.db {
 		insert seeded into Branch
 	}!
+	second_branch := Branch{
+		id:      2
+		repo_id: 1
+		name:    'other'
+		author:  'other_author'
+		hash:    'other_hash'
+		date:    500
+	}
+	sql app.db {
+		insert second_branch into Branch
+	}!
 	app.update_branch(1, 'new_author', 'new_hash', 2000)!
 
 	branch := app.find_repo_branch_by_name(1, 'main')
 	assert branch.author == 'new_author'
 	assert branch.hash == 'new_hash'
 	assert branch.date == 2000
+	other := app.find_repo_branch_by_name(1, 'other')
+	assert other.author == 'other_author'
+	assert other.hash == 'other_hash'
+	assert other.date == 500
 }
 
 fn test_save_repo_writes_updated_counters() ! {
-	!sqlite?
-	{
+	$if !sqlite ? {
 		return
 	}
-	root := os.join_path(os.temp_dir(), 'gitly_orm_save_repo_')
+	root := os.join_path(os.temp_dir(), 'gitly_orm_save_repo_${os.getpid()}')
 	os.rmdir_all(root) or {}
 	os.mkdir_all(root)!
 	defer {
@@ -125,7 +139,7 @@ fn test_save_repo_writes_updated_counters() ! {
 	// would update every row) is detected instead of silently passing.
 	second := Repo{
 		id:             2
-		git_dir:        app.find_repo_by_id(1)!.git_dir
+		git_dir:        (app.find_repo_by_id(1) or { panic('repo missing') }).git_dir
 		name:           'other'
 		user_id:        1
 		user_name:      'owner'
@@ -142,11 +156,11 @@ fn test_save_repo_writes_updated_counters() ! {
 	}!
 
 	// Construct a brand-new Repo value (rather than mutating a retrieved one)
-	// so the shadowed description, iews_count and is_public assignments
+	// so the shadowed `description`, `views_count` and `is_public` assignments
 	// in save_repo are actually exercised.
 	repo := Repo{
 		id:             1
-		git_dir:        app.find_repo_by_id(1)!.git_dir
+		git_dir:        (app.find_repo_by_id(1) or { panic('repo missing') }).git_dir
 		name:           'project'
 		user_id:        1
 		user_name:      'owner'
@@ -163,7 +177,7 @@ fn test_save_repo_writes_updated_counters() ! {
 	}
 	app.save_repo(repo)!
 
-	saved := app.find_repo_by_id(1)!
+	saved := app.find_repo_by_id(1) or { return error('repo missing') }
 	assert saved.description == 'updated description'
 	assert saved.is_public == false
 	assert saved.views_count == 42
@@ -174,7 +188,7 @@ fn test_save_repo_writes_updated_counters() ! {
 	assert saved.webhook_secret == 'rotated-secret'
 
 	// The second repository must be untouched.
-	other := app.find_repo_by_id(2)!
+	other := app.find_repo_by_id(2) or { return error('repo missing') }
 	assert other.description == 'second repo description'
 	assert other.is_public == false
 	assert other.views_count == 0
