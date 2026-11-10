@@ -43,10 +43,9 @@ evidence.
 | Gitea | Feature | Gitly |
 | --- | --- | --- |
 | ✓ | Open source and free | ✓ GPL-3.0, `LICENSE` |
-| ✓ | Low RAM / CPU usage | ✓ V, single binary |
 | ✓ | Multiple database support | ✓ `database_d_sqlite.v` / `database_notd_sqlite.v` |
 | ✓ | Multiple OS support | ✓ CI covers ubuntu-gcc, macos-clang, windows-gcc, ubuntu-tcc |
-| ✘ | Telemetry | ✓ absolutely none, no phone-home anywhere |
+| ✘ | Telemetry | ~ product telemetry ingestion/storage exists (platform_operations.v); no outbound usage tracking or phone-home |
 | ✓ | WebAuthn (2FA) | ✘ see *Missing* |
 | ✓ | Audit log | ✓ `security/security_log.v`, plus append-only audit export |
 | ✓ | Extensive API | ✓ `api_v1_routes.v`, `api/` module |
@@ -119,7 +118,6 @@ evidence.
 | ✓ | 2FA | ✓ TOTP in `two_factor.v` |
 | ⁄ | Rebase merging | ✘ see *Missing* |
 | ✓ | Pull request templates | ✘ see *Missing* |
-| ✓ | Multiple reviewers | ? not verified |
 | ✘ | Merge conflict resolution in the UI | ✘ Gitea does not have it either |
 | ✓ | Revert specific commits | ✘ see *Missing* |
 | ✓ | Cherry-picking changes | ✘ see *Missing* |
@@ -226,6 +224,9 @@ Recorded so these are not re-raised as defects:
 Listed rather than guessed, so a reader does not mistake an unexamined row for a
 negative one:
 
+- **Low RAM / CPU usage.** The single-binary distribution does not demonstrate
+  resource consumption; no measurements have been taken, so the row was removed
+  from "Implemented and verified" rather than left as evidence.
 - **Multiple PR reviewers.** `reviewer` matches only `database_test.v`, which is
   not a reviewer model. Approval entity exists; the reviewer count is unknown.
 - **Repository topics as user-visible strings.** Confirmed absent as a model;
