@@ -106,10 +106,10 @@ fn test_update_branch_writes_new_values() ! {
 }
 
 fn test_save_repo_writes_updated_counters() ! {
-	$if !sqlite ? {
+	 !sqlite ? {
 		return
 	}
-	root := os.join_path(os.temp_dir(), 'gitly_orm_save_repo_${os.getpid()}')
+	root := os.join_path(os.temp_dir(), 'gitly_orm_save_repo_')
 	os.rmdir_all(root) or {}
 	os.mkdir_all(root)!
 	defer {
@@ -120,22 +120,64 @@ fn test_save_repo_writes_updated_counters() ! {
 		app.db.close() or {}
 	}
 
-	// Only the mutable fields of Repo are set here. `description`, `is_public` and
-	// `views_count` are outside the `mut:` block, so save_repo cannot change them
-	// on a row read back from the database, and asserting on them would fail for
-	// that reason rather than because of the ORM update.
-	mut repo := app.find_repo_by_id(1)!
-	repo.nr_branches = 7
-	repo.nr_tags = 11
-	repo.nr_stars = 13
-	repo.nr_releases = 5
-	repo.webhook_secret = 'rotated-secret'
+	// Insert a second repository so a tautological where id == id (which
+	// would update every row) is detected instead of silently passing.
+	second := Repo{
+		id:             2
+		git_dir:        app.find_repo_by_id(1)!.git_dir
+		name:           'other'
+		user_id:        1
+		user_name:      'owner'
+		description:    'second repo description'
+		is_public:      false
+		primary_branch: 'main'
+		status:         .done
+		nr_branches:    1
+		nr_tags:        2
+		nr_stars:       3
+	}
+	sql app.db {
+		insert second into Repo
+	}!
+
+	// Construct a brand-new Repo value (rather than mutating a retrieved one)
+	// so the shadowed description, iews_count and is_public assignments
+	// in save_repo are actually exercised.
+	repo := Repo{
+		id:             1
+		git_dir:        app.find_repo_by_id(1)!.git_dir
+		name:           'project'
+		user_id:        1
+		user_name:      'owner'
+		description:    'updated description'
+		is_public:      false
+		primary_branch: 'main'
+		status:         .done
+		views_count:    42
+		nr_branches:    7
+		nr_tags:        11
+		nr_stars:       13
+		nr_releases:    5
+		webhook_secret: 'rotated-secret'
+	}
 	app.save_repo(repo)!
 
 	saved := app.find_repo_by_id(1)!
+	assert saved.description == 'updated description'
+	assert saved.is_public == false
+	assert saved.views_count == 42
 	assert saved.nr_branches == 7
 	assert saved.nr_tags == 11
 	assert saved.nr_stars == 13
 	assert saved.nr_releases == 5
 	assert saved.webhook_secret == 'rotated-secret'
+
+	// The second repository must be untouched.
+	other := app.find_repo_by_id(2)!
+	assert other.description == 'second repo description'
+	assert other.is_public == false
+	assert other.views_count == 0
+	assert other.nr_branches == 1
+	assert other.nr_tags == 2
+	assert other.nr_stars == 3
 }
