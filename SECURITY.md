@@ -20,8 +20,10 @@ report confidential until a fix is published:
 
 **https://github.com/vlang/gitly/security/advisories/new**
 
-If you cannot use that form, email the maintainers listed in `.github/FUNDING.yml`
-and the repository owner, and include the words "gitly security" in the subject.
+If you cannot use that form, GitHub private vulnerability reporting is the only
+supported disclosure channel. There is no email fallback: .github/FUNDING.yml
+contains sponsorship entries only, so please use the form above (or open a draft
+security advisory on the repository) rather than mailing maintainers.
 
 Please include:
 
@@ -93,6 +95,14 @@ a shell, so route parameters, branch names, and file paths are never re-parsed b
 `/bin/sh`. `git/git.v` documents this in `Git.exec_in_dir_with_env`. If you add
 code that runs an external command, use an argument array; do not concatenate
 user input into a string that is later handed to a shell.
+
+Note that avoiding a shell prevents *shell* injection only. It does not by itself
+prevent Git option/argument injection: a ref or path that begins with - can
+still be read by git as an option, and split_command splits on whitespace so a
+ref containing a space becomes several arguments. Callers that interpolate a
+caller-supplied ref should pass it after a -- separator or move to
+Git.exec_in_dir_with_env with an argument array (see 
+epo/repo.v git()).
 
 Repository read access goes through `App.can_read_repo` (`repo/repo.v`), which
 every repo-scoped read route calls before running a git command or returning repo
