@@ -74,11 +74,20 @@ pub fn (mut app App) handle_add_repo_issue(mut ctx Context, username string, rep
 	}
 	title := ctx.form['title']
 	text := ctx.form['text']
+	is_confidential := 'confidential' in ctx.form
 	if !valid_title(title) || !valid_body(text) {
 		ctx.error('Issue title is missing or the description is too long')
 		return ctx.redirect('/${username}/${repo_name}/issues/new')
 	}
-	app.add_issue(repo.id, ctx.user.id, title, text) or {
+	issue_id := app.add_issue_returning_id(repo.id, ctx.user.id, title, text) or {
+		app.info(err.str())
+		return ctx.redirect('///issues/new')
+	}
+	if is_confidential {
+		sql app.db {
+			update Issue set is_confidential = true where id == issue_id
+		} or { app.info(err.str()) }
+	}
 		app.info(err.str())
 		return ctx.redirect('/${username}/${repo_name}/issues/new')
 	}
@@ -156,6 +165,12 @@ pub fn (mut app App) issues(mut ctx Context, username string, repo_name string, 
 	mut i := 0
 	for i = 0; i < repo_issues.len; i++ {
 		issue = repo_issues[i]
+		if issue.is_confidential && ctx.logged_in && issue.author_id != ctx.user.id && !app.can_admin_repo(ctx, repo) {
+			continue
+		}
+		if issue.is_confidential && !ctx.logged_in {
+			continue
+		}
 		user = app.get_user_by_id(issue.author_id) or { placeholder_user(issue.author_id) }
 		issue.labels = app.get_issue_labels(issue.id)
 		issue.repo_author = repo.user_name
