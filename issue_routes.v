@@ -40,7 +40,7 @@ fn (mut app App) handle_issues_count(username string, repo_name string) veb.Resu
 	count := app.get_repo_issue_count(repo.id)
 	return ctx.json(api.ApiIssueCount{
 		success: true
-		result: count
+		result:  count
 	})
 }
 
@@ -81,22 +81,20 @@ pub fn (mut app App) handle_add_repo_issue(mut ctx Context, username string, rep
 	}
 	issue_id := app.add_issue_returning_id(repo.id, ctx.user.id, title, text) or {
 		app.info(err.str())
-		return ctx.redirect('///issues/new')
+		return ctx.redirect('/${username}/${repo_name}/issues/new')
 	}
 	if is_confidential {
 		sql app.db {
 			update Issue set is_confidential = true where id == issue_id
 		} or { app.info(err.str()) }
 	}
-		app.info(err.str())
-		return ctx.redirect('/${username}/${repo_name}/issues/new')
-	}
+
 	app.increment_user_post(mut ctx.user) or { app.info(err.str()) }
 	app.sync_repo_open_issue_count(repo.id) or { app.info(err.str()) }
 	app.dispatch_webhook(repo.id, 'issue', WebhookIssuePayload{
 		action: 'opened'
-		repo: '${username}/${repo_name}'
-		title: title
+		repo:   '${username}/${repo_name}'
+		title:  title
 		author: ctx.user.username
 	})
 	has_first_issue_activity := app.has_activity(ctx.user.id, 'first_issue')
@@ -276,8 +274,8 @@ pub fn (mut app App) handle_edit_issue(mut ctx Context, username string, repo_na
 	}
 	app.dispatch_webhook(repo.id, 'issue', WebhookIssuePayload{
 		action: 'updated'
-		repo: '${username}/${repo_name}'
-		title: title.trim_space()
+		repo:   '${username}/${repo_name}'
+		title:  title.trim_space()
 		author: ctx.user.username
 	})
 	return ctx.redirect('/${username}/${repo_name}/issue/${issue.id}')
@@ -391,8 +389,8 @@ fn change_issue_status(mut app App, mut ctx Context, username string, repo_name 
 	action := if status == .closed { 'closed' } else { 'reopened' }
 	app.dispatch_webhook(repo.id, 'issue', WebhookIssuePayload{
 		action: action
-		repo: '${username}/${repo_name}'
-		title: issue.title
+		repo:   '${username}/${repo_name}'
+		title:  issue.title
 		author: ctx.user.username
 	})
 	return ctx.redirect('/${username}/${repo_name}/issue/${issue.id}')
