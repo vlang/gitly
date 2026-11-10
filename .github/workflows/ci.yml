@@ -113,7 +113,7 @@ jobs:
       # Must come after "Build V": this used to run first, when neither `v`
       # nor `v.exe` existed, so the referenced script could not work at all.
       - name: Install SQLite
-        run: .github\workflows\windows-install-sqlite.bat
+        run: .\gitly\.github\workflows\windows-install-sqlite.bat
 
       - name: Compile gitly
         run: |
