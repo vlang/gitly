@@ -32,7 +32,7 @@ fn (mut app App) handle_commits_count(mut ctx Context, username string, repo_nam
 	// app.debug("${branch} ${count}" )
 	return ctx.json(api.ApiCommitCount{
 		success: true
-		result: count
+		result:  count
 	})
 }
 
@@ -139,4 +139,22 @@ pub fn (mut app App) commit(mut ctx Context, username string, repo_name string, 
 	}
 
 	return $veb.html()
+}
+
+@['/:username/:repo_name/graph']
+pub fn (mut app App) commit_graph(mut ctx Context, username string, repo_name string) veb.Result {
+	repo := app.find_repo_by_name_and_username(repo_name, username) or { return ctx.not_found() }
+	if !app.can_read_repo(ctx, repo) {
+		return ctx.not_found()
+	}
+	res := git.Git.exec_in_dir(repo.git_dir, ['log', '--graph', '--oneline', '--decorate', '--all',
+		'--date-order'])
+	mut graph_output := ''
+	if res.exit_code == 0 {
+		graph_output = res.output
+	} else {
+		graph_output = 'Unable to compute commit graph.'
+	}
+	ctx.set_page_title(['Commit graph', '/'])
+	return .html('templates/commit_graph.html')
 }
