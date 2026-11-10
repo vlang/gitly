@@ -15,10 +15,20 @@
 					<span>repositories</span>
 					|
 					<a href="/search?query=@valid_query&type=users">users</a>
-				@else
+					|
+					<a href="/search?query=@valid_query&type=code">code</a>
+				@elseif search_type == 'users'
 					<a href="/search?query=@valid_query&type=repos">repositories</a>
 					|
 					<span>users</span>
+					|
+					<a href="/search?query=@valid_query&type=code">code</a>
+				@else
+					<a href="/search?query=@valid_query&type=repos">repositories</a>
+					|
+					<a href="/search?query=@valid_query&type=users">users</a>
+					|
+					<span>code</span>
 				@end
 			</div>
 
@@ -64,6 +74,21 @@
 					@end
 				@else
 					<p class="search-info">We couldn’t find any users matching "${valid_query}"</p>
+				@end
+			@end
+
+			@if search_type == 'code'
+				@if code_results.len > 0
+					<p class="search-info">Showing ${code_results.len} code results</p>
+					@for r in code_results
+						<div class="list-item">
+							<a href="/@r.repo_user/@r.repo_name/blob/@r.path">
+								<h3>@r.repo_user/@r.repo_name — @r.path</h3>
+							</a>
+						</div>
+					@end
+				@else
+					<p class="search-info">We couldn’t find any code matching "${valid_query}"</p>
 				@end
 			@end
 		</div>
