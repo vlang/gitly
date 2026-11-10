@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		@include 'layout/head.html'
+	</head>
+	<body>
+		@include 'layout/header.html'
+
+		<div class="content">
+			@include 'layout/repo_menu.html'
+
+			<div class="ai-fix-header">
+				<a href="/@repo.user_name/@repo.name/pull/@pr.id">Back to pull request #@pr.id</a>
+				<h1>Fix with Gitly AI</h1>
+				<p>@{pr.formatted_title()}</p>
+			</div>
+
+			<div class="ai-fix-context">
+				<p>Source branch: <code>@source_repo.user_name/@source_repo.name:@pr.head_branch</code></p>
+				<p>Commit: <code>@head_oid</code></p>
+				<p>CI: <a href="/@source_repo.user_name/@source_repo.name/ci/@ci_status.ci_run_id">Run #@ci_status.ci_run_id</a> <span class="pr-ci__status @{ci_status.status.css_class()}">@{ci_status.status.str()}</span></p>
+			</div>
+
+			@if error_msg != ''
+				<div class="ai-fix-error" role="alert">@error_msg</div>
+			@end
+
+			@if has_suggestion
+				<section class="ai-fix-review" aria-labelledby="ai-fix-review-title">
+					<h2 id="ai-fix-review-title">Review the AI response</h2>
+					<p class="ai-fix-summary">@suggestion.summary</p>
+					@if suggestion.patch != ''
+						<p>Review every change before committing. The proposed fix has not been tested. Gitly will request a new CI run after you commit it.</p>
+						<pre class="ai-fix-patch" tabindex="0" aria-label="Proposed unified diff">@suggestion.patch</pre>
+						<form method="post" action="/@repo.user_name/@repo.name/pull/@pr.id/ai-fix/apply">
+							<input type="hidden" name="csrf_token" value="@csrf_token">
+							<input type="hidden" name="head_oid" value="@head_oid">
+							<input type="hidden" name="ci_run_id" value="@ci_status.ci_run_id">
+							<input type="hidden" name="patch_base64" value="@patch_base64">
+							<div class="ai-fix-actions">
+								<button type="submit" class="pr-action pr-action--review">Commit fix and rerun CI</button>
+								<a href="/@repo.user_name/@repo.name/pull/@pr.id">Cancel</a>
+							</div>
+						</form>
+					@else
+						<p>The AI did not propose a code change. Review its explanation before deciding what to try next.</p>
+						<div class="ai-fix-actions">
+							<a class="button pr-action" href="/@repo.user_name/@repo.name/pull/@pr.id/ai-fix">Try again</a>
+							<a href="/@repo.user_name/@repo.name/pull/@pr.id">Back to pull request</a>
+						</div>
+					@end
+				</section>
+			@else
+				<form class="ai-fix-form" method="post" action="/@repo.user_name/@repo.name/pull/@pr.id/ai-fix" autocomplete="off">
+					<input type="hidden" name="csrf_token" value="@csrf_token">
+					<input type="hidden" name="head_oid" value="@head_oid">
+					<input type="hidden" name="ci_run_id" value="@ci_status.ci_run_id">
+
+					<label for="ai-provider">AI provider</label>
+					<select id="ai-provider" name="provider" required>
+						@if provider == 'codex'
+							<option value="claude">Claude (Anthropic)</option>
+							<option value="codex" selected>Codex (OpenAI)</option>
+						@else
+							<option value="claude" selected>Claude (Anthropic)</option>
+							<option value="codex">Codex (OpenAI)</option>
+						@end
+					</select>
+
+					<label for="ai-api-key">Provider API key</label>
+					<input id="ai-api-key" name="api_key" type="password" maxlength="1024" autocomplete="off" spellcheck="false" required aria-describedby="ai-key-help">
+					<p id="ai-key-help" class="ai-fix-help">Use an API key from the selected provider. Gitly uses it for this request and does not save it.</p>
+
+					<label for="ai-model">Model <span class="ai-fix-help">(optional)</span></label>
+					<input id="ai-model" name="model" type="text" maxlength="120" value="@model" placeholder="Use the provider default" autocomplete="off" spellcheck="false" aria-describedby="ai-model-help">
+					<p id="ai-model-help" class="ai-fix-help">Leave this blank for Gitly's default model, or enter a model ID available to your API key.</p>
+
+					<div class="ai-fix-notice">
+						<p>Generating a fix sends the pull request diff, selected source files, and failed CI logs to your chosen AI provider using your API key. Provider usage charges may apply.</p>
+						<p>You will review the proposed changes before Gitly commits them to this source branch.</p>
+					</div>
+					<div class="ai-fix-actions">
+						<button type="submit" class="pr-action pr-action--ai">Generate fix</button>
+						<a href="/@repo.user_name/@repo.name/pull/@pr.id">Cancel</a>
+					</div>
+				</form>
+			@end
+		</div>
+
+		@include 'layout/footer.html'
+	</body>
+</html>
