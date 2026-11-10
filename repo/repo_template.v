@@ -84,10 +84,6 @@ fn (r &Repo) format_nr_contributors(lang Lang) veb.RawHtml {
 	return format_count(r.nr_contributors, 'contributors_count', lang)
 }
 
-fn (r &Repo) format_nr_topics(lang Lang) veb.RawHtml {
-	return format_count(r.nr_topics, 'topics_count', lang)
-}
-
 fn (r &Repo) format_nr_releases(lang Lang) veb.RawHtml {
 	return format_count(r.nr_releases, 'releases_count', lang)
 }

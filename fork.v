@@ -241,19 +241,18 @@ fn (mut app App) create_fork(source Repo, owner_name string, owner_user_id int, 
 		return err
 	}
 	mut row := Repo{
-		git_dir: target_path
-		name: name
-		user_id: owner_user_id
-		user_name: owner_name
-		description: description
-		is_public: is_public && source.is_public
-		primary_branch: source.primary_branch
-		created_at: int(time.now().unix())
-		status: .done
+		git_dir:             target_path
+		name:                name
+		user_id:             owner_user_id
+		user_name:           owner_name
+		description:         description
+		is_public:           is_public && source.is_public
+		primary_branch:      source.primary_branch
+		created_at:          int(time.now().unix())
+		status:              .done
 		disable_discussions: source.disable_discussions
-		disable_projects: source.disable_projects
-		disable_milestones: source.disable_milestones
-		disable_wiki: source.disable_wiki
+		disable_projects:    source.disable_projects
+		disable_milestones:  source.disable_milestones
 	}
 	app.add_repo(row) or {
 		os.rmdir_all(target_path) or {}
@@ -265,15 +264,15 @@ fn (mut app App) create_fork(source Repo, owner_name string, owner_user_id int, 
 	}
 	source_relation := app.find_fork_by_repo(source.id) or { RepoFork{} }
 	relation := RepoFork{
-		repo_id: created.id
+		repo_id:        created.id
 		source_repo_id: source.id
-		root_repo_id: if source_relation.root_repo_id > 0 {
+		root_repo_id:   if source_relation.root_repo_id > 0 {
 			source_relation.root_repo_id
 		} else {
 			source.id
 		}
-		created_by: created_by
-		created_at: int(time.now().unix())
+		created_by:     created_by
+		created_at:     int(time.now().unix())
 	}
 	sql app.db {
 		insert relation into RepoFork
