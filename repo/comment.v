@@ -15,6 +15,29 @@ mut:
 	text       string
 }
 
+struct CommentReaction {
+mut:
+	id         int @[primary; sql: serial]
+	comment_id int
+	user_id    int
+	emoji      string
+}
+
+fn (mut app App) toggle_comment_reaction(comment_id int, user_id int, emoji string) ! {
+	existing := sql app.db {
+		select from CommentReaction where comment_id == comment_id && user_id == user_id && emoji == emoji
+	} or { []CommentReaction{} }
+	if existing.len > 0 {
+		sql app.db {
+			delete from CommentReaction where comment_id == comment_id && user_id == user_id && emoji == emoji
+		}!
+	} else {
+		sql app.db {
+			insert CommentReaction{ comment_id: comment_id, user_id: user_id, emoji: emoji } into CommentReaction
+		}!
+	}
+}
+
 @['/:username/:repo_name/comments'; post]
 pub fn (mut app App) handle_add_comment(mut ctx Context, username string, repo_name string) veb.Result {
 	repo := app.find_repo_by_name_and_username(repo_name, username) or { return ctx.not_found() }
@@ -72,4 +95,18 @@ fn (mut app App) get_all_issue_comments(issue_id int) []Comment {
 
 fn (c Comment) relative() string {
 	return time.unix(c.created_at).relative()
+}
+
+@['/:username/:repo_name/comments/:comment_id/react'; post]
+pub fn (mut app App) handle_toggle_comment_reaction(mut ctx Context, username string, repo_name string, comment_id string) veb.Result {
+	if !ctx.logged_in {
+		return ctx.not_found()
+	}
+	cid := comment_id.int()
+	emoji := ctx.form['emoji'] or { '' }
+	if emoji == '' {
+		return ctx.redirect('//')
+	}
+	app.toggle_comment_reaction(cid, ctx.user.id, emoji) or { app.info(err.str()) }
+	return ctx.redirect('//')
 }
