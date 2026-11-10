@@ -412,6 +412,8 @@ pub fn (mut app App) pull_request(mut ctx Context, username string, repo_name st
 	can_merge := can_merge_branch && approvals_satisfied && pr.is_open()
 	can_close := pr.is_open() && (is_repo_owner || pr.author_id == ctx.user.id)
 	can_reopen := pr.is_closed() && (is_repo_owner || pr.author_id == ctx.user.id)
+	ci_status := app.pull_request_ci_status(ctx.user.id, repo, pr) or { CiStatus{} }
+	can_ai_fix := ctx.logged_in && app.can_ai_fix_pull_request(ctx.user.id, repo, pr)
 	ctx.set_page_title(['${pr.title} #${pr.id}', '${repo.user_name}/${repo.name}'])
 	return $veb.html('templates/pull.html')
 }

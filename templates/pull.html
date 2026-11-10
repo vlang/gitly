@@ -37,6 +37,21 @@
 				</div>
 			</div>
 
+			@if ci_status.id > 0
+				<section class="pr-ci" aria-label="Pull request CI status">
+					<div class="pr-ci__details">
+						<strong>CI for the current head</strong>
+						<span class="pr-ci__status @{ci_status.status.css_class()}">@{ci_status.status.icon()} @{ci_status.status.str()}</span>
+						@if ci_status.ci_run_id > 0
+							<a href="/@head_repo.user_name/@head_repo.name/ci/@ci_status.ci_run_id">View run #@ci_status.ci_run_id</a>
+						@end
+					</div>
+					@if can_ai_fix
+						<a class="button pr-action pr-action--ai" href="/@repo.user_name/@repo.name/pull/@pr.id/ai-fix">Fix with Gitly AI</a>
+					@end
+				</section>
+			@end
+
 			<div class="pr-body">
 				<div class="avatar-with-user-info">
 					<img src="@{app.prepare_user_avatar_url(author.avatar)}">

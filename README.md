@@ -12,6 +12,7 @@ It provides:
 - Editable issues with assignees and project labels; merge requests with reviews, required approvals, squash/merge support; plus discussions, projects, milestones, releases, stars, and watches
 - Reporter/Developer/Maintainer project roles and branch creation/deletion with protected-branch wildcard rules, push/merge controls, deletion protection, and force-push rejection
 - Webhooks, scoped/expiring personal access tokens, two-factor authentication, security logs, and optional CI integration
+- Reviewable AI fixes for failed pull request CI using a user-provided Claude or OpenAI API key; see [Gitly AI](docs/gitly-ai.md)
 - Repository forks with upstream synchronization and cross-fork merge requests
 - Scheduled/manual pull and push mirrors over HTTPS or SSH, with encrypted credentials
 - Deploy tokens, trusted SSH commit signatures, signed-commit policies, protected tags and releases, snippets, Git LFS, partial clone, and scheduled/manual repository housekeeping
