@@ -106,7 +106,8 @@ fn test_update_branch_writes_new_values() ! {
 }
 
 fn test_save_repo_writes_updated_counters() ! {
-	 !sqlite ? {
+	!sqlite?
+	{
 		return
 	}
 	root := os.join_path(os.temp_dir(), 'gitly_orm_save_repo_')
