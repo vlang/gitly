@@ -20,10 +20,9 @@ report confidential until a fix is published:
 
 **https://github.com/vlang/gitly/security/advisories/new**
 
-If you cannot use that form, GitHub private vulnerability reporting is the only
-supported disclosure channel. There is no email fallback: .github/FUNDING.yml
-contains sponsorship entries only, so please use the form above (or open a draft
-security advisory on the repository) rather than mailing maintainers.
+GitHub private vulnerability reporting is the only supported disclosure
+channel. There is no email fallback: `.github/FUNDING.yml`
+contains sponsorship entries only.
 
 Please include:
 
@@ -33,7 +32,8 @@ Please include:
   which configuration flags are required)
 - the V version and commit you tested against
 
-You should receive an acknowledgement within 14 days. If the report is accepted,
+Maintainers aim to acknowledge reports within 14 days, but this is a
+best-effort target, not a guaranteed SLA. If the report is accepted,
 the fix lands on `master` and the advisory is published when it is safe to do so.
 If it is declined, you will be told why so you can decide whether to disclose it
 yourself.
@@ -97,12 +97,14 @@ code that runs an external command, use an argument array; do not concatenate
 user input into a string that is later handed to a shell.
 
 Note that avoiding a shell prevents *shell* injection only. It does not by itself
-prevent Git option/argument injection: a ref or path that begins with - can
-still be read by git as an option, and split_command splits on whitespace so a
-ref containing a space becomes several arguments. Callers that interpolate a
-caller-supplied ref should pass it after a -- separator or move to
-Git.exec_in_dir_with_env with an argument array (see 
-epo/repo.v git()).
+prevent Git option/argument injection: a ref or path that begins with `-` can
+still be read by git as an option, and `split_command` splits on whitespace so a
+ref containing a space becomes several arguments. For path operands, pass
+caller-supplied values after a `--` separator with an argument array (see
+`Git.exec_in_dir_with_env`). For revision arguments (`git log`, `git diff`,
+`git show`), `--` does not reliably separate revisions from paths, so validate
+and resolve the ref first (e.g. `is_safe_ref`, `git rev-parse --verify`) rather
+than relying on `--` (see `repo/repo.v` `Repo.git()`).
 
 Repository read access goes through `App.can_read_repo` (`repo/repo.v`), which
 every repo-scoped read route calls before running a git command or returning repo
