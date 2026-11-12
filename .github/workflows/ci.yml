@@ -143,7 +143,6 @@ jobs:
       - name: Install Dependencies
         run: sudo apt install libsqlite3-dev
       - name: Build V
-        shell: cmd
         run: |
           echo $VFLAGS
           make
