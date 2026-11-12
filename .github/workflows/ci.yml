@@ -18,7 +18,6 @@ jobs:
       - name: Install Dependencies
         run: sudo apt install libsqlite3-dev
       - name: Build V
-        shell: cmd
         run: |
           make
           sudo ./v symlink
@@ -68,7 +67,6 @@ jobs:
         with:
           path: gitly
       - name: Build V
-        shell: cmd
         run: |
           make
           ./v symlink
