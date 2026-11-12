@@ -8,10 +8,11 @@ It provides:
 
 - Multiple users, personal and organization repositories, and public/private visibility
 - Git clone, fetch, and push over HTTP(S) and OpenSSH
-- Repository browsing, syntax highlighting, Markdown rendering, language statistics, and a “Top files” view
+- Repository browsing, syntax highlighting, Markdown rendering, language statistics, weekly LOC history, and a “Top files” view
 - Editable issues with assignees and project labels; merge requests with reviews, required approvals, squash/merge support; plus discussions, projects, milestones, releases, stars, and watches
 - Reporter/Developer/Maintainer project roles and branch creation/deletion with protected-branch wildcard rules, push/merge controls, deletion protection, and force-push rejection
 - Webhooks, scoped/expiring personal access tokens, two-factor authentication, security logs, and optional CI integration
+- Reviewable AI fixes for failed pull request CI using a user-provided Claude or OpenAI API key; see [Gitly AI](docs/gitly-ai.md)
 - Repository forks with upstream synchronization and cross-fork merge requests
 - Scheduled/manual pull and push mirrors over HTTPS or SSH, with encrypted credentials
 - Deploy tokens, trusted SSH commit signatures, signed-commit policies, protected tags and releases, snippets, Git LFS, partial clone, and scheduled/manual repository housekeeping
@@ -23,7 +24,7 @@ It provides:
 
 Gitly is beta software. It is a lightweight forge rather than a complete GitLab distribution. It supplies an integrated platform control plane while scanner engines, native LDAP/SAML protocol handling, managed observability backends, multi-region orchestration, and the separately maintained CI runner remain external services.
 
-The current GitLab capability comparison and the remaining implementation sequence are documented in [docs/gitlab-parity.md](docs/gitlab-parity.md). Gitly is intentionally described as a lightweight alternative, not as complete GitLab parity while major platform areas remain outstanding.
+The current GitLab capability comparison and the remaining implementation sequence are documented in [docs/gitlab-parity.md](docs/gitlab-parity.md). Gitly is intentionally described as a lightweight alternative, not as complete GitLab parity while major platform areas remain outstanding. The comparison against Gitea, which is the closer-sized forge and therefore the more useful bar, is in [docs/gitea-parity.md](docs/gitea-parity.md).
 
 ## Build and run
 
@@ -56,6 +57,7 @@ System libraries:
 - SQLite: `libsqlite3-dev` on Ubuntu/Debian
 - PostgreSQL: `libpq-dev` on Ubuntu/Debian or `brew install libpq` on macOS
 - Stylesheet compilation: `sassc`
+- Historical LOC analysis: `scc` on the Gitly server's `PATH` (analysis runs only when a repository maintainer requests it)
 
 ## Production configuration
 

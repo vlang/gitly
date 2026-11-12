@@ -1,0 +1,22 @@
+.loc-history { margin: 28px 0 80px; padding: 0 12px; }
+.loc-history__heading { display: flex; justify-content: space-between; align-items: start; gap: 20px; flex-wrap: wrap; }
+.loc-history h1 { margin: 0 0 4px; padding: 0; font-size: 24px; }
+.loc-history p { margin: 0 0 24px; color: #57606a; }
+.loc-history button { border: 1px solid #1f883d; border-radius: 6px; background: #1f883d; color: white; padding: 8px 14px; cursor: pointer; font-weight: 600; }
+.loc-history button:hover { background: #116329; }
+#loc-status { margin: 12px 0; color: #57606a; }
+#loc-progress { display: block; width: 100%; height: 12px; margin: 12px 0 20px; }
+#loc-progress[hidden], #loc-chart[hidden], #loc-start-form[hidden] { display: none; }
+#loc-chart { margin-top: 24px; border: 1px solid #d0d7de; border-radius: 8px; padding: 18px; }
+#loc-hover { min-height: 24px; font-weight: 600; }
+.loc-chart-scroll { width: 100%; overflow-x: auto; }
+#loc-svg { display: block; width: 100%; min-width: 520px; height: 310px; }
+.loc-grid { stroke: #d8dee4; stroke-width: 1; }
+.loc-year-grid { stroke: #d8dee4; stroke-width: 1; stroke-dasharray: 3 4; }
+.loc-axis-label { fill: #57606a; font-size: 12px; }
+.loc-area { opacity: .9; }
+.loc-hit { fill: transparent; }
+.loc-hit:focus { outline: none; fill: #0969da22; }
+.loc-legend { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 16px; }
+.loc-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.loc-legend i { display: inline-block; width: 11px; height: 11px; border-radius: 2px; }

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		@include 'layout/head.html'
+		@css '/css/loc_history.css'
+	</head>
+	<body>
+		@include 'layout/header.html'
+		<div class="content">
+			@include 'layout/repo_menu.html'
+			<section class="loc-history" id="loc-history" data-url="/@repo.user_name/@repo.name/loc/data">
+				<div class="loc-history__heading">
+					<div>
+						<h1>Lines of code over time</h1>
+						<p>Weekly snapshots of the default branch, measured by scc. Showing the top four languages; Markdown, plain text, YAML, JSON, blank lines, comments, and vendor directories are excluded.</p>
+					</div>
+					@if can_run
+						<form action="/@repo.user_name/@repo.name/loc" method="post" id="loc-start-form">
+							<button type="submit" id="loc-start-button">Analyze history</button>
+						</form>
+					@end
+				</div>
+				<div id="loc-status" role="status" aria-live="polite">Loading LOC history…</div>
+				<progress id="loc-progress" max="100" value="0" hidden></progress>
+				<div id="loc-chart" hidden>
+					<div id="loc-hover" aria-live="polite"></div>
+					<div class="loc-chart-scroll"><svg id="loc-svg" role="img" aria-label="Stacked lines of code for the top four languages over time"></svg></div>
+					<div id="loc-legend" class="loc-legend"></div>
+				</div>
+			</section>
+		</div>
+		@include 'layout/footer.html'
+		@js '/js/loc_history.js'
+	</body>
+</html>

@@ -195,13 +195,13 @@ fn test_ci_status_identity_includes_full_oid_branch_and_attempt() {
 		app.upsert_ci_status(1, commit_hash, 'main', .pending, 401)!
 		app.upsert_ci_status(1, commit_hash, 'release', .pending, 402)!
 
-		main := app.find_ci_status_for_commit(1, commit_hash, 'main') or {
+		main_status := app.find_ci_status_for_commit(1, commit_hash, 'main') or {
 			panic('main CI status missing')
 		}
 		release := app.find_ci_status_for_commit(1, commit_hash, 'release') or {
 			panic('release CI status missing')
 		}
-		assert main.ci_run_id == 401
+		assert main_status.ci_run_id == 401
 		assert release.ci_run_id == 402
 		assert app.apply_ci_status_callback(1, commit_hash, 'main', 401, .success)!
 		assert app.apply_ci_status_callback(1, commit_hash, 'release', 402, .running)!

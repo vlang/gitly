@@ -2,3 +2,5 @@
 *.vv linguist-language=V text=auto eol=lf
 *.vsh linguist-language=V text=auto eol=lf
 **/v.mod linguist-language=V text=auto eol=lf
+# Batch files are only ever run by cmd.exe, which expects CRLF endings.
+*.bat text=auto eol=crlf

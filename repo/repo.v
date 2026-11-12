@@ -527,6 +527,10 @@ fn (mut app App) delete_repository(id int, path string, name string) ! {
 	sql tx {
 		delete from RepoTransfer where repo_id == repo_id
 	}!
+	// Historical LOC is derived from the repository and has no use after deletion.
+	tx.execute('delete from ${sql_table('LocHistoryLanguage')} where snapshot_id in (select id from ${sql_table('LocHistorySnapshot')} where repo_id = ${repo_id})')!
+	tx.execute('delete from ${sql_table('LocHistorySnapshot')} where repo_id = ${repo_id}')!
+	tx.execute('delete from ${sql_table('LocHistoryJob')} where repo_id = ${repo_id}')!
 	fork_rows := sql tx {
 		select from RepoFork where repo_id == repo_id limit 1
 	}!
@@ -1048,6 +1052,16 @@ fn (r &Repo) get_all_file_paths() []string {
 }
 
 // TODO: return ?string
+// git runs `git -C <git_dir> <words...>` with an argument vector, never through
+// a shell, so `&` and `;` are not shell metacharacters here and the guard below
+// is not a security control. It is kept only because it is cheap.
+//
+// The residual risk is argument injection, not command injection: a ref name
+// that begins with `-` can still be read by git as an option. Callers that
+// interpolate a caller-supplied ref (see `pr_routes.v`, `repo/branch.v`) should
+// pass it after a `--` separator, or move to `Git.exec_in_dir_with_env` with an
+// argument array. `split_command` also splits on whitespace, so a ref
+// containing a space is broken into several arguments.
 fn (r &Repo) git(command string) string {
 	if command.contains('&') || command.contains(';') {
 		return ''

@@ -32,6 +32,15 @@ pub fn extension_to_lang(ext string) !Lang {
 	return error('No language found')
 }
 
+pub fn language_color(name string) ?string {
+	for lang in langs {
+		if lang.name == name {
+			return lang.color
+		}
+	}
+	return none
+}
+
 fn init_langs() []Lang {
 	mut langs_ := []Lang{cap: 16}
 	langs_ << init_c()
