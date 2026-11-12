@@ -304,7 +304,7 @@ pub fn (mut app App) index(mut ctx Context) veb.Result {
 }
 
 @['/change_lang/:lang'; post]
-pub fn (mut app App) change_lang(lang string) veb.Result {
+pub fn (mut app App) change_lang(mut ctx Context, lang string) veb.Result {
 	if lang !in ['en', 'ru', 'es', 'jp', 'cn', 'pt'] {
 		ctx.res.set_status(.bad_request)
 		return ctx.json_error('Unsupported language')

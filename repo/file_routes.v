@@ -8,7 +8,7 @@ import rand
 // GET /:username/:repo_name/new/:branch_name... - Show create file form.
 // The catch-all is required because branch names may contain `/`.
 @['/:username/:repo_name/new/:branch_name...']
-pub fn (mut app App) new_file(username string, repo_name string, branch_name string) veb.Result {
+pub fn (mut app App) new_file(mut ctx Context, username string, repo_name string, branch_name string) veb.Result {
 	repo := app.find_repo_by_name_and_username(repo_name, username) or { return ctx.not_found() }
 
 	if repo.require_signed_commits || !ctx.logged_in || !app.user_can_push_branch(ctx.user.id, repo, branch_name)
@@ -23,7 +23,7 @@ pub fn (mut app App) new_file(username string, repo_name string, branch_name str
 
 // GET /:username/:repo_name/new-ci-file - Show create .gitly-ci.yml form (pre-filled)
 @['/:username/:repo_name/new-ci-file']
-pub fn (mut app App) new_ci_file(username string, repo_name string) veb.Result {
+pub fn (mut app App) new_ci_file(mut ctx Context, username string, repo_name string) veb.Result {
 	repo := app.find_repo_by_name_and_username(repo_name, username) or { return ctx.not_found() }
 
 	if repo.require_signed_commits || !ctx.logged_in
@@ -46,7 +46,7 @@ pub fn (mut app App) new_ci_file(username string, repo_name string) veb.Result {
 
 // GET /:username/:repo_name/edit/:location... - Show edit file form
 @['/:username/:repo_name/edit/:location...']
-pub fn (mut app App) edit_file(username string, repo_name string, location string) veb.Result {
+pub fn (mut app App) edit_file(mut ctx Context, username string, repo_name string, location string) veb.Result {
 	repo := app.find_repo_by_name_and_username(repo_name, username) or { return ctx.not_found() }
 	if repo.require_signed_commits || !ctx.logged_in || !app.user_can_write_repo(ctx.user.id, repo) {
 		return ctx.redirect_to_repository(username, repo_name)
@@ -69,7 +69,7 @@ pub fn (mut app App) edit_file(username string, repo_name string, location strin
 
 // POST /:username/:repo_name/update-file - Save edited file
 @['/:username/:repo_name/update-file'; post]
-pub fn (mut app App) handle_update_file(username string, repo_name string) veb.Result {
+pub fn (mut app App) handle_update_file(mut ctx Context, username string, repo_name string) veb.Result {
 	mut repo := app.find_repo_by_name_and_username(repo_name, username) or {
 		return ctx.not_found()
 	}
@@ -132,7 +132,7 @@ pub fn (mut app App) handle_update_file(username string, repo_name string) veb.R
 
 // POST /:username/:repo_name/create-file - Create a file in the repo
 @['/:username/:repo_name/create-file'; post]
-pub fn (mut app App) handle_create_file(username string, repo_name string) veb.Result {
+pub fn (mut app App) handle_create_file(mut ctx Context, username string, repo_name string) veb.Result {
 	mut repo := app.find_repo_by_name_and_username(repo_name, username) or {
 		return ctx.not_found()
 	}
