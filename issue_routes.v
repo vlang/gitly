@@ -469,6 +469,10 @@ pub fn (mut app App) handle_batch_issues(mut ctx Context, username string, repo_
 	for part in ids_raw.split(',') {
 		id := part.trim_space().int()
 		if id <= 0 { continue }
+		issue := app.find_issue_by_id(id) or { continue }
+		if issue.repo_id != repo.id {
+			continue
+		}
 		match action {
 			'close' {
 				app.set_issue_status(id, .closed) or { app.info(err.str()) }
@@ -479,5 +483,5 @@ pub fn (mut app App) handle_batch_issues(mut ctx Context, username string, repo_
 			else {}
 		}
 	}
-	return ctx.redirect('///issues')
+	return ctx.redirect('/${username}/${repo_name}/issues')
 }
