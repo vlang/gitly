@@ -151,25 +151,25 @@ pub fn (mut app App) handle_revert_commit(mut ctx Context, username string, repo
 	branch := ctx.form['branch'] or { repo.primary_branch }
 	if !is_safe_ref(branch) || !is_valid_commit_hash(hash) {
 		ctx.error('Invalid branch or commit')
-		return ctx.redirect('///-/commits/')
+		return ctx.redirect('/${username}/${repo_name}/-/commits/${branch}')
 	}
-	worktree := os.join_path(os.temp_dir(), 'gitly_revert_')
+	worktree := os.join_path(os.temp_dir(), 'gitly_revert_${os.getpid()}_${time.now().unix_nano()}')
 	os.mkdir_all(worktree) or {
 		ctx.error('Failed to create worktree: ')
-		return ctx.redirect('///-/commits/')
+		return ctx.redirect('/${username}/${repo_name}/-/commits/${branch}')
 	}
 	defer { os.rmdir_all(worktree) or {} }
 	add_res := git.Git.exec_in_dir(repo.git_dir, ['worktree', 'add', '--force', worktree, branch])
 	if add_res.exit_code != 0 {
 		ctx.error('Failed to prepare worktree: ')
-		return ctx.redirect('///-/commits/')
+		return ctx.redirect('/${username}/${repo_name}/-/commits/${branch}')
 	}
 	revert_res := git.Git.exec_in_dir(worktree, ['revert', '--no-edit', hash])
 	remove_res := git.Git.exec_in_dir(repo.git_dir, ['worktree', 'remove', '--force', worktree])
 	if revert_res.exit_code != 0 {
 		ctx.error('Revert failed: ')
-		return ctx.redirect('///-/commits/')
+		return ctx.redirect('/${username}/${repo_name}/-/commits/${branch}')
 	}
 	_ = remove_res
-	return ctx.redirect('///-/commits/')
+	return ctx.redirect('/${username}/${repo_name}/-/commits/${branch}')
 }
