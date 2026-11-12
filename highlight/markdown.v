@@ -27,16 +27,24 @@ fn extract_math_blocks(code string) (string, []MathBlock) {
 	mut out := code
 	mut blocks := []MathBlock{}
 	mut i := 0
+	delimiter := '$' + '$'
+	mut placeholder_prefix := 'GITLY_MATH_BLOCK_'
+	for out.contains(placeholder_prefix) {
+		placeholder_prefix += '_'
+	}
 	for {
-		start := out.index('') or { break }
-		end := out.index_after_('', start + 2)
+		start := out.index(delimiter) or { break }
+		end := out.index_after_(delimiter, start + delimiter.len)
 		if end < 0 {
 			break
 		}
-		content := out[start + 2..end]
-		placeholder := '@@MATHBLOCK@@'
-		blocks << MathBlock{ placeholder: placeholder, html: '<div class="math"></div>' }
-		out = out[..start] + placeholder + out[end + 2..]
+		content := out[start + delimiter.len..end]
+		placeholder := '${placeholder_prefix}${i}TOKEN'
+		blocks << MathBlock{
+			placeholder: placeholder
+			html: '<div class="math">${escape_html(content.trim_space())}</div>'
+		}
+		out = out[..start] + placeholder + out[end + delimiter.len..]
 		i++
 	}
 	return out, blocks
