@@ -149,28 +149,28 @@ pub fn (mut app App) handle_cherry_pick(mut ctx Context, username string, repo_n
 		return ctx.not_found()
 	}
 	branch := ctx.form['branch'] or { repo.primary_branch }
-	target := ctx.form['target_branch'] or { repo.primary_branch }
+	target := ctx.form['target_branch'] or { branch }
 	if !is_safe_ref(branch) || !is_safe_ref(target) || !is_valid_commit_hash(hash) {
 		ctx.error('Invalid ref')
-		return ctx.redirect('///-/commits/')
+		return ctx.redirect('/${username}/${repo_name}/-/commits/${target}')
 	}
-	worktree := os.join_path(os.temp_dir(), 'gitly_cp_')
+	worktree := os.join_path(os.temp_dir(), 'gitly_cp_${os.getpid()}_${time.now().unix_nano()}')
 	os.mkdir_all(worktree) or {
 		ctx.error('Failed to create worktree: ')
-		return ctx.redirect('///-/commits/')
+		return ctx.redirect('/${username}/${repo_name}/-/commits/${target}')
 	}
 	defer { os.rmdir_all(worktree) or {} }
 	add_res := git.Git.exec_in_dir(repo.git_dir, ['worktree', 'add', '--force', worktree, target])
 	if add_res.exit_code != 0 {
 		ctx.error('Failed to prepare worktree: ')
-		return ctx.redirect('///-/commits/')
+		return ctx.redirect('/${username}/${repo_name}/-/commits/${target}')
 	}
 	cp_res := git.Git.exec_in_dir(worktree, ['cherry-pick', hash])
 	remove_res := git.Git.exec_in_dir(repo.git_dir, ['worktree', 'remove', '--force', worktree])
 	if cp_res.exit_code != 0 {
 		ctx.error('Cherry-pick failed: ')
-		return ctx.redirect('///-/commits/')
+		return ctx.redirect('/${username}/${repo_name}/-/commits/${target}')
 	}
 	_ = remove_res
-	return ctx.redirect('///-/commits/')
+	return ctx.redirect('/${username}/${repo_name}/-/commits/${target}')
 }
