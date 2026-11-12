@@ -113,12 +113,12 @@ jobs:
           path: gitly
       - name: Build V
         run: |
-          ./make.bat -gcc
+          make.bat -gcc
       # Must run after "Build V": the script shells out to `v.exe`, which
       # does not exist until V is built.
       - name: Install SQLite
         run: |
-          .\gitly\.github\workflows\windows-install-sqlite.bat
+          gitly\.github\workflows\windows-install-sqlite.bat
       - name: Compile gitly
         run: |
           dir
