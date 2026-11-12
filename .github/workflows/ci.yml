@@ -18,6 +18,7 @@ jobs:
       - name: Install Dependencies
         run: sudo apt install libsqlite3-dev
       - name: Build V
+        shell: cmd
         run: |
           make
           sudo ./v symlink
@@ -67,6 +68,7 @@ jobs:
         with:
           path: gitly
       - name: Build V
+        shell: cmd
         run: |
           make
           ./v symlink
@@ -112,11 +114,13 @@ jobs:
         with:
           path: gitly
       - name: Build V
+        shell: cmd
         run: |
           make.bat -gcc
       # Must run after "Build V": the script shells out to `v.exe`, which
       # does not exist until V is built.
       - name: Install SQLite
+        shell: cmd
         run: |
           gitly\.github\workflows\windows-install-sqlite.bat
       - name: Compile gitly
@@ -141,6 +145,7 @@ jobs:
       - name: Install Dependencies
         run: sudo apt install libsqlite3-dev
       - name: Build V
+        shell: cmd
         run: |
           echo $VFLAGS
           make
