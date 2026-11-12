@@ -156,5 +156,6 @@ pub fn (mut app App) commit_graph(mut ctx Context, username string, repo_name st
 		graph_output = 'Unable to compute commit graph.'
 	}
 	ctx.set_page_title(['Commit graph', '/'])
-	return .html('templates/commit_graph.html')
+	return $veb.html()
 }
+
