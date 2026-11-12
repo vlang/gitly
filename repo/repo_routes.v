@@ -7,7 +7,6 @@ import time
 import highlight
 import validation
 import git
-import highlight
 import config
 
 const top_files_limit = 50
@@ -1126,7 +1125,7 @@ pub fn (mut app App) wiki_page(mut ctx Context, username string, repo_name strin
 		wiki_branch = repo.primary_branch
 	}
 	page_name := if page == '' { 'Home' } else { page }
-	res := git.Git.exec_in_dir(repo.git_dir, ['show', ':.md'])
+	res := git.Git.exec_in_dir(repo.git_dir, ['show', '${wiki_branch}:${page_name}.md'])
 	mut content := ''
 	if res.exit_code == 0 {
 		content = res.output
@@ -1135,5 +1134,5 @@ pub fn (mut app App) wiki_page(mut ctx Context, username string, repo_name strin
 	}
 	wiki_content := veb.RawHtml(highlight.convert_markdown_to_html(content))
 	ctx.set_page_title(['Wiki', '/'])
-	return .html('templates/wiki.html')
+	return $veb.html()
 }
