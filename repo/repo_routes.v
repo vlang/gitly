@@ -1109,7 +1109,7 @@ pub fn (mut app App) blame(mut ctx Context, username string, repo_name string, l
 		blame_output = 'Unable to compute blame for this file.'
 	}
 	ctx.set_page_title(['Blame', '/'])
-	return .html('templates/blame.html')
+	return $veb.html()
 }
 
 @['/:user/:repository/raw/:location...']
