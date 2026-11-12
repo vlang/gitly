@@ -122,7 +122,7 @@ jobs:
       - name: Compile gitly
         run: |
           dir
-          .\v.exe -cc gcc gitly
+          .\v.exe -cc gcc -d sqlite gitly
 
   ubuntu-tcc:
     runs-on: ubuntu-latest
