@@ -255,7 +255,7 @@ pub fn (mut app App) handle_update_repo_topics(mut ctx Context, username string,
 	}
 	topics := ctx.form['topics'] or { '' }
 	app.update_repo_topics(repo.id, topics) or { app.info(err.str()) }
-	return ctx.redirect('///settings')
+	return ctx.redirect('/${username}/${repo_name}/settings')
 }
 
 @['/:user/:repo_name/delete'; post]

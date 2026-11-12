@@ -17,7 +17,6 @@ struct Repo {
 	user_name          string
 	description        string
 	topics             string
-	topics             string
 	is_public          bool
 	is_deleted         bool
 	users_contributed  []string @[skip]
@@ -372,9 +371,9 @@ fn (mut app App) update_repo_features(repo_id int, disable_discussions bool, dis
 	}!
 }
 
-fn (mut app App) update_repo_topics(repo_id int, topics string) ! {
+fn (mut app App) update_repo_topics(repo_id int, new_topics string) ! {
 	sql app.db {
-		update Repo set topics = topics where id == repo_id
+		update Repo set topics = new_topics where id == repo_id
 	}!
 }
 
