@@ -8,6 +8,7 @@ const max_search_query_len = 100
 struct CodeSearchResult {
 	repo_user string
 	repo_name string
+	branch    string
 	path      string
 }
 
@@ -77,7 +78,7 @@ fn (mut app App) search_code(query string) []CodeSearchResult {
 			if path == '' {
 				continue
 			}
-			results << CodeSearchResult{ repo_user: repo.user_name, repo_name: repo.name, path: path }
+			results << CodeSearchResult{ repo_user: repo.user_name, repo_name: repo.name, branch: repo.primary_branch, path: path }
 			if results.len >= 50 {
 				break
 			}

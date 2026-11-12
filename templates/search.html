@@ -82,7 +82,7 @@
 					<p class="search-info">Showing ${code_results.len} code results</p>
 					@for r in code_results
 						<div class="list-item">
-							<a href="/@r.repo_user/@r.repo_name/blob/@r.path">
+							<a href="/@r.repo_user/@r.repo_name/blob/@r.branch/@r.path">
 								<h3>@r.repo_user/@r.repo_name — @r.path</h3>
 							</a>
 						</div>
