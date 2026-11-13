@@ -138,25 +138,25 @@ fn build_pr_file_tree_rows(file_diffs []FileDiff) []PrFileTreeRow {
 				if current_path !in seen_dirs {
 					seen_dirs[current_path] = true
 					rows << PrFileTreeRow{
-						path: current_path
-						name: part
-						depth: idx
+						path:      current_path
+						name:      part
+						depth:     idx
 						indent_px: 10 + idx * 16
-						is_dir: true
+						is_dir:    true
 					}
 				}
 			}
 		}
 		rows << PrFileTreeRow{
-			path: fd.path
-			name: parts[parts.len - 1]
-			depth: parts.len - 1
-			indent_px: 10 + (parts.len - 1) * 16
-			is_new: fd.is_new
+			path:       fd.path
+			name:       parts[parts.len - 1]
+			depth:      parts.len - 1
+			indent_px:  10 + (parts.len - 1) * 16
+			is_new:     fd.is_new
 			is_deleted: fd.is_deleted
 			is_renamed: fd.is_renamed
-			additions: fd.additions
-			deletions: fd.deletions
+			additions:  fd.additions
+			deletions:  fd.deletions
 		}
 	}
 	return rows
@@ -186,7 +186,7 @@ pub fn (mut app App) repo_pulls(mut ctx Context, username string, repo_name stri
 	for pr in prs {
 		author := app.get_user_by_id(pr.author_id) or { continue }
 		prs_with_users << PrWithUser{
-			pr: pr
+			pr:   pr
 			user: author
 		}
 	}
@@ -264,6 +264,14 @@ pub fn (mut app App) new_pull_request_form(mut ctx Context, username string, rep
 		}
 	}
 	ctx.set_page_title(['New pull request', '${repo.user_name}/${repo.name}'])
+	mut pull_template := ''
+	for candidate in ['.gitea/PULL_REQUEST_TEMPLATE.md', '.github/PULL_REQUEST_TEMPLATE.md'] {
+		res := git.Git.exec_in_dir(repo.git_dir, ['show', '${repo.primary_branch}:${candidate}'])
+		if res.exit_code == 0 {
+			pull_template = res.output
+			break
+		}
+	}
 	return $veb.html('templates/new/pull.html')
 }
 
@@ -334,12 +342,12 @@ pub fn (mut app App) handle_create_pull_request(mut ctx Context, username string
 	app.increment_repo_open_prs(repo.id) or { app.info(err.str()) }
 	app.dispatch_webhook(repo.id, 'pr', WebhookPrPayload{
 		action: 'opened'
-		repo: '${username}/${repo_name}'
+		repo:   '${username}/${repo_name}'
 		number: pr_id
-		title: title
+		title:  title
 		author: ctx.user.username
-		head: head
-		base: base
+		head:   head
+		base:   base
 	})
 	return ctx.redirect('/${username}/${repo_name}/pull/${pr_id}')
 }
@@ -369,10 +377,10 @@ pub fn (mut app App) pull_request(mut ctx Context, username string, repo_name st
 	for c in comments {
 		u := app.get_user_by_id(c.author_id) or { continue }
 		timeline << PrTimelineEntry{
-			kind: 'comment'
+			kind:       'comment'
 			created_at: c.created_at
-			user: u
-			comment: c
+			user:       u
+			comment:    c
 		}
 	}
 	for r in reviews {
@@ -388,11 +396,11 @@ pub fn (mut app App) pull_request(mut ctx Context, username string, repo_name st
 			}
 		}
 		timeline << PrTimelineEntry{
-			kind: 'review'
+			kind:       'review'
 			created_at: r.created_at
-			user: u
-			review: r
-			rcomments: r_comments
+			user:       u
+			review:     r
+			rcomments:  r_comments
 		}
 	}
 	timeline.sort(a.created_at < b.created_at)
@@ -480,11 +488,11 @@ pub fn (mut app App) handle_add_pr_comment(mut ctx Context, username string, rep
 	app.increment_pr_comments(pr.id) or { app.info(err.str()) }
 	app.dispatch_webhook(repo.id, 'comment', WebhookCommentPayload{
 		action: 'created'
-		repo: '${username}/${repo_name}'
+		repo:   '${username}/${repo_name}'
 		target: 'pr'
 		number: pr.id
 		author: ctx.user.username
-		text: text
+		text:   text
 	})
 	return ctx.redirect('/${username}/${repo_name}/pull/${id}')
 }
@@ -867,11 +875,11 @@ fn (r Repo) list_commits_between(base string, head string) []Commit {
 		}
 		date := time.parse_rfc2822(args[2]) or { time.now() }
 		commits << Commit{
-			hash: args[0]
-			author: args[4]
-			message: args[3]
+			hash:       args[0]
+			author:     args[4]
+			message:    args[3]
 			created_at: int(date.unix())
-			author_id: 0
+			author_id:  0
 		}
 	}
 	return commits

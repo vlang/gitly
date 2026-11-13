@@ -3,6 +3,7 @@ module main
 import veb
 import api
 import time
+import git
 
 struct ItemWithUser[T] {
 	item T
@@ -40,7 +41,7 @@ fn (mut app App) handle_issues_count(username string, repo_name string) veb.Resu
 	count := app.get_repo_issue_count(repo.id)
 	return ctx.json(api.ApiIssueCount{
 		success: true
-		result: count
+		result:  count
 	})
 }
 
@@ -54,6 +55,14 @@ pub fn (mut app App) new_issue(mut ctx Context, username string, repo_name strin
 		return ctx.not_found()
 	}
 	ctx.set_page_title(['New issue', '${repo.user_name}/${repo.name}'])
+	mut issue_template := ''
+	for candidate in ['.gitea/ISSUE_TEMPLATE.md', '.github/ISSUE_TEMPLATE.md'] {
+		res := git.Git.exec_in_dir(repo.git_dir, ['show', '${repo.primary_branch}:${candidate}'])
+		if res.exit_code == 0 {
+			issue_template = res.output
+			break
+		}
+	}
 	return $veb.html()
 }
 
@@ -86,8 +95,8 @@ pub fn (mut app App) handle_add_repo_issue(mut ctx Context, username string, rep
 	app.sync_repo_open_issue_count(repo.id) or { app.info(err.str()) }
 	app.dispatch_webhook(repo.id, 'issue', WebhookIssuePayload{
 		action: 'opened'
-		repo: '${username}/${repo_name}'
-		title: title
+		repo:   '${username}/${repo_name}'
+		title:  title
 		author: ctx.user.username
 	})
 	has_first_issue_activity := app.has_activity(ctx.user.id, 'first_issue')
@@ -261,8 +270,8 @@ pub fn (mut app App) handle_edit_issue(mut ctx Context, username string, repo_na
 	}
 	app.dispatch_webhook(repo.id, 'issue', WebhookIssuePayload{
 		action: 'updated'
-		repo: '${username}/${repo_name}'
-		title: title.trim_space()
+		repo:   '${username}/${repo_name}'
+		title:  title.trim_space()
 		author: ctx.user.username
 	})
 	return ctx.redirect('/${username}/${repo_name}/issue/${issue.id}')
@@ -376,8 +385,8 @@ fn change_issue_status(mut app App, mut ctx Context, username string, repo_name 
 	action := if status == .closed { 'closed' } else { 'reopened' }
 	app.dispatch_webhook(repo.id, 'issue', WebhookIssuePayload{
 		action: action
-		repo: '${username}/${repo_name}'
-		title: issue.title
+		repo:   '${username}/${repo_name}'
+		title:  issue.title
 		author: ctx.user.username
 	})
 	return ctx.redirect('/${username}/${repo_name}/issue/${issue.id}')
