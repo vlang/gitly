@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		@include 'layout/head.html'
+	</head>
+	<body>
+		@include 'layout/header.html'
+
+		<div class="content">
+			<h1>Commit graph</h1>
+			<pre class="commit-graph">@graph_output</pre>
+		</div>
+
+		@include 'layout/footer.html'
+	</body>
+</html>
