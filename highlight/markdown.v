@@ -15,7 +15,12 @@ pub fn convert_markdown_to_html(code string) string {
 	// the dangerous attribute.
 	sanitized := sanitize_rendered_markdown_urls(rendered)
 
-	return inject_math_blocks(sanitized, placeholders)
+	// Render fenced ```mermaid blocks as <pre class="mermaid"> so the client can
+	// draw diagrams. md4c emits them as ordinary code blocks; rewrite them here.
+	// Math placeholders are plain tokens, unaffected by the mermaid rewrite.
+	mermaid_rendered := convert_mermaid_blocks(sanitized)
+
+	return inject_math_blocks(mermaid_rendered, placeholders)
 }
 
 struct MathBlock {
@@ -54,6 +59,31 @@ fn inject_math_blocks(html string, blocks []MathBlock) string {
 	mut out := html
 	for b in blocks {
 		out = out.replace(b.placeholder, b.html)
+	}
+	return out
+}
+
+fn convert_mermaid_blocks(html string) string {
+	mut out := html
+	open_marker := '<pre><code class="language-mermaid">'
+	close_marker := '</code></pre>'
+	mut search_from := 0
+	for {
+		start := out.index_after_(open_marker, search_from)
+		if start < 0 {
+			break
+		}
+		// replace the opening tag
+		out = out[..start] + '<pre class="mermaid">' + out[start + open_marker.len..]
+		// find the next closing marker after the new opening
+		new_open_end := start + '<pre class="mermaid">'.len
+		close_pos := out.index_after_(close_marker, new_open_end)
+		if close_pos < 0 {
+			break
+		}
+		// replace that specific closing marker
+		out = out[..close_pos] + '</pre>' + out[close_pos + close_marker.len..]
+		search_from = close_pos + '</pre>'.len
 	}
 	return out
 }
