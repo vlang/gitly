@@ -72,6 +72,15 @@
 					</label>
 					<input type="submit" class="settings-form__submit" value="%save_features">
 				</form>
+
+			<section class="settings-section">
+				<h2 class="settings-section__title">Topics</h2>
+				<form class="settings-form" action="/@repo.user_name/@repo.name/settings/topics" method="post">
+					<label class="settings-form__label" for="topics">Topics (comma separated)</label>
+					<input type="text" id="topics" name="topics" class="settings-form__input" value="@repo.topics">
+					<input type="submit" class="settings-form__submit" value="Save topics">
+				</form>
+			</section>
 			</section>
 
 			<section class="settings-section">

@@ -740,6 +740,7 @@ fn (mut app App) migrate_tables() ! {
 	app.add_missing_column('Repo', 'require_signed_commits', db_bool_column_type())!
 	app.add_missing_column('Repo', 'service_desk_enabled', db_bool_column_type())!
 	app.add_missing_column('Repo', 'service_desk_token_hash', "TEXT NOT NULL DEFAULT ''")!
+	app.add_missing_column('Repo', 'topics', "TEXT NOT NULL DEFAULT ''")!
 	app.add_missing_column('Issue', 'status', 'INTEGER NOT NULL DEFAULT 0')!
 	app.add_missing_column('Release', 'created_by', 'INTEGER NOT NULL DEFAULT 0')!
 	app.add_missing_column('Release', 'is_manual', db_bool_column_type())!

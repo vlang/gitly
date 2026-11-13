@@ -21,6 +21,13 @@
 		<div class="content">
 			<div class="repo-header-area">
 			@include 'layout/repo_menu.html'
+			@if repo.topics != ''
+				<div class="repo-topics">
+					@for topic in repo.topics.split(',')
+						<span class="repo-topic">@topic.trim_space()</span>
+					@end
+				</div>
+			@end
 			@if is_top_directory
 				<div class="fork-summary">
 					@if upstream_repo.id > 0

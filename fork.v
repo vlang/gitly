@@ -254,6 +254,7 @@ fn (mut app App) create_fork(source Repo, owner_name string, owner_user_id int, 
 		disable_projects: source.disable_projects
 		disable_milestones: source.disable_milestones
 		disable_wiki: source.disable_wiki
+		topics: source.topics
 	}
 	app.add_repo(row) or {
 		os.rmdir_all(target_path) or {}
