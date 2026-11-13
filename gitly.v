@@ -93,8 +93,8 @@ fn new_app() !&App {
 
 	mut app := &App{
 		// db: sqlite.connect('gitly.sqlite') or { panic(err) }
-		db: connect_db(conf)!
-		config: conf
+		db:         connect_db(conf)!
+		config:     conf
 		started_at: time.now().unix()
 	}
 
@@ -747,6 +747,7 @@ fn (mut app App) migrate_tables() ! {
 	app.add_missing_column('Issue', 'milestone_id', 'INTEGER NOT NULL DEFAULT 0')!
 	app.add_missing_column('Issue', 'iteration_id', 'INTEGER NOT NULL DEFAULT 0')!
 	app.add_missing_column('Issue', 'time_estimate_minutes', 'INTEGER NOT NULL DEFAULT 0')!
+	app.add_missing_column('Issue', 'is_confidential', db_bool_column_type())!
 	app.add_missing_column('Label', 'scope', "TEXT NOT NULL DEFAULT ''")!
 	app.add_missing_column('Project', 'label_id', 'INTEGER NOT NULL DEFAULT 0')!
 	app.add_missing_column('Project', 'milestone_id', 'INTEGER NOT NULL DEFAULT 0')!
@@ -914,7 +915,7 @@ fn (mut app App) add_missing_column(table_name string, column_name string, colum
 fn (mut ctx Context) json_success[T](result T) veb.Result {
 	response := api.ApiSuccessResponse[T]{
 		success: true
-		result: result
+		result:  result
 	}
 
 	return ctx.json(response)

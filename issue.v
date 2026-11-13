@@ -12,11 +12,12 @@ mut:
 	author_id             int
 	repo_id               int
 	is_pr                 bool
-	assigned              []int @[skip]
+	assigned              []int   @[skip]
 	labels                []Label @[skip]
 	comments_count        int
 	title                 string
 	text                  string
+	is_confidential       bool
 	created_at            int
 	status                IssueStatus
 	linked_issues         []int @[skip]
@@ -394,9 +395,9 @@ fn (mut app App) sync_repo_open_issue_count(repo_id int) ! {
 fn placeholder_user(user_id int) User {
 	username := if user_id > 0 { 'user-${user_id}' } else { 'unknown-user' }
 	return User{
-		id: user_id
+		id:       user_id
 		username: username
-		avatar: default_avatar_name
+		avatar:   default_avatar_name
 	}
 }
 
@@ -513,8 +514,8 @@ fn (mut app App) assign_issue(issue_id int, user_id int) ! {
 		return
 	}
 	assignment := IssueAssignee{
-		issue_id: issue_id
-		user_id: user_id
+		issue_id:   issue_id
+		user_id:    user_id
 		created_at: int(time.now().unix())
 	}
 	sql app.db {
