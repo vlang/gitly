@@ -114,7 +114,7 @@ jobs:
       - name: Build V
         shell: cmd
         run: |
-          make.bat -gcc
+          makev.bat -gcc
       # Must run after "Build V": the script shells out to `v.exe`, which
       # does not exist until V is built.
       - name: Install SQLite
