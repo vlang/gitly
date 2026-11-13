@@ -15,6 +15,30 @@ mut:
 	text       string
 }
 
+struct CommentReaction {
+mut:
+	id         int @[primary; sql: serial]
+	comment_id int
+	user_id    int
+	emoji      string
+}
+
+fn (mut app App) toggle_comment_reaction(cid int, uid int, em string) ! {
+	existing := sql app.db {
+		select from CommentReaction where comment_id == cid && user_id == uid && emoji == em
+	} or { []CommentReaction{} }
+	if existing.len > 0 {
+		sql app.db {
+			delete from CommentReaction where comment_id == cid && user_id == uid && emoji == em
+		}!
+	} else {
+		r := CommentReaction{ comment_id: cid, user_id: uid, emoji: em }
+		sql app.db {
+			insert r into CommentReaction
+		}!
+	}
+}
+
 @['/:username/:repo_name/comments'; post]
 pub fn (mut app App) handle_add_comment(mut ctx Context, username string, repo_name string) veb.Result {
 	repo := app.find_repo_by_name_and_username(repo_name, username) or { return ctx.not_found() }
@@ -62,9 +86,9 @@ fn (mut app App) add_issue_comment(author_id int, issue_id int, text string) ! {
 	}!
 }
 
-fn (mut app App) get_all_issue_comments(issue_id int) []Comment {
+fn (mut app App) get_all_issue_comments(iid int) []Comment {
 	comments := sql app.db {
-		select from Comment where issue_id == issue_id order by id
+		select from Comment where issue_id == iid order by id
 	} or { []Comment{} }
 
 	return comments
@@ -72,4 +96,18 @@ fn (mut app App) get_all_issue_comments(issue_id int) []Comment {
 
 fn (c Comment) relative() string {
 	return time.unix(c.created_at).relative()
+}
+
+@['/:username/:repo_name/comments/:comment_id/react'; post]
+pub fn (mut app App) handle_toggle_comment_reaction(mut ctx Context, username string, repo_name string, comment_id string) veb.Result {
+	if !ctx.logged_in {
+		return ctx.not_found()
+	}
+	cid := comment_id.int()
+	emoji := ctx.form['emoji'] or { '' }
+	if emoji == '' {
+		return ctx.redirect('/${username}/${repo_name}')
+	}
+	app.toggle_comment_reaction(cid, ctx.user.id, emoji) or { app.info(err.str()) }
+	return ctx.redirect('/${username}/${repo_name}')
 }
