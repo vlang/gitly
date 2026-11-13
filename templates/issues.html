@@ -30,6 +30,13 @@
 			@if issues_with_users.len == 0
 				<div class="issues-empty">%issue_none</div>
 			@else
+				<form id="batch-form" method="post" action="/@repo.user_name/@repo.name/issues/batch">
+					<select name="action">
+						<option value="close">Close selected</option>
+						<option value="open">Reopen selected</option>
+					</select>
+					<button type="submit">Apply</button>
+				</form>
 				@include '_issue_list.html'
 
 				<div class="issue-pager">

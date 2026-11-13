@@ -40,7 +40,7 @@ fn (mut app App) handle_issues_count(username string, repo_name string) veb.Resu
 	count := app.get_repo_issue_count(repo.id)
 	return ctx.json(api.ApiIssueCount{
 		success: true
-		result: count
+		result:  count
 	})
 }
 
@@ -86,8 +86,8 @@ pub fn (mut app App) handle_add_repo_issue(mut ctx Context, username string, rep
 	app.sync_repo_open_issue_count(repo.id) or { app.info(err.str()) }
 	app.dispatch_webhook(repo.id, 'issue', WebhookIssuePayload{
 		action: 'opened'
-		repo: '${username}/${repo_name}'
-		title: title
+		repo:   '${username}/${repo_name}'
+		title:  title
 		author: ctx.user.username
 	})
 	has_first_issue_activity := app.has_activity(ctx.user.id, 'first_issue')
@@ -261,8 +261,8 @@ pub fn (mut app App) handle_edit_issue(mut ctx Context, username string, repo_na
 	}
 	app.dispatch_webhook(repo.id, 'issue', WebhookIssuePayload{
 		action: 'updated'
-		repo: '${username}/${repo_name}'
-		title: title.trim_space()
+		repo:   '${username}/${repo_name}'
+		title:  title.trim_space()
 		author: ctx.user.username
 	})
 	return ctx.redirect('/${username}/${repo_name}/issue/${issue.id}')
@@ -376,8 +376,8 @@ fn change_issue_status(mut app App, mut ctx Context, username string, repo_name 
 	action := if status == .closed { 'closed' } else { 'reopened' }
 	app.dispatch_webhook(repo.id, 'issue', WebhookIssuePayload{
 		action: action
-		repo: '${username}/${repo_name}'
-		title: issue.title
+		repo:   '${username}/${repo_name}'
+		title:  issue.title
 		author: ctx.user.username
 	})
 	return ctx.redirect('/${username}/${repo_name}/issue/${issue.id}')
@@ -456,4 +456,32 @@ pub fn (mut app App) user_issues(mut ctx Context, username string, tab string) v
 
 	ctx.set_page_title([tab_title, user.username])
 	return $veb.html()
+}
+
+@['/:username/:repo_name/issues/batch'; post]
+pub fn (mut app App) handle_batch_issues(mut ctx Context, username string, repo_name string) veb.Result {
+	repo := app.find_repo_by_name_and_username(repo_name, username) or { return ctx.not_found() }
+	if !app.can_admin_repo(ctx, repo) {
+		return ctx.not_found()
+	}
+	action := ctx.form['action'] or { '' }
+	ids_raw := ctx.form['issue_ids'] or { '' }
+	for part in ids_raw.split(',') {
+		id := part.trim_space().int()
+		if id <= 0 { continue }
+		issue := app.find_issue_by_id(id) or { continue }
+		if issue.repo_id != repo.id {
+			continue
+		}
+		match action {
+			'close' {
+				app.set_issue_status(id, .closed) or { app.info(err.str()) }
+			}
+			'open' {
+				app.set_issue_status(id, .open) or { app.info(err.str()) }
+			}
+			else {}
+		}
+	}
+	return ctx.redirect('/${username}/${repo_name}/issues')
 }
