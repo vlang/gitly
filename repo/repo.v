@@ -29,12 +29,12 @@ mut:
 	primary_branch          string
 	webhook_secret          string
 	tags_count              int
-	nr_open_issues          int @[orm: 'open_issues_count']
-	nr_open_prs             int @[orm: 'open_prs_count']
-	nr_releases             int @[orm: 'releases_count']
-	nr_branches             int @[orm: 'branches_count']
+	nr_open_issues          int @[sql: 'open_issues_count']
+	nr_open_prs             int @[sql: 'open_prs_count']
+	nr_releases             int @[sql: 'releases_count']
+	nr_branches             int @[sql: 'branches_count']
 	nr_tags                 int
-	nr_stars                int @[orm: 'stars_count']
+	nr_stars                int @[sql: 'stars_count']
 	lang_stats              []LangStat @[skip]
 	created_at              int
 	nr_contributors         int

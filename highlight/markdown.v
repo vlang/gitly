@@ -3,13 +3,59 @@ module highlight
 import markdown
 
 pub fn convert_markdown_to_html(code string) string {
-	rendered := markdown.to_html(code).trim_right('\n')
+	// Extract display-math blocks (...) before rendering so md4c does not
+	// mangle them; re-inject them as <div class="math"> after sanitisation.
+	code2, placeholders := extract_math_blocks(code)
+
+	rendered := markdown.to_html(code2).trim_right('\n')
 
 	// Raw HTML is disabled in the renderer, but Markdown links and images still
 	// create href/src attributes. Keep relative links and an explicit allowlist
 	// of network schemes; everything else (notably javascript: and data:) loses
 	// the dangerous attribute.
-	return sanitize_rendered_markdown_urls(rendered)
+	sanitized := sanitize_rendered_markdown_urls(rendered)
+
+	return inject_math_blocks(sanitized, placeholders)
+}
+
+struct MathBlock {
+	placeholder string
+	html        string
+}
+
+fn extract_math_blocks(code string) (string, []MathBlock) {
+	mut out := code
+	mut blocks := []MathBlock{}
+	mut i := 0
+	delimiter := '$' + '$'
+	mut placeholder_prefix := 'GITLY_MATH_BLOCK_'
+	for out.contains(placeholder_prefix) {
+		placeholder_prefix += '_'
+	}
+	for {
+		start := out.index(delimiter) or { break }
+		end := out.index_after_(delimiter, start + delimiter.len)
+		if end < 0 {
+			break
+		}
+		content := out[start + delimiter.len..end]
+		placeholder := '${placeholder_prefix}${i}TOKEN'
+		blocks << MathBlock{
+			placeholder: placeholder
+			html: '<div class="math">${escape_html(content.trim_space())}</div>'
+		}
+		out = out[..start] + placeholder + out[end + delimiter.len..]
+		i++
+	}
+	return out, blocks
+}
+
+fn inject_math_blocks(html string, blocks []MathBlock) string {
+	mut out := html
+	for b in blocks {
+		out = out.replace(b.placeholder, b.html)
+	}
+	return out
 }
 
 fn sanitize_rendered_markdown_urls(html string) string {
