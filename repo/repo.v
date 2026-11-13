@@ -233,7 +233,7 @@ fn (mut app App) search_public_repos(query string) []Repo {
 // unrelated users.
 fn (mut app App) search_repos(query string, user_id int) []Repo {
 	pattern := sql_like_pattern(query)
-	repo_rows := db_exec_values(mut app.db, 'select id from ${sql_table('Repo')} where is_deleted is false and (\n\t\t\tlower(name) like lower(${pattern}) or lower(user_name) like lower(${pattern}) or lower(description) like lower(${pattern})\n\t\t) order by nr_stars desc, name asc limit ${search_candidate_limit}') or {
+	repo_rows := db_exec_values(mut app.db, 'select id from ${sql_table('Repo')} where is_deleted is false and (\n\t\t\tlower(name) like lower(${pattern}) or lower(user_name) like lower(${pattern}) or lower(description) like lower(${pattern})\n\t\t) order by stars_count desc, name asc limit ${search_candidate_limit}') or {
 		app.warn('Repository search failed: ${err}')
 		return []
 	}
