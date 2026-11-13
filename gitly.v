@@ -93,8 +93,8 @@ fn new_app() !&App {
 
 	mut app := &App{
 		// db: sqlite.connect('gitly.sqlite') or { panic(err) }
-		db: connect_db(conf)!
-		config: conf
+		db:         connect_db(conf)!
+		config:     conf
 		started_at: time.now().unix()
 	}
 
@@ -733,7 +733,6 @@ fn (mut app App) migrate_tables() ! {
 	app.add_missing_column('Repo', 'disable_discussions', db_bool_column_type())!
 	app.add_missing_column('Repo', 'disable_projects', db_bool_column_type())!
 	app.add_missing_column('Repo', 'disable_milestones', db_bool_column_type())!
-	app.add_missing_column('Repo', 'disable_wiki', db_bool_column_type())!
 	app.add_missing_column('Repo', 'is_pinned', db_bool_column_type())!
 	app.add_missing_column('Repo', 'created_at', 'INTEGER NOT NULL DEFAULT 0')!
 	app.add_missing_column('Repo', 'required_approvals', 'INTEGER NOT NULL DEFAULT 0')!
@@ -914,7 +913,7 @@ fn (mut app App) add_missing_column(table_name string, column_name string, colum
 fn (mut ctx Context) json_success[T](result T) veb.Result {
 	response := api.ApiSuccessResponse[T]{
 		success: true
-		result: result
+		result:  result
 	}
 
 	return ctx.json(response)
