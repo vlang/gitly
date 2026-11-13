@@ -1,9 +1,9 @@
 module highlight
 
-const markdown = '<script>  alert(true) </script> <!--  comment -->test'
+const xss_markdown_sample = '<script>  alert(true) </script> <!--  comment -->test'
 
 fn test_convert_markdown_to_html() {
-	rendered := convert_markdown_to_html(markdown)
+	rendered := convert_markdown_to_html(xss_markdown_sample)
 	assert !rendered.contains('<script>')
 	assert rendered.contains('&lt;script&gt;')
 	assert rendered.contains('test</p>')
