@@ -103,6 +103,23 @@ pub fn (mut app App) handle_logout(mut ctx Context) veb.Result {
 	return ctx.redirect_to_index()
 }
 
+// Keep fixed pages before the username wildcard for routers that dispatch in declaration order.
+pub fn (mut app App) register(mut ctx Context) veb.Result {
+	if ctx.logged_in {
+		return ctx.redirect('/${ctx.user.username}')
+	}
+	csrf := app.new_oauth_state(mut ctx) or {
+		return ctx.server_error('Could not create a secure OAuth state')
+	}
+
+	user_count := app.get_users_count_with_reconnect() or { return ctx.db_error(err) }
+	no_users := user_count == 0
+
+	ctx.current_path = ''
+
+	return $veb.html()
+}
+
 @['/:username']
 pub fn (mut app App) user(mut ctx Context, username string) veb.Result {
 	exists, user := app.check_username(username)
@@ -255,22 +272,6 @@ fn (mut app App) rename_user_account(user_id int, old_name string, new_name stri
 		}
 		return database_error
 	}
-}
-
-pub fn (mut app App) register(mut ctx Context) veb.Result {
-	if ctx.logged_in {
-		return ctx.redirect('/${ctx.user.username}')
-	}
-	csrf := app.new_oauth_state(mut ctx) or {
-		return ctx.server_error('Could not create a secure OAuth state')
-	}
-
-	user_count := app.get_users_count_with_reconnect() or { return ctx.db_error(err) }
-	no_users := user_count == 0
-
-	ctx.current_path = ''
-
-	return $veb.html()
 }
 
 fn (mut app App) register_failed(mut ctx Context, no_redirect string, msg string) veb.Result {
