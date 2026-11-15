@@ -8,7 +8,7 @@ fn pick_plural_form(count int, forms []string, lang Lang) string {
 		return forms[0]
 	}
 	n := if count < 0 { -count } else { count }
-	if forms.len == 2 || lang != .ru {
+	if forms.len == 2 || lang !in [.ru, .pl] {
 		return if n == 1 { forms[0] } else { forms[1] }
 	}
 	last_two := n % 100
@@ -16,7 +16,7 @@ fn pick_plural_form(count int, forms []string, lang Lang) string {
 	if last_two >= 11 && last_two <= 14 {
 		return forms[2]
 	}
-	if last == 1 {
+	if n == 1 || (lang == .ru && last == 1) {
 		return forms[0]
 	}
 	if last >= 2 && last <= 4 {
