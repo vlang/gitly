@@ -9,14 +9,18 @@ enum Lang {
 	jp
 	cn
 	pt
+	pl
+	de
 }
 
-const tr_menu_en = '<select id=select_lang><option value=en selected>English</option><option value=ru>Русский</option><option value=es>Español</option><option value=jp>日本語</option><option value=cn>中文</option><option value=pt>Português</option></select>'
-const tr_menu_ru = '<select id=select_lang><option value=en>English</option><option value=ru selected>Русский</option><option value=es>Español</option><option value=jp>日本語</option><option value=cn>中文</option><option value=pt>Português</option></select>'
-const tr_menu_es = '<select id=select_lang><option value=en>English</option><option value=ru>Русский</option><option value=es selected>Español</option><option value=jp>日本語</option><option value=cn>中文</option><option value=pt>Português</option></select>'
-const tr_menu_jp = '<select id=select_lang><option value=en>English</option><option value=ru>Русский</option><option value=es>Español</option><option value=jp selected>日本語</option><option value=cn>中文</option><option value=pt>Português</option></select>'
-const tr_menu_cn = '<select id=select_lang><option value=en>English</option><option value=ru>Русский</option><option value=es>Español</option><option value=jp>日本語</option><option value=cn selected>中文</option><option value=pt>Português</option></select>'
-const tr_menu_pt = '<select id=select_lang><option value=en>English</option><option value=ru>Русский</option><option value=es>Español</option><option value=jp>日本語</option><option value=cn>中文</option><option value=pt selected>Português</option></select>'
+const tr_menu_en = '<select id=select_lang><option value=en selected>English</option><option value=ru>Русский</option><option value=es>Español</option><option value=jp>日本語</option><option value=cn>中文</option><option value=pt>Português</option><option value=pl>Polski</option><option value=de>Deutsch</option></select>'
+const tr_menu_ru = '<select id=select_lang><option value=en>English</option><option value=ru selected>Русский</option><option value=es>Español</option><option value=jp>日本語</option><option value=cn>中文</option><option value=pt>Português</option><option value=pl>Polski</option><option value=de>Deutsch</option></select>'
+const tr_menu_es = '<select id=select_lang><option value=en>English</option><option value=ru>Русский</option><option value=es selected>Español</option><option value=jp>日本語</option><option value=cn>中文</option><option value=pt>Português</option><option value=pl>Polski</option><option value=de>Deutsch</option></select>'
+const tr_menu_jp = '<select id=select_lang><option value=en>English</option><option value=ru>Русский</option><option value=es>Español</option><option value=jp selected>日本語</option><option value=cn>中文</option><option value=pt>Português</option><option value=pl>Polski</option><option value=de>Deutsch</option></select>'
+const tr_menu_cn = '<select id=select_lang><option value=en>English</option><option value=ru>Русский</option><option value=es>Español</option><option value=jp>日本語</option><option value=cn selected>中文</option><option value=pt>Português</option><option value=pl>Polski</option><option value=de>Deutsch</option></select>'
+const tr_menu_pt = '<select id=select_lang><option value=en>English</option><option value=ru>Русский</option><option value=es>Español</option><option value=jp>日本語</option><option value=cn>中文</option><option value=pt selected>Português</option><option value=pl>Polski</option><option value=de>Deutsch</option></select>'
+const tr_menu_pl = '<select id=select_lang><option value=en>English</option><option value=ru>Русский</option><option value=es>Español</option><option value=jp>日本語</option><option value=cn>中文</option><option value=pt>Português</option><option value=pl selected>Polski</option><option value=de>Deutsch</option></select>'
+const tr_menu_de = '<select id=select_lang><option value=en>English</option><option value=ru>Русский</option><option value=es>Español</option><option value=jp>日本語</option><option value=cn>中文</option><option value=pt>Português</option><option value=pl>Polski</option><option value=de selected>Deutsch</option></select>'
 
 fn get_port(conf config.Config) int {
 	// Priority: -p flag > GITLY_PORT env > config.json port > 8080
@@ -74,5 +78,7 @@ fn build_tr_menu(cur_lang Lang) string {
 		.jp { tr_menu_jp }
 		.cn { tr_menu_cn }
 		.pt { tr_menu_pt }
+		.pl { tr_menu_pl }
+		.de { tr_menu_de }
 	}
 }

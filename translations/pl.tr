@@ -1,0 +1,1243 @@
+welcome_to_gitly
+Witaj w Gitly! Wygląda na to, że właśnie je skonfigurowano. Zarejestruj
+główne konto administratora tego serwera.
+-----
+register
+Zarejestruj się
+-----
+register_admin_account
+Zarejestruj konto administratora
+-----
+new_repository
+Nowe repozytorium
+-----
+repo_being_cloned_plz_wait
+Trwa klonowanie repozytorium. Poczekaj chwilę...
+-----
+repo_being_cloned_clone_url
+Adres URL do klonowania:
+-----
+username
+Nazwa użytkownika
+-----
+password
+Hasło
+-----
+email
+E-mail
+-----
+index_intro
+Lekka platforma Git o otwartym kodzie źródłowym
+-----
+index_source_hosting
+Hosting kodu źródłowego
+-----
+index_project_management
+Zarządzanie projektami
+-----
+index_ci_cd
+CI &amp; CD
+-----
+index_main_features
+Co oferuje Gitly
+-----
+index_comparison_title
+Porównaj Gitly
+-----
+index_feature_light_fast
+Lekkie i szybkie
+-----
+index_feature_minimal_ram
+Minimalne zużycie pamięci RAM (działa świetnie nawet na najtańszej instancji AWS Lightsail za 3,50 USD)
+-----
+index_feature_easy_deploy
+Proste, samodzielne wdrożenie
+-----
+index_feature_no_js
+Działa bez JavaScriptu
+-----
+index_feature_lang_stats
+Szczegółowe statystyki języków dla każdego katalogu
+-----
+index_feature_top_files
+Funkcja "Najważniejsze pliki" ułatwiająca poznanie projektu
+-----
+index_feature_fast_ci
+Bardzo szybkie CI z zależnościami zapisanymi w pamięci podręcznej
+-----
+index_feature_pr_no_fork
+Tworzenie próśb o scalenie bez forkowania repozytorium
+-----
+index_open_source
+Wersja do samodzielnego hostowania o otwartym kodzie źródłowym
+-----
+index_all_open_source
+Wszystkie funkcje mają otwarty kod źródłowy
+-----
+index_min_ram
+Minimalna ilość RAM przy samodzielnym hostowaniu
+-----
+index_cheapest_server
+Najtańszy serwer
+-----
+index_works_no_js
+Działa z wyłączonym JavaScriptem
+-----
+index_detailed_lang_stats
+Statystyki języków w repozytorium
+-----
+index_install_size
+Minimalne miejsce na dysku przy samodzielnym hostowaniu / instalacja
+-----
+index_load_time
+Czas ładowania strony głównej repozytorium vlang/v
+-----
+index_ci_features_header
+Funkcje CI
+-----
+index_cpu_cores
+Domyślny hostowany runner linuksowy
+-----
+index_dep_cache
+Wbudowane buforowanie zależności
+-----
+index_separate_instance
+Nowe, odizolowane środowisko dla hostowanych zadań
+-----
+index_instant_start
+Gwarantowany "natychmiastowy" start CI
+-----
+index_stop_ci
+Anulowanie całego CI dla commita / PR / MR jednym kliknięciem
+-----
+index_logs_storage_time
+Okres przechowywania logów CI
+-----
+index_basic_ci_minutes
+Limit hostowanego CI w planie bezpłatnym
+-----
+index_price_per_user
+Podstawowy płatny plan zespołowy
+-----
+index_comparison_updated
+Dane sprawdzono w oficjalnej dokumentacji we wrześniu 2026 r.
+-----
+index_ci_interactive_shell
+Interaktywne SSH / powłoka na hostowanej maszynie CI
+-----
+index_ci_manual_cancel
+Ręczne anulowanie pojedynczego procesu / potoku
+-----
+index_ci_automatic_trigger
+Automatyczne uruchamianie przy commicie / PR / MR
+-----
+index_ci_auto_cancel
+Automatyczne anulowanie nieaktualnego CI po nowym commicie
+-----
+index_private_repo
+Prywatne repozytorium
+-----
+index_public_repo
+Publiczne repozytorium
+-----
+index_minimum
+minimum
+-----
+index_baseline
+wartość bazowa
+-----
+index_self_managed
+Samodzielnie zarządzane
+-----
+index_hosted
+Hostowane
+-----
+index_hosted_beta
+hostowana wersja beta
+-----
+index_runner_dependent
+Zależnie od runnera
+-----
+index_no_builtin
+Brak wbudowanej sesji
+-----
+index_per_workflow_run
+na uruchomienie procesu
+-----
+index_whole_pipeline
+cały potok
+-----
+index_requires_configuration
+wymaga konfiguracji
+-----
+index_indefinite_default
+Domyślnie bezterminowo
+-----
+index_default_ninety_days
+Domyślnie 90 dni
+-----
+index_public_repos_free
+Repozytoria publiczne są bezpłatne
+-----
+index_billed_annually
+rozliczane rocznie
+-----
+index_yes
+Tak
+-----
+index_no
+Nie
+-----
+index_partially
+Częściowo
+-----
+index_three_months
+3 miesiące
+-----
+index_six_months
+6 miesięcy
+-----
+index_check_action
+Zobacz Gitly w działaniu, przeglądając repozytorium języka V:
+-----
+open_source_title
+Które funkcje GitLaba nie mają otwartego kodu źródłowego
+-----
+open_source_intro
+GitLab jest często przedstawiany jako alternatywa dla GitHuba o otwartym kodzie źródłowym. W rzeczywistości tylko Community Edition (CE) jest dostępna na licencji MIT. Większość funkcji reklamowanych i sprzedawanych przez GitLab znajduje się w zastrzeżonej Enterprise Edition (EE), udostępnianej na niewolnej licencji z dostępem do kodu źródłowego. Jeśli samodzielnie hostujesz bezpłatną wersję CE, nie otrzymujesz tych funkcji.
+-----
+open_source_ee_only_title
+Niepełna lista zastrzeżonych funkcji dostępnych wyłącznie w EE:
+-----
+open_source_feat_advanced_search
+Zaawansowane wyszukiwanie (przeszukiwanie kodu w wielu projektach za pomocą Elasticsearch)
+-----
+open_source_feat_mr_approvals
+Wiele reguł zatwierdzania próśb o scalenie i wymagane osoby zatwierdzające
+-----
+open_source_feat_security_scanning
+SAST, DAST, skanowanie kontenerów i wykrywanie sekretów
+-----
+open_source_feat_dependency_scanning
+Skanowanie zależności i zgodność licencyjna
+-----
+open_source_feat_compliance
+Ramy zgodności i panele zgodności
+-----
+open_source_feat_audit_events
+Pełne zdarzenia audytowe i raporty audytu
+-----
+open_source_feat_epics
+Epiki i epiki wielopoziomowe
+-----
+open_source_feat_roadmaps
+Plany rozwoju i widoki planowania kamieni milowych
+-----
+open_source_feat_portfolio
+Analityka portfela projektów i strumienia wartości
+-----
+open_source_feat_protected_envs
+Chronione środowiska i zatwierdzanie wdrożeń
+-----
+open_source_feat_geo
+Replikacja geograficzna między wieloma regionami
+-----
+open_source_feat_dr
+Odzyskiwanie po awarii
+-----
+open_source_feat_group_saml
+Jednokrotne logowanie SAML na poziomie grupy i obsługa SCIM
+-----
+open_source_feat_ldap_sync
+Synchronizacja grup LDAP i integracja z Kerberosem
+-----
+open_source_feat_push_rules
+Reguły wypychania i wymagane konfiguracje potoków
+-----
+open_source_feat_insights
+Analizy, panele strumienia wartości i metryki DORA
+-----
+open_source_outro
+Gitly stosuje inne podejście: każda funkcja należy do tej samej bazy otwartego kodu źródłowego. Nie ma wersji Enterprise, modułów za opłatą ani osobnego repozytorium "premium".
+-----
+new_repo_title
+Utwórz nowe repozytorium
+-----
+new_repo_name
+Nazwa repozytorium
+-----
+new_repo_owner
+Właściciel
+-----
+new_repo_description
+Opis
+-----
+new_repo_optional
+(opcjonalnie)
+-----
+new_repo_clone_url
+Adres URL do klonowania
+-----
+new_repo_clone_hint
+(tylko jeśli chcesz sklonować istniejące repozytorium)
+-----
+new_repo_import_issues
+Importuj zgłoszenia z GitHuba
+-----
+new_repo_import_prs
+Importuj prośby o scalenie z GitHuba
+-----
+new_repo_visibility
+Widoczność repozytorium
+-----
+new_repo_public
+Publiczne
+-----
+new_repo_public_desc
+Każdy w internecie może zobaczyć to repozytorium.
+-----
+new_repo_private
+Prywatne
+-----
+new_repo_private_desc
+Decydujesz, kto może przeglądać to repozytorium i dodawać do niego zmiany.
+-----
+new_repo_create
+Utwórz repozytorium
+-----
+new_org_subtitle
+Opowiedz nam o swojej organizacji
+-----
+new_org_title
+Skonfiguruj swoją organizację
+-----
+new_org_name
+Nazwa organizacji
+-----
+new_org_name_hint
+To będzie nazwa Twojego konta w Gitly.
+-----
+new_org_url_hint
+Twój adres URL to:
+-----
+new_org_contact_email
+Kontaktowy adres e-mail
+-----
+new_org_belongs_to
+Ta organizacja należy do:
+-----
+new_org_personal
+Mojego konta osobistego
+-----
+new_org_personal_example
+To znaczy:
+-----
+new_org_business
+Firmy lub instytucji
+-----
+new_org_business_example
+Na przykład: Acme, Inc., Instytut Przykładowy, Amerykański Czerwony Krzyż
+-----
+new_org_accept_terms
+Akceptuję warunki korzystania z usługi.
+-----
+new_org_next
+Dalej
+-----
+commits_count
+commit|commity|commitów
+-----
+issues_count
+zgłoszenie|zgłoszenia|zgłoszeń
+-----
+prs_count
+prośba o scalenie|prośby o scalenie|próśb o scalenie
+-----
+contributors_count
+współtwórca|współtwórcy|współtwórców
+-----
+branches_count
+gałąź|gałęzie|gałęzi
+-----
+releases_count
+wydanie|wydania|wydań
+-----
+tags_count
+tag|tagi|tagów
+-----
+topics_count
+dyskusja|dyskusje|dyskusji
+-----
+stars_count
+gwiazdka|gwiazdki|gwiazdek
+-----
+watchers_count
+obserwujący|obserwujących|obserwujących
+-----
+ci_label
+CI
+-----
+pr_pull_requests
+Prośby o scalenie
+-----
+pr_new
+Nowa prośba o scalenie
+-----
+pr_tab_open
+Otwarte
+-----
+pr_tab_merged
+Scalone
+-----
+pr_tab_closed
+Zamknięte
+-----
+pr_none
+Brak próśb o scalenie.
+-----
+pr_status_open
+Otwarta
+-----
+pr_status_merged
+Scalona
+-----
+pr_status_closed
+Zamknięta
+-----
+pr_wants_to_merge
+chce scalić
+-----
+pr_into
+do
+-----
+pr_conversation
+Rozmowa
+-----
+pr_files_changed
+Zmienione pliki
+-----
+pr_files_changed_label
+zmienionych plików
+-----
+pr_commits_label
+commity
+-----
+pr_review_approved
+zatwierdzono
+-----
+pr_review_changes_requested
+poproszono o zmiany
+-----
+pr_review_commented
+skomentowano
+-----
+pr_commented
+skomentowano
+-----
+pr_leave_comment
+Dodaj komentarz
+-----
+pr_comment_button
+Skomentuj
+-----
+pr_merge
+Scal prośbę
+-----
+pr_squash_merge
+Połącz commity i scal
+-----
+pr_close
+Zamknij prośbę o scalenie
+-----
+pr_reopen
+Otwórz ponownie prośbę o scalenie
+-----
+pr_open_title
+Otwórz prośbę o scalenie
+-----
+pr_compare_desc
+Porównaj dwie gałęzie w tym repozytorium i zaproponuj scalenie. Fork nie jest wymagany.
+-----
+pr_base
+gałąź docelowa
+-----
+pr_compare
+gałąź porównywana
+-----
+pr_choose_branch
+(wybierz gałąź)
+-----
+pr_compare_button
+Porównaj
+-----
+pr_no_commits_between
+Brak commitów pomiędzy tymi gałęziami.
+-----
+pr_title_placeholder
+Tytuł
+-----
+pr_description_placeholder
+Opisz zmiany (opcjonalnie)
+-----
+pr_create
+Utwórz prośbę o scalenie
+-----
+pr_commits_heading
+Commity
+-----
+pr_by
+autor:
+-----
+pr_no_file_changes
+Nie wykryto zmian w plikach.
+-----
+pr_binary_file
+Plik binarny nie jest wyświetlany.
+-----
+pr_line_comment_placeholder
+Dodaj komentarz do tego wiersza (opcjonalnie)
+-----
+pr_overall_review_placeholder
+Ogólny komentarz do przeglądu (opcjonalnie)
+-----
+pr_review_action_comment
+Skomentuj
+-----
+pr_review_action_approve
+Zatwierdź
+-----
+pr_review_action_request_changes
+Poproś o zmiany
+-----
+pr_submit_review
+Prześlij przegląd
+-----
+pr_your_pulls
+Twoje prośby o scalenie
+-----
+pr_none_user
+Nie otwarto jeszcze żadnych próśb o scalenie.
+-----
+pr_opened
+otwarto
+-----
+pr_comments_title
+Komentarze
+-----
+webhooks
+Webhooki
+-----
+webhook_new
+Nowy webhook
+-----
+webhook_none
+Nie skonfigurowano żadnych webhooków.
+-----
+webhook_url
+Adres URL odbiorcy
+-----
+webhook_secret
+Sekret
+-----
+webhook_secret_hint
+Służy do obliczania nagłówka X-Gitly-Signature (HMAC-SHA256). Opcjonalny, ale zalecany.
+-----
+webhook_events
+Wysyłane zdarzenia
+-----
+webhook_event_push
+Wypchnięcie zmian
+-----
+webhook_event_issue
+Zgłoszenia
+-----
+webhook_event_pr
+Prośby o scalenie
+-----
+webhook_event_comment
+Komentarze
+-----
+webhook_event_release
+Wydania
+-----
+webhook_create
+Utwórz webhook
+-----
+webhook_delete
+Usuń
+-----
+webhook_active
+Aktywny
+-----
+webhook_inactive
+Nieaktywny
+-----
+webhook_last_status
+Ostatnia odpowiedź
+-----
+webhook_never_delivered
+Nigdy nie wysłano
+-----
+webhook_deliveries
+Ostatnie wysyłki
+-----
+webhook_back
+Powrót do webhooków
+-----
+manage_webhooks
+Zarządzaj webhookami
+-----
+discussions
+Dyskusje
+-----
+discussion_new
+Nowa dyskusja
+-----
+discussion_none
+Brak dyskusji.
+-----
+discussion_create
+Utwórz dyskusję
+-----
+discussion_title_placeholder
+Tytuł dyskusji
+-----
+discussion_body_placeholder
+Rozpocznij rozmowę...
+-----
+discussion_category
+Kategoria
+-----
+discussion_category_general
+Ogólne
+-----
+discussion_category_qa
+Pytania i odpowiedzi
+-----
+discussion_category_announcement
+Ogłoszenie
+-----
+discussion_category_idea
+Pomysły
+-----
+discussion_locked
+Zablokowana
+-----
+discussion_reply_placeholder
+Odpowiedz w tej dyskusji
+-----
+discussion_reply_button
+Wyślij odpowiedź
+-----
+discussion_lock
+Zablokuj dyskusję
+-----
+discussion_unlock
+Odblokuj dyskusję
+-----
+discussion_delete
+Usuń dyskusję
+-----
+discussion_answer
+Oznacz jako odpowiedź
+-----
+discussion_answered
+Z odpowiedzią
+-----
+discussion_opened
+otwarto
+-----
+projects
+Projekty
+-----
+project_new
+Nowy projekt
+-----
+project_none
+Brak projektów.
+-----
+project_create
+Utwórz projekt
+-----
+project_name_placeholder
+Nazwa projektu
+-----
+project_description_placeholder
+Opis projektu (opcjonalnie)
+-----
+project_delete
+Usuń projekt
+-----
+project_add_column
+Dodaj kolumnę
+-----
+project_column_name_placeholder
+Nazwa kolumny (np. Do zrobienia, W trakcie, Gotowe)
+-----
+project_add_card
+Dodaj kartę
+-----
+project_card_title_placeholder
+Tytuł karty
+-----
+project_card_note_placeholder
+Notatki (opcjonalnie)
+-----
+project_card_save
+Zapisz kartę
+-----
+project_card_delete
+Usuń
+-----
+project_column_delete
+Usuń kolumnę
+-----
+project_column_empty
+Brak kart.
+-----
+milestones
+Kamienie milowe
+-----
+milestone_new
+Nowy kamień milowy
+-----
+milestone_none
+Brak kamieni milowych.
+-----
+milestone_create
+Utwórz kamień milowy
+-----
+milestone_title_placeholder
+Tytuł kamienia milowego
+-----
+milestone_description_placeholder
+Opis (opcjonalnie)
+-----
+milestone_due_date
+Termin
+-----
+milestone_status_open
+Otwarty
+-----
+milestone_status_closed
+Zamknięty
+-----
+milestone_close
+Zamknij kamień milowy
+-----
+milestone_reopen
+Otwórz ponownie kamień milowy
+-----
+milestone_delete
+Usuń kamień milowy
+-----
+milestone_progress
+Postęp
+-----
+milestone_issues
+Powiązane zgłoszenia
+-----
+milestone_no_issues
+Brak powiązanych zgłoszeń.
+-----
+twofa_title
+Uwierzytelnianie dwuskładnikowe
+-----
+twofa_status_enabled
+Uwierzytelnianie dwuskładnikowe jest włączone.
+-----
+twofa_status_disabled
+Uwierzytelnianie dwuskładnikowe jest wyłączone.
+-----
+twofa_enable
+Włącz uwierzytelnianie dwuskładnikowe
+-----
+twofa_disable
+Wyłącz uwierzytelnianie dwuskładnikowe
+-----
+twofa_setup_intro
+Zeskanuj kod QR aplikacją uwierzytelniającą (Aegis, Google Authenticator, 1Password itp.) lub wprowadź sekret ręcznie. Następnie wpisz poniżej 6-cyfrowy kod, aby potwierdzić.
+-----
+twofa_secret
+Sekret
+-----
+twofa_code
+6-cyfrowy kod
+-----
+twofa_verify
+Zweryfikuj i włącz
+-----
+twofa_login_prompt
+Aby kontynuować, wpisz 6-cyfrowy kod z aplikacji uwierzytelniającej.
+-----
+twofa_login_button
+Zweryfikuj
+-----
+twofa_invalid
+Nieprawidłowy kod. Spróbuj ponownie.
+-----
+api_tokens
+Tokeny API
+-----
+api_token_new
+Nowy token API
+-----
+api_token_none
+Brak tokenów API.
+-----
+api_token_name
+Nazwa tokena
+-----
+api_token_create
+Utwórz token
+-----
+api_token_revoke
+Unieważnij
+-----
+api_token_show_once
+Ten token jest wyświetlany tylko raz. Skopiuj go teraz:
+-----
+api_docs
+Dokumentacja API
+-----
+repo_delete_warning
+To repozytorium zostanie trwale usunięte. Tej czynności nie można cofnąć.
+-----
+repo_delete_public_intro
+To publiczne repozytorium zawierające:
+-----
+repo_delete_public_outro
+Wszystkie te dane zostaną utracone.
+-----
+repo_delete_confirm_question
+Czy na pewno chcesz kontynuować?
+-----
+repo_delete_confirm_yes
+Tak, usuń repozytorium
+-----
+repo_delete_cancel
+Anuluj
+-----
+settings_title
+Ustawienia
+-----
+danger_zone
+Strefa zagrożenia
+-----
+transfer_ownership
+Przenieś własność
+-----
+transfer_ownership_desc
+Przenieś to repozytorium do innego użytkownika. Wpisz pełną ścieżkę, aby potwierdzić.
+-----
+new_owner_username
+Nazwa użytkownika nowego właściciela
+-----
+move_repo
+Przenieś repozytorium
+-----
+delete_repo_title
+Usuń to repozytorium
+-----
+delete_repo_desc
+Po usunięciu nie można odzyskać repozytorium. Wpisz pełną ścieżkę, aby potwierdzić.
+-----
+delete_repo
+Usuń repozytorium
+-----
+features_section_title
+Funkcje
+-----
+features_section_desc
+Włącz lub wyłącz funkcje tego repozytorium.
+-----
+save_features
+Zapisz ustawienia funkcji
+-----
+wiki
+Wiki
+-----
+header_search_placeholder
+Szukaj...
+-----
+header_login
+Zaloguj się
+-----
+header_register
+Zarejestruj się
+-----
+header_profile
+Profil
+-----
+header_repositories
+Repozytoria
+-----
+header_issues
+Zgłoszenia
+-----
+header_stars
+Gwiazdki
+-----
+header_feed
+Aktualności
+-----
+header_settings
+Ustawienia
+-----
+header_new_organization
+Nowa organizacja
+-----
+header_admin_panel
+Panel administratora
+-----
+header_signed_in_as
+Zalogowano jako
+-----
+header_sign_out
+Wyloguj się
+-----
+issue_issues
+Zgłoszenia
+-----
+issue_new
+Nowe zgłoszenie
+-----
+issue_none
+Brak zgłoszeń.
+-----
+issue_your_issues
+Zgłoszenia
+-----
+issue_assigned_to_me
+Przypisane do mnie
+-----
+issue_created_by_me
+Utworzone przeze mnie
+-----
+issue_mentioned
+Wzmianki
+-----
+issue_recent_activity
+Ostatnia aktywność
+-----
+issue_none_assigned
+Nie przypisano Ci żadnych zgłoszeń.
+-----
+issue_none_created
+Nie otwarto jeszcze żadnych zgłoszeń.
+-----
+issue_none_mentioned
+Nie wspomniano o Tobie w żadnych zgłoszeniach.
+-----
+issue_none_activity
+Brak ostatniej aktywności w zgłoszeniach.
+-----
+issue_opened
+otwarto
+-----
+issue_by
+autor:
+-----
+issue_comments_title
+Komentarze
+-----
+admin_stats_running_since
+Gitly działa od
+-----
+admin_stats_total_users
+Zarejestrowani użytkownicy
+-----
+admin_stats_total_repos
+Repozytoria
+-----
+admin_stats_total_commits
+Commity
+-----
+admin_stats_total_issues
+Zgłoszenia
+-----
+admin_stats_new_users
+Nowi użytkownicy
+-----
+admin_stats_new_repos
+Nowe repozytoria
+-----
+admin_stats_commits
+Commity
+-----
+admin_stats_new_issues
+Nowe zgłoszenia
+-----
+admin_stats_last_n_days
+Ostatnie 30 dni
+-----
+commit_committed
+zacommitowano
+-----
+commit_view_patch
+Zobacz łatkę
+-----
+commit_files_changed
+zmienionych plików
+-----
+commit_additions
+dodanych wierszy
+-----
+commit_deletions
+usuniętych wierszy
+-----
+commit_no_changes
+Brak zmian w plikach w tym commicie.
+-----
+commit_binary_file
+Plik binarny nie jest wyświetlany.
+-----
+commit_file_new
+nowy plik
+-----
+commit_file_deleted
+usunięty
+-----
+commit_file_renamed
+zmieniono nazwę
+-----
+commits_on
+Commity z
+-----
+browse_repo_at_point
+Przeglądaj repozytorium w tym stanie
+-----
+about_section
+Informacje
+-----
+no_description
+Nie podano opisu.
+-----
+readme_link
+Readme
+-----
+license_link
+Licencja
+-----
+stars_label
+gwiazdki
+-----
+watching_label
+obserwujących
+-----
+sponsor_section
+Wesprzyj ten projekt
+-----
+sponsor_action
+Wesprzyj
+-----
+releases_section
+Wydania
+-----
+contributors_section
+Współtwórcy
+-----
+latest_label
+Najnowsze
+-----
+releases_more
+więcej wydań
+-----
+no_releases
+Nie opublikowano żadnych wydań
+-----
+no_contributors
+Brak współtwórców
+-----
+star_action
+Dodaj gwiazdkę
+-----
+starred
+Dodano gwiazdkę
+-----
+watch_action
+Obserwuj
+-----
+unwatch_action
+Przestań obserwować
+-----
+user_edit_profile
+Edytuj profil
+-----
+user_pinned_repos
+Przypięte repozytoria
+-----
+user_view_all_repos
+Zobacz wszystkie
+-----
+user_no_repos
+Brak repozytoriów.
+-----
+user_repos_col_name
+Nazwa
+-----
+user_repos_col_issues
+Liczba zgłoszeń
+-----
+user_repos_col_prs
+Liczba próśb o scalenie
+-----
+user_repos_col_stars
+Liczba gwiazdek
+-----
+user_repos_col_created
+Data utworzenia
+-----
+user_repos_col_activity
+Data ostatniej aktywności
+-----
+user_repos_unknown
+Nieznane
+-----
+user_repo_public
+Publiczne
+-----
+user_repo_private
+Prywatne
+-----
+user_contributions_in_year
+wkładów w ostatnim roku
+-----
+user_commits_label
+commity
+-----
+user_heatmap_less
+Mniej
+-----
+user_heatmap_more
+Więcej
+-----
+user_contribution_activity
+Aktywność współtwórcy
+-----
+user_activity_joined
+Dołączono do Gitly
+-----
+user_activity_first_repo
+Pierwsze repozytorium
+-----
+user_activity_first_issue
+Pierwsze zgłoszenie
+-----
+user_activity_on
+w dniu
+-----
+login_via_github
+Zaloguj się przez GitHub
+-----
+register_via_github
+Zarejestruj się przez GitHub
+-----
+clone_size_limit_title
+Repozytorium przekracza 100 MB
+-----
+clone_size_limit_message
+To repozytorium ma więcej niż 100 MB. Wykup subskrypcję Premium za jedyne 5 USD miesięcznie, aby wesprzeć Gitly i pomóc nam zapewnić infrastrukturę do hostowania repozytoriów.
+-----
+clone_size_limit_purchase_premium
+Kup Premium za 5 USD przez PayPal
+-----
+clone_size_limit_purchase_usdt
+Zapłać 4,50 USDT (-10%)
+-----
+clone_size_limit_pricing_link
+Zobacz plany Premium
+-----
+header_pricing
+Cennik
+-----
+pricing_title
+Cennik Gitly
+-----
+pricing_subtitle
+Wybierz plan dopasowany do wielkości repozytoriów, potrzebnej przestrzeni i oczekiwanego wsparcia.
+-----
+pricing_best_for_individuals
+Najlepszy dla osób indywidualnych
+-----
+pricing_best_for_teams
+Najlepszy dla zespołów
+-----
+pricing_premium_name
+Premium
+-----
+pricing_premium_desc
+Dla programistów potrzebujących większych importów i hostingu prywatnych projektów.
+-----
+pricing_premium_price
+$5
+-----
+pricing_per_month
+miesięcznie
+-----
+pricing_buy_premium
+Kup Premium przez PayPal
+-----
+pricing_buy_premium_usdt
+Zapłać 4,50 USDT (-10%)
+-----
+pricing_premium_feature_one
+Klonuj i hostuj repozytoria do 1 GB
+-----
+pricing_premium_feature_two
+Prywatne repozytoria i organizacje
+-----
+pricing_premium_feature_three
+Import zgłoszeń i próśb o scalenie z GitHuba
+-----
+pricing_premium_feature_four
+10 GB przestrzeni hostingowej
+-----
+pricing_premium_feature_five
+Standardowa kolejka wsparcia
+-----
+pricing_ultimate_name
+Ultimate
+-----
+pricing_ultimate_desc
+Dla zespołów pracujących z większymi repozytoriami i procesami produkcyjnymi.
+-----
+pricing_ultimate_price
+$19
+-----
+pricing_buy_ultimate
+Kup Ultimate przez PayPal
+-----
+pricing_buy_ultimate_usdt
+Zapłać 17,10 USDT (-10%)
+-----
+pricing_ultimate_feature_one
+Wszystko z planu Premium
+-----
+pricing_ultimate_feature_two
+Klonuj i hostuj repozytoria do 10 GB
+-----
+pricing_ultimate_feature_three
+100 GB przestrzeni hostingowej
+-----
+pricing_ultimate_feature_four
+Zaawansowane uprawnienia i chronione procesy
+-----
+pricing_ultimate_feature_five
+Priorytetowe wsparcie w sprawach infrastruktury
+-----
+pricing_payment_title
+Płatność
+-----
+pricing_payment_note
+Płatności są obsługiwane przez PayPal na rzecz
+-----
+pricing_usdt_title
+Płatność USDT
+-----
+pricing_usdt_note
+Płatności USDT obejmują rabat 10%. Wyślij kwotę po rabacie na ten portfel.
+-----
+pricing_usdt_wallet_label
+Portfel USDT:
+-----

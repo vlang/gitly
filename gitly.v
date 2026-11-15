@@ -215,6 +215,8 @@ pub fn (mut app App) before_request(mut ctx Context) bool {
 		'jp' { Lang.jp }
 		'cn' { Lang.cn }
 		'pt' { Lang.pt }
+		'pl' { Lang.pl }
+		'de' { Lang.de }
 		else { Lang.en }
 	}
 
@@ -305,7 +307,7 @@ pub fn (mut app App) index(mut ctx Context) veb.Result {
 
 @['/change_lang/:lang'; post]
 pub fn (mut app App) change_lang(mut ctx Context, lang string) veb.Result {
-	if lang !in ['en', 'ru', 'es', 'jp', 'cn', 'pt'] {
+	if lang !in ['en', 'ru', 'es', 'jp', 'cn', 'pt', 'pl', 'de'] {
 		ctx.res.set_status(.bad_request)
 		return ctx.json_error('Unsupported language')
 	}

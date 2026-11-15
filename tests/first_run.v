@@ -20,6 +20,7 @@ fn main() {
 	}
 
 	test_index_page()
+	test_language_switching()
 
 	ilog('Register the first user `${test_username}`')
 	mut register_headers, token := register_user(test_username, '1234zxcv', 'bob@example.com') or {
@@ -197,6 +198,61 @@ fn wait_gitly(mut process os.Process) ! {
 
 fn prepare_url(path string) string {
 	return 'http://127.0.0.1:${first_run_port()}/${path}'
+}
+
+fn test_language_switching() {
+	languages := {
+		'en': ['Register an admin account', 'Gitly pricing']
+		'ru': ['Регистрация аккаунта администратора',
+			'Тарифы Gitly']
+		'es': ['Registrar una cuenta de administrador', 'Precios de Gitly']
+		'jp': ['管理者アカウントを登録', 'Gitlyの料金']
+		'cn': ['注册管理员账户', 'Gitly 价格']
+		'pt': ['Registrar uma conta de administrador', 'Preços do Gitly']
+		'pl': ['Zarejestruj konto administratora', 'Cennik Gitly']
+		'de': ['Administratorkonto registrieren', 'Gitly-Preise']
+	}
+	for lang, headings in languages {
+		ilog('Ensure ${lang} can be selected and renders translated pages')
+		response := http.post(prepare_url('change_lang/${lang}'), '') or {
+			exit_with_message(err.str())
+		}
+		assert response.status_code == 200
+		cookies := response.header.values(.set_cookie)
+		assert cookies.any(it.starts_with('lang=${lang};'))
+		page := http.fetch(
+			url:    prepare_url('register')
+			header: http.new_header_from_map({
+				.cookie: 'lang=${lang}'
+			})
+		) or { exit_with_message(err.str()) }
+		assert page.status_code == 200
+		assert page.body.contains(headings[0])
+		assert page.body.contains('<option value=${lang} selected>')
+		for code in languages.keys() {
+			assert page.body.contains('<option value=${code}')
+		}
+		pricing := http.fetch(
+			url:    prepare_url('pricing')
+			header: http.new_header_from_map({
+				.cookie: 'lang=${lang}'
+			})
+		) or { exit_with_message(err.str()) }
+		assert pricing.status_code == 200
+		assert pricing.body.contains(headings[1])
+	}
+	unsupported := http.post(prepare_url('change_lang/xx'), '') or {
+		exit_with_message(err.str())
+	}
+	assert unsupported.status_code == 400
+	fallback := http.fetch(
+		url:    prepare_url('register')
+		header: http.new_header_from_map({
+			.cookie: 'lang=xx'
+		})
+	) or { exit_with_message(err.str()) }
+	assert fallback.status_code == 200
+	assert fallback.body.contains('Register an admin account')
 }
 
 fn test_index_page() {
