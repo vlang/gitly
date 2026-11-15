@@ -19,6 +19,7 @@ fn main() {
 		after(mut gitly_process)
 	}
 
+	test_register_page()
 	test_index_page()
 
 	ilog('Register the first user `${test_username}`')
@@ -32,6 +33,7 @@ fn main() {
 	ilog('Ensure the login token is present after registration')
 	has_token := token != ''
 	assert has_token
+	test_register_page()
 
 	test_user_page(test_username)
 	test_login_with_token(test_username, token)
@@ -197,6 +199,13 @@ fn wait_gitly(mut process os.Process) ! {
 
 fn prepare_url(path string) string {
 	return 'http://127.0.0.1:${first_run_port()}/${path}'
+}
+
+fn test_register_page() {
+	ilog('Ensure /register serves the registration form instead of a user profile')
+	response := http.get(prepare_url('register')) or { exit_with_message(err.str()) }
+	assert response.status_code == 200
+	assert response.body.contains("<form id='register-form' method='post' action='/register'>")
 }
 
 fn test_index_page() {
